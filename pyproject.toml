@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "thesisound"
+version = "0.1.0"
+description = "Evidence-grounded Persian educational podcast pipeline"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "pydantic>=2.10,<3",
+  "pydantic-settings>=2.7,<3",
+  "typer>=0.15,<1",
+  "rich>=13.9,<15",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "ruff>=0.9,<1",
+]
+gemini = [
+  "google-genai>=1.0,<2",
+]
+web = [
+  "httpx>=0.28,<1",
+  "firecrawl-py>=2.0,<4",
+]
+parsers = [
+  "docling>=2.0,<4",
+]
+
+[project.scripts]
+thesisound = "thesisound.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/thesisound"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"
