@@ -7,7 +7,6 @@ from uuid import UUID
 
 from thesisound.domain import Project, ProjectState
 
-
 ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
     ProjectState.DRAFT: {ProjectState.BRIEF_READY, ProjectState.FAILED_RETRYABLE},
     ProjectState.BRIEF_READY: {
