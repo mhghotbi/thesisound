@@ -1,0 +1,132 @@
+# Thesisound
+
+Thesisound یک ابزار شخصی و کوچک برای تبدیل یک موضوع یا مجموعه‌ای از منابع به پادکست فارسیِ منبع‌محور است.
+
+هدف پروژه ساختن «رقیب NotebookLM» یا یک پلتفرم عمومی پادکست نیست. مسئله مشخص‌تر است:
+
+> کاربر یک موضوع، متن کوتاه، نام نویسنده یا کتاب را وارد می‌کند؛ منابع خودش را اضافه می‌کند؛ سیستم منابع معتبر مکمل را پیشنهاد می‌دهد؛ کاربر منابع نهایی را انتخاب می‌کند؛ سپس یک اپیزود فارسی با پوشش شفاف، ارجاع‌پذیر و قابل‌شنیدن ساخته می‌شود.
+
+## وضعیت فعلی
+
+این ریپو در مرحله طراحی و scaffold اولیه است. هنوز محصول قابل‌استفاده‌ای وجود ندارد. مستندات، قراردادهای prompt و اسکلت کد عمداً قبل از UI ساخته شده‌اند تا کیفیت محتوا و صوت ابتدا روی یک vertical slice واقعی ثابت شود.
+
+## محدوده MVP
+
+MVP فقط این مسیر را پوشش می‌دهد:
+
+1. دریافت عنوان، سؤال یا متن کوتاه از کاربر
+2. دریافت PDF، EPUB یا URLهای اختیاری
+3. استخراج ساختار و متن منابع
+4. جست‌وجوی منابع مکمل معتبر
+5. نمایش منبع‌ها و انتخاب نهایی توسط کاربر
+6. ساخت نقشه موضوع، شواهد و پوشش مطالب
+7. طراحی یک اپیزود ۲۰ تا ۴۰ دقیقه‌ای
+8. نوشتن مستقیم سناریوی فارسی از شواهد اصلی
+9. راستی‌آزمایی سناریو
+10. تولید صوت فارسی و کنترل کیفیت آن
+
+موارد زیر فعلاً خارج از محدوده‌اند:
+
+- اپ موبایل
+- شبکه اجتماعی یا انتشار عمومی
+- پرداخت و اشتراک
+- recommendation engine پیچیده
+- ساخت خودکار چند فصل یا چند اپیزود بلند
+- crawler اختصاصی
+- fine-tuning مدل
+- معماری چندسرویسه و زیرساخت production
+
+## معماری در یک نگاه
+
+```text
+User intent
+  -> Research brief
+  -> User-source ingestion
+  -> Source discovery
+  -> Human source selection
+  -> Document structure + evidence records
+  -> Coverage audit
+  -> Episode plan
+  -> Original-evidence retrieval
+  -> Persian script generation
+  -> Adversarial script verification
+  -> TTS segmentation and synthesis
+  -> Audio transcription and QA
+  -> Private player/export
+```
+
+اصل مهم این معماری این است که خروجی نهایی از خلاصه‌های خلاصه‌شده ساخته نمی‌شود. خلاصه‌ها فقط نقش index و planning دارند. هنگام نوشتن هر بخش، متن اصلی و locator دقیق دوباره بازیابی می‌شود.
+
+## چرا CLI-first؟
+
+این پروژه برای یک مصرف شخصی ساخته می‌شود و بزرگ‌ترین ریسک آن کیفیت محتوا و صوت فارسی است، نه مقیاس. بنابراین ترتیب توسعه این است:
+
+1. یک فصل واقعی را از فایل تا صوت پردازش کن.
+2. کیفیت را در برابر NotebookLM و متن اصلی بسنج.
+3. فقط بعد از اثبات کیفیت، source discovery و UI را اضافه کن.
+4. queue، PostgreSQL و vector search فقط وقتی اضافه شوند که محدودیت واقعی ایجاد شود.
+
+## Stack پیشنهادی MVP
+
+- Python 3.12+
+- `uv` برای dependency management
+- Pydantic برای قراردادهای داده
+- Typer برای CLI
+- SQLite + JSON artifacts برای وضعیت محلی
+- SQLite FTS5 برای retrieval اولیه
+- Docling به‌عنوان parser محلی پیش‌فرض
+- MinerU به‌عنوان fallback برای PDF اسکن‌شده یا layout دشوار
+- Firecrawl برای web search/scrape و hosted parse اختیاری
+- OpenAlex برای metadata و جست‌وجوی دانشگاهی
+- Gemini text models برای planning، extraction، writing و verification
+- Gemini 3.1 Flash TTS Preview برای صوت فارسی
+- FFmpeg برای مونتاژ صوت
+
+مدل‌ها از environment تنظیم می‌شوند و نباید در منطق دامنه hard-code شوند. مدل‌های preview و aliasهای API تغییر می‌کنند.
+
+## ساختار ریپو
+
+```text
+.
+├── docs/                   تصمیم‌ها، معماری، workflow و برنامه توسعه
+├── prompts/                قراردادهای prompt مرحله‌به‌مرحله
+├── src/thesisound/         اسکلت core مستقل از UI و provider
+├── tests/                  تست state machine و قراردادها
+├── .env.example            تنظیمات providerها و مدل‌ها
+└── pyproject.toml          پکیج و ابزارهای توسعه
+```
+
+## شروع توسعه
+
+```bash
+uv sync --all-extras
+uv run thesisound init "آرنت و مفهوم کنش"
+uv run pytest
+uv run ruff check .
+```
+
+در scaffold فعلی فرمان `init` فقط یک project محلی و state اولیه می‌سازد. اتصال واقعی به parser، search، Gemini و TTS در milestoneهای بعدی پیاده می‌شود.
+
+## ترتیب مطالعه برای توسعه‌دهنده
+
+1. [`docs/00-product-scope.md`](docs/00-product-scope.md)
+2. [`docs/01-critical-review.md`](docs/01-critical-review.md)
+3. [`docs/02-architecture.md`](docs/02-architecture.md)
+4. [`docs/03-agent-workflow.md`](docs/03-agent-workflow.md)
+5. [`prompts/README.md`](prompts/README.md)
+6. [`docs/06-development-plan.md`](docs/06-development-plan.md)
+7. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
+
+## قواعد غیرقابل‌مذاکره
+
+- metadata یا abstract به‌تنهایی evidence متن کامل محسوب نمی‌شود.
+- هر ادعای محتوایی سناریو باید به evidence ID و locator متصل باشد.
+- اختلاف تفسیرها نباید به اجماع جعلی تبدیل شود.
+- کاربر منبع نهایی را انتخاب می‌کند؛ سیستم بدون اطلاع او corpus را تغییر نمی‌دهد.
+- سناریوی فارسی از outline معنایی و شواهد اصلی ساخته می‌شود، نه از ترجمه لفظ‌به‌لفظ یک پادکست انگلیسی.
+- مدل نویسنده تنها verifier خروجی خودش نیست.
+- اگر کیفیت parse، evidence یا audio از gate عبور نکند، pipeline متوقف می‌شود؛ خروجی ناقص silently منتشر نمی‌شود.
+
+## مستندات مرجع
+
+لینک مستندات رسمی ابزارهای فعلی در فایل‌های `docs/` ثبت شده است. انتخاب providerها provisional است و باید با یک corpus واقعی شامل مقاله، EPUB، PDF متنی و PDF اسکن‌شده benchmark شود.
