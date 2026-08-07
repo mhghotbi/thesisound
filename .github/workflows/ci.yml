@@ -13,34 +13,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           enable-cache: true
 
       - name: Install dependencies
         run: uv sync --extra dev
 
-      - name: Generate Ruff autofix patch
-        run: |
-          uv run ruff check . --fix
-          git diff -- src tests > ruff-fixes.patch
-
-      - name: Upload Ruff autofix patch
-        uses: actions/upload-artifact@v4
-        with:
-          name: ruff-fixes
-          path: ruff-fixes.patch
-
-      - name: Verify clean lint state
-        run: git diff --exit-code -- src tests
+      - name: Lint
+        run: uv run ruff check . --output-format=github
 
       - name: Test
         run: uv run pytest
