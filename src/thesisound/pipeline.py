@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime
+from json import dumps
 from pathlib import Path
 from uuid import UUID
 
@@ -126,7 +126,7 @@ class WorkspaceStore:
         path = directory / "project.json"
         temporary = path.with_suffix(".json.tmp")
         temporary.write_text(
-            json.dumps(project.model_dump(mode="json"), ensure_ascii=False, indent=2),
+            dumps(project.model_dump(mode="json"), ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         temporary.replace(path)
