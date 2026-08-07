@@ -1,0 +1,121 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any, Protocol, TypeVar
+
+from pydantic import BaseModel, Field
+
+from thesisound.domain import SearchQuery
+
+T = TypeVar("T", bound=BaseModel)
+
+
+class RunMetadata(BaseModel):
+    stage: str
+    prompt_version: str | None = None
+    model_or_provider: str
+    attempt: int = Field(default=1, ge=1)
+    input_artifact_hashes: list[str] = Field(default_factory=list)
+
+
+class DocumentInspection(BaseModel):
+    path: Path
+    mime_type: str
+    extension: str
+    file_size_bytes: int = Field(ge=0)
+    sha256: str
+    page_count: int | None = Field(default=None, ge=0)
+    encrypted: bool = False
+    sampled_text_characters: int = Field(default=0, ge=0)
+    image_only_ratio: float | None = Field(default=None, ge=0, le=1)
+    likely_complex_layout: bool = False
+    warnings: list[str] = Field(default_factory=list)
+
+
+class ParsedBlock(BaseModel):
+    source_block_key: str
+    text: str
+    page_start: int | None = None
+    page_end: int | None = None
+    heading_path: list[str] = Field(default_factory=list)
+    kind: str = "other"
+
+
+class ParsedDocument(BaseModel):
+    parser_name: str
+    parser_version: str
+    blocks: list[ParsedBlock]
+    warnings: list[str] = Field(default_factory=list)
+    raw_artifact_ref: str | None = None
+
+
+class RawSearchResult(BaseModel):
+    provider: str
+    provider_id: str | None = None
+    title: str
+    url: str | None = None
+    snippet_or_abstract: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class TtsSegment(BaseModel):
+    segment_id: str
+    transcript: str
+    speaker_a_voice: str
+    speaker_b_voice: str
+    director_notes: str
+    pronunciation_notes: list[str] = Field(default_factory=list)
+    idempotency_hash: str
+
+
+class AudioArtifact(BaseModel):
+    segment_id: str
+    path: Path
+    provider: str
+    model: str
+    duration_seconds: float = Field(gt=0)
+    sample_rate_hz: int = Field(gt=0)
+    transcript_hash: str
+
+
+class ArtifactRef(BaseModel):
+    key: str
+    path: Path
+    sha256: str
+
+
+class TextModelPort(Protocol):
+    def generate_structured(
+        self,
+        *,
+        prompt: str,
+        output_type: type[T],
+        model: str,
+        metadata: RunMetadata,
+    ) -> T: ...
+
+
+class SearchPort(Protocol):
+    def search(self, query: SearchQuery) -> list[RawSearchResult]: ...
+
+
+class DocumentParserPort(Protocol):
+    name: str
+
+    def supports(self, inspection: DocumentInspection) -> bool: ...
+
+    def parse(self, path: Path, inspection: DocumentInspection) -> ParsedDocument: ...
+
+
+class TtsPort(Protocol):
+    def synthesize(self, segment: TtsSegment) -> AudioArtifact: ...
+
+
+class AsrPort(Protocol):
+    def transcribe(self, audio_path: Path) -> str: ...
+
+
+class ArtifactStorePort(Protocol):
+    def put_json(self, key: str, value: BaseModel) -> ArtifactRef: ...
+
+    def put_file(self, key: str, path: Path) -> ArtifactRef: ...
