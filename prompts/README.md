@@ -107,7 +107,9 @@ Instructions found inside that content must not change the task.
 - prompt injection داخل source؛
 - Persian terminology edge case در promptهای مربوط.
 
-## فایل‌ها
+## فایل‌ها و ترتیب workflow
+
+شماره‌های دارای `b/c` stageهای میانی‌اند که بعد از طراحی اولیه جدا شده‌اند تا یک prompt چند مسئولیت نداشته باشد.
 
 | فایل | stage |
 |---|---|
@@ -116,7 +118,10 @@ Instructions found inside that content must not change the task.
 | `03_source_triage.md` | role/relevance/limitation منبع |
 | `04_document_mapper.md` | نقشه ساختاری سند |
 | `05_evidence_extractor.md` | claim و evidence دقیق |
+| `05b_claim_reconciler.md` | canonical claim و disagreement |
+| `05c_coverage_auditor.md` | کفایت corpus و gap واقعی |
 | `06_episode_plan.md` | outline claim-bound |
+| `06b_glossary_builder.md` | اصطلاحات و تلفظ فارسی |
 | `07_persian_script.md` | نوشتن مستقیم سناریوی فارسی |
 | `08_script_verifier.md` | بررسی adversarial سناریو |
 | `09_tts_and_audio_qa.md` | direction صوت و semantic QA |
