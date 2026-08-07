@@ -28,8 +28,19 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev
 
-      - name: Lint
-        run: uv run ruff check . --output-format=github
+      - name: Generate Ruff autofix patch
+        run: |
+          uv run ruff check . --fix
+          git diff -- src tests > ruff-fixes.patch
+
+      - name: Upload Ruff autofix patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-fixes
+          path: ruff-fixes.patch
+
+      - name: Verify clean lint state
+        run: git diff --exit-code -- src tests
 
       - name: Test
         run: uv run pytest
