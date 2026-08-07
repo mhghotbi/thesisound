@@ -1,5 +1,7 @@
 # Thesisound
 
+[![CI](https://github.com/mhghotbi/thesisound/actions/workflows/ci.yml/badge.svg)](https://github.com/mhghotbi/thesisound/actions/workflows/ci.yml)
+
 Thesisound یک ابزار شخصی و کوچک برای تبدیل یک موضوع یا مجموعه‌ای از منابع به پادکست فارسیِ منبع‌محور است.
 
 هدف پروژه ساختن «رقیب NotebookLM» یا یک پلتفرم عمومی پادکست نیست. مسئله مشخص‌تر است:
@@ -116,6 +118,7 @@ uv run ruff check .
 5. [`prompts/README.md`](prompts/README.md)
 6. [`docs/06-development-plan.md`](docs/06-development-plan.md)
 7. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
+8. [`docs/09-open-questions.md`](docs/09-open-questions.md)
 
 ## قواعد غیرقابل‌مذاکره
 
