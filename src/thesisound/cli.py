@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Annotated
 from uuid import UUID
 
 import typer
@@ -15,6 +16,11 @@ from thesisound.pipeline import WorkspaceStore
 app = typer.Typer(no_args_is_help=True, help="Thesisound local development CLI")
 console = Console()
 
+WorkspaceRootOption = Annotated[
+    Path | None,
+    typer.Option(help="Override workspace directory"),
+]
+
 
 def _store(workspace_root: Path | None = None) -> WorkspaceStore:
     settings = Settings()
@@ -24,8 +30,11 @@ def _store(workspace_root: Path | None = None) -> WorkspaceStore:
 
 @app.command()
 def init(
-    topic: str = typer.Argument(..., help="Topic, question, author, book, or short text"),
-    workspace_root: Path | None = typer.Option(None, help="Override workspace directory"),
+    topic: Annotated[
+        str,
+        typer.Argument(help="Topic, question, author, book, or short text"),
+    ],
+    workspace_root: WorkspaceRootOption = None,
 ) -> None:
     """Create a local project workspace without calling external providers."""
 
@@ -38,8 +47,8 @@ def init(
 
 @app.command()
 def status(
-    project_id: UUID = typer.Argument(...),
-    workspace_root: Path | None = typer.Option(None),
+    project_id: Annotated[UUID, typer.Argument()],
+    workspace_root: WorkspaceRootOption = None,
 ) -> None:
     """Show the current local project state."""
 
@@ -61,8 +70,8 @@ def status(
 
 @app.command("dump")
 def dump_project(
-    project_id: UUID = typer.Argument(...),
-    workspace_root: Path | None = typer.Option(None),
+    project_id: Annotated[UUID, typer.Argument()],
+    workspace_root: WorkspaceRootOption = None,
 ) -> None:
     """Print the complete project JSON for debugging and prompt development."""
 
