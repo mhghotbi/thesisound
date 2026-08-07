@@ -167,7 +167,10 @@ class SourceCandidate(BaseModel):
 
     @property
     def usable_as_evidence(self) -> bool:
-        return self.access == SourceAccess.FULL_TEXT and self.user_decision == SourceDecision.INCLUDE
+        return (
+            self.access == SourceAccess.FULL_TEXT
+            and self.user_decision == SourceDecision.INCLUDE
+        )
 
 
 class Locator(BaseModel):
