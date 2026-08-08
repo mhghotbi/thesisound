@@ -16,6 +16,7 @@ from thesisound.domain import (
 from thesisound.ingestion import IngestionResult
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
+from thesisound.services.analysis_profile import plan_evidence_extraction
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.document_mapper import DocumentMapperService
@@ -116,8 +117,13 @@ class SourceAnalysisService:
         model: str,
         prompt_version: str | None = None,
     ) -> SourceAnalysisManifest:
+        project = self.workspace_store.load_project(project_id)
+        if project.brief is None:
+            raise ValueError("ResearchBrief is required to plan evidence depth.")
         blocks = self.artifact_store.load_blocks(project_id, source_id)
         document_map = self.artifact_store.load_document_map(project_id, source_id)
+        plan = plan_evidence_extraction(project.brief, document_map, blocks)
+        self.artifact_store.save_extraction_plan(project_id, source_id, plan)
 
         def save_one(record: BlockEvidenceExtraction) -> None:
             self.artifact_store.save_block_extraction(
@@ -132,6 +138,7 @@ class SourceAnalysisService:
             blocks=blocks,
             document_map=document_map,
             model=model,
+            plan=plan,
             prompt_version=prompt_version,
             on_extraction=save_one,
         )
@@ -139,6 +146,10 @@ class SourceAnalysisService:
         self.artifact_store.save_evidence(project_id, source_id, records)
         manifest = self.artifact_store.load_manifest(project_id, source_id)
         manifest.status = "evidence_ready"
+        manifest.selected_block_count = len(plan.selected_block_ids)
+        manifest.deferred_block_count = len(plan.deferred_block_ids)
+        manifest.analysis_depth = plan.profile.depth
+        manifest.evidence_token_coverage = plan.achieved_token_coverage
         manifest.evidence_count = sum(
             len(record.extraction.claims) for record in records
         )
