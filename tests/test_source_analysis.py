@@ -74,8 +74,7 @@ class FakeRunner:
         elif output_type is EvidenceExtractionDraft:
             block = variables["block"]
             assert isinstance(block, dict)
-            text = str(block["text"])
-            excerpt = text.split(".")[0].strip()
+            excerpt = str(block["text"]).split(".")[0].strip()
             output = EvidenceExtractionDraft(
                 segment_function="argument",
                 claims=[
@@ -216,20 +215,22 @@ def test_evidence_validator_rejects_excerpt_not_in_block() -> None:
         blocks=[block],
         model="fake",
     )
-    extraction = EvidenceExtractorService(runner).extract_source(
+    record = EvidenceExtractorService(runner).extract_source(
         project_id=uuid4(),
         source_id=source_id,
         blocks=[block],
         document_map=document_map,
         model="fake",
     )[0][0]
-    extraction.claims[0].supporting_excerpt = "This sentence is invented."
+    record.extraction.claims[0].supporting_excerpt = "This sentence is invented."
 
     with pytest.raises(ValueError, match="not present"):
-        validate_evidence_extraction(extraction, block)
+        validate_evidence_extraction(record.extraction, block)
 
 
-def test_complete_one_source_pipeline_writes_auditable_artifacts(tmp_path: Path) -> None:
+def test_complete_one_source_pipeline_writes_auditable_artifacts(
+    tmp_path: Path,
+) -> None:
     workspace = WorkspaceStore(tmp_path / "workspaces")
     project = _project()
     workspace.save_project(project)
@@ -255,7 +256,11 @@ def test_complete_one_source_pipeline_writes_auditable_artifacts(tmp_path: Path)
     )
 
     source_dir = (
-        tmp_path / "workspaces" / str(project.project_id) / "sources" / str(manifest.source_id)
+        tmp_path
+        / "workspaces"
+        / str(project.project_id)
+        / "sources"
+        / str(manifest.source_id)
     )
     assert manifest.status == "claims_ready"
     assert manifest.block_count == 1
