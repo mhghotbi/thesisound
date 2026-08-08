@@ -92,11 +92,11 @@ def test_workflow_navigation_is_single_six_step_contract() -> None:
     project_templates = (TEMPLATES_ROOT / "projects").glob("*.html")
 
     for label in (
-        "هدف و برداشت",
+        "موضوع و هدف",
         "منابع",
-        "پردازش",
-        "طرح اپیزود",
-        "متن اپیزود",
+        "تحلیل منابع",
+        "طرح گفتار",
+        "متن گفتار",
         "شنیدن",
     ):
         assert label in workflow
@@ -156,7 +156,7 @@ def test_default_theme_mode_preferences_and_overview_route(tmp_path: Path) -> No
         overview = client.get(f"/projects/{project_id}")
 
     assert overview.status_code == 200
-    assert "خانه پروژه" in overview.text
+    assert "خانهٔ گفتار" in overview.text
     assert "اخلاق کانت" in overview.text
     assert f'/projects/{project_id}/brief' in overview.text
 
