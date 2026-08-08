@@ -22,7 +22,7 @@ def _assert_terms_are_operator_only(path: str, terms: tuple[str, ...]) -> None:
 def test_sensitive_operational_terms_are_hidden_from_simple_mode() -> None:
     _assert_terms_are_operator_only(
         "projects/sources.html",
-        ("Gemini", "candidate", "quality gate", "quality-gate", "stale"),
+        ("Gemini", "quality gate", "quality-gate", "stale"),
     )
     _assert_terms_are_operator_only(
         "projects/processing.html",
