@@ -75,6 +75,29 @@ jobs:
             --artifact-root benchmarks/parser/runtime/artifacts \
             --output benchmarks/parser/runtime/benchmark.json
 
+      - name: Persist normalized parser outputs
+        run: |
+          set +e
+          uv run thesisound parse \
+            benchmarks/parser/runtime/attention-is-all-you-need.pdf \
+            --parser docling \
+            --artifact-root benchmarks/parser/runtime/artifacts \
+            --output benchmarks/parser/runtime/docling-ingestion.json
+          docling_exit=$?
+          uv run thesisound parse \
+            benchmarks/parser/runtime/attention-is-all-you-need.pdf \
+            --parser mineru \
+            --artifact-root benchmarks/parser/runtime/artifacts \
+            --output benchmarks/parser/runtime/mineru-ingestion.json
+          mineru_exit=$?
+          set -e
+          if [[ $docling_exit -ne 0 && $docling_exit -ne 2 ]]; then
+            exit $docling_exit
+          fi
+          if [[ $mineru_exit -ne 0 && $mineru_exit -ne 2 ]]; then
+            exit $mineru_exit
+          fi
+
       - name: Require both parsers to complete
         run: |
           uv run python - <<'PY'
