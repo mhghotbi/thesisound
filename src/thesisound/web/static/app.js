@@ -33,7 +33,8 @@
       const theme = button.dataset.themeValue;
       if (!validThemes.has(theme)) return;
       root.dataset.theme = theme;
-      localStorage.setItem("thesisound-theme", theme);
+      localStorage.setItem("maqal-theme", theme);
+      localStorage.removeItem("thesisound-theme");
       syncPressedStates();
       persistPreference("theme", theme);
       button.closest("details")?.removeAttribute("open");
@@ -45,7 +46,8 @@
       const mode = button.dataset.modeValue;
       if (!validModes.has(mode)) return;
       root.dataset.mode = mode;
-      localStorage.setItem("thesisound-mode", mode);
+      localStorage.setItem("maqal-mode", mode);
+      localStorage.removeItem("thesisound-mode");
       syncPressedStates();
       persistPreference("mode", mode);
     });
