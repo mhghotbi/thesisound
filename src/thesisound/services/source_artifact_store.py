@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from thesisound.domain import DocumentMap
+from thesisound.domain import DocumentMap, EvidenceItem
 from thesisound.ingestion import IngestionResult
 from thesisound.source_analysis import (
     BlockBuildReport,
@@ -20,7 +20,7 @@ from thesisound.source_analysis import (
 
 
 class SourceArtifactStore:
-    """Atomic JSON/JSONL persistence for one-source analysis artifacts."""
+    """Atomic JSON/JSONL persistence for source-analysis artifacts."""
 
     def __init__(self, workspace_root: Path) -> None:
         self.workspace_root = workspace_root.expanduser().resolve()
@@ -30,6 +30,22 @@ class SourceArtifactStore:
         directory = self.workspace_root / str(project_id) / "sources" / str(source_id)
         directory.mkdir(parents=True, exist_ok=True)
         return directory
+
+    def list_claim_ready_source_ids(self, project_id: UUID) -> list[UUID]:
+        root = self.workspace_root / str(project_id) / "sources"
+        if not root.exists():
+            return []
+        source_ids: list[UUID] = []
+        for directory in sorted(path for path in root.iterdir() if path.is_dir()):
+            manifest_path = directory / "manifest.json"
+            if not manifest_path.exists():
+                continue
+            manifest = SourceAnalysisManifest.model_validate_json(
+                manifest_path.read_text(encoding="utf-8")
+            )
+            if manifest.status == "claims_ready":
+                source_ids.append(manifest.source_id)
+        return source_ids
 
     def save_ingestion(
         self,
@@ -118,12 +134,16 @@ class SourceArtifactStore:
     ) -> None:
         directory = self.source_dir(project_id, source_id)
         self._write_jsonl(directory / "evidence-extractions.jsonl", records)
-        evidence = [
-            claim
-            for record in records
-            for claim in record.extraction.claims
-        ]
+        evidence = [claim for record in records for claim in record.extraction.claims]
         self._write_jsonl(directory / "evidence-items.jsonl", evidence)
+
+    def load_evidence_items(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+    ) -> list[EvidenceItem]:
+        path = self.source_dir(project_id, source_id) / "evidence-items.jsonl"
+        return [EvidenceItem.model_validate(item) for item in self._read_jsonl(path)]
 
     def load_extractions(
         self,
@@ -145,6 +165,13 @@ class SourceArtifactStore:
         self._write_json(
             self.source_dir(project_id, source_id) / "claim-ledger.json",
             ledger,
+        )
+
+    def load_claim_ledger(self, project_id: UUID, source_id: UUID) -> ClaimLedger:
+        return ClaimLedger.model_validate_json(
+            (self.source_dir(project_id, source_id) / "claim-ledger.json").read_text(
+                encoding="utf-8"
+            )
         )
 
     def save_manifest(self, manifest: SourceAnalysisManifest) -> None:
