@@ -6,6 +6,8 @@ from thesisound.domain import ClaimRecord, EpisodePlan, EpisodeSegment, Research
 from thesisound.episode import (
     ClaimPriorityReport,
     CoverageReport,
+    DisagreementGraph,
+    EpisodeBudgetReport,
     EpisodePlanDraft,
 )
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
@@ -24,7 +26,9 @@ class EpisodePlannerService:
         brief: ResearchBrief,
         claims: list[ClaimRecord],
         coverage: CoverageReport,
+        budget: EpisodeBudgetReport,
         priorities: ClaimPriorityReport,
+        disagreement_graph: DisagreementGraph,
         extraction_plans: list[EvidenceExtractionPlan],
         model: str,
         prompt_version: str | None = None,
@@ -33,6 +37,8 @@ class EpisodePlannerService:
             raise ValueError(
                 "Coverage is insufficient for the requested duration; narrow scope or add evidence."
             )
+        if budget.effective_supported_minutes < brief.target_duration_minutes * 0.8:
+            raise ValueError("Deterministic budget is insufficient for episode planning.")
         claim_ids = {claim.claim_id for claim in claims}
         priority_by_id = {item.claim_id: item for item in priorities.priorities}
         execution = self.model_runner.run(
@@ -42,6 +48,8 @@ class EpisodePlannerService:
             variables={
                 "research_brief": brief.model_dump(mode="json"),
                 "coverage_report": coverage.model_dump(mode="json"),
+                "budget_report": budget.model_dump(mode="json"),
+                "disagreement_graph": disagreement_graph.model_dump(mode="json"),
                 "claim_priorities": priorities.model_dump(mode="json"),
                 "claims": [claim.model_dump(mode="json") for claim in claims],
                 "extraction_plans": [
