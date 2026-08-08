@@ -6,6 +6,7 @@ from typing import Any, Protocol, TypeVar
 from pydantic import BaseModel, Field
 
 from thesisound.domain import SearchQuery
+from thesisound.modeling import StructuredModelResponse
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -85,14 +86,17 @@ class ArtifactRef(BaseModel):
 
 
 class TextModelPort(Protocol):
+    provider: str
+
     def generate_structured(
         self,
         *,
-        prompt: str,
+        system_prompt: str,
+        user_prompt: str,
         output_type: type[T],
         model: str,
         metadata: RunMetadata,
-    ) -> T: ...
+    ) -> StructuredModelResponse[T]: ...
 
 
 class SearchPort(Protocol):
