@@ -1,0 +1,188 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Annotated
+from uuid import UUID
+
+import typer
+from rich.console import Console
+
+from thesisound.adapters.models.gemini import GeminiStructuredModel
+from thesisound.config import Settings
+from thesisound.modeling import ModelError
+from thesisound.pipeline import WorkspaceStore
+from thesisound.prompt_loader import PromptLoader
+from thesisound.services.episode_artifact_store import EpisodeArtifactStore
+from thesisound.services.glossary_builder import GlossaryBuilderService
+from thesisound.services.model_run_store import WorkspaceModelRunStore
+from thesisound.services.model_runner import ModelRunner
+from thesisound.services.persian_script_writer import PersianScriptWriterService
+from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.services.script_checks import ScriptChecker
+from thesisound.services.script_pipeline_service import ScriptPipelineService
+from thesisound.services.script_reviser import TargetedScriptReviserService
+from thesisound.services.script_verifier import ScriptVerifierService
+from thesisound.services.source_artifact_store import SourceArtifactStore
+
+console = Console()
+
+
+def register_script_commands(app: typer.Typer) -> None:
+    app.command("build-glossary")(_build_glossary)
+    app.command("write-script")(_write_script)
+    app.command("check-script")(_check_script)
+    app.command("verify-script")(_verify_script)
+    app.command("revise-script")(_revise_script)
+    app.command("prepare-script")(_prepare_script)
+
+
+def _build_glossary(
+    project_id: Annotated[UUID, typer.Argument()],
+    model: Annotated[str | None, typer.Option()] = None,
+    prompt_version: Annotated[str | None, typer.Option()] = None,
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    service = _service(settings, _root(settings, workspace_root))
+    try:
+        result = service.build_glossary(
+            project_id,
+            model=model or settings.model_strong,
+            prompt_version=prompt_version,
+        )
+    except (FileNotFoundError, ModelError, ValueError) as exc:
+        _fail(exc)
+    _print_json(result.model_dump(mode="json"))
+
+
+def _write_script(
+    project_id: Annotated[UUID, typer.Argument()],
+    model: Annotated[str | None, typer.Option()] = None,
+    prompt_version: Annotated[str | None, typer.Option()] = None,
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    service = _service(settings, _root(settings, workspace_root))
+    try:
+        result = service.write_script(
+            project_id,
+            model=model or settings.model_strong,
+            prompt_version=prompt_version,
+        )
+    except (FileNotFoundError, ModelError, ValueError) as exc:
+        _fail(exc)
+    _print_json(result.model_dump(mode="json"))
+
+
+def _check_script(
+    project_id: Annotated[UUID, typer.Argument()],
+    revised: Annotated[bool, typer.Option("--revised/--draft")] = False,
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    service = _service(settings, _root(settings, workspace_root))
+    try:
+        result = service.run_checks(project_id, revised=revised)
+    except (FileNotFoundError, ValueError) as exc:
+        _fail(exc)
+    _print_json(result.model_dump(mode="json"))
+
+
+def _verify_script(
+    project_id: Annotated[UUID, typer.Argument()],
+    model: Annotated[str | None, typer.Option()] = None,
+    revised: Annotated[bool, typer.Option("--revised/--draft")] = False,
+    prompt_version: Annotated[str | None, typer.Option()] = None,
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    service = _service(settings, _root(settings, workspace_root))
+    try:
+        result = service.verify_script(
+            project_id,
+            model=model or settings.model_strong,
+            revised=revised,
+            prompt_version=prompt_version,
+        )
+    except (FileNotFoundError, ModelError, ValueError) as exc:
+        _fail(exc)
+    _print_json(result.model_dump(mode="json"))
+
+
+def _revise_script(
+    project_id: Annotated[UUID, typer.Argument()],
+    model: Annotated[str | None, typer.Option()] = None,
+    prompt_version: Annotated[str | None, typer.Option()] = None,
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    service = _service(settings, _root(settings, workspace_root))
+    try:
+        result = service.revise_script(
+            project_id,
+            model=model or settings.model_strong,
+            prompt_version=prompt_version,
+        )
+    except (FileNotFoundError, ModelError, ValueError) as exc:
+        _fail(exc)
+    _print_json(result.model_dump(mode="json"))
+
+
+def _prepare_script(
+    project_id: Annotated[UUID, typer.Argument()],
+    glossary_model: Annotated[str | None, typer.Option()] = None,
+    writer_model: Annotated[str | None, typer.Option()] = None,
+    verifier_model: Annotated[str | None, typer.Option()] = None,
+    reviser_model: Annotated[str | None, typer.Option()] = None,
+    prompt_version: Annotated[str | None, typer.Option()] = None,
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    service = _service(settings, _root(settings, workspace_root))
+    try:
+        result = service.run(
+            project_id,
+            glossary_model=glossary_model or settings.model_strong,
+            writer_model=writer_model or settings.model_strong,
+            verifier_model=verifier_model or settings.model_strong,
+            reviser_model=reviser_model or settings.model_strong,
+            prompt_version=prompt_version,
+        )
+    except (FileNotFoundError, ModelError, ValueError) as exc:
+        _fail(exc)
+    _print_json(result.model_dump(mode="json"))
+
+
+def _service(settings: Settings, root: Path) -> ScriptPipelineService:
+    model_port = GeminiStructuredModel(api_key=settings.gemini_api_key)
+    runner = ModelRunner(
+        model_port,
+        PromptLoader(),
+        WorkspaceModelRunStore(root, keep_prompts=settings.keep_rendered_prompts),
+        base_retry_delay_seconds=settings.model_retry_base_seconds,
+    )
+    return ScriptPipelineService(
+        workspace_store=WorkspaceStore(root),
+        source_store=SourceArtifactStore(root),
+        episode_store=EpisodeArtifactStore(root),
+        script_store=ScriptArtifactStore(root),
+        glossary_builder=GlossaryBuilderService(runner),
+        script_writer=PersianScriptWriterService(runner),
+        script_checker=ScriptChecker(),
+        verifier=ScriptVerifierService(runner),
+        reviser=TargetedScriptReviserService(runner),
+    )
+
+
+def _root(settings: Settings, override: Path | None) -> Path:
+    return (override or settings.workspace_root).expanduser().resolve()
+
+
+def _print_json(payload: object) -> None:
+    console.print_json(json.dumps(payload, ensure_ascii=False))
+
+
+def _fail(exc: Exception) -> None:
+    console.print(f"[red]{exc}[/red]", stderr=True)
+    raise typer.Exit(code=1) from exc
