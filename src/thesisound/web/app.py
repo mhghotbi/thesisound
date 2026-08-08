@@ -507,7 +507,7 @@ def create_app(
         request: Request,
         project_id: UUID,
         csrf_token: Annotated[str, Form()],
-        central_question: Annotated[str, Form()],
+        central_question: Annotated[str, Form()] = "",
         must_include: Annotated[str, Form()] = "",
         exclusions: Annotated[str, Form()] = "",
         action: Annotated[str, Form()] = "save",
