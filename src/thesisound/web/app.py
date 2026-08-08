@@ -524,7 +524,8 @@ def create_app(
             _validate_csrf(request, csrf_token)
             if project.state not in _EDITABLE_BRIEF_STATES:
                 raise ValueError(
-                    "این برداشت اولیه وارد تحلیل منابع شده است و بدون بازگشت به مرحلهٔ قبلی قابل ویرایش نیست."
+                    "این برداشت اولیه وارد تحلیل منابع شده است و بدون بازگشت "
+                    "به مرحلهٔ قبلی قابل ویرایش نیست."
                 )
             if project.brief is None:
                 raise ValueError("صورت‌بندی گفتار وجود ندارد.")
