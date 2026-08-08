@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}پروژه جدید | Thesisound{% endblock %}
+{% block title %}گفتار تازه | مقال{% endblock %}
 {% block content_class %}{% endblock %}
 {% block content %}
 {% set selected_audience = values.audience if values else 'دانشجوی علوم انسانی' %}
@@ -7,13 +7,13 @@
 {% set selected_duration = values.duration if values else 20 %}
 {% set selected_mode = values.mode if values else 'explanatory' %}
 
-<nav class="workflow-rail" aria-label="مراحل ساخت اپیزود">
-  <div class="workflow-rail__topline"><span class="workflow-rail__project">پروژه جدید</span></div>
+<nav class="workflow-rail" aria-label="مراحل ساخت گفتار">
+  <div class="workflow-rail__topline"><span class="workflow-rail__project">گفتار تازه</span></div>
   <ol class="workflow-rail__steps">
-    {% for label in ['هدف و برداشت', 'منابع', 'پردازش', 'طرح اپیزود', 'متن اپیزود', 'شنیدن'] %}
+    {% for label in ['موضوع و هدف', 'منابع', 'تحلیل منابع', 'طرح گفتار', 'متن گفتار', 'شنیدن'] %}
     <li class="workflow-step {% if loop.first %}is-current{% else %}is-locked{% endif %}" {% if loop.first %}aria-current="step"{% endif %}>
       <span class="workflow-step__mark" aria-hidden="true">{{ loop.index | fa_num }}</span>
-      <span><strong>{{ label }}</strong><small>{% if loop.first %}مرحله جاری{% else %}پس از ساخت پروژه{% endif %}</small></span>
+      <span><strong>{{ label }}</strong><small>{% if loop.first %}مرحلهٔ جاری{% else %}پس از ساخت گفتار{% endif %}</small></span>
     </li>
     {% endfor %}
   </ol>
@@ -22,25 +22,25 @@
 <div class="page-content page-content--narrow">
   <header class="page-heading page-heading--compact">
     <div>
-      <p class="kicker">شروع یک مطالعه تازه</p>
+      <p class="kicker">گفتار تازه</p>
       <h1>می‌خواهید چه چیزی را بهتر بفهمید؟</h1>
-      <p>یک سؤال واقعی بنویسید و فقط مخاطب، سطح و مدت را مشخص کنید. برداشت اولیه قبل از هر پردازش برای تأیید شما نمایش داده می‌شود.</p>
+      <p>یک سؤال واقعی بنویسید و فقط مخاطب، سطح و مدت را مشخص کنید. برداشت اولیه پیش از تحلیل منابع برای تأیید شما نمایش داده می‌شود.</p>
     </div>
   </header>
 
-  {% if error %}<div class="notice notice--danger" role="alert">اطلاعات پروژه کامل نیست. مورد مشخص‌شده را اصلاح کنید.</div>{% endif %}
+  {% if error %}<div class="notice notice--danger" role="alert">اطلاعات گفتار کامل نیست. مورد مشخص‌شده را اصلاح کنید.</div>{% endif %}
 
   <form class="form-sheet" method="post" action="/projects" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label class="field field--large">
-      <span>موضوع یا سؤال اصلی</span>
+      <span>موضوع یا پرسش اصلی</span>
       <textarea name="topic" rows="4" required autofocus placeholder="مثلاً: چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟" {% if error %}aria-invalid="true" aria-describedby="topic-error"{% endif %}>{{ values.topic if values else '' }}</textarea>
-      {% if error %}<small class="field-error" id="topic-error">{{ error }}</small>{% else %}<small class="field-hint">هرچه سؤال مشخص‌تر باشد، جست‌وجو و ارزیابی پوشش دقیق‌تر می‌شود.</small>{% endif %}
+      {% if error %}<small class="field-error" id="topic-error">{{ error }}</small>{% else %}<small class="field-hint">هرچه پرسش مشخص‌تر باشد، جست‌وجو و سنجش کفایت منابع دقیق‌تر می‌شود.</small>{% endif %}
     </label>
 
     <div class="field-grid">
       <label class="field">
-        <span>برای چه کسی؟</span>
+        <span>این گفتار برای چه کسی است؟</span>
         <select name="audience">
           {% for value in ['دانشجوی علوم انسانی', 'شنونده عمومی علاقه‌مند', 'دانشجوی تحصیلات تکمیلی'] %}
           <option value="{{ value }}" {% if selected_audience == value %}selected{% endif %}>{{ value }}</option>
@@ -48,7 +48,7 @@
         </select>
       </label>
       <label class="field">
-        <span>آشنایی قبلی</span>
+        <span>آشنایی پیشین</span>
         <select name="prior_knowledge">
           <option value="none" {% if selected_knowledge == 'none' %}selected{% endif %}>بدون آشنایی</option>
           <option value="introductory" {% if selected_knowledge == 'introductory' %}selected{% endif %}>مقدماتی</option>
@@ -59,22 +59,22 @@
     </div>
 
     <fieldset class="choice-group">
-      <legend>مدت هدف</legend>
+      <legend>مدت تقریبی گفتار</legend>
       {% for minutes in [10, 20, 30, 45] %}
       <label><input type="radio" name="duration" value="{{ minutes }}" {% if selected_duration | int == minutes %}checked{% endif %}><span>{{ minutes | fa_num }} دقیقه</span></label>
       {% endfor %}
     </fieldset>
 
     <fieldset class="choice-group">
-      <legend>نوع روایت</legend>
+      <legend>رویکرد گفتار</legend>
       <label><input type="radio" name="mode" value="explanatory" {% if selected_mode == 'explanatory' %}checked{% endif %}><span>توضیحی</span></label>
-      <label><input type="radio" name="mode" value="critical" {% if selected_mode == 'critical' %}checked{% endif %}><span>تحلیلی / انتقادی</span></label>
+      <label><input type="radio" name="mode" value="critical" {% if selected_mode == 'critical' %}checked{% endif %}><span>انتقادی</span></label>
       <label><input type="radio" name="mode" value="comparative" {% if selected_mode == 'comparative' %}checked{% endif %}><span>مقایسه‌ای</span></label>
     </fieldset>
 
     <section class="data-panel operator-only" aria-label="پارامترهای عملیاتی">
-      <h2>پارامترهای نسخه فعلی</h2>
-      <p class="lede">زبان خروجی <code><bdi dir="ltr">fa</bdi></code> است؛ هدف یادگیری اولیه به‌صورت پیش‌فرض ساخته می‌شود و پس از ایجاد پروژه در برداشت قابل اصلاح است.</p>
+      <h2>پارامترهای نسخهٔ فعلی</h2>
+      <p class="lede">زبان خروجی <code><bdi dir="ltr">fa</bdi></code> است؛ هدف یادگیری اولیه به‌صورت پیش‌فرض ساخته می‌شود و پس از ساخت گفتار در صورت‌بندی گفتار قابل اصلاح است.</p>
     </section>
 
     <div class="form-actions form-actions--split">
