@@ -2,135 +2,108 @@
 
 [![CI](https://github.com/mhghotbi/thesisound/actions/workflows/ci.yml/badge.svg)](https://github.com/mhghotbi/thesisound/actions/workflows/ci.yml)
 
-Thesisound یک ابزار شخصی و کوچک برای تبدیل یک موضوع یا مجموعه‌ای از منابع به پادکست فارسیِ منبع‌محور است.
+Thesisound یک ابزار کوچک و شخصی برای تبدیل موضوع یا مجموعه‌ای از منابع به پادکست فارسی منبع‌محور است.
 
-هدف پروژه ساختن «رقیب NotebookLM» یا یک پلتفرم عمومی پادکست نیست. مسئله مشخص‌تر است:
+> کاربر موضوع، سؤال، نام نویسنده یا کتاب را وارد می‌کند؛ منابع خودش را اضافه می‌کند؛ سیستم منابع معتبر مکمل را پیشنهاد می‌دهد؛ کاربر corpus نهایی را انتخاب می‌کند؛ سپس اپیزودی فارسی، قابل‌ممیزی و متناسب با مدت خروجی ساخته می‌شود.
 
-> کاربر یک موضوع، متن کوتاه، نام نویسنده یا کتاب را وارد می‌کند؛ منابع خودش را اضافه می‌کند؛ سیستم منابع معتبر مکمل را پیشنهاد می‌دهد؛ کاربر منابع نهایی را انتخاب می‌کند؛ سپس یک اپیزود فارسی با پوشش شفاف، ارجاع‌پذیر و قابل‌شنیدن ساخته می‌شود.
+هدف پروژه ساختن رقیب عمومی NotebookLM نیست. اولویت با یک vertical slice دقیق، قابل تست و قابل اجرا برای استفاده شخصی است.
 
 ## وضعیت فعلی
 
-سه subsystem اصلی اکنون قابل اجرا هستند.
+چهار subsystem اصلی اکنون قابل اجرا هستند.
 
-### Document ingestion
+### ۱. Document Ingestion
 
-- inspection واقعی فایل و PDF؛
+- inspection واقعی PDF و فایل؛
 - SHA-256، MIME، اندازه، encryption و نمونه پوشش متن؛
 - Docling adapter؛
 - MinerU CLI adapter؛
-- normalization چندنسخه‌ای خروجی MinerU؛
 - parser routing و fallback خودکار؛
 - quality gate قطعی؛
 - artifact persistence؛
-- benchmark یک سند یا یک corpus محلی.
+- benchmark یک سند یا corpus محلی.
 
-### Structured model execution
+### ۲. Structured Model Execution
 
-- Gemini adapter با Pydantic structured output؛
+- Gemini adapter با Pydantic Structured Output؛
 - model port مستقل از provider؛
 - prompt contract نسخه‌دار؛
 - retry محدود برای timeout، rate limit و schema repair؛
-- عدم retry خودکار برای safety rejection؛
 - ثبت prompt version، hash، token usage، latency و finish reason؛
 - عدم ذخیره rendered prompt به‌صورت پیش‌فرض؛
-- stage کامل `ResearchBrief` و transition پروژه به `brief_ready`.
+- stage کامل Research Brief.
 
-### One-source evidence analysis
+### ۳. One-source Evidence Analysis
 
 - semantic block building؛
-- حذف محافظه‌کارانه header و footer؛
 - حفظ heading، locator، source block key و reading order؛
-- Document Map با حداقل ۹۰ درصد block coverage؛
-- `AnalysisProfile` وابسته به مدت، سطح مخاطب و mode؛
-- انتخاب output-aware برای breadth و depth استخراج؛
-- evidence extraction مستقل برای blockهای منتخب؛
+- Document Map؛
+- `AnalysisProfile` وابسته به duration، سطح مخاطب و mode؛
+- output-aware evidence extraction؛
 - supporting excerpt عینی از متن اصلی؛
 - evidence validation قطعی؛
 - deterministic evidence ID و claim ID؛
-- Claim Ledger و ثبت evidenceهای unresolved؛
-- ثبت blockهای deferred برای خروجی‌های کوتاه‌تر؛
-- artifactهای block-level برای debugging؛
-- CLI مرحله‌ای و فرمان end-to-end `analyze-source`؛
+- Claim Ledger؛
+- ثبت blockهای selected و deferred؛
 - transition پروژه تا `corpus_ready`.
 
-هنوز source discovery، multi-source reconciliation، retrieval، episode planning، سناریو، verification و TTS پیاده نشده‌اند.
+### ۴. Episode Preparation
 
-## محدوده MVP
+- Coverage Audit برای سؤال مرکزی و learning objectiveها؛
+- تخمین حداکثر مدت قابل پشتیبانی بدون padding؛
+- اولویت‌بندی deterministic claimها؛
+- Episode Plan متناسب با duration؛
+- enforce کردن must-include، omission و prerequisite؛
+- بازیابی مستقیم EvidenceItem و original block برای هر segment؛
+- Evidence Pack دارای token budget و context محدود؛
+- transition پروژه تا `episode_planned`.
 
-MVP فقط این مسیر را پوشش می‌دهد:
-
-1. دریافت عنوان، سؤال یا متن کوتاه از کاربر
-2. دریافت PDF، EPUB یا URLهای اختیاری
-3. استخراج ساختار و متن منابع
-4. جست‌وجوی منابع مکمل معتبر
-5. نمایش منبع‌ها و انتخاب نهایی توسط کاربر
-6. ساخت نقشه موضوع، شواهد و پوشش مطالب
-7. طراحی یک اپیزود ۲۰ تا ۴۰ دقیقه‌ای
-8. نوشتن مستقیم سناریوی فارسی از شواهد اصلی
-9. راستی‌آزمایی سناریو
-10. تولید صوت فارسی و کنترل کیفیت آن
-
-موارد زیر فعلاً خارج از محدوده‌اند:
-
-- اپ موبایل
-- شبکه اجتماعی یا انتشار عمومی
-- پرداخت و اشتراک
-- recommendation engine پیچیده
-- crawler اختصاصی
-- fine-tuning مدل
-- معماری چندسرویسه و زیرساخت production
+هنوز Source Discovery، cross-source reconciliation، Persian Script Writer، adversarial verification، TTS و Audio QA پیاده نشده‌اند.
 
 ## معماری در یک نگاه
 
 ```text
 User intent
-  -> Research brief
-  -> User-source ingestion
-  -> Semantic document blocks
-  -> Document map
-  -> Output-aware analysis profile and extraction plan
-  -> Block-scoped evidence extraction
-  -> Deterministic evidence validation
-  -> Claim ledger
-  -> Source discovery
-  -> Human source selection
-  -> Multi-source synthesis and coverage audit
-  -> Episode plan
-  -> Original-evidence retrieval
-  -> Persian script generation
-  -> Adversarial script verification
-  -> TTS segmentation and synthesis
-  -> Audio transcription and QA
-  -> Private player/export
+  → Research Brief
+  → Source ingestion
+  → Semantic blocks and locators
+  → Document Map
+  → Output-aware AnalysisProfile
+  → Evidence extraction and validation
+  → Claim Ledger
+  → Coverage Audit
+  → Deterministic Claim Priorities
+  → Episode Plan
+  → Original-evidence retrieval
+  → Segment Evidence Packs
+  → Persian Script
+  → Adversarial verification
+  → TTS and Audio QA
 ```
 
-خروجی نهایی از خلاصه‌های چندبار خلاصه‌شده ساخته نمی‌شود. خلاصه‌ها فقط نقش index و planning دارند. هنگام نوشتن هر بخش، متن اصلی و locator دقیق دوباره بازیابی می‌شود.
+خروجی نهایی از خلاصه‌های چندبار خلاصه‌شده ساخته نمی‌شود. خلاصه‌ها فقط نقش index و planning دارند؛ هر segment دوباره به evidence و block اصلی برمی‌گردد.
 
-## اصل مدت و عمق تحلیل
+## مدت خروجی چگونه روی تحلیل اثر می‌گذارد؟
 
-Parse، block‌بندی و locator مستقل از مدت خروجی ساخته می‌شوند تا پایدار و قابل استفاده مجدد باشند. اما evidence extraction همیشه کامل اجرا نمی‌شود.
+Parse، block ID و locator مستقل از مدت ساخته می‌شوند تا artifactها پایدار و reusable باشند. اما breadth و depth استخراج evidence به خروجی درخواستی وابسته است.
 
-پس از Document Map، سیستم از `target_duration_minutes`، `prior_knowledge` و modeهای Research Brief یک `AnalysisProfile` می‌سازد. این profile تعیین می‌کند:
-
-- چه مقدار از tokenهای منبع تحلیل شود؛
-- از هر block حداکثر چند claim استخراج شود؛
-- چند block همسایه برای context استفاده شود؛
-- example، objection و response در budget قرار بگیرند یا نه.
-
-defaultهای فعلی:
-
-| مدت | tier | هدف پوشش token | claim در block | context همسایه |
+| مدت | tier | پوشش هدف tokenهای منبع | حداکثر claim در block | context همسایه |
 |---|---|---:|---:|---:|
 | ۵ تا ۱۰ دقیقه | `brief` | ۳۵٪ | ۲ | ۰ |
 | ۱۱ تا ۲۵ دقیقه | `standard` | ۶۰٪ | ۳ | ۰ |
 | ۲۶ تا ۴۵ دقیقه | `deep` | ۸۵٪ | ۵ | ۱ |
 | ۴۶ تا ۱۲۰ دقیقه | `extended` | ۱۰۰٪ تا سقف budget | ۷ | ۲ |
 
-بنابراین پادکست ۶۰ دقیقه‌ای صرفاً نسخه کش‌آمده پادکست ۵ دقیقه‌ای نیست. substrate مشترک است، ولی breadth و depth شواهد متفاوت است. طراحی کامل در [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md) آمده است.
+Episode Preparation نیز output-aware است: نسخه کوتاه claimهای کمتری را must/supporting می‌کند؛ نسخه بلند باید claimها، اعتراض‌ها و qualificationهای واقعاً متفاوت اضافه کند، نه اینکه نسخه کوتاه را کش بدهد.
+
+جزئیات:
+
+- [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md)
+- [`docs/14-episode-preparation.md`](docs/14-episode-preparation.md)
 
 ## نصب
 
-نصب پایه و ابزارهای توسعه:
+نصب پایه و ابزار توسعه:
 
 ```bash
 uv sync --extra dev
@@ -149,9 +122,7 @@ uv sync --extra dev --extra gemini
 cp .env.example .env
 ```
 
-سپس `GEMINI_API_KEY` را در `.env` قرار دهید.
-
-MinerU یک runtime مستقل است و باید جداگانه نصب شود؛ فرمان `mineru` باید روی `PATH` قرار داشته باشد.
+سپس `GEMINI_API_KEY` را در `.env` قرار دهید. MinerU یک runtime مستقل است و فرمان `mineru` باید روی `PATH` باشد.
 
 ## اجرای vertical slice فعلی
 
@@ -172,7 +143,7 @@ uv run thesisound build-brief <project-id> \
   --language fa
 ```
 
-`--duration` فقط مدت سناریو را تعیین نمی‌کند؛ ورودی اصلی بودجه تحلیل evidence نیز هست. تنظیم جداگانه‌ای در `analyze-source` وجود ندارد تا دو مقدار متناقض ایجاد نشود.
+`--duration` منبع حقیقت برای بودجه evidence و Episode Plan است.
 
 ### ۳. Parse منبع
 
@@ -182,11 +153,11 @@ uv run thesisound parse chapter.pdf \
   --output parse-result.json
 ```
 
-اگر parse از quality gate عبور نکند، فرمان با exit code برابر ۲ متوقف می‌شود و نباید source analysis اجرا شود.
+اگر parse از quality gate عبور نکند، فرمان با exit code برابر ۲ متوقف می‌شود.
 
-### ۴. تحلیل یک منبع
+### ۴. تحلیل منبع
 
-اجرای کل pipeline:
+اجرای کامل:
 
 ```bash
 uv run thesisound analyze-source \
@@ -194,7 +165,7 @@ uv run thesisound analyze-source \
   parse-result.json
 ```
 
-یا اجرای مرحله‌ای:
+اجرای مرحله‌ای:
 
 ```bash
 uv run thesisound build-blocks <project-id> parse-result.json
@@ -203,7 +174,41 @@ uv run thesisound extract-evidence <project-id> <source-id>
 uv run thesisound build-claims <project-id> <source-id>
 ```
 
-`build-blocks` به API key نیاز ندارد. سه فرمان بعدی structured model را فراخوانی می‌کنند. `extract-evidence` profile را خودکار از Research Brief پروژه می‌سازد.
+`build-blocks` API key نمی‌خواهد. stageهای مدل‌محور بعدی Structured Output را فراخوانی می‌کنند.
+
+### ۵. آماده‌سازی اپیزود
+
+اجرای کامل:
+
+```bash
+uv run thesisound prepare-episode <project-id>
+```
+
+اجرای مرحله‌ای:
+
+```bash
+uv run thesisound audit-coverage <project-id>
+uv run thesisound prioritize-claims <project-id>
+uv run thesisound plan-episode <project-id>
+uv run thesisound build-evidence-packs <project-id>
+```
+
+دو مرحله deterministic هستند و API call ندارند:
+
+```text
+prioritize-claims
+build-evidence-packs
+```
+
+مدل‌ها را می‌توان جدا override کرد:
+
+```bash
+uv run thesisound prepare-episode <project-id> \
+  --coverage-model <model-id> \
+  --planning-model <model-id>
+```
+
+اگر Coverage Audit نشان دهد corpus برای duration درخواستی کافی نیست، planning متوقف و پروژه `failed_retryable` می‌شود.
 
 ## Artifactها
 
@@ -214,8 +219,8 @@ workspaces/<project-id>/
     request.json
     record.json
     validated-output.json
-    error.json                 only on failure
-    rendered-prompts.json      only when explicitly enabled
+    error.json
+
   sources/<source-id>/
     manifest.json
     ingestion-result.json
@@ -229,17 +234,26 @@ workspaces/<project-id>/
     evidence-extractions.jsonl
     evidence-items.jsonl
     claim-ledger.json
+
+  episode/
+    manifest.json
+    coverage-report.json
+    claim-priorities.json
+    episode-plan-draft.json
+    episode-plan.json
+    evidence-packs.jsonl
+    evidence-packs/
+      seg-001.json
+      seg-002.json
 ```
 
-`evidence-extraction-plan.json` شامل profile، token budget، blockهای منتخب، blockهای deferred و coverage واقعی است.
-
-به‌صورت پیش‌فرض متن prompt ذخیره نمی‌شود. برای debugging محلی می‌توان موقتاً این تنظیم را فعال کرد:
+به‌صورت پیش‌فرض rendered prompt ذخیره نمی‌شود. برای debugging محلی:
 
 ```text
 THESISOUND_KEEP_RENDERED_PROMPTS=true
 ```
 
-این تنظیم برای اسناد خصوصی مناسب نیست.
+این تنظیم برای منابع خصوصی یا copyrighted مناسب نیست.
 
 ## Benchmark parserها
 
@@ -249,8 +263,6 @@ uv run thesisound benchmark-parsers ./benchmark-corpus --recursive
 ```
 
 ## مدل‌های پیش‌فرض
-
-مدل‌ها از environment خوانده می‌شوند:
 
 ```text
 THESISOUND_MODEL_FAST=gemini-3.5-flash-lite
@@ -267,7 +279,7 @@ uv run ruff check .
 uv run pytest
 ```
 
-تست‌های عادی هیچ API خارجی را صدا نمی‌زنند و به API key نیاز ندارند.
+تست‌های عادی API خارجی را صدا نمی‌زنند و API key لازم ندارند.
 
 ## ترتیب مطالعه برای توسعه‌دهنده
 
@@ -279,22 +291,23 @@ uv run pytest
 6. [`docs/11-structured-model-execution.md`](docs/11-structured-model-execution.md)
 7. [`docs/12-one-source-evidence-pipeline.md`](docs/12-one-source-evidence-pipeline.md)
 8. [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md)
-9. [`prompts/README.md`](prompts/README.md)
-10. [`docs/06-development-plan.md`](docs/06-development-plan.md)
-11. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
+9. [`docs/14-episode-preparation.md`](docs/14-episode-preparation.md)
+10. [`prompts/README.md`](prompts/README.md)
+11. [`docs/06-development-plan.md`](docs/06-development-plan.md)
+12. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
 
 ## قواعد غیرقابل‌مذاکره
 
-- metadata یا abstract به‌تنهایی evidence متن کامل محسوب نمی‌شود.
-- parse، block ID و locator نباید به مدت خروجی وابسته باشند.
-- breadth و depth evidence extraction باید به خروجی درخواستی وابسته باشند.
-- مدل source ID، block ID، locator، evidence ID یا claim ID نمی‌سازد.
+- metadata یا abstract به‌تنهایی evidence متن کامل نیست.
+- parse، block ID و locator به duration وابسته نیستند.
+- breadth و depth evidence extraction به خروجی درخواستی وابسته‌اند.
+- مدل source ID، block ID، locator، evidence ID، claim ID یا segment ID نمی‌سازد.
 - supporting excerpt باید واقعاً در همان source block وجود داشته باشد.
 - neighbor context حق تأمین evidence برای target block را ندارد.
-- هر evidence باید در یک claim مصرف شود یا صریحاً unresolved ثبت شود.
-- هر ادعای محتوایی سناریو باید به evidence ID و locator متصل باشد.
+- corpus ناکافی با padding به مدت هدف نمی‌رسد.
+- must-include claim بدون دلیل حذف نمی‌شود.
+- هر segment باید Evidence Pack مستقل و grounded داشته باشد.
 - اختلاف تفسیرها نباید به اجماع جعلی تبدیل شود.
-- کاربر منبع نهایی را انتخاب می‌کند؛ سیستم بدون اطلاع او corpus را تغییر نمی‌دهد.
-- سناریوی فارسی از outline معنایی و شواهد اصلی ساخته می‌شود، نه از ترجمه لفظ‌به‌لفظ یک پادکست انگلیسی.
+- سناریوی فارسی از Evidence Pack و outline معنایی ساخته می‌شود، نه ترجمه لفظ‌به‌لفظ یا knowledge آزاد مدل.
 - مدل نویسنده تنها verifier خروجی خودش نیست.
-- اگر کیفیت parse، evidence یا audio از gate عبور نکند، pipeline متوقف می‌شود.
+- اگر parse، evidence، coverage، script یا audio از gate عبور نکند، pipeline متوقف می‌شود.
