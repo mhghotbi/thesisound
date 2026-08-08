@@ -3,13 +3,17 @@ from __future__ import annotations
 from collections import defaultdict
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, EpisodePlan, EvidenceItem
-from thesisound.episode import SegmentEvidencePack
+from thesisound.domain import ClaimRecord, EpisodePlan, EpisodeSegment, EvidenceItem
+from thesisound.episode import RetrievalHit, SegmentEvidencePack
 from thesisound.modeling import DeterministicValidationError
+from thesisound.services.sqlite_block_retriever import SQLiteBlockRetriever
 from thesisound.source_analysis import EvidenceExtractionPlan, SourceDocumentBlock
 
 
 class EvidencePackBuilder:
+    def __init__(self, retriever: SQLiteBlockRetriever | None = None) -> None:
+        self.retriever = retriever
+
     def build(
         self,
         *,
@@ -29,12 +33,12 @@ class EvidencePackBuilder:
             plan.source_id: plan.profile.neighbor_context_blocks
             for plan in extraction_plans
         }
+        if self.retriever is not None:
+            self.retriever.rebuild(blocks)
 
         packs = [
             self._build_segment(
-                segment_id=segment.segment_id,
-                segment_minutes=segment.estimated_minutes,
-                segment_claim_ids=segment.claim_ids,
+                segment=segment,
                 claim_by_id=claim_by_id,
                 evidence_by_id=evidence_by_id,
                 block_by_key=block_by_key,
@@ -52,9 +56,7 @@ class EvidencePackBuilder:
     def _build_segment(
         self,
         *,
-        segment_id: str,
-        segment_minutes: float,
-        segment_claim_ids: list[str],
+        segment: EpisodeSegment,
         claim_by_id: dict[str, ClaimRecord],
         evidence_by_id: dict[str, EvidenceItem],
         block_by_key: dict[tuple[UUID, str], SourceDocumentBlock],
@@ -62,7 +64,7 @@ class EvidencePackBuilder:
         neighbors_by_source: dict[UUID, int],
     ) -> SegmentEvidencePack:
         claims = []
-        for claim_id in segment_claim_ids:
+        for claim_id in segment.claim_ids:
             claim = claim_by_id.get(claim_id)
             if claim is None:
                 raise DeterministicValidationError(
@@ -96,7 +98,7 @@ class EvidencePackBuilder:
                 originals.append(block)
                 seen_blocks.add(key)
 
-        token_budget = max(1_800, min(18_000, round(segment_minutes * 1_400)))
+        token_budget = max(1_800, min(18_000, round(segment.estimated_minutes * 1_400)))
         original_tokens = sum(block.estimated_token_count for block in originals)
         warnings: list[str] = []
         if original_tokens > token_budget:
@@ -106,6 +108,7 @@ class EvidencePackBuilder:
             )
 
         context: list[SourceDocumentBlock] = []
+        retrieval_hits: list[RetrievalHit] = []
         context_seen = set(seen_blocks)
         remaining = max(0, token_budget - original_tokens)
         candidates = self._context_candidates(
@@ -114,24 +117,37 @@ class EvidencePackBuilder:
             neighbors_by_source=neighbors_by_source,
         )
         for block in candidates:
-            key = (block.source_id, block.block_id)
-            if key in context_seen:
-                continue
-            if block.estimated_token_count > remaining:
-                continue
-            context.append(block)
-            context_seen.add(key)
-            remaining -= block.estimated_token_count
+            remaining = _append_context(block, context, context_seen, remaining)
+
+        if self.retriever is not None and remaining > 0:
+            query = " ".join(
+                [
+                    segment.title,
+                    segment.purpose,
+                    segment.key_question,
+                    *(claim.claim for claim in claims),
+                ]
+            )
+            source_ids = {item.source_id for item in evidence}
+            for hit in self.retriever.search(query, limit=10, source_ids=source_ids):
+                block = block_by_key.get((hit.source_id, hit.block_id))
+                if block is None:
+                    continue
+                before = remaining
+                remaining = _append_context(block, context, context_seen, remaining)
+                if remaining < before:
+                    retrieval_hits.append(hit)
 
         actual_tokens = original_tokens + sum(
             block.estimated_token_count for block in context
         )
         return SegmentEvidencePack(
-            segment_id=segment_id,
-            claim_ids=segment_claim_ids,
+            segment_id=segment.segment_id,
+            claim_ids=segment.claim_ids,
             evidence_items=evidence,
             original_blocks=originals,
             context_blocks=context,
+            retrieval_hits=retrieval_hits,
             token_budget=token_budget,
             actual_tokens=actual_tokens,
             warnings=warnings,
@@ -166,3 +182,17 @@ class EvidencePackBuilder:
                     else:
                         next_id = None
         return candidates
+
+
+def _append_context(
+    block: SourceDocumentBlock,
+    context: list[SourceDocumentBlock],
+    seen: set[tuple[UUID, str]],
+    remaining: int,
+) -> int:
+    key = (block.source_id, block.block_id)
+    if key in seen or block.estimated_token_count > remaining:
+        return remaining
+    context.append(block)
+    seen.add(key)
+    return remaining - block.estimated_token_count
