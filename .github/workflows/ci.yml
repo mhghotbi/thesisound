@@ -26,7 +26,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync --extra dev --extra web-ui
 
       - name: Lint
         run: uv run ruff check . --output-format=github

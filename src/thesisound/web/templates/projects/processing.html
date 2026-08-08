@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}وضعیت پردازش | Thesisound{% endblock %}
+{% block content %}
+<div class="reading-layout">
+  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
+    <span class="step-rail__item is-complete"><b>۱</b> تعریف هدف</span>
+    <span class="step-rail__item is-complete"><b>۲</b> تأیید برداشت</span>
+    <span class="step-rail__item is-complete"><b>۳</b> منابع</span>
+    <span class="step-rail__item is-current"><b>۴</b> پردازش</span>
+  </nav>
+
+  <header class="page-heading page-heading--compact">
+    <div>
+      <p class="eyebrow">وضعیت پروژه</p>
+      <h1>{{ project_title(project) }}</h1>
+      <p>مرحله‌ها از state واقعی پروژه خوانده می‌شوند؛ زمان باقی‌مانده حدس زده نمی‌شود.</p>
+    </div>
+  </header>
+
+  <ol class="stage-list">
+    {% for label, complete in stages %}
+    <li class="{% if complete %}is-complete{% elif loop.first or not stages[loop.index0 - 1][1] %}is-current{% endif %}">
+      <span aria-hidden="true">{% if complete %}✓{% else %}{{ loop.index }}{% endif %}</span>
+      <strong>{{ label }}</strong>
+      <small>{% if complete %}تکمیل شده{% else %}در انتظار اجرای application service{% endif %}</small>
+    </li>
+    {% endfor %}
+  </ol>
+
+  <div class="notice notice--info">
+    این commit رابط و قرارداد state را آماده می‌کند. اتصال اجرای evidence pipeline در slice بعدی انجام می‌شود.
+  </div>
+  <div class="form-actions">
+    <a class="button button--secondary" href="/projects">بازگشت به پروژه‌ها</a>
+  </div>
+</div>
+{% endblock %}

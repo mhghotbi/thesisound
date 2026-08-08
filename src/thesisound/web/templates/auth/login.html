@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}ورود | Thesisound{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block main_class %}auth-shell{% endblock %}
+{% block content %}
+<section class="auth-card" aria-labelledby="login-title">
+  <div class="auth-brand">
+    <span class="brand__mark" aria-hidden="true">▥</span>
+    <strong>Thesisound</strong>
+  </div>
+  <p class="eyebrow">ورود به فضای مطالعه</p>
+  <h1 id="login-title">شماره موبایل را وارد کنید</h1>
+  <p class="lede">برای ادامه پروژه‌ها و ساخت اپیزود، یک کد یک‌بارمصرف می‌فرستیم.</p>
+
+  {% if error %}
+    <div class="notice notice--danger" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/login/request-code" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="next_path" value="{{ next_path }}">
+    <label class="field">
+      <span>شماره موبایل</span>
+      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" placeholder="0912000000" value="{{ phone or '' }}" required autofocus>
+    </label>
+    <button class="button button--primary button--full" type="submit">ارسال کد ورود</button>
+  </form>
+
+  {% if test_otp_enabled and environment != "production" %}
+  <details class="dev-note">
+    <summary>ورود آزمایشی توسعه</summary>
+    <p>شماره <bdi dir="ltr">0912000000</bdi> و کد <bdi dir="ltr">999999</bdi>.</p>
+  </details>
+  {% endif %}
+</section>
+{% endblock %}

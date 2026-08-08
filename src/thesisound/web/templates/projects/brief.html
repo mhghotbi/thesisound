@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}تأیید برداشت | Thesisound{% endblock %}
+{% block content %}
+<div class="reading-layout">
+  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
+    <span class="step-rail__item is-complete"><b>۱</b> تعریف هدف</span>
+    <span class="step-rail__item is-current"><b>۲</b> تأیید برداشت</span>
+    <span class="step-rail__item"><b>۳</b> منابع</span>
+    <span class="step-rail__item"><b>۴</b> پردازش</span>
+  </nav>
+
+  <header class="page-heading page-heading--compact">
+    <div>
+      <p class="eyebrow">برداشت سیستم</p>
+      <h1>من این‌طور فهمیدم</h1>
+      <p>این مرحله یک تأیید واقعی است؛ ذخیره خودکار جای تأیید شما را نمی‌گیرد.</p>
+    </div>
+  </header>
+
+  {% if error %}
+    <div class="notice notice--danger" role="alert">{{ error }}</div>
+  {% elif request.query_params.get('saved') %}
+    <div class="notice notice--success" role="status">ویرایش‌ها ذخیره شد؛ برداشت هنوز تأیید نشده است.</div>
+  {% endif %}
+
+  <section class="interpretation">
+    <p>
+      قرار است یک اپیزود <strong>{{ project.brief.target_duration_minutes }} دقیقه‌ای</strong>
+      برای <strong>{{ project.brief.audience }}</strong> ساخته شود که
+      «{{ project.brief.central_question }}» را با سطح
+      <strong>{{ project.brief.prior_knowledge }}</strong> توضیح دهد.
+    </p>
+  </section>
+
+  <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/brief">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label class="field field--large">
+      <span>سؤال مرکزی</span>
+      <textarea name="central_question" rows="3" required>{{ project.brief.central_question }}</textarea>
+    </label>
+    <label class="field">
+      <span>حتماً پوشش داده شود <small>(هر مورد در یک خط)</small></span>
+      <textarea name="must_include" rows="4" placeholder="مثلاً: زمینه تاریخی مفهوم">{{ project.brief.scope_inclusions | join('\n') }}</textarea>
+    </label>
+    <label class="field">
+      <span>خارج از محدوده <small>(هر مورد در یک خط)</small></span>
+      <textarea name="exclusions" rows="3" placeholder="مثلاً: جزئیات فنی کم‌اهمیت">{{ project.brief.scope_exclusions | join('\n') }}</textarea>
+    </label>
+    <div class="form-actions form-actions--split">
+      <button class="button button--secondary" name="action" value="save" type="submit">فقط ذخیره</button>
+      <button class="button button--primary" name="action" value="confirm" type="submit">درست است، ادامه بده</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

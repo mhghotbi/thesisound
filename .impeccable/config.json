@@ -1,0 +1,14 @@
+{
+  "surface": "product",
+  "product_file": "PRODUCT.md",
+  "design_file": "DESIGN.md",
+  "locale": "fa-IR",
+  "direction": "rtl",
+  "anti_patterns": [
+    "gradient-overuse",
+    "nested-cards",
+    "generic-ai-illustration",
+    "fake-progress",
+    "rounded-icon-tiles"
+  ]
+}
