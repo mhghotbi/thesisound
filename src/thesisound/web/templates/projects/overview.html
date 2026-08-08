@@ -2,6 +2,7 @@
 {% from "components.html" import status_label, attention_panel, technical_details %}
 {% block title %}خانه پروژه | Thesisound{% endblock %}
 {% block content %}
+{% set knowledge_labels = {'none': 'بدون آشنایی', 'introductory': 'مقدماتی', 'intermediate': 'متوسط', 'advanced': 'پیشرفته'} %}
 <header class="page-heading page-heading--compact">
   <div>
     <p class="kicker">خانه پروژه</p>
@@ -31,7 +32,7 @@
       <dl class="summary-list">
         <div class="summary-row"><dt>سؤال مرکزی</dt><dd>{{ project.brief.central_question }}</dd></div>
         <div class="summary-row"><dt>مخاطب</dt><dd>{{ project.brief.audience }}</dd></div>
-        <div class="summary-row"><dt>آشنایی قبلی</dt><dd>{{ project.brief.prior_knowledge }}</dd></div>
+        <div class="summary-row"><dt>آشنایی قبلی</dt><dd>{{ knowledge_labels.get(project.brief.prior_knowledge, 'نامشخص') }} <code class="operator-only"><bdi dir="ltr">{{ project.brief.prior_knowledge }}</bdi></code></dd></div>
         <div class="summary-row"><dt>مدت هدف</dt><dd>{{ project.brief.target_duration_minutes | fa_num }} دقیقه</dd></div>
         {% if project.brief.scope_inclusions %}<div class="summary-row"><dt>حتماً پوشش داده شود</dt><dd>{{ project.brief.scope_inclusions | join('، ') }}</dd></div>{% endif %}
         {% if project.brief.scope_exclusions %}<div class="summary-row"><dt>خارج از محدوده</dt><dd>{{ project.brief.scope_exclusions | join('، ') }}</dd></div>{% endif %}
