@@ -19,6 +19,7 @@ SpeakerDynamic = Literal[
     "comparison",
     "recap",
 ]
+SourceStance = Literal["supports", "disputes", "qualifies", "unclear"]
 
 
 class ObjectiveCoverageDraft(BaseModel):
@@ -94,22 +95,74 @@ class EpisodePlanDraft(BaseModel):
     follow_up_topics: list[str] = Field(default_factory=list)
 
 
+class RetrievalHit(BaseModel):
+    block_id: str = Field(min_length=1)
+    source_id: UUID
+    score: float
+    query: str = Field(min_length=1)
+
+
 class SegmentEvidencePack(BaseModel):
     segment_id: str = Field(min_length=1)
     claim_ids: list[str] = Field(min_length=1)
     evidence_items: list[EvidenceItem] = Field(min_length=1)
     original_blocks: list[SourceDocumentBlock] = Field(min_length=1)
     context_blocks: list[SourceDocumentBlock] = Field(default_factory=list)
+    retrieval_hits: list[RetrievalHit] = Field(default_factory=list)
     token_budget: int = Field(ge=1)
     actual_tokens: int = Field(ge=1)
     warnings: list[str] = Field(default_factory=list)
+
+
+class DisagreementSourcePosition(BaseModel):
+    source_id: UUID
+    stance: SourceStance
+    evidence_ids: list[str] = Field(default_factory=list)
+
+
+class DisagreementNode(BaseModel):
+    claim_id: str = Field(min_length=1)
+    statement: str = Field(min_length=1)
+    positions: list[DisagreementSourcePosition] = Field(default_factory=list)
+    qualifications: list[str] = Field(default_factory=list)
+
+
+class DisagreementEdge(BaseModel):
+    from_claim_id: str = Field(min_length=1)
+    to_claim_id: str = Field(min_length=1)
+    relation: Literal["contradicts", "qualifies", "responds_to"]
+    rationale: str = Field(min_length=1)
+
+
+class DisagreementGraph(BaseModel):
+    project_id: UUID
+    nodes: list[DisagreementNode] = Field(default_factory=list)
+    edges: list[DisagreementEdge] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+class EpisodeBudgetReport(BaseModel):
+    project_id: UUID
+    target_duration_minutes: int = Field(ge=5, le=120)
+    words_per_minute: int = Field(ge=80, le=220)
+    available_claim_seconds: int = Field(ge=0)
+    original_evidence_tokens: int = Field(ge=0)
+    estimated_supported_minutes: float = Field(ge=0, le=120)
+    model_reported_supported_minutes: int = Field(ge=0, le=120)
+    effective_supported_minutes: float = Field(ge=0, le=120)
+    calibration_status: Literal["uncalibrated", "fixture_calibrated", "corpus_calibrated"]
+    assumptions: list[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class EpisodePreparationManifest(BaseModel):
     project_id: UUID
     status: Literal[
         "coverage_ready",
+        "budget_ready",
         "priorities_ready",
+        "disagreement_ready",
         "plan_ready",
         "evidence_packs_ready",
         "failed",
@@ -118,6 +171,7 @@ class EpisodePreparationManifest(BaseModel):
     coverage_recommendation: CoverageRecommendation | None = None
     segment_count: int = Field(default=0, ge=0)
     evidence_pack_count: int = Field(default=0, ge=0)
+    disagreement_count: int = Field(default=0, ge=0)
     model_run_ids: list[UUID] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     last_error: str | None = None
