@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "components.html" import status_label, technical_details %}
-{% block title %}آمادگی اجرا | Thesisound{% endblock %}
+{% block title %}آمادگی اجرا | مقال{% endblock %}
 {% block content %}
 <header class="page-heading page-heading--compact">
   <div>
@@ -8,14 +8,14 @@
     <h1>آمادگی اجرای واقعی</h1>
     <p>پیش‌نیازهای مسدودکننده پیش از queue شدن مرحله‌های هزینه‌دار بررسی می‌شوند؛ بنابراین مشکل کلید، SDK، مسیر نوشتن یا FFmpeg پس از مصرف API آشکار نمی‌شود.</p>
   </div>
-  {% if ready %}{{ status_label('آماده اجرا', 'هیچ مانع مسدودکننده‌ای ثبت نشده', 'success', 'scope=' ~ selected_scope) }}
+  {% if ready %}{{ status_label('آمادهٔ اجرا', 'هیچ مانع مسدودکننده‌ای ثبت نشده', 'success', 'scope=' ~ selected_scope) }}
   {% else %}{{ status_label('آماده نیست', 'حداقل یک مانع مسدودکننده وجود دارد', 'danger', 'scope=' ~ selected_scope) }}{% endif %}
 </header>
 
-<nav class="form-actions" aria-label="دامنه بررسی">
+<nav class="form-actions" aria-label="دامنهٔ بررسی">
   <a class="button button--small {% if selected_scope == 'full' %}button--primary{% else %}button--secondary{% endif %}" href="/system-check?scope=full">بررسی کامل</a>
-  <a class="button button--small {% if selected_scope == 'model' %}button--primary{% else %}button--secondary{% endif %}" href="/system-check?scope=model">مدل و پردازش</a>
-  <a class="button button--small {% if selected_scope == 'audio' %}button--primary{% else %}button--secondary{% endif %}" href="/system-check?scope=audio">صوت</a>
+  <a class="button button--small {% if selected_scope == 'model' %}button--primary{% else %}button--secondary{% endif %}" href="/system-check?scope=model">مدل و تحلیل</a>
+  <a class="button button--small {% if selected_scope == 'audio' %}button--primary{% else %}button--secondary{% endif %}" href="/system-check?scope=audio">نسخهٔ شنیداری</a>
 </nav>
 
 {% if blocked %}
@@ -23,13 +23,13 @@
 {% endif %}
 
 {% if ready %}
-<div class="notice notice--success"><strong>پیش‌نیازهای مسدودکننده این دامنه آماده‌اند.</strong><p>این نتیجه وضعیت همین لحظه محیط است و تضمین دائمی ارائه‌دهنده بیرونی نیست.</p></div>
+<div class="notice notice--success"><strong>پیش‌نیازهای مسدودکنندهٔ این دامنه آماده‌اند.</strong><p>این نتیجه وضعیت همین لحظهٔ محیط است و تضمین دائمی ارائه‌دهندهٔ بیرونی نیست.</p></div>
 {% else %}
-<div class="notice notice--danger"><strong>تا رفع موارد ناموفق، اجرای واقعی شروع نمی‌شود.</strong><p>موارد هشداردهنده مانع اجرا نیستند، اما باید پیش از استفاده production بررسی شوند.</p></div>
+<div class="notice notice--danger"><strong>تا رفع موارد ناموفق، اجرای واقعی شروع نمی‌شود.</strong><p>موارد هشداردهنده مانع اجرا نیستند، اما باید پیش از استفادهٔ production بررسی شوند.</p></div>
 {% endif %}
 
 <section class="section-block" aria-labelledby="checks-title">
-  <div class="section-heading"><h2 id="checks-title">نتیجه بررسی</h2><span>{{ checks | length | fa_num }} کنترل</span></div>
+  <div class="section-heading"><h2 id="checks-title">نتیجهٔ بررسی</h2><span>{{ checks | length | fa_num }} وارسی</span></div>
   <div class="check-list">
     {% for check in checks %}
     <article class="check-row">
@@ -55,6 +55,6 @@
 
 <div class="form-actions section-block">
   <a class="button button--primary" href="/system-check?scope={{ selected_scope }}">بررسی دوباره</a>
-  <a class="button button--secondary" href="/projects">بازگشت به پروژه‌ها</a>
+  <a class="button button--secondary" href="/projects">بازگشت به گفتارها</a>
 </div>
 {% endblock %}
