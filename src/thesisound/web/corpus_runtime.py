@@ -31,7 +31,7 @@ def create_corpus_builder(
     source_store = SourceArtifactStore(workspace.root)
 
     def analysis_service_factory() -> SourceAnalysisService:
-        model_port = GeminiStructuredModel(api_key=settings.gemini_api_key)
+        model_port = GeminiStructuredModel(api_keys=settings.gemini_api_keys)
         runner = ModelRunner(
             model_port,
             PromptLoader(),
