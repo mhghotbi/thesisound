@@ -1,0 +1,137 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from pathlib import Path
+from time import perf_counter
+
+from thesisound.ingestion import IngestionResult, ParseAttempt, ParserRoute
+from thesisound.ports import DocumentParserPort
+from thesisound.services.artifact_writer import IngestionArtifactWriter
+from thesisound.services.document_inspector import inspect_document
+from thesisound.services.parse_quality import assess_parse_quality
+from thesisound.services.parser_router import route_parser
+
+
+class DocumentIngestionError(RuntimeError):
+    """Raised when ingestion cannot produce any parsed document."""
+
+
+def ingest_document(
+    path: Path,
+    *,
+    parsers: Mapping[str, DocumentParserPort],
+    parser_name: str = "auto",
+    artifact_writer: IngestionArtifactWriter | None = None,
+) -> IngestionResult:
+    inspection = inspect_document(path)
+    if artifact_writer is not None:
+        artifact_writer.write_inspection(inspection)
+
+    route = _resolve_route(inspection, parsers, parser_name)
+    attempts: list[ParseAttempt] = []
+    selected_attempt: ParseAttempt | None = None
+
+    for name in route.ordered_parsers:
+        parser = parsers.get(name)
+        if parser is None:
+            attempt = ParseAttempt(
+                parser_name=name,
+                status="skipped",
+                duration_seconds=0,
+                error_type="ParserNotConfigured",
+                error_message=f"Parser '{name}' is not configured.",
+            )
+            attempts.append(attempt)
+            if artifact_writer is not None:
+                artifact_writer.write_attempt(inspection, attempt)
+            continue
+        if not parser.supports(inspection):
+            attempt = ParseAttempt(
+                parser_name=name,
+                status="skipped",
+                duration_seconds=0,
+                error_type="UnsupportedDocument",
+                error_message=f"Parser '{name}' does not support this document.",
+            )
+            attempts.append(attempt)
+            if artifact_writer is not None:
+                artifact_writer.write_attempt(inspection, attempt)
+            continue
+
+        started = perf_counter()
+        try:
+            parsed = parser.parse(path, inspection)
+            quality = assess_parse_quality(inspection, parsed)
+            attempt = ParseAttempt(
+                parser_name=name,
+                status="success",
+                duration_seconds=perf_counter() - started,
+                parsed=parsed,
+                quality=quality,
+            )
+        except Exception as exc:  # adapters convert provider details to domain errors
+            attempt = ParseAttempt(
+                parser_name=name,
+                status="error",
+                duration_seconds=perf_counter() - started,
+                error_type=type(exc).__name__,
+                error_message=str(exc)[:1_000],
+            )
+
+        attempts.append(attempt)
+        if artifact_writer is not None:
+            artifact_writer.write_attempt(inspection, attempt)
+
+        if attempt.quality is not None and attempt.quality.safe_for_claim_extraction:
+            selected_attempt = attempt
+            break
+
+    if selected_attempt is None:
+        successful = [attempt for attempt in attempts if attempt.parsed is not None]
+        if successful:
+            selected_attempt = max(successful, key=_attempt_rank)
+
+    result = IngestionResult(
+        inspection=inspection,
+        route=route,
+        attempts=attempts,
+        selected_parser=selected_attempt.parser_name if selected_attempt else None,
+        parsed=selected_attempt.parsed if selected_attempt else None,
+        quality=selected_attempt.quality if selected_attempt else None,
+        safe_for_claim_extraction=bool(
+            selected_attempt
+            and selected_attempt.quality
+            and selected_attempt.quality.safe_for_claim_extraction
+        ),
+    )
+    if artifact_writer is not None:
+        artifact_writer.write_result(result)
+    return result
+
+
+def _resolve_route(
+    inspection,
+    parsers: Mapping[str, DocumentParserPort],
+    parser_name: str,
+) -> ParserRoute:
+    if parser_name == "auto":
+        return route_parser(inspection, parsers.keys())
+    if parser_name not in parsers:
+        raise DocumentIngestionError(f"Unknown parser: {parser_name}")
+    return ParserRoute(
+        primary=parser_name,
+        reasons=["The parser was explicitly selected by the caller."],
+    )
+
+
+def _attempt_rank(attempt: ParseAttempt) -> tuple[int, int, int]:
+    quality = attempt.quality
+    if quality is None:
+        return (0, 0, 0)
+    verdict_rank = {"pass": 4, "warning": 3, "retry": 2, "manual_review": 1}
+    total_text = sum(len(block.text) for block in attempt.parsed.blocks) if attempt.parsed else 0
+    return (
+        int(quality.safe_for_claim_extraction),
+        verdict_rank.get(quality.verdict, 0),
+        total_text,
+    )
