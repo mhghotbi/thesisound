@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 from time import perf_counter
-from typing import Any, TypeVar
+from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
 from thesisound.modeling import (
     ModelConfigurationError,
+    ModelError,
     ModelProviderError,
     ModelRateLimitError,
     ModelSafetyError,
@@ -17,8 +18,6 @@ from thesisound.modeling import (
     StructuredModelResponse,
 )
 from thesisound.ports import RunMetadata
-
-T = TypeVar("T", bound=BaseModel)
 
 
 class GeminiStructuredModel:
@@ -44,7 +43,7 @@ class GeminiStructuredModel:
             ) from exc
         self._client = genai.Client(api_key=api_key)
 
-    def generate_structured(
+    def generate_structured[T: BaseModel](
         self,
         *,
         system_prompt: str,
@@ -85,7 +84,7 @@ class GeminiStructuredModel:
         )
 
 
-def _coerce_output(response: Any, output_type: type[T]) -> T:
+def _coerce_output[T: BaseModel](response: Any, output_type: type[T]) -> T:
     parsed = getattr(response, "parsed", None)
     try:
         if isinstance(parsed, output_type):
@@ -147,7 +146,7 @@ def _is_safety_blocked(response: Any, finish_reason: str | None) -> bool:
     return value not in {"", "NONE", "BLOCKED_REASON_UNSPECIFIED"}
 
 
-def _map_provider_error(exc: Exception) -> ModelProviderError:
+def _map_provider_error(exc: Exception) -> ModelError:
     name = type(exc).__name__.casefold()
     message = str(exc) or type(exc).__name__
     status = _status_code(exc)
