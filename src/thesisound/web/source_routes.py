@@ -204,7 +204,7 @@ def register_source_routes(
             ):
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
-        except (FileNotFoundError, OSError, RuntimeError, ValueError):
+        except (OSError, RuntimeError, ValueError):
             return _source_redirect(project_id, error="source-retry-failed")
         return _source_redirect(project_id)
 
@@ -239,7 +239,7 @@ def register_source_routes(
             ):
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
-        except (FileNotFoundError, OSError, ValueError):
+        except (OSError, ValueError):
             return _source_redirect(project_id, error="source-delete-failed")
         return _source_redirect(project_id)
 
