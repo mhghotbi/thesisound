@@ -10,17 +10,32 @@ Thesisound یک ابزار شخصی و کوچک برای تبدیل یک موض�
 
 ## وضعیت فعلی
 
-ریپو در مرحله vertical-slice است. Milestone صفر کامل شده و مسیر اولیه document ingestion اکنون قابل اجراست:
+دو subsystem اصلی اکنون قابل اجرا هستند.
 
-- inspection مستقل از parser؛
-- تشخیص hash، MIME، اندازه، encryption و نمونه پوشش متن PDF؛
-- adapter اختیاری Docling؛
-- normalization به blockهای داخلی با heading path و page provenance؛
-- quality gate قطعی برای متن گم‌شده، تکرار، OCR خراب، locator و پوشش صفحات؛
-- فرمان‌های CLI برای `inspect` و `parse`؛
-- تست‌های مستقل از نصب سنگین Docling.
+### Document ingestion
 
-هنوز MinerU adapter، corpus benchmark واقعی، Gemini، source discovery، سناریو و TTS پیاده نشده‌اند.
+- inspection واقعی فایل و PDF؛
+- SHA-256، MIME، اندازه، encryption و نمونه پوشش متن؛
+- Docling adapter؛
+- MinerU CLI adapter؛
+- normalization چندنسخه‌ای خروجی MinerU؛
+- parser routing و fallback خودکار؛
+- quality gate قطعی؛
+- artifact persistence؛
+- benchmark یک سند یا یک corpus محلی.
+
+### Structured model execution
+
+- Gemini adapter با Pydantic structured output؛
+- model port مستقل از provider؛
+- prompt contract نسخه‌دار؛
+- retry محدود برای timeout، rate limit و schema repair؛
+- عدم retry خودکار برای safety rejection؛
+- ثبت prompt version، hash، token usage، latency و finish reason؛
+- عدم ذخیره rendered prompt به‌صورت پیش‌فرض؛
+- stage کامل `ResearchBrief` و transition پروژه به `brief_ready`.
+
+هنوز source discovery، document mapping، evidence extraction، سناریو، verification و TTS پیاده نشده‌اند.
 
 ## محدوده MVP
 
@@ -43,7 +58,6 @@ MVP فقط این مسیر را پوشش می‌دهد:
 - شبکه اجتماعی یا انتشار عمومی
 - پرداخت و اشتراک
 - recommendation engine پیچیده
-- ساخت خودکار چند فصل یا چند اپیزود بلند
 - crawler اختصاصی
 - fine-tuning مدل
 - معماری چندسرویسه و زیرساخت production
@@ -67,50 +81,9 @@ User intent
   -> Private player/export
 ```
 
-اصل مهم این معماری این است که خروجی نهایی از خلاصه‌های خلاصه‌شده ساخته نمی‌شود. خلاصه‌ها فقط نقش index و planning دارند. هنگام نوشتن هر بخش، متن اصلی و locator دقیق دوباره بازیابی می‌شود.
+خروجی نهایی از خلاصه‌های چندبار خلاصه‌شده ساخته نمی‌شود. خلاصه‌ها فقط نقش index و planning دارند. هنگام نوشتن هر بخش، متن اصلی و locator دقیق دوباره بازیابی می‌شود.
 
-## چرا CLI-first؟
-
-این پروژه برای یک مصرف شخصی ساخته می‌شود و بزرگ‌ترین ریسک آن کیفیت محتوا و صوت فارسی است، نه مقیاس. بنابراین ترتیب توسعه این است:
-
-1. یک فصل واقعی را از فایل تا صوت پردازش کن.
-2. کیفیت را در برابر NotebookLM و متن اصلی بسنج.
-3. فقط بعد از اثبات کیفیت، source discovery و UI را اضافه کن.
-4. queue، PostgreSQL و vector search فقط وقتی اضافه شوند که محدودیت واقعی ایجاد شود.
-
-## Stack پیشنهادی MVP
-
-- Python 3.12+
-- `uv` برای dependency management
-- Pydantic برای قراردادهای داده
-- Typer برای CLI
-- SQLite + JSON artifacts برای وضعیت محلی
-- SQLite FTS5 برای retrieval اولیه
-- Docling به‌عنوان parser محلی پیش‌فرض
-- MinerU به‌عنوان fallback برای PDF اسکن‌شده یا layout دشوار
-- Firecrawl برای web search/scrape و hosted parse اختیاری
-- OpenAlex برای metadata و جست‌وجوی دانشگاهی
-- Gemini text models برای planning، extraction، writing و verification
-- Gemini 3.1 Flash TTS Preview برای صوت فارسی
-- FFmpeg برای مونتاژ صوت
-
-مدل‌ها از environment تنظیم می‌شوند و نباید در منطق دامنه hard-code شوند. مدل‌های preview و aliasهای API تغییر می‌کنند.
-
-## ساختار ریپو
-
-```text
-.
-├── docs/                   تصمیم‌ها، معماری، workflow و برنامه توسعه
-├── prompts/                قراردادهای prompt مرحله‌به‌مرحله
-├── src/thesisound/
-│   ├── adapters/parsers/   adapterهای parser با import اختیاری
-│   └── services/           inspection، normalization و quality gates
-├── tests/                  unit tests و fixtureهای قانونی
-├── .env.example            تنظیمات providerها و مدل‌ها
-└── pyproject.toml          پکیج و ابزارهای توسعه
-```
-
-## نصب و اجرای ingestion
+## نصب
 
 نصب پایه و ابزارهای توسعه:
 
@@ -118,40 +91,113 @@ User intent
 uv sync --extra dev
 ```
 
-نصب parserها برای اجرای واقعی Docling و بررسی PDF با pypdf:
+برای Docling:
 
 ```bash
 uv sync --extra dev --extra parsers
 ```
 
-بازرسی بدون اجرای parser:
+برای Gemini API:
+
+```bash
+uv sync --extra dev --extra gemini
+cp .env.example .env
+```
+
+سپس `GEMINI_API_KEY` را در `.env` قرار دهید.
+
+MinerU یک runtime مستقل است و باید جداگانه نصب شود؛ فرمان `mineru` باید روی `PATH` قرار داشته باشد.
+
+## اجرای Research Brief
+
+ابتدا پروژه را بسازید:
+
+```bash
+uv run thesisound init "آرنت و مفهوم کنش"
+```
+
+UUID خروجی را در فرمان بعدی استفاده کنید:
+
+```bash
+uv run thesisound build-brief <project-id> \
+  --audience "social-science graduate student" \
+  --prior-knowledge intermediate \
+  --duration 25 \
+  --modes explanatory,critical \
+  --language fa
+```
+
+فرمان:
+
+1. prompt contract نسخه‌دار را بارگذاری می‌کند؛
+2. Gemini را با schema مدل `ResearchBrief` فراخوانی می‌کند؛
+3. validation قطعی را اجرا می‌کند؛
+4. در صورت schema failure فقط یک repair محدود انجام می‌دهد؛
+5. model run و خروجی معتبر را ذخیره می‌کند؛
+6. سپس project state را به `brief_ready` تغییر می‌دهد.
+
+Artifactها در این مسیر قرار می‌گیرند:
+
+```text
+workspaces/<project-id>/
+  project.json
+  model-runs/<run-id>/
+    request.json
+    record.json
+    validated-output.json
+    error.json                 only on failure
+    rendered-prompts.json      only when explicitly enabled
+```
+
+به‌صورت پیش‌فرض متن prompt ذخیره نمی‌شود. برای debugging محلی می‌توان موقتاً این تنظیم را فعال کرد:
+
+```text
+THESISOUND_KEEP_RENDERED_PROMPTS=true
+```
+
+این تنظیم برای اسناد خصوصی مناسب نیست.
+
+## اجرای ingestion
+
+بازرسی بدون parser:
 
 ```bash
 uv run thesisound inspect path/to/file.pdf
 ```
 
-Parse، normalization و quality gate:
+انتخاب خودکار parser، fallback و quality gate:
 
 ```bash
-uv run thesisound parse path/to/file.pdf --parser docling --output parse-result.json
+uv run thesisound parse path/to/file.pdf --parser auto
 ```
 
-اگر parse برای claim extraction امن نباشد، فرمان `parse` پس از نوشتن report با exit code برابر ۲ متوقف می‌شود.
-
-فرمان‌های scaffold پروژه:
+مقایسه parserها:
 
 ```bash
-uv run thesisound init "آرنت و مفهوم کنش"
-uv run thesisound status <project-id>
-uv run thesisound dump <project-id>
+uv run thesisound compare-parsers path/to/file.pdf --output benchmark.json
+uv run thesisound benchmark-parsers ./benchmark-corpus --recursive
 ```
 
-کنترل کیفیت کد:
+## مدل‌های پیش‌فرض
+
+مدل‌ها از environment خوانده می‌شوند:
+
+```text
+THESISOUND_MODEL_FAST=gemini-3.5-flash-lite
+THESISOUND_MODEL_STRONG=gemini-3.6-flash
+THESISOUND_MODEL_TTS=gemini-3.1-flash-tts-preview
+```
+
+مدل‌های فعلی Gemini پارامترهای `temperature`، `top_p` و `top_k` را deprecated کرده‌اند؛ Thesisound این پارامترها را ارسال نمی‌کند. کنترل خروجی از schema، prompt contract و deterministic validation انجام می‌شود.
+
+## کنترل کیفیت کد
 
 ```bash
-uv run pytest
 uv run ruff check .
+uv run pytest
 ```
+
+تست‌های عادی هیچ API خارجی را صدا نمی‌زنند و به API key نیاز ندارند.
 
 ## ترتیب مطالعه برای توسعه‌دهنده
 
@@ -159,10 +205,11 @@ uv run ruff check .
 2. [`docs/01-critical-review.md`](docs/01-critical-review.md)
 3. [`docs/02-architecture.md`](docs/02-architecture.md)
 4. [`docs/03-agent-workflow.md`](docs/03-agent-workflow.md)
-5. [`prompts/README.md`](prompts/README.md)
-6. [`docs/06-development-plan.md`](docs/06-development-plan.md)
-7. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
-8. [`docs/09-open-questions.md`](docs/09-open-questions.md)
+5. [`docs/10-document-ingestion.md`](docs/10-document-ingestion.md)
+6. [`docs/11-structured-model-execution.md`](docs/11-structured-model-execution.md)
+7. [`prompts/README.md`](prompts/README.md)
+8. [`docs/06-development-plan.md`](docs/06-development-plan.md)
+9. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
 
 ## قواعد غیرقابل‌مذاکره
 
@@ -172,8 +219,4 @@ uv run ruff check .
 - کاربر منبع نهایی را انتخاب می‌کند؛ سیستم بدون اطلاع او corpus را تغییر نمی‌دهد.
 - سناریوی فارسی از outline معنایی و شواهد اصلی ساخته می‌شود، نه از ترجمه لفظ‌به‌لفظ یک پادکست انگلیسی.
 - مدل نویسنده تنها verifier خروجی خودش نیست.
-- اگر کیفیت parse، evidence یا audio از gate عبور نکند، pipeline متوقف می‌شود؛ خروجی ناقص silently منتشر نمی‌شود.
-
-## مستندات مرجع
-
-لینک مستندات رسمی ابزارهای فعلی در فایل‌های `docs/` ثبت شده است. انتخاب providerها provisional است و باید با یک corpus واقعی شامل مقاله، EPUB، PDF متنی و PDF اسکن‌شده benchmark شود.
+- اگر کیفیت parse، evidence یا audio از gate عبور نکند، pipeline متوقف می‌شود.
