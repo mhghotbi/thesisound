@@ -9,16 +9,16 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from thesisound.adapters.parsers.docling_adapter import (
-    DoclingParser,
-    DoclingUnavailableError,
-    DocumentParseError,
-)
+from thesisound.adapters.parsers.docling_adapter import DoclingParser
+from thesisound.adapters.parsers.mineru_adapter import MineruParser
 from thesisound.config import Settings
 from thesisound.domain import Project
 from thesisound.pipeline import WorkspaceStore
+from thesisound.ports import DocumentParserPort
+from thesisound.services.artifact_writer import IngestionArtifactWriter
+from thesisound.services.document_ingestion import ingest_document
 from thesisound.services.document_inspector import inspect_document
-from thesisound.services.parse_quality import assess_parse_quality
+from thesisound.services.parser_benchmark import benchmark_directory, benchmark_document
 
 app = typer.Typer(no_args_is_help=True, help="Thesisound local development CLI")
 console = Console()
@@ -26,6 +26,10 @@ console = Console()
 WorkspaceRootOption = Annotated[
     Path | None,
     typer.Option(help="Override workspace directory"),
+]
+ArtifactRootOption = Annotated[
+    Path | None,
+    typer.Option(help="Override the ingestion artifact directory"),
 ]
 DocumentPathArgument = Annotated[
     Path,
@@ -41,6 +45,29 @@ def _store(workspace_root: Path | None = None) -> WorkspaceStore:
     settings = Settings()
     root = workspace_root or settings.workspace_root
     return WorkspaceStore(root)
+
+
+def _artifact_writer(
+    settings: Settings,
+    artifact_root: Path | None,
+) -> IngestionArtifactWriter:
+    return IngestionArtifactWriter(artifact_root or settings.ingestion_artifact_root)
+
+
+def _parsers(
+    settings: Settings,
+    writer: IngestionArtifactWriter,
+) -> dict[str, DocumentParserPort]:
+    return {
+        "docling": DoclingParser(),
+        "mineru": MineruParser(
+            command=settings.mineru_command,
+            timeout_seconds=settings.mineru_timeout_seconds,
+            backend=settings.mineru_backend,
+            model_source=settings.mineru_model_source,
+            output_root=writer.root / "raw" / "mineru",
+        ),
+    }
 
 
 def _emit_json(payload: object, output: Path | None) -> None:
@@ -121,30 +148,78 @@ def parse_source(
     path: DocumentPathArgument,
     parser: Annotated[
         str,
-        typer.Option(help="Parser adapter to use; currently only 'docling'"),
-    ] = "docling",
+        typer.Option(help="Parser to use: auto, docling, or mineru"),
+    ] = "auto",
+    artifact_root: ArtifactRootOption = None,
     output: OutputOption = None,
 ) -> None:
-    """Parse a document, normalize blocks, and run deterministic quality gates."""
+    """Inspect, route, parse, fall back when needed, and run quality gates."""
 
-    if parser != "docling":
-        raise typer.BadParameter("Only the 'docling' parser is implemented.", param_hint="--parser")
-
-    inspection = inspect_document(path)
+    if parser not in {"auto", "docling", "mineru"}:
+        raise typer.BadParameter(
+            "Expected one of: auto, docling, mineru.",
+            param_hint="--parser",
+        )
+    settings = Settings()
+    writer = _artifact_writer(settings, artifact_root)
     try:
-        parsed = DoclingParser().parse(path, inspection)
-    except (DoclingUnavailableError, DocumentParseError) as exc:
+        result = ingest_document(
+            path,
+            parsers=_parsers(settings, writer),
+            parser_name=parser,
+            artifact_writer=writer,
+        )
+    except (OSError, ValueError, RuntimeError) as exc:
         console.print(f"[red]{exc}[/red]", stderr=True)
         raise typer.Exit(code=1) from exc
 
-    report = assess_parse_quality(inspection, parsed)
-    payload = {
-        "inspection": inspection.model_dump(mode="json"),
-        "parsed": parsed.model_dump(mode="json"),
-        "quality": report.model_dump(mode="json"),
-    }
-    _emit_json(payload, output)
-    if not report.safe_for_claim_extraction:
+    _emit_json(result.model_dump(mode="json"), output)
+    if not result.safe_for_claim_extraction:
+        raise typer.Exit(code=2)
+
+
+@app.command("compare-parsers")
+def compare_parsers(
+    path: DocumentPathArgument,
+    artifact_root: ArtifactRootOption = None,
+    output: OutputOption = None,
+) -> None:
+    """Run every configured parser on one document and compare quality metrics."""
+
+    settings = Settings()
+    writer = _artifact_writer(settings, artifact_root)
+    benchmark = benchmark_document(
+        path,
+        parsers=_parsers(settings, writer),
+        artifact_writer=writer,
+    )
+    _emit_json(benchmark.model_dump(mode="json"), output)
+    if benchmark.recommended_parser is None:
+        raise typer.Exit(code=2)
+
+
+@app.command("benchmark-parsers")
+def benchmark_parsers(
+    directory: Annotated[Path, typer.Argument(help="Directory containing benchmark documents")],
+    recursive: Annotated[
+        bool,
+        typer.Option("--recursive/--no-recursive", help="Include nested directories"),
+    ] = False,
+    artifact_root: ArtifactRootOption = None,
+    output: OutputOption = None,
+) -> None:
+    """Benchmark all configured parsers across a local document corpus."""
+
+    settings = Settings()
+    writer = _artifact_writer(settings, artifact_root)
+    suite = benchmark_directory(
+        directory,
+        parsers=_parsers(settings, writer),
+        recursive=recursive,
+        artifact_writer=writer,
+    )
+    _emit_json(suite.model_dump(mode="json"), output)
+    if not suite.documents:
         raise typer.Exit(code=2)
 
 
