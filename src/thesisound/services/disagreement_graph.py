@@ -38,9 +38,14 @@ class DisagreementGraphBuilder:
             for source_id in claim.disagreeing_source_ids:
                 positions[source_id] = "disputes"
 
-            if claim.support_status == SupportStatus.CONTESTED and not claim.disagreeing_source_ids:
+            contested_without_sources = (
+                claim.support_status == SupportStatus.CONTESTED
+                and not claim.disagreeing_source_ids
+            )
+            if contested_without_sources:
                 warnings.append(
-                    f"Claim {claim.claim_id} is contested but has no explicit disagreeing source IDs."
+                    f"Claim {claim.claim_id} is contested but has no explicit "
+                    "disagreeing source IDs."
                 )
             if len(positions) <= 1 and claim.support_status != SupportStatus.CONTESTED:
                 continue
