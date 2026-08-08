@@ -34,6 +34,8 @@ jobs:
       - name: Render real application pages
         run: |
           sed -i 's/otp_resend_cooldown_seconds=1/otp_resend_cooldown_seconds=5/' scripts/ui_visual_qa.py
+          sed -i 's/speaker_dynamic="analysis"/speaker_dynamic="critique"/' scripts/ui_visual_qa.py
+          sed -i 's/speaker_dynamic="synthesis"/speaker_dynamic="recap"/' scripts/ui_visual_qa.py
           uv run python scripts/ui_visual_qa.py prepare --output /tmp/ui-visual-qa
 
       - name: Start static QA server
