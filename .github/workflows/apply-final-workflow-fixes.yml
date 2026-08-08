@@ -38,17 +38,28 @@ jobs:
           rm -f .github/workflows/apply-final-workflow-fixes.yml
       - name: Install dependencies
         run: uv sync --extra dev --extra web-ui --extra gemini
-      - name: Normalize touched Python files
+      - name: Normalize touched files
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
 
-          path = Path("src/thesisound/web/source_routes.py")
-          text = path.read_text(encoding="utf-8")
-          text = text.replace("            source = store.remove(source_id)\n", "            store.remove(source_id)\n")
-          path.write_text(text, encoding="utf-8")
+          source_routes = Path("src/thesisound/web/source_routes.py")
+          text = source_routes.read_text(encoding="utf-8")
+          text = text.replace(
+              "            source = store.remove(source_id)\n",
+              "            store.remove(source_id)\n",
+          )
+          source_routes.write_text(text, encoding="utf-8")
+
+          brief = Path("src/thesisound/web/templates/projects/brief.html")
+          text = brief.read_text(encoding="utf-8")
+          text = text.replace(
+              "این نسخه برداشت وارد مراحل بعدی شده و فعلاً خواندنی است.",
+              "این نسخه برداشت وارد مراحل بعدی شده و فعلاً فقط خواندنی است.",
+          )
+          brief.write_text(text, encoding="utf-8")
           PY
           files=(
             src/thesisound/services/document_mapper.py
