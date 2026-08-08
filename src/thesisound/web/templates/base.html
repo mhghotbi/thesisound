@@ -1,14 +1,31 @@
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-theme="{{ ui_theme or 'cobalt' }}" data-mode="{{ ui_mode or 'simple' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Thesisound{% endblock %}</title>
   <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#1d4268">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}Thesisound{% endblock %}</title>
+  <script>
+    (() => {
+      const themes = new Set(["cobalt", "wood", "olive"]);
+      const modes = new Set(["simple", "operator"]);
+      try {
+        const theme = localStorage.getItem("thesisound-theme");
+        const mode = localStorage.getItem("thesisound-mode");
+        document.documentElement.dataset.theme = themes.has(theme) ? theme : "{{ ui_theme or 'cobalt' }}";
+        document.documentElement.dataset.mode = modes.has(mode) ? mode : "{{ ui_mode or 'simple' }}";
+      } catch (_) {
+        document.documentElement.dataset.theme = "{{ ui_theme or 'cobalt' }}";
+        document.documentElement.dataset.mode = "{{ ui_mode or 'simple' }}";
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.bunny.net">
-  <link href="https://fonts.bunny.net/css?family=vazirmatn:400,500,600,700" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+  <link href="https://fonts.bunny.net/css?family=vazirmatn:300,400,500,600,700,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', path='/app.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', path='/workflow.css') }}">
   <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
   <script src="{{ url_for('static', path='/app.js') }}" defer></script>
 </head>
@@ -17,32 +34,48 @@
   {% if current_user %}
   <header class="app-header">
     <div class="shell app-header__inner">
-      <a class="brand" href="/projects" aria-label="صفحه اصلی Thesisound">
-        <span class="brand__mark" aria-hidden="true">▥</span>
+      <a class="brand" href="/projects" aria-label="خانه Thesisound">
+        <span class="brand__mark" aria-hidden="true">TS</span>
         <span>
-          <strong>Thesisound</strong>
+          <strong>THESISOUND</strong>
           <small>مطالعه‌ای که شنیده می‌شود</small>
         </span>
       </a>
       <nav class="app-nav" aria-label="ناوبری اصلی">
-        <a href="/projects">پروژه‌ها</a>
-        <a href="/projects/new">پروژه جدید</a>
-        <a href="/system-check">آمادگی اجرا</a>
+        <a href="/projects" {% if request.url.path == '/projects' %}aria-current="page"{% endif %}>پروژه‌ها</a>
+        <a href="/projects/new" {% if request.url.path == '/projects/new' %}aria-current="page"{% endif %}>پروژه جدید</a>
+        <a class="operator-only" href="/system-check" {% if request.url.path == '/system-check' %}aria-current="page"{% endif %}>آمادگی اجرا</a>
       </nav>
-      <form method="post" action="/logout">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <button class="button button--quiet" type="submit">
-          خروج <bdi dir="ltr">{{ current_user }}</bdi>
-        </button>
-      </form>
+      <div class="app-header__tools">
+        <span class="mode-flag operator-only">حالت پیشرفته</span>
+        <div class="segmented-control" role="group" aria-label="حالت نمایش">
+          <button type="button" data-mode-value="simple" aria-pressed="{{ 'true' if ui_mode != 'operator' else 'false' }}">ساده</button>
+          <button type="button" data-mode-value="operator" aria-pressed="{{ 'true' if ui_mode == 'operator' else 'false' }}">پیشرفته</button>
+        </div>
+        <details class="theme-switcher">
+          <summary>تم رنگی</summary>
+          <div class="theme-switcher__panel" role="group" aria-label="انتخاب تم رنگی">
+            <button class="theme-option" type="button" data-theme-value="cobalt" aria-pressed="{{ 'true' if ui_theme == 'cobalt' else 'false' }}"><span class="theme-option__swatch" aria-hidden="true"></span>آبی کبالتی</button>
+            <button class="theme-option" type="button" data-theme-value="wood" aria-pressed="{{ 'true' if ui_theme == 'wood' else 'false' }}"><span class="theme-option__swatch" aria-hidden="true"></span>چوب سوخته</button>
+            <button class="theme-option" type="button" data-theme-value="olive" aria-pressed="{{ 'true' if ui_theme == 'olive' else 'false' }}"><span class="theme-option__swatch" aria-hidden="true"></span>زیتونی</button>
+          </div>
+        </details>
+        <form class="logout-form" method="post" action="/logout">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="logout-button" type="submit">خروج <bdi dir="ltr">{{ current_user }}</bdi></button>
+        </form>
+      </div>
     </div>
   </header>
   {% endif %}
+
   <main id="main" class="{% block main_class %}shell page{% endblock %}">
     {% if project is defined and project %}
       {% include "projects/_workflow_navigation.html" %}
     {% endif %}
-    {% block content %}{% endblock %}
+    <div class="{% block content_class %}page-content{% endblock %}">
+      {% block content %}{% endblock %}
+    </div>
   </main>
 </body>
 </html>
