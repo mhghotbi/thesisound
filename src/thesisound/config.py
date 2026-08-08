@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     )
 
     workspace_root: Path = Path("./workspaces")
+    ingestion_artifact_root: Path = Path("./artifacts/ingestion")
     log_level: str = "INFO"
 
     model_fast: str = "gemini-3.5-flash-lite"
@@ -28,6 +29,11 @@ class Settings(BaseSettings):
         validation_alias="SEMANTIC_SCHOLAR_API_KEY",
     )
 
+    mineru_command: str = "mineru"
+    mineru_timeout_seconds: int = Field(default=1_800, ge=30)
+    mineru_backend: str | None = None
+    mineru_model_source: str | None = None
+
     enable_firecrawl_parse: bool = False
     allow_provider_uploads: bool = True
     keep_raw_provider_responses: bool = False
@@ -35,3 +41,7 @@ class Settings(BaseSettings):
     def ensure_workspace_root(self) -> Path:
         self.workspace_root.mkdir(parents=True, exist_ok=True)
         return self.workspace_root
+
+    def ensure_ingestion_artifact_root(self) -> Path:
+        self.ingestion_artifact_root.mkdir(parents=True, exist_ok=True)
+        return self.ingestion_artifact_root
