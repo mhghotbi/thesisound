@@ -1,0 +1,40 @@
+{% macro status_label(primary, secondary='', tone='neutral', technical='') -%}
+<span class="status-label status-label--{{ tone }}">
+  <span class="status-label__mark" aria-hidden="true"></span>
+  <span>{{ primary }}</span>
+  {% if secondary %}<small>{{ secondary }}</small>{% endif %}
+  {% if technical %}<code class="operator-only"><bdi dir="ltr">{{ technical }}</bdi></code>{% endif %}
+</span>
+{%- endmacro %}
+
+{% macro attention_panel(label, title, body, action_url='', action_label='', tone='attention') -%}
+<section class="attention-panel{% if tone != 'attention' %} attention-panel--{{ tone }}{% endif %}" aria-label="{{ label }}">
+  <div>
+    <span class="attention-panel__label">{{ label }}</span>
+    <h2>{{ title }}</h2>
+    {% if body %}<p>{{ body }}</p>{% endif %}
+  </div>
+  {% if action_url and action_label %}<a class="button button--primary" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+</section>
+{%- endmacro %}
+
+{% macro technical_details(summary='جزئیات فنی', always_visible=false) -%}
+<details class="technical-details{% if not always_visible %} operator-only{% endif %}">
+  <summary>{{ summary }}</summary>
+  <div class="technical-details__body">{{ caller() }}</div>
+</details>
+{%- endmacro %}
+
+{% macro error_recovery(title, impact, action_label='', action_url='') -%}
+<section class="error-recovery" role="alert">
+  <div class="error-recovery__grid">
+    <div>
+      <span class="attention-panel__label">چه شد</span>
+      <h2>{{ title }}</h2>
+      <p class="error-recovery__impact"><strong>اثر:</strong> {{ impact }}</p>
+    </div>
+    {% if action_label and action_url %}<a class="button button--primary" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+  </div>
+  {% if caller is defined %}<div class="error-recovery__options">{{ caller() }}</div>{% endif %}
+</section>
+{%- endmacro %}
