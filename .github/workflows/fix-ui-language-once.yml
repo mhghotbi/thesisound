@@ -1,0 +1,76 @@
+name: Fix UI language once
+
+on:
+  push:
+    branches: [agent/ui-refactor-v2]
+    paths: [.github/workflows/fix-ui-language-once.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/ui-refactor-v2
+      - name: Normalize remaining Maqaal UI language
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              "src/thesisound/web/templates/projects/episode.html": {
+                  "شواهد": "شاهدها",
+                  "ذخیره شده": "ذخیره‌شده",
+              },
+              "src/thesisound/web/__init__.py": {
+                  "Thesisound": "Maqaal",
+              },
+              "src/thesisound/web/read_models.py": {
+                  "شواهد": "شاهدها",
+                  "ساخته شده": "ساخته‌شده",
+              },
+              "src/thesisound/web/source_discovery.py": {
+                  "شواهد": "شاهدها",
+              },
+              "src/thesisound/web/source_ingestion.py": {
+                  "شواهد": "شاهدها",
+              },
+              "src/thesisound/web/source_routes.py": {
+                  "طرح اپیزود": "طرح گفتار",
+                  "ارزیابی پوشش": "سنجش کفایت",
+                  "شواهد": "شاهدها",
+                  "اپیزود": "گفتار",
+                  "پروژه": "گفتار",
+              },
+              "src/thesisound/web/templates/projects/processing.html": {
+                  "تکمیل شده": "تکمیل‌شده",
+              },
+              "src/thesisound/web/templates/projects/script.html": {
+                  "تأیید شده": "تأییدشده",
+                  "قابل استفاده": "قابل‌استفاده",
+              },
+          }
+
+          changed = []
+          for filename, mapping in replacements.items():
+              path = Path(filename)
+              text = path.read_text(encoding="utf-8")
+              updated = text
+              for old, new in mapping.items():
+                  updated = updated.replace(old, new)
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8")
+                  changed.append(filename)
+          if not changed:
+              raise SystemExit("No UI language changes were applied")
+          print("Updated:", *changed, sep="\n- ")
+          PY
+          git rm .github/workflows/fix-ui-language-once.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/thesisound/web
+          git commit -m "Normalize remaining Maqaal UI language"
+          git push origin HEAD:agent/ui-refactor-v2
