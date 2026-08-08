@@ -1,56 +1,60 @@
 {% extends "base.html" %}
+{% from "components.html" import status_label, technical_details %}
 {% block title %}آمادگی اجرا | Thesisound{% endblock %}
 {% block content %}
-<div class="reading-layout reading-layout--wide">
-  <header class="page-heading page-heading--compact">
-    <div>
-      <p class="eyebrow">Runtime preflight</p>
-      <h1>آمادگی اجرای واقعی</h1>
-      <p>این بررسی پیش از queue شدن مرحله‌های هزینه‌دار اجرا می‌شود؛ بنابراین نبودن کلید، SDK یا FFmpeg پس از مصرف API آشکار نمی‌شود.</p>
-    </div>
-  </header>
-
-  {% if blocked %}
-  <div class="notice notice--danger" role="alert">
-    اجرای مرحله متوقف شد، چون حداقل یک پیش‌نیاز مسدودکننده آماده نیست.
+<header class="page-heading page-heading--compact">
+  <div>
+    <p class="kicker">حالت پیشرفته · Runtime preflight</p>
+    <h1>آمادگی اجرای واقعی</h1>
+    <p>پیش‌نیازهای مسدودکننده پیش از queue شدن مرحله‌های هزینه‌دار بررسی می‌شوند؛ بنابراین مشکل کلید، SDK، مسیر نوشتن یا FFmpeg پس از مصرف API آشکار نمی‌شود.</p>
   </div>
-  {% endif %}
+  {% if ready %}{{ status_label('آماده اجرا', 'هیچ مانع مسدودکننده‌ای ثبت نشده', 'success', 'scope=' ~ selected_scope) }}
+  {% else %}{{ status_label('آماده نیست', 'حداقل یک مانع مسدودکننده وجود دارد', 'danger', 'scope=' ~ selected_scope) }}{% endif %}
+</header>
 
-  {% if ready %}
-  <div class="notice notice--success">پیش‌نیازهای مسدودکننده این scope آماده‌اند.</div>
-  {% else %}
-  <div class="notice notice--danger">تا رفع موارد FAIL، اجرای واقعی شروع نمی‌شود.</div>
-  {% endif %}
+<nav class="form-actions" aria-label="دامنه بررسی">
+  <a class="button button--small {% if selected_scope == 'full' %}button--primary{% else %}button--secondary{% endif %}" href="/system-check?scope=full">بررسی کامل</a>
+  <a class="button button--small {% if selected_scope == 'model' %}button--primary{% else %}button--secondary{% endif %}" href="/system-check?scope=model">مدل و پردازش</a>
+  <a class="button button--small {% if selected_scope == 'audio' %}button--primary{% else %}button--secondary{% endif %}" href="/system-check?scope=audio">صوت</a>
+</nav>
 
-  <section class="source-list" aria-labelledby="checks-title">
-    <div class="section-heading">
-      <h2 id="checks-title">نتیجه بررسی</h2>
-      <span><bdi dir="ltr">scope={{ selected_scope }}</bdi></span>
-    </div>
+{% if blocked %}
+<div class="notice notice--danger" role="alert"><strong>اجرای مرحله متوقف شد.</strong><p>حداقل یک پیش‌نیاز مسدودکننده آماده نیست؛ هیچ run هزینه‌داری queue نشده است.</p></div>
+{% endif %}
+
+{% if ready %}
+<div class="notice notice--success"><strong>پیش‌نیازهای مسدودکننده این دامنه آماده‌اند.</strong><p>این نتیجه وضعیت همین لحظه محیط است و تضمین دائمی ارائه‌دهنده بیرونی نیست.</p></div>
+{% else %}
+<div class="notice notice--danger"><strong>تا رفع موارد ناموفق، اجرای واقعی شروع نمی‌شود.</strong><p>موارد هشداردهنده مانع اجرا نیستند، اما باید پیش از استفاده production بررسی شوند.</p></div>
+{% endif %}
+
+<section class="section-block" aria-labelledby="checks-title">
+  <div class="section-heading"><h2 id="checks-title">نتیجه بررسی</h2><span>{{ checks | length | fa_num }} کنترل</span></div>
+  <div class="check-list">
     {% for check in checks %}
-    <article class="source-row">
-      <div class="source-row__identity">
-        <strong>{{ check.label }}</strong>
-        <span>
-          {% if check.status == "pass" %}PASS
-          {% elif check.status == "warning" %}WARN
-          {% else %}FAIL{% endif %}
-        </span>
-      </div>
-      <p class="source-row__issue">{{ check.detail }}</p>
-      <code><bdi dir="ltr">{{ check.code }}</bdi></code>
+    <article class="check-row">
+      <div class="source-row__identity"><strong>{{ check.label }}</strong><code><bdi dir="ltr">{{ check.code }}</bdi></code></div>
+      {% if check.status == 'pass' %}{{ status_label('آماده', 'مسدودکننده نیست', 'success', check.status) }}
+      {% elif check.status == 'warning' %}{{ status_label('نیازمند توجه', 'اجرا را مسدود نمی‌کند', 'attention', check.status) }}
+      {% else %}{{ status_label('ناموفق', 'اجرا را مسدود می‌کند' if check.blocking else 'نیازمند اصلاح', 'danger', check.status) }}{% endif %}
+      <p>{{ check.detail }}</p>
     </article>
     {% endfor %}
-  </section>
-
-  <section class="interpretation">
-    <h2>بررسی معادل در CLI</h2>
-    <pre dir="ltr"><code>uv run thesisound doctor</code></pre>
-  </section>
-
-  <div class="form-actions">
-    <a class="button button--primary" href="/system-check">بررسی کامل دوباره</a>
-    <a class="button button--secondary" href="/projects">بازگشت به پروژه‌ها</a>
   </div>
+</section>
+
+<section class="data-panel section-block">
+  <div class="section-heading"><h2>بررسی معادل در خط فرمان</h2><span>برای سرور و CI</span></div>
+  <pre><code>uv run thesisound doctor</code></pre>
+  <p class="lede">خروجی CLI باید با همین دامنه و تنظیمات محیط اجرا شود. اسرار و مقدار کامل کلیدها در رابط نمایش داده نمی‌شوند.</p>
+</section>
+
+{% call technical_details('قرارداد این صفحه', always_visible=true) %}
+  <p>Selected scope: <code><bdi dir="ltr">{{ selected_scope }}</bdi></code> · blocking checks ready: <code><bdi dir="ltr">{{ ready }}</bdi></code> · checks: <code><bdi dir="ltr">{{ checks | length }}</bdi></code></p>
+{% endcall %}
+
+<div class="form-actions section-block">
+  <a class="button button--primary" href="/system-check?scope={{ selected_scope }}">بررسی دوباره</a>
+  <a class="button button--secondary" href="/projects">بازگشت به پروژه‌ها</a>
 </div>
 {% endblock %}
