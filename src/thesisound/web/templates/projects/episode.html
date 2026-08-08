@@ -74,7 +74,7 @@
       منابع برای ساخت اپیزود در مدت هدف کافی نیستند
     {% endif %}
   </h2>
-  <p>برای حفظ دقت، ادامه با corpus ناکافی مجاز نیست. ابتدا کم‌هزینه‌ترین اصلاح را انتخاب کنید.</p>
+  <p>برای حفظ دقت، ادامه‌دادن با corpus ناکافی مجاز نیست. ابتدا کم‌هزینه‌ترین اصلاح را انتخاب کنید.</p>
 </section>
 
 {% if planning_run.material_gaps %}
@@ -140,7 +140,7 @@
 
 {% if project.state.value == 'episode_planned' %}
 <div class="notice notice--info"><strong>تأیید شما به همین نسخه از طرح متصل می‌شود.</strong><p class="simple-only">پس از تأیید، نگارش و راستی‌آزمایی متن اپیزود شروع می‌شود.</p><p class="operator-only">Approval به hash طرح متصل است و با تغییر plan باطل می‌شود.</p></div>
-<form method="post" action="/projects/{{ project.project_id }}/script/approve" class="form-actions"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button--primary" type="submit">تأیید طرح و ساخت متن اپیزود</button></form>
+<form method="post" action="/projects/{{ project.project_id }}/script/approve" class="form-actions"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button--primary" type="submit">تأیید طرح و ساخت سناریو (متن اپیزود)</button></form>
 {% else %}
 <div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/script">مشاهده متن اپیزود</a></div>
 {% endif %}
