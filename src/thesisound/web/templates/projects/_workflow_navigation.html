@@ -22,16 +22,16 @@
 {% else %}{% set available_step = current_step %}{% endif %}
 
 {% set steps = [
-  ('هدف و برداشت', 'brief'),
+  ('موضوع و هدف', 'brief'),
   ('منابع', 'sources'),
-  ('پردازش', 'processing'),
-  ('طرح اپیزود', 'episode'),
-  ('متن اپیزود', 'script'),
+  ('تحلیل منابع', 'processing'),
+  ('طرح گفتار', 'episode'),
+  ('متن گفتار', 'script'),
   ('شنیدن', 'audio')
 ] %}
-<nav class="workflow-rail" aria-label="مراحل ساخت اپیزود">
+<nav class="workflow-rail" aria-label="مراحل ساخت گفتار">
   <div class="workflow-rail__topline">
-    <a class="workflow-rail__project" href="/projects/{{ project.project_id }}">خانه پروژه</a>
+    <a class="workflow-rail__project" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
     <span aria-hidden="true">·</span>
     <span class="workflow-rail__project">{{ project_title(project) }}</span>
   </div>
@@ -50,10 +50,10 @@
           {% else %}
             <strong aria-disabled="true">{{ label }}</strong>
           {% endif %}
-          {% if number < current_step %}<small>انجام شده؛ قابل بازبینی</small>
-          {% elif number == current_step %}<small>مرحله جاری</small>
+          {% if number < current_step %}<small>انجام‌شده؛ قابل بازبینی</small>
+          {% elif number == current_step %}<small>مرحلهٔ جاری</small>
           {% elif number <= available_step %}<small>در دسترس</small>
-          {% else %}<small>پس از تکمیل مرحله قبل</small>{% endif %}
+          {% else %}<small>پس از تکمیل مرحلهٔ قبل</small>{% endif %}
         </span>
       </li>
     {% endfor %}
@@ -63,7 +63,7 @@
   <details class="revision-control">
     <summary>بازگشت و اصلاح مراحل قبلی</summary>
     <div class="revision-control__body">
-      <p>با بازکردن مرحله قبلی، خروجی‌های وابسته بایگانی و پس از اصلاح دوباره ساخته می‌شوند. فایل‌های خام حذف نمی‌شوند.</p>
+      <p>با بازکردن مرحلهٔ قبلی، خروجی‌های وابسته بایگانی و پس از اصلاح دوباره ساخته می‌شوند. فایل‌های خام حذف نمی‌شوند.</p>
       <div class="form-actions">
         <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -73,7 +73,7 @@
         <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <input type="hidden" name="target" value="brief">
-          <button class="button button--quiet button--small" type="submit">اصلاح هدف و برداشت</button>
+          <button class="button button--quiet button--small" type="submit">اصلاح موضوع و هدف</button>
         </form>
       </div>
     </div>
@@ -82,12 +82,12 @@
   <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind" class="revision-control">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="target" value="brief">
-    <button class="button button--quiet button--small" type="submit">اصلاح هدف و برداشت</button>
+    <button class="button button--quiet button--small" type="submit">اصلاح موضوع و هدف</button>
   </form>
   {% endif %}
 </nav>
 {% if request.query_params.get('workflow_error') %}
 <div class="page-content page-content--wide"><div class="notice notice--danger" role="alert">امکان بازکردن این مرحله وجود ندارد. جزئیات در حالت پیشرفته: <code class="operator-only"><bdi dir="ltr">{{ request.query_params.get('workflow_error') }}</bdi></code></div></div>
 {% elif request.query_params.get('rewound') %}
-<div class="page-content page-content--wide"><div class="notice notice--success" role="status">مرحله باز شد. خروجی‌های وابسته قبلی بایگانی شدند و فایل‌های خام باقی ماندند.</div></div>
+<div class="page-content page-content--wide"><div class="notice notice--success" role="status">مرحله باز شد. خروجی‌های وابستهٔ قبلی بایگانی شدند و فایل‌های خام باقی ماندند.</div></div>
 {% endif %}
