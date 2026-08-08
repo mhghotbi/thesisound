@@ -25,9 +25,11 @@ from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
 from thesisound.services.parser_benchmark import benchmark_directory, benchmark_document
 from thesisound.services.research_brief import ResearchBriefService
+from thesisound.source_cli import register_source_commands
 
 app = typer.Typer(no_args_is_help=True, help="Thesisound local development CLI")
 console = Console()
+register_source_commands(app)
 
 WorkspaceRootOption = Annotated[
     Path | None,
