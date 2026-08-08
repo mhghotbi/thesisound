@@ -7,6 +7,7 @@ ROOT = Path(__file__).parents[1]
 WEB_ROOT = ROOT / "src" / "thesisound" / "web"
 TEMPLATES_ROOT = WEB_ROOT / "templates"
 
+# Keep all user-facing string literals aligned with the Maqaal vocabulary contract.
 FORBIDDEN_UI_TERMS = (
     "Thesisound",
     "maqal",
