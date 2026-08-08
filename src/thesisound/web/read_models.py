@@ -60,6 +60,28 @@ def build_project_read_model(project: Project) -> ProjectReadModel:
             primary_action_url=f"/projects/{project_id}/sources",
             tone="attention",
         )
+    if project.state == ProjectState.CORPUS_READY:
+        return ProjectReadModel(
+            project=project,
+            state_label=_STATE_LABELS[project.state],
+            attention_label="پوشش منابع را بررسی و طرح اپیزود را بسازید",
+            primary_action_label="رفتن به طرح اپیزود",
+            primary_action_url=f"/projects/{project_id}/episode",
+            tone="attention",
+        )
+    if project.state in {ProjectState.EPISODE_PLANNING, ProjectState.EPISODE_PLANNED}:
+        return ProjectReadModel(
+            project=project,
+            state_label=_STATE_LABELS[project.state],
+            attention_label=(
+                "طرح اپیزود را بررسی کنید"
+                if project.state == ProjectState.EPISODE_PLANNED
+                else "وضعیت ارزیابی پوشش و ساخت طرح را ببینید"
+            ),
+            primary_action_label="مشاهده طرح اپیزود",
+            primary_action_url=f"/projects/{project_id}/episode",
+            tone="attention" if project.state == ProjectState.EPISODE_PLANNED else "running",
+        )
     if project.state in {ProjectState.FAILED_RETRYABLE, ProjectState.FAILED_PERMANENT}:
         return ProjectReadModel(
             project=project,

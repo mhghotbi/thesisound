@@ -72,6 +72,7 @@ class EpisodePreparationService:
     ) -> CoverageReport:
         project = self.workspace_store.load_project(project_id)
         self._enter_episode_planning(project)
+        self.workspace_store.save_project(project)
         corpus = self._load_corpus(project_id)
         assert project.brief is not None
         report, run = self.coverage_auditor.audit(
@@ -91,7 +92,6 @@ class EpisodePreparationService:
             model_run_ids=[run.run_id],
         )
         self.episode_store.save_manifest(manifest)
-        self.workspace_store.save_project(project)
         return report
 
     def prioritize_claims(self, project_id: UUID) -> ClaimPriorityReport:
@@ -262,9 +262,25 @@ class EpisodePreparationService:
             raise
 
     def _load_corpus(self, project_id: UUID) -> CorpusArtifacts:
-        source_ids = self.source_store.list_claim_ready_source_ids(project_id)
+        project = self.workspace_store.load_project(project_id)
+        claim_ready_ids = self.source_store.list_claim_ready_source_ids(project_id)
+        source_ids = [
+            source.source_id for source in project.sources if source.usable_as_evidence
+        ]
+        if not project.sources:
+            source_ids = claim_ready_ids
         if not source_ids:
-            raise ValueError("No claim-ready sources are available for episode planning.")
+            raise ValueError("The project has no confirmed evidence sources.")
+
+        claim_ready = set(claim_ready_ids)
+        missing = [source_id for source_id in source_ids if source_id not in claim_ready]
+        if missing:
+            missing_text = ", ".join(str(source_id) for source_id in missing)
+            raise ValueError(
+                "Confirmed corpus contains sources that are not claim-ready: "
+                f"{missing_text}"
+            )
+
         ledgers: list[ClaimLedger] = []
         evidence_items: list[EvidenceItem] = []
         blocks: list[SourceDocumentBlock] = []

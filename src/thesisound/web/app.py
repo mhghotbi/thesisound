@@ -2,56 +2,35 @@ from __future__ import annotations
 
 import secrets
 from collections.abc import Callable
-from functools import partial
 from pathlib import Path
 from typing import Annotated
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import uvicorn
-from fastapi import BackgroundTasks, FastAPI, File, Form, Request, UploadFile
+from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
-from starlette.concurrency import run_in_threadpool
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound.config import Settings
-from thesisound.domain import (
-    Project,
-    ProjectState,
-    ResearchBrief,
-    SourceAccess,
-    SourceCandidate,
-    SourceDecision,
-    SourceRole,
-    TopicType,
-)
+from thesisound.domain import Project, ProjectState, ResearchBrief, TopicType
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.web.auth import NullOtpSender, OtpError, OtpService
-from thesisound.web.corpus_runtime import corpus_source_inputs, create_corpus_builder
+from thesisound.web.corpus_runtime import create_corpus_builder
+from thesisound.web.episode_routes import register_episode_routes
+from thesisound.web.episode_runtime import create_episode_planner
 from thesisound.web.read_models import build_project_read_model
-from thesisound.web.source_ingestion import ingest_uploaded_source
-from thesisound.web.source_manifest import (
-    UiSourceManifest,
-    UiSourceManifestStore,
-    UiSourceStatus,
-)
+from thesisound.web.source_routes import register_source_routes
 
 _WEB_ROOT = Path(__file__).parent
 _TEMPLATES_ROOT = _WEB_ROOT / "templates"
 _STATIC_ROOT = _WEB_ROOT / "static"
-_SUPPORTED_UPLOAD_SUFFIXES = {".pdf", ".docx", ".txt", ".md"}
-_EDITABLE_SOURCE_STATES = {
+_EDITABLE_BRIEF_STATES = {
+    ProjectState.BRIEF_READY,
     ProjectState.SOURCES_COLLECTING,
     ProjectState.SOURCE_SELECTION_REQUIRED,
 }
-
-
-def _safe_filename(value: str) -> str:
-    name = Path(value).name.replace("\x00", "").strip()
-    if not name or name in {".", ".."}:
-        raise ValueError("نام فایل معتبر نیست.")
-    return name[:180]
 
 
 def _ensure_csrf(request: Request) -> str:
@@ -105,11 +84,14 @@ def create_app(
     settings: Settings | None = None,
     *,
     corpus_executor: Callable[[UUID], None] | None = None,
+    episode_executor: Callable[[UUID], None] | None = None,
 ) -> FastAPI:
     runtime = settings or Settings()
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
     corpus_builder = create_corpus_builder(runtime, workspace)
+    episode_planner = create_episode_planner(runtime, workspace)
     execute_corpus = corpus_executor or corpus_builder.run
+    execute_episode = episode_executor or episode_planner.run
 
     docs_url = "/api/docs" if runtime.environment != "production" else None
     app = FastAPI(title="Thesisound", docs_url=docs_url)
@@ -143,6 +125,7 @@ def create_app(
     app.state.workspace = workspace
     app.state.otp = otp
     app.state.corpus_builder = corpus_builder
+    app.state.episode_planner = episode_planner
 
     def render(
         request: Request,
@@ -317,7 +300,14 @@ def create_app(
         if redirect := _login_redirect(request):
             return redirect
         project = workspace.load_project(project_id)
-        return render(request, "projects/brief.html", {"project": project})
+        return render(
+            request,
+            "projects/brief.html",
+            {
+                "project": project,
+                "brief_locked": project.state not in _EDITABLE_BRIEF_STATES,
+            },
+        )
 
     @app.post("/projects/{project_id}/brief", response_class=HTMLResponse)
     def save_brief(
@@ -334,6 +324,10 @@ def create_app(
         project = workspace.load_project(project_id)
         try:
             _validate_csrf(request, csrf_token)
+            if project.state not in _EDITABLE_BRIEF_STATES:
+                raise ValueError(
+                    "این برداشت وارد پردازش شده است و بدون recovery قابل ویرایش نیست."
+                )
             if project.brief is None:
                 raise ValueError("برداشت پژوهش وجود ندارد.")
             project.brief.central_question = central_question.strip()
@@ -349,10 +343,15 @@ def create_app(
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
         except ValueError as error:
+            current = workspace.load_project(project_id)
             return render(
                 request,
                 "projects/brief.html",
-                {"project": project, "error": str(error)},
+                {
+                    "project": current,
+                    "brief_locked": current.state not in _EDITABLE_BRIEF_STATES,
+                    "error": str(error),
+                },
                 status_code=422,
             )
         destination = (
@@ -362,279 +361,26 @@ def create_app(
         )
         return RedirectResponse(destination, status_code=HTTP_303_SEE_OTHER)
 
-    @app.get("/projects/{project_id}/sources", response_class=HTMLResponse)
-    def sources_page(request: Request, project_id: UUID) -> Response:
-        if redirect := _login_redirect(request):
-            return redirect
-        project = workspace.load_project(project_id)
-        if project.state == ProjectState.BRIEF_READY:
-            return RedirectResponse(
-                f"/projects/{project_id}/brief",
-                status_code=HTTP_303_SEE_OTHER,
-            )
-        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
-        sources = manifest_store.load()
-        return render(
-            request,
-            "projects/sources.html",
-            {
-                "project": project,
-                "sources": sources,
-                "selected_count": sum(source.selected for source in sources),
-                "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
-            },
-        )
-
-    @app.post("/projects/{project_id}/sources/upload", response_class=HTMLResponse)
-    async def upload_source(
-        request: Request,
-        project_id: UUID,
-        csrf_token: Annotated[str, Form()],
-        source_file: Annotated[UploadFile, File()],
-    ) -> Response:
-        if redirect := _login_redirect(request):
-            return redirect
-        project = workspace.load_project(project_id)
-        _validate_csrf(request, csrf_token)
-
-        if project.state == ProjectState.SOURCE_SELECTION_REQUIRED:
-            transition(project, ProjectState.SOURCES_COLLECTING)
-        if project.state != ProjectState.SOURCES_COLLECTING:
-            return RedirectResponse(
-                f"/projects/{project_id}/sources?error=selection-locked",
-                status_code=HTTP_303_SEE_OTHER,
-            )
-
-        filename = _safe_filename(source_file.filename or "source")
-        source_id = uuid4()
-        suffix = Path(filename).suffix.lower()
-        upload_root = workspace.project_dir(project_id) / "uploads" / str(source_id)
-        upload_root.mkdir(parents=True, exist_ok=True)
-        destination = upload_root / filename
-
-        size = 0
-        with destination.open("wb") as output:
-            while chunk := await source_file.read(1024 * 1024):
-                size += len(chunk)
-                if size > runtime.web_upload_limit_bytes:
-                    output.close()
-                    destination.unlink(missing_ok=True)
-                    return RedirectResponse(
-                        f"/projects/{project_id}/sources?error=file-too-large",
-                        status_code=HTTP_303_SEE_OTHER,
-                    )
-                output.write(chunk)
-
-        if suffix not in _SUPPORTED_UPLOAD_SUFFIXES:
-            manifest = UiSourceManifest(
-                source_id=source_id,
-                filename=filename,
-                content_type=source_file.content_type,
-                size_bytes=size,
-                status=UiSourceStatus.BLOCKED,
-                issue_summary="نوع فایل در این نسخه پشتیبانی نمی‌شود.",
-            )
-        else:
-            artifact_root = (
-                runtime.ensure_ingestion_artifact_root() / str(project_id) / str(source_id)
-            )
-            manifest = await run_in_threadpool(
-                partial(
-                    ingest_uploaded_source,
-                    destination,
-                    source_id=source_id,
-                    filename=filename,
-                    content_type=source_file.content_type,
-                    size_bytes=size,
-                    settings=runtime,
-                    artifact_root=artifact_root,
-                )
-            )
-
-        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
-        manifest_store.add(manifest)
-        sources = manifest_store.load()
-        if (
-            project.state == ProjectState.SOURCES_COLLECTING
-            and any(source.status == UiSourceStatus.READY for source in sources)
-        ):
-            transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
-        workspace.save_project(project)
-        return RedirectResponse(
-            f"/projects/{project_id}/sources",
-            status_code=HTTP_303_SEE_OTHER,
-        )
-
-    @app.post("/projects/{project_id}/sources/{source_id}/toggle")
-    def toggle_source(
-        request: Request,
-        project_id: UUID,
-        source_id: UUID,
-        csrf_token: Annotated[str, Form()],
-    ) -> RedirectResponse:
-        if redirect := _login_redirect(request):
-            return redirect
-        _validate_csrf(request, csrf_token)
-        project = workspace.load_project(project_id)
-        if project.state not in _EDITABLE_SOURCE_STATES:
-            return RedirectResponse(
-                f"/projects/{project_id}/sources?error=selection-locked",
-                status_code=HTTP_303_SEE_OTHER,
-            )
-        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
-        manifest_store.toggle(source_id)
-        return RedirectResponse(
-            f"/projects/{project_id}/sources",
-            status_code=HTTP_303_SEE_OTHER,
-        )
-
-    @app.post("/projects/{project_id}/corpus/confirm", response_class=HTMLResponse)
-    def confirm_corpus(
-        request: Request,
-        background_tasks: BackgroundTasks,
-        project_id: UUID,
-        csrf_token: Annotated[str, Form()],
-    ) -> Response:
-        if redirect := _login_redirect(request):
-            return redirect
-        project = workspace.load_project(project_id)
-        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
-        sources = manifest_store.load()
-        try:
-            _validate_csrf(request, csrf_token)
-            if project.state not in _EDITABLE_SOURCE_STATES:
-                raise ValueError("انتخاب منابع برای این پروژه قفل شده است.")
-            selected = [
-                source
-                for source in sources
-                if source.selected and source.status == UiSourceStatus.READY
-            ]
-            if not selected:
-                raise ValueError("حداقل یک منبع آماده را انتخاب کنید.")
-            if any(not source.safe_for_claim_extraction for source in selected):
-                raise ValueError("همه منابع انتخاب‌شده باید از quality gate عبور کرده باشند.")
-            inputs = corpus_source_inputs(runtime, project_id, selected)
-
-            project.sources = [
-                SourceCandidate(
-                    source_id=source.source_id,
-                    title=source.filename,
-                    role=SourceRole.USER_CONTEXT,
-                    source_type=Path(source.filename).suffix.lstrip(".") or "file",
-                    origin="local_upload",
-                    language=None,
-                    access=SourceAccess.FULL_TEXT,
-                    user_decision=SourceDecision.INCLUDE,
-                    relevance_reasons=[
-                        "Selected by the user after the real parse-quality gate "
-                        f"using {source.parser_name or 'an available parser'}"
-                    ],
-                    limitations=[source.issue_summary] if source.issue_summary else [],
-                )
-                for source in selected
-            ]
-            if project.state == ProjectState.SOURCES_COLLECTING:
-                transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
-            transition(project, ProjectState.CORPUS_BUILDING)
-            workspace.save_project(project)
-            corpus_builder.queue(project_id, inputs)
-            background_tasks.add_task(execute_corpus, project_id)
-        except ValueError as error:
-            return render(
-                request,
-                "projects/sources.html",
-                {
-                    "project": project,
-                    "sources": sources,
-                    "selected_count": sum(source.selected for source in sources),
-                    "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
-                    "error": str(error),
-                },
-                status_code=422,
-            )
-        return RedirectResponse(
-            f"/projects/{project_id}/processing",
-            status_code=HTTP_303_SEE_OTHER,
-        )
-
-    @app.post("/projects/{project_id}/corpus/retry")
-    def retry_corpus(
-        request: Request,
-        background_tasks: BackgroundTasks,
-        project_id: UUID,
-        csrf_token: Annotated[str, Form()],
-    ) -> RedirectResponse:
-        if redirect := _login_redirect(request):
-            return redirect
-        _validate_csrf(request, csrf_token)
-        corpus_builder.retry(project_id)
-        background_tasks.add_task(execute_corpus, project_id)
-        return RedirectResponse(
-            f"/projects/{project_id}/processing",
-            status_code=HTTP_303_SEE_OTHER,
-        )
-
-    @app.get("/projects/{project_id}/processing", response_class=HTMLResponse)
-    def processing_page(request: Request, project_id: UUID) -> Response:
-        if redirect := _login_redirect(request):
-            return redirect
-        project = workspace.load_project(project_id)
-        run = corpus_builder.run_store.load_optional(project_id)
-        stages = [
-            ("برداشت هدف", True),
-            (
-                "افزودن و تأیید منابع",
-                project.state
-                not in {
-                    ProjectState.DRAFT,
-                    ProjectState.BRIEF_READY,
-                    ProjectState.SOURCES_COLLECTING,
-                    ProjectState.SOURCE_SELECTION_REQUIRED,
-                },
-            ),
-            (
-                "ساخت مجموعه شواهد",
-                project.state
-                in {
-                    ProjectState.CORPUS_READY,
-                    ProjectState.EPISODE_PLANNING,
-                    ProjectState.EPISODE_PLANNED,
-                    ProjectState.SCRIPT_DRAFTING,
-                    ProjectState.SCRIPT_READY,
-                    ProjectState.SCRIPT_VERIFYING,
-                    ProjectState.SCRIPT_VERIFIED,
-                    ProjectState.AUDIO_GENERATING,
-                    ProjectState.AUDIO_READY,
-                    ProjectState.AUDIO_VERIFYING,
-                    ProjectState.COMPLETE,
-                },
-            ),
-            (
-                "ساخت طرح اپیزود",
-                project.state
-                in {
-                    ProjectState.EPISODE_PLANNED,
-                    ProjectState.SCRIPT_DRAFTING,
-                    ProjectState.SCRIPT_READY,
-                    ProjectState.SCRIPT_VERIFYING,
-                    ProjectState.SCRIPT_VERIFIED,
-                    ProjectState.AUDIO_GENERATING,
-                    ProjectState.AUDIO_READY,
-                    ProjectState.AUDIO_VERIFYING,
-                    ProjectState.COMPLETE,
-                },
-            ),
-        ]
-        return render(
-            request,
-            "projects/processing.html",
-            {
-                "project": project,
-                "stages": stages,
-                "corpus_run": run,
-                "corpus_active": bool(run and run.status in {"queued", "running"}),
-            },
-        )
+    register_source_routes(
+        app,
+        settings=runtime,
+        workspace=workspace,
+        corpus_builder=corpus_builder,
+        episode_planner=episode_planner,
+        execute_corpus=execute_corpus,
+        render=render,
+        login_redirect=_login_redirect,
+        validate_csrf=_validate_csrf,
+    )
+    register_episode_routes(
+        app,
+        workspace=workspace,
+        planner=episode_planner,
+        execute=execute_episode,
+        render=render,
+        login_redirect=_login_redirect,
+        validate_csrf=_validate_csrf,
+    )
 
     return app
 

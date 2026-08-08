@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from uuid import UUID
 
 from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.config import Settings
+from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
 from thesisound.services.block_builder import BlockBuilder
@@ -56,8 +58,32 @@ def create_corpus_builder(
         fast_model=settings.model_fast,
         strong_model=settings.model_strong,
     )
+    _reconcile_completed_runs(builder, workspace)
     builder.recover_interrupted_runs()
     return builder
+
+
+def _reconcile_completed_runs(
+    builder: CorpusBuildingService,
+    workspace: WorkspaceStore,
+) -> None:
+    """Repair the final-write window where project completion beat run completion."""
+
+    for run in builder.run_store.list_runs():
+        if run.status not in {"queued", "running"}:
+            continue
+        try:
+            project = workspace.load_project(run.project_id)
+        except FileNotFoundError:
+            continue
+        if (
+            project.state == ProjectState.CORPUS_READY
+            and all(source.status == "succeeded" for source in run.sources)
+        ):
+            run.status = "succeeded"
+            run.finished_at = datetime.now(UTC)
+            run.last_error = None
+            builder.run_store.save(run)
 
 
 def corpus_source_inputs(

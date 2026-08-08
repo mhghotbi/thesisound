@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}طرح اپیزود | Thesisound{% endblock %}
+{% block content %}
+<div class="reading-layout reading-layout--wide">
+  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
+    <span class="step-rail__item is-complete"><b>۱</b> تعریف هدف</span>
+    <span class="step-rail__item is-complete"><b>۲</b> تأیید برداشت</span>
+    <span class="step-rail__item is-complete"><b>۳</b> منابع</span>
+    <span class="step-rail__item is-complete"><b>۴</b> مجموعه شواهد</span>
+    <span class="step-rail__item is-current"><b>۵</b> طرح اپیزود</span>
+  </nav>
+
+  <header class="page-heading page-heading--compact">
+    <div>
+      <p class="eyebrow">پوشش و ساختار</p>
+      <h1>{{ project_title(project) }}</h1>
+      <p>ابتدا مشخص می‌شود منابع چه مدت محتوای مستند پشتیبانی می‌کنند؛ سپس طرح برای تأیید شما ساخته می‌شود.</p>
+    </div>
+  </header>
+
+  {% if error %}
+  <div class="notice notice--danger" role="alert">{{ error }}</div>
+  {% endif %}
+
+  {% if can_start and not planning_active %}
+  <section class="interpretation">
+    <p>
+      مجموعه شواهد آماده است. مدت درخواستی
+      <strong><bdi dir="ltr">{{ project.brief.target_duration_minutes }} دقیقه</bdi></strong>
+      است. ارزیابی پوشش ممکن است مدت کوتاه‌تری پیشنهاد کند.
+    </p>
+  </section>
+  <form method="post" action="/projects/{{ project.project_id }}/episode/prepare" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">ارزیابی پوشش و ساخت طرح</button>
+  </form>
+  {% endif %}
+
+  {% if planning_run and planning_active %}
+  <section class="source-list" aria-labelledby="planning-status-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">اجرای جاری</p>
+        <h2 id="planning-status-title">
+          {% if planning_run.stage == "queued" %}در صف اجرا
+          {% elif planning_run.stage == "auditing_coverage" %}ارزیابی پوشش منابع
+          {% elif planning_run.stage == "prioritizing_claims" %}اولویت‌بندی ادعاها
+          {% elif planning_run.stage == "estimating_budget" %}محاسبه مدت قابل‌پشتیبانی
+          {% elif planning_run.stage == "building_disagreements" %}بررسی اختلاف دیدگاه‌ها
+          {% elif planning_run.stage == "planning_episode" %}ساخت طرح اپیزود
+          {% elif planning_run.stage == "building_evidence_packs" %}آماده‌سازی شواهد هر بخش
+          {% else %}در حال پردازش{% endif %}
+        </h2>
+      </div>
+      <span><bdi dir="ltr">{{ planning_run.status }}</bdi></span>
+    </div>
+    <p>درصد یا زمان باقی‌مانده نمایش داده نمی‌شود؛ فقط مرحله واقعی ذخیره‌شده نشان داده می‌شود.</p>
+  </section>
+  {% endif %}
+
+  {% if planning_run and planning_run.status == "failed" %}
+  <div class="notice notice--danger" role="alert">
+    <strong>ساخت طرح متوقف شد.</strong>
+    <p>{{ planning_run.last_error }}</p>
+  </div>
+  {% if can_retry %}
+  <form method="post" action="/projects/{{ project.project_id }}/episode/retry" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">تلاش دوباره در اجرای جدید</button>
+  </form>
+  {% elif can_start %}
+  <form method="post" action="/projects/{{ project.project_id }}/episode/prepare" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">شروع اجرای جدید</button>
+  </form>
+  {% endif %}
+  {% endif %}
+
+  {% if planning_run and planning_run.status == "blocked" %}
+  <section class="corpus-confirmation">
+    <div>
+      <p class="eyebrow">نیازمند تصمیم شما</p>
+      <h2>منابع برای مدت درخواستی کافی نیستند</h2>
+      <p>{{ planning_run.last_error }}</p>
+      <p>
+        مدت درخواستی:
+        <bdi dir="ltr">{{ planning_run.target_duration_minutes }} دقیقه</bdi>
+        {% if planning_run.supported_duration_minutes is not none %}
+        · مدت قابل‌پشتیبانی:
+        <strong><bdi dir="ltr">{{ planning_run.supported_duration_minutes | round(1) }} دقیقه</bdi></strong>
+        {% endif %}
+      </p>
+    </div>
+  </section>
+
+  {% if planning_run.material_gaps %}
+  <section class="source-list" aria-labelledby="material-gaps-title">
+    <div class="section-heading">
+      <h2 id="material-gaps-title">خلأهای اصلی</h2>
+    </div>
+    <ul>
+      {% for gap in planning_run.material_gaps %}<li>{{ gap }}</li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <div class="form-sheet">
+    {% if planning_run.supported_duration_minutes is not none and planning_run.supported_duration_minutes >= 5 %}
+    <form method="post" action="/projects/{{ project.project_id }}/episode/reduce-duration">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="field">
+        <span>مدت کوتاه‌تر</span>
+        <input
+          type="number"
+          name="duration_minutes"
+          min="5"
+          max="{{ planning_run.supported_duration_minutes | int }}"
+          value="{{ planning_run.supported_duration_minutes | int }}"
+          required
+        >
+      </label>
+      <button class="button button--primary" type="submit">کاهش مدت و ارزیابی دوباره</button>
+    </form>
+    {% endif %}
+
+    <form method="post" action="/projects/{{ project.project_id }}/episode/reopen-inputs" class="form-actions">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="button button--secondary" name="action" value="add-source" type="submit">افزودن منبع</button>
+      <button class="button button--quiet" name="action" value="change-focus" type="submit">تغییر تمرکز</button>
+    </form>
+  </div>
+  <div class="notice notice--info">ادامه‌دادن با corpus ناکافی مجاز نیست.</div>
+  {% endif %}
+
+  {% if planning_run and planning_run.status == "succeeded" and episode_plan %}
+  <section class="interpretation">
+    <p class="eyebrow">نتیجه ارزیابی</p>
+    <h2>{{ episode_plan.title }}</h2>
+    <p>{{ episode_plan.listener_outcome }}</p>
+    <p>
+      مدت طرح:
+      <strong><bdi dir="ltr">{{ episode_plan.estimated_duration_minutes | round(1) }} دقیقه</bdi></strong>
+      {% if coverage %}
+      · سقف گزارش‌شده منابع:
+      <bdi dir="ltr">{{ coverage.max_supported_minutes }} دقیقه</bdi>
+      {% endif %}
+      {% if budget %}
+      · مدت مؤثر قابل‌پشتیبانی:
+      <bdi dir="ltr">{{ budget.effective_supported_minutes | round(1) }} دقیقه</bdi>
+      {% endif %}
+    </p>
+  </section>
+
+  <section class="source-list" aria-labelledby="episode-segments-title">
+    <div class="section-heading">
+      <h2 id="episode-segments-title">بخش‌های پیشنهادی</h2>
+      <span>{{ episode_plan.segments | length }} بخش</span>
+    </div>
+    {% for segment in episode_plan.segments %}
+    <article class="source-row">
+      <div class="source-row__identity">
+        <strong>{{ loop.index }}. {{ segment.title }}</strong>
+        <span><bdi dir="ltr">{{ segment.estimated_minutes | round(1) }} دقیقه</bdi></span>
+      </div>
+      <p>{{ segment.purpose }}</p>
+      <p class="source-row__issue">سؤال محوری: {{ segment.key_question }}</p>
+      <p class="source-row__issue">{{ segment.claim_ids | length }} ادعای مستند</p>
+    </article>
+    {% endfor %}
+  </section>
+
+  <div class="notice notice--info">
+    طرح آماده بررسی است. نوشتن سناریو هنوز شروع نشده و در گام بعد فقط پس از تأیید صریح این طرح آغاز می‌شود.
+  </div>
+  {% endif %}
+
+  <div class="form-actions">
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/processing">مشاهده وضعیت کامل</a>
+    <a class="button button--quiet" href="/projects">بازگشت به پروژه‌ها</a>
+  </div>
+</div>
+{% if planning_active %}
+<script>
+  window.setTimeout(() => window.location.reload(), 3000);
+</script>
+{% endif %}
+{% endblock %}

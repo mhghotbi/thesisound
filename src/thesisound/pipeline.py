@@ -32,6 +32,7 @@ ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
     },
     ProjectState.EPISODE_PLANNING: {
         ProjectState.EPISODE_PLANNED,
+        ProjectState.SOURCES_COLLECTING,
         ProjectState.FAILED_RETRYABLE,
     },
     ProjectState.EPISODE_PLANNED: {
