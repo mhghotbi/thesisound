@@ -13,6 +13,7 @@ from thesisound.source_analysis import (
     BlockBuildReport,
     BlockEvidenceExtraction,
     ClaimLedger,
+    EvidenceExtractionPlan,
     SourceAnalysisManifest,
     SourceDocumentBlock,
 )
@@ -80,6 +81,25 @@ class SourceArtifactStore:
                 encoding="utf-8"
             )
         )
+
+    def save_extraction_plan(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        plan: EvidenceExtractionPlan,
+    ) -> None:
+        self._write_json(
+            self.source_dir(project_id, source_id) / "evidence-extraction-plan.json",
+            plan,
+        )
+
+    def load_extraction_plan(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+    ) -> EvidenceExtractionPlan:
+        path = self.source_dir(project_id, source_id) / "evidence-extraction-plan.json"
+        return EvidenceExtractionPlan.model_validate_json(path.read_text(encoding="utf-8"))
 
     def save_block_extraction(
         self,
