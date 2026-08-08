@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Protocol, TypeVar
+from typing import Any, Protocol
 
 from pydantic import BaseModel, Field
 
 from thesisound.domain import SearchQuery
 from thesisound.modeling import StructuredModelResponse
-
-T = TypeVar("T", bound=BaseModel)
 
 
 class RunMetadata(BaseModel):
@@ -88,7 +86,7 @@ class ArtifactRef(BaseModel):
 class TextModelPort(Protocol):
     provider: str
 
-    def generate_structured(
+    def generate_structured[T: BaseModel](
         self,
         *,
         system_prompt: str,
