@@ -4,6 +4,7 @@ from uuid import UUID
 
 from thesisound.adapters.audio.gemini import GeminiAsrAdapter, GeminiTtsAdapter
 from thesisound.config import Settings
+from thesisound.gemini_key_pool import shared_gemini_key_pool
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.audio_artifact_store import AudioArtifactStore
 from thesisound.services.audio_assembler import AudioAssembler
@@ -21,6 +22,7 @@ def create_audio_builder(
 ) -> AudioBuildRunService:
     script_store = ScriptArtifactStore(workspace.root)
     audio_store = AudioArtifactStore(workspace.root)
+    gemini_pool = shared_gemini_key_pool(settings.gemini_api_keys)
 
     def pipeline_factory(project_id: UUID) -> AudioPipelineService:
         del project_id
@@ -28,8 +30,8 @@ def create_audio_builder(
             workspace_store=workspace,
             script_store=script_store,
             audio_store=audio_store,
-            tts=GeminiTtsAdapter(api_key=settings.gemini_api_key),
-            asr=GeminiAsrAdapter(api_key=settings.gemini_api_key),
+            tts=GeminiTtsAdapter(pool=gemini_pool),
+            asr=GeminiAsrAdapter(pool=gemini_pool),
             segmenter=TtsSegmenter(
                 max_characters=settings.tts_chunk_max_characters,
                 words_per_minute=settings.tts_words_per_minute,
