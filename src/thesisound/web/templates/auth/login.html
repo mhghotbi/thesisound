@@ -1,21 +1,21 @@
 {% extends "base.html" %}
-{% block title %}ورود | Thesisound{% endblock %}
+{% block title %}ورود | مقال{% endblock %}
 {% block body_class %}auth-page{% endblock %}
 {% block main_class %}auth-shell{% endblock %}
 {% block content_class %}auth-layout{% endblock %}
 {% block content %}
 <section class="auth-story" aria-labelledby="auth-story-title">
   <div class="brand">
-    <span class="brand__mark" aria-hidden="true">TS</span>
-    <span><strong>THESISOUND</strong><small>مطالعه‌ای که شنیده می‌شود</small></span>
+    <span class="brand__mark" aria-hidden="true">م</span>
+    <span><strong>مقال</strong><small>مطالعه‌ای که شنیده می‌شود</small></span>
   </div>
   <div>
-    <h1 id="auth-story-title">از یک سؤال جدی، یک اپیزود مستند بسازید.</h1>
-    <p>منابع را خودتان انتخاب می‌کنید. هر ادعا تا متن منبع قابل‌ردیابی می‌ماند و محصول جایی که شواهد کافی نیست، با صراحت متوقف می‌شود.</p>
+    <h1 id="auth-story-title">از یک سؤال جدی، یک گفتار مستند بسازید.</h1>
+    <p>منابع را خودتان انتخاب می‌کنید. هر مدعا تا شاهد و منبع قابل‌ردیابی می‌ماند و محصول جایی که شاهد کافی نیست، با صراحت متوقف می‌شود.</p>
   </div>
   <div class="auth-story__note">
     <strong>سه تم، یک ساختار ثابت</strong>
-    <p>رنگ فقط بیان بصری را عوض می‌کند؛ hierarchy، دسترس‌پذیری و معنای وضعیت‌ها در هر سه تم یکسان است.</p>
+    <p>رنگ فقط بیان بصری را عوض می‌کند؛ سلسله‌مراتب، دسترس‌پذیری و معنای وضعیت‌ها در هر سه تم یکسان است.</p>
     <div class="form-actions" role="group" aria-label="انتخاب تم رنگی">
       <button class="button button--small button--secondary" type="button" data-theme-value="cobalt">آبی کبالتی</button>
       <button class="button button--small button--secondary" type="button" data-theme-value="wood">چوب سوخته</button>
@@ -26,8 +26,8 @@
 
 <section class="auth-card" aria-labelledby="login-title">
   <p class="kicker">ورود امن با کد یک‌بارمصرف</p>
-  <h2 id="login-title">شماره موبایل را وارد کنید</h2>
-  <p class="lede">برای ادامه پروژه‌های قبلی یا شروع یک مطالعه تازه، کد شش‌رقمی می‌فرستیم.</p>
+  <h2 id="login-title">شمارهٔ موبایل را وارد کنید</h2>
+  <p class="lede">برای ادامهٔ گفتارهای قبلی یا ساخت یک گفتار تازه، کد شش‌رقمی می‌فرستیم.</p>
 
   {% if error %}
     <div class="notice notice--danger" role="alert">{{ error }}</div>
@@ -37,7 +37,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="next_path" value="{{ next_path }}">
     <label class="field">
-      <span>شماره موبایل</span>
+      <span>شمارهٔ موبایل</span>
       <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" placeholder="09120000000" value="{{ phone or '' }}" required autofocus aria-describedby="phone-hint">
       <small class="field-hint" id="phone-hint">با صفر ابتدایی و بدون فاصله وارد کنید.</small>
     </label>
@@ -49,7 +49,7 @@
   {% if test_otp_enabled and environment != "production" %}
   <details class="dev-note operator-only">
     <summary>ورود آزمایشی محیط توسعه</summary>
-    <p>شماره <bdi dir="ltr">0912000000</bdi> و کد <bdi dir="ltr">999999</bdi>.</p>
+    <p>شمارهٔ <bdi dir="ltr">0912000000</bdi> و کد <bdi dir="ltr">999999</bdi>.</p>
   </details>
   {% endif %}
 </section>
