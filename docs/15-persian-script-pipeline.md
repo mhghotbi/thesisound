@@ -1,53 +1,55 @@
 # 15 — سناریوی فارسی Grounded و Verified
 
-این subsystem از Episode Plan و Segment Evidence Pack یک سناریوی فارسی قابل شنیدن می‌سازد. هدف آن «تولید متن زیبا» به‌تنهایی نیست؛ هر turn محتوایی باید به claim و evidence معتبر متصل باشد و پیش از ورود به TTS از دو لایه کنترل عبور کند.
+این subsystem از Episode Plan تأییدشده و Segment Evidence Pack یک سناریوی فارسی قابل شنیدن می‌سازد. هدف صرفاً تولید متن روان نیست؛ هر turn محتوایی باید به claim و evidence معتبر متصل باشد و پیش از ورود به TTS از کنترل قطعی و verifier مستقل عبور کند.
 
 ## جریان
 
 ```text
 Episode Plan
-+ Evidence Packs
-+ Disagreement Graph
-    ↓
-Bilingual Glossary
-    ↓
-Persian Script per Segment
-    ↓
-Deterministic Checks
-    ↓
-Adversarial Verifier
-    ↓
-Targeted Revision, at most once
-    ↓
-Checks + Verification again
-    ↓
-script_verified
+→ explicit approval of the exact plan hash
+→ Bilingual Glossary
+→ Persian Script per Segment
+→ Deterministic Checks
+→ Adversarial Verifier
+→ Targeted Revision, at most once
+→ Checks + Verification again
+→ SCRIPT_VERIFIED
+→ توقف پیش از تولید صدا
 ```
 
-سناریو مستقیم به فارسی نوشته می‌شود. سیستم ابتدا یک سناریوی کامل انگلیسی تولید و سپس ترجمه نمی‌کند.
+سناریو مستقیماً به فارسی نوشته می‌شود؛ سیستم ابتدا متن کامل انگلیسی تولید و سپس ترجمه نمی‌کند.
 
-## ۱. Glossary
+## ۱. Human gate و plan hash
 
-فایل‌ها:
+شروع script generation بدون approval مجاز نیست. approval شامل موارد زیر است:
 
 ```text
-src/thesisound/services/glossary_builder.py
-prompts/glossary/1.0.0/
+project_id
+plan_hash
+approved_by
+approved_at
 ```
 
-واژه‌نامه فقط اصطلاح‌هایی را نگه می‌دارد که روی معنا، تمایز، attribution یا تلفظ اثر دارند.
+Artifact:
 
-هر term شامل:
+```text
+workspaces/<project-id>/episode/plan-approval.json
+```
 
-- source term؛
-- preferred Persian؛
-- first-use form؛
-- subsequent-use form؛
-- pronunciation hint اختیاری؛
-- translation status؛
-- مواردی که نباید با آن‌ها اشتباه شود.
+`plan_hash` از JSON canonical همان Episode Plan ساخته می‌شود. تغییر هر بخش طرح، approval قبلی را نامعتبر می‌کند. GET صفحه هیچ approval یا run ایجاد نمی‌کند؛ فقط POST صریح کاربر مجاز است.
 
-ترجمه‌های contested باید به‌صراحت `contested` باقی بمانند. مدل اجازه ندارد چند اصطلاح متمایز را صرفاً برای روانی به یک واژه فارسی فروبکاهد.
+CLI:
+
+```bash
+uv run thesisound approve-plan <project-id> --approved-by <actor>
+uv run thesisound prepare-script <project-id>
+```
+
+`prepare-script` بدون approval معتبر fail می‌شود.
+
+## ۲. Glossary
+
+واژه‌نامه فقط اصطلاح‌هایی را نگه می‌دارد که روی معنا، تمایز، attribution یا تلفظ اثر دارند. ترجمه contested باید صریحاً contested باقی بماند.
 
 Artifact:
 
@@ -55,34 +57,9 @@ Artifact:
 script/glossary.json
 ```
 
-## ۲. Persian Script Writer
+## ۳. Persian Script Writer
 
-فایل‌ها:
-
-```text
-src/thesisound/services/persian_script_writer.py
-prompts/persian_script_segment/1.0.0/
-```
-
-هر segment در یک model run مستقل نوشته می‌شود. ورودی writer فقط این‌هاست:
-
-- Research Brief؛
-- همان Episode Segment؛
-- Evidence Pack همان segment؛
-- Glossary؛
-- Disagreement Graph؛
-- target word count.
-
-Writer کل corpus را نمی‌بیند. این محدودیت accidental cross-segment leakage و استفاده از evidence نامرتبط را کم می‌کند.
-
-دو نقش گفت‌وگو:
-
-- Speaker A: توضیح‌دهنده دقیق؛
-- Speaker B: مخاطب هوشمند که سؤال مفید، clarification و challenge واقعی مطرح می‌کند.
-
-Speaker B نقش comic relief یا فرد ناآگاه مصنوعی ندارد.
-
-### Grounding contract
+هر segment یک model run مستقل دارد. writer فقط Research Brief، همان Episode Segment، Evidence Pack همان segment، Glossary و Disagreement Graph را می‌بیند.
 
 هر turn محتوایی باید داشته باشد:
 
@@ -92,72 +69,45 @@ segment_id
 speaker
 spoken_text_fa
 claim_ids
- evidence_ids
+evidence_ids
 editorial_only = false
 ```
 
-Turn انتقالی می‌تواند `editorial_only=true` باشد، اما در این حالت claim ID و evidence ID ندارد.
+Turn انتقالی می‌تواند `editorial_only=true` باشد و در این حالت claim/evidence ندارد.
 
-مدل turn ID نمی‌سازد. application شناسه‌های پایدار زیر را materialize می‌کند:
-
-```text
-seg-001-turn-001
-seg-001-turn-002
-```
-
-## ۳. Deterministic Checks
-
-فایل:
+Draft هر segment مستقل ذخیره می‌شود:
 
 ```text
-src/thesisound/services/script_checks.py
+script/segments/<segment-id>.json
 ```
 
-این مرحله مدل زبانی ندارد و موارد زیر را بررسی می‌کند:
+در retry، segment draft موجود دوباره به مدل فرستاده نمی‌شود؛ application همان draft را با turn IDهای پایدار materialize می‌کند.
+
+## ۴. Deterministic Checks
+
+بدون مدل زبانی بررسی می‌شوند:
 
 - segment و Evidence Pack معتبر؛
-- claim ID فقط از همان segment؛
-- evidence ID فقط از همان pack؛
-- وجود evidence مرتبط با claim هر turn؛
+- claim فقط از همان segment؛
+- evidence فقط از همان pack؛
+- evidence مرتبط با claim هر turn؛
 - prompt leakage؛
-- تکرار کامل turn؛
-- speaker pattern غیرطبیعی؛
+- تکرار؛
+- speaker pattern؛
 - consistency واژه‌نامه؛
-- مدت تخمینی بر اساس word count.
+- مدت بر اساس word count.
+
+Claim ledger فقط از corpus تأییدشده `Project.sources` خوانده می‌شود. fallback به تمام claim-ready artifactها فقط برای project legacy بدون source registry وجود دارد.
 
 Verdict:
 
 ```text
-pass
-revise
-reject
+pass | revise | reject
 ```
 
-Blocking issue باعث `reject` می‌شود. مشکل مدت، تکرار یا terminology معمولاً `revise` است.
+## ۵. Adversarial Verifier
 
-## ۴. Adversarial Verifier
-
-فایل‌ها:
-
-```text
-src/thesisound/services/script_verifier.py
-prompts/script_verifier/1.0.0/
-```
-
-Verifier مستقل از writer اجرا می‌شود و هر turn را در برابر claim، evidence، original block، qualification، glossary و disagreement graph بررسی می‌کند.
-
-Issueهای اصلی:
-
-- unsupported claim؛
-- overstated certainty؛
-- lost qualification؛
-- wrong attribution؛
-- collapsed disagreement؛
-- invented example؛
-- terminology error؛
-- translation shift؛
-- duration or pacing؛
-- prompt leakage.
+Verifier مستقل، turnها را در برابر claim، evidence، original block، qualification، glossary و disagreement graph بررسی می‌کند.
 
 `pass` فقط وقتی معتبر است که:
 
@@ -166,77 +116,42 @@ issues = []
 unsupported_claim_ratio = 0
 ```
 
-این مقدار به معنای «حقیقت مطلقاً اثبات‌شده» نیست؛ یعنی verifier و gateهای فعلی claim پشتیبانی‌نشده‌ای پیدا نکرده‌اند.
+## ۶. Targeted Revision
 
-## ۵. Targeted Revision
+فقط turnهای علامت‌خورده revise می‌شوند. Reviser اجازه ندارد speaker، turn ID، claim ID یا evidence ID جدید بسازد یا turn سالم را تغییر دهد.
 
-فایل‌ها:
+فقط یک دور revision خودکار مجاز است. شکست دوباره، pipeline را متوقف و retryable می‌کند.
 
-```text
-src/thesisound/services/script_reviser.py
-prompts/script_reviser/1.0.0/
-```
+## ۷. Persisted run و resume
 
-Revision کل سناریو را بازنویسی نمی‌کند. فقط turnهایی که deterministic checks یا verifier علامت زده‌اند وارد prompt می‌شوند.
-
-Reviser حق ندارد:
-
-- speaker را تغییر دهد؛
-- turn ID جدید بسازد؛
-- claim ID یا evidence ID جدید اضافه کند؛
-- turn سالم را تغییر دهد؛
-- از knowledge بیرونی برای جبران evidence ناکافی استفاده کند.
-
-یک دور revision خودکار مجاز است. اگر خروجی اصلاح‌شده دوباره از checks یا verification عبور نکند، pipeline متوقف می‌شود.
-
-## ۶. State Machine
+آخرین run:
 
 ```text
-episode_planned
-  → script_drafting
-  → glossary_ready
-  → draft_ready
-  → checks_ready
-  → script_ready
-  → script_verifying
-  → verification_ready
-  → revision_ready        optional
-  → checks_ready          revised
-  → script_verifying      revised
-  → script_verified
+workspaces/<project-id>/script-build-run.json
 ```
 
-Project فقط پس از pass نهایی به `script_verified` می‌رود.
+تاریخچه:
 
-## ۷. CLI
-
-اجرای کامل:
-
-```bash
-uv run thesisound prepare-script <project-id>
+```text
+workspaces/<project-id>/runs/script/<run-id>.json
 ```
 
-اجرای مرحله‌ای:
+Stageها:
 
-```bash
-uv run thesisound build-glossary <project-id>
-uv run thesisound write-script <project-id>
-uv run thesisound check-script <project-id>
-uv run thesisound verify-script <project-id>
-uv run thesisound revise-script <project-id>
-uv run thesisound check-script <project-id> --revised
-uv run thesisound verify-script <project-id> --revised
+```text
+queued
+building_glossary
+writing_segments
+checking_draft
+verifying_draft
+revising
+checking_revision
+verifying_revision
+complete
+failed
 ```
 
-مدل هر stage جدا قابل override است:
-
-```bash
-uv run thesisound prepare-script <project-id> \
-  --glossary-model <model-id> \
-  --writer-model <model-id> \
-  --verifier-model <model-id> \
-  --reviser-model <model-id>
-```
+هر retry run ID جدید با `previous_run_id` می‌سازد. Artifactهای سالم reuse می‌شوند. restart در state فعال به failure قابل retry تبدیل می‌شود؛ اگر project قبلاً `SCRIPT_VERIFIED` و artifactهای نهایی معتبر باشند، run pointer stale به success reconcile می‌شود.
 
 ## ۸. Artifactها
 
@@ -253,33 +168,22 @@ workspaces/<project-id>/script/
   verification-revised.json     only when needed
 ```
 
-## ۹. Calibration
-
-پس از pass نهایی:
-
-```bash
-uv run thesisound record-budget-calibration <project-id>
-```
-
-رکورد شامل این موارد است:
-
-- target و planned duration؛
-- word count و estimated script minutes؛
-- evidence token count؛
-- claim count؛
-- deterministic verdict؛
-- verifier verdict؛
-- unsupported claim ratio.
-
-فایل تجمیعی:
+## ۹. رابط وب
 
 ```text
-workspaces/evaluations/budget-calibration.jsonl
+/projects/<project-id>/episode
+  → explicit plan approval
+/projects/<project-id>/script
+  → persisted progress
+  → deterministic report
+  → verifier report
+  → script grouped by segment
+  → source and locator trace per turn
 ```
 
-حداقل سه نمونه pass‌شده برای `ready_for_review` لازم است. سیستم defaultهای budget را خودکار تغییر نمی‌دهد.
+UI درصد یا ETA ساختگی نشان نمی‌دهد. پایان این slice `SCRIPT_VERIFIED` است و audio generation هنوز آغاز نمی‌شود.
 
-## ۱۰. تست زنده Gemini
+## ۱۰. تست زنده
 
 تست‌های CI از fake structured model استفاده می‌کنند. Smoke test واقعی opt-in است:
 
@@ -289,17 +193,17 @@ GEMINI_API_KEY=<key> \
 uv run pytest -m live tests/test_live_gemini.py
 ```
 
-تا زمانی که API key در محیط وجود ندارد، این تست skip می‌شود.
-
 ## Definition of Done
 
-- هر segment یک draft مستقل دارد؛
-- هر turn محتوایی claim ID و evidence ID معتبر دارد؛
-- glossary consistency کنترل می‌شود؛
-- deterministic checks اجرا می‌شوند؛
-- verifier مستقل اجرا می‌شود؛
-- فقط turnهای معیوب revise می‌شوند؛
-- revision claim/evidence جدید وارد نمی‌کند؛
-- پس از یک دور اصلاح، تمام gateها pass می‌شوند؛
-- project به `script_verified` می‌رسد؛
-- Ruff و pytest سبز هستند.
+- approval صریح و hash-bound لازم باشد؛
+- GET side effect نداشته باشد؛
+- transition به `SCRIPT_DRAFTING` پیش از model call persist شود؛
+- هر segment draft مستقل و قابل resume باشد؛
+- deterministic checks فقط corpus تأییدشده را مصرف کنند؛
+- verifier مستقل اجرا شود؛
+- حداکثر یک revision هدفمند انجام شود؛
+- run history و restart recovery وجود داشته باشد؛
+- UI trace منبع و locator هر turn را نمایش دهد؛
+- project فقط بعد از pass نهایی به `SCRIPT_VERIFIED` برسد؛
+- تولید صدا شروع نشود؛
+- Ruff و pytest سبز باشند.

@@ -25,7 +25,7 @@ _STATE_LABELS = {
     ProjectState.EPISODE_PLANNING: "در حال ساخت طرح",
     ProjectState.EPISODE_PLANNED: "طرح آماده بازبینی",
     ProjectState.SCRIPT_DRAFTING: "در حال نوشتن متن",
-    ProjectState.SCRIPT_READY: "متن آماده",
+    ProjectState.SCRIPT_READY: "متن آماده بررسی",
     ProjectState.SCRIPT_VERIFYING: "در حال راستی‌آزمایی",
     ProjectState.SCRIPT_VERIFIED: "متن تأییدشده",
     ProjectState.AUDIO_GENERATING: "در حال تولید صدا",
@@ -37,7 +37,11 @@ _STATE_LABELS = {
 }
 
 
-def build_project_read_model(project: Project) -> ProjectReadModel:
+def build_project_read_model(
+    project: Project,
+    *,
+    failure_action_url: str | None = None,
+) -> ProjectReadModel:
     project_id = str(project.project_id)
     if project.state in {ProjectState.DRAFT, ProjectState.BRIEF_READY}:
         return ProjectReadModel(
@@ -74,7 +78,7 @@ def build_project_read_model(project: Project) -> ProjectReadModel:
             project=project,
             state_label=_STATE_LABELS[project.state],
             attention_label=(
-                "طرح اپیزود را بررسی کنید"
+                "طرح اپیزود را بررسی و برای سناریو تأیید کنید"
                 if project.state == ProjectState.EPISODE_PLANNED
                 else "وضعیت ارزیابی پوشش و ساخت طرح را ببینید"
             ),
@@ -82,13 +86,32 @@ def build_project_read_model(project: Project) -> ProjectReadModel:
             primary_action_url=f"/projects/{project_id}/episode",
             tone="attention" if project.state == ProjectState.EPISODE_PLANNED else "running",
         )
+    if project.state in {
+        ProjectState.SCRIPT_DRAFTING,
+        ProjectState.SCRIPT_READY,
+        ProjectState.SCRIPT_VERIFYING,
+        ProjectState.SCRIPT_VERIFIED,
+    }:
+        return ProjectReadModel(
+            project=project,
+            state_label=_STATE_LABELS[project.state],
+            attention_label=(
+                "سناریوی مستند و گزارش راستی‌آزمایی را بررسی کنید"
+                if project.state == ProjectState.SCRIPT_VERIFIED
+                else "وضعیت نگارش و راستی‌آزمایی سناریو را ببینید"
+            ),
+            primary_action_label="مشاهده سناریو",
+            primary_action_url=f"/projects/{project_id}/script",
+            tone="success" if project.state == ProjectState.SCRIPT_VERIFIED else "running",
+        )
     if project.state in {ProjectState.FAILED_RETRYABLE, ProjectState.FAILED_PERMANENT}:
+        destination = failure_action_url or f"/projects/{project_id}/processing"
         return ProjectReadModel(
             project=project,
             state_label=_STATE_LABELS[project.state],
             attention_label=project.last_error or "اجرای پروژه متوقف شده است",
             primary_action_label="مشاهده مشکل",
-            primary_action_url=f"/projects/{project_id}/processing",
+            primary_action_url=destination,
             tone="danger",
         )
     if project.state == ProjectState.COMPLETE:

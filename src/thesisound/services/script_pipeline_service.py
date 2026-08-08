@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, ProjectState, Script
+from thesisound.domain import ClaimRecord, Project, ProjectState, Script, ScriptTurn
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.script import (
@@ -11,16 +12,20 @@ from thesisound.script import (
     ScriptCheckReport,
     ScriptPipelineManifest,
     ScriptPipelineResult,
+    SegmentScriptDraft,
     VerificationDraft,
 )
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.persian_script_writer import PersianScriptWriterService
+from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
 from thesisound.services.script_reviser import TargetedScriptReviserService
 from thesisound.services.script_verifier import ScriptVerifierService
 from thesisound.services.source_artifact_store import SourceArtifactStore
+
+ScriptStageCallback = Callable[[str], None]
 
 
 class ScriptPipelineService:
@@ -31,6 +36,7 @@ class ScriptPipelineService:
         source_store: SourceArtifactStore,
         episode_store: EpisodeArtifactStore,
         script_store: ScriptArtifactStore,
+        approval_store: EpisodePlanApprovalStore,
         glossary_builder: GlossaryBuilderService,
         script_writer: PersianScriptWriterService,
         script_checker: ScriptChecker,
@@ -41,6 +47,7 @@ class ScriptPipelineService:
         self.source_store = source_store
         self.episode_store = episode_store
         self.script_store = script_store
+        self.approval_store = approval_store
         self.glossary_builder = glossary_builder
         self.script_writer = script_writer
         self.script_checker = script_checker
@@ -55,7 +62,9 @@ class ScriptPipelineService:
         prompt_version: str | None = None,
     ) -> Glossary:
         project = self.workspace_store.load_project(project_id)
+        self.approval_store.require_current(project)
         self._enter_script_drafting(project)
+        self.workspace_store.save_project(project)
         if project.brief is None or project.episode_plan is None:
             raise ValueError("ResearchBrief and EpisodePlan are required for glossary generation.")
         packs = self.episode_store.load_evidence_packs(project_id)
@@ -78,7 +87,6 @@ class ScriptPipelineService:
                 model_run_ids=[run.run_id],
             )
         )
-        self.workspace_store.save_project(project)
         return glossary
 
     def write_script(
@@ -90,6 +98,7 @@ class ScriptPipelineService:
     ) -> Script:
         project = self.workspace_store.load_project(project_id)
         self._require_state(project.state, ProjectState.SCRIPT_DRAFTING)
+        self.approval_store.require_current(project)
         if project.brief is None or project.episode_plan is None:
             raise ValueError("ResearchBrief and EpisodePlan are required for script writing.")
         glossary = self.script_store.load_glossary(project_id)
@@ -98,25 +107,36 @@ class ScriptPipelineService:
             pack.segment_id: pack
             for pack in self.episode_store.load_evidence_packs(project_id)
         }
-        turns = []
+        turns: list[ScriptTurn] = []
         run_ids = []
         for segment in project.episode_plan.segments:
             pack = pack_by_segment.get(segment.segment_id)
             if pack is None:
                 raise ValueError(f"Missing evidence pack for segment {segment.segment_id}.")
-            segment_turns, draft, run = self.script_writer.write_segment(
-                project_id=project_id,
-                brief=project.brief,
-                segment=segment,
-                evidence_pack=pack,
-                glossary=glossary,
-                disagreement_graph=graph,
-                model=model,
-                prompt_version=prompt_version,
+            draft = self.script_store.load_segment_draft_optional(
+                project_id,
+                segment.segment_id,
             )
-            self.script_store.save_segment_draft(project_id, segment.segment_id, draft)
+            if draft is None:
+                segment_turns, draft, run = self.script_writer.write_segment(
+                    project_id=project_id,
+                    brief=project.brief,
+                    segment=segment,
+                    evidence_pack=pack,
+                    glossary=glossary,
+                    disagreement_graph=graph,
+                    model=model,
+                    prompt_version=prompt_version,
+                )
+                self.script_store.save_segment_draft(
+                    project_id,
+                    segment.segment_id,
+                    draft,
+                )
+                run_ids.append(run.run_id)
+            else:
+                segment_turns = self._materialize_segment_turns(segment.segment_id, draft)
             turns.extend(segment_turns)
-            run_ids.append(run.run_id)
         script = Script(
             title=project.episode_plan.title,
             turns=turns,
@@ -137,6 +157,7 @@ class ScriptPipelineService:
     def run_checks(self, project_id: UUID, *, revised: bool = False) -> ScriptCheckReport:
         project = self.workspace_store.load_project(project_id)
         self._require_state(project.state, ProjectState.SCRIPT_READY)
+        self.approval_store.require_current(project)
         if project.episode_plan is None:
             raise ValueError("EpisodePlan is required for script checks.")
         script = self.script_store.load_script(project_id, revised=revised)
@@ -165,6 +186,7 @@ class ScriptPipelineService:
     ) -> VerificationDraft:
         project = self.workspace_store.load_project(project_id)
         self._require_state(project.state, ProjectState.SCRIPT_READY)
+        self.approval_store.require_current(project)
         if project.episode_plan is None:
             raise ValueError("EpisodePlan is required for verification.")
         transition(project, ProjectState.SCRIPT_VERIFYING)
@@ -199,6 +221,7 @@ class ScriptPipelineService:
     ) -> Script:
         project = self.workspace_store.load_project(project_id)
         self._require_state(project.state, ProjectState.SCRIPT_VERIFYING)
+        self.approval_store.require_current(project)
         original = self.script_store.load_script(project_id)
         checks = self.script_store.load_checks(project_id)
         verification = self.script_store.load_verification(project_id)
@@ -234,56 +257,119 @@ class ScriptPipelineService:
         verifier_model: str,
         reviser_model: str,
         prompt_version: str | None = None,
+        on_stage: ScriptStageCallback | None = None,
     ) -> ScriptPipelineResult:
+        stage = on_stage or (lambda _: None)
         try:
-            glossary = self.build_glossary(
-                project_id,
-                model=glossary_model,
-                prompt_version=prompt_version,
-            )
-            script = self.write_script(
-                project_id,
-                model=writer_model,
-                prompt_version=prompt_version,
-            )
-            checks = self.run_checks(project_id)
-            if checks.verdict == "reject":
-                self._enter_script_verifying(project_id)
-                verification = VerificationDraft(
-                    verdict="revise",
-                    issues=[],
-                    unsupported_claim_ratio=0,
+            project = self.workspace_store.load_project(project_id)
+            self.approval_store.require_current(project)
+            if project.state == ProjectState.SCRIPT_VERIFIED:
+                return ScriptPipelineResult(
+                    glossary=self.script_store.load_glossary(project_id),
+                    script=self.script_store.load_latest_script(project_id),
+                    checks=self.script_store.load_latest_checks(project_id),
+                    verification=self.script_store.load_latest_verification(project_id),
                 )
-                self.script_store.save_verification(project_id, verification)
+            self._enter_script_drafting(project)
+            self.workspace_store.save_project(project)
+
+            glossary = self.script_store.load_glossary_optional(project_id)
+            if glossary is None:
+                stage("building_glossary")
+                glossary = self.build_glossary(
+                    project_id,
+                    model=glossary_model,
+                    prompt_version=prompt_version,
+                )
+
+            script = self.script_store.load_script_optional(project_id)
+            if script is None:
+                stage("writing_segments")
+                self._ensure_script_drafting(project_id)
+                script = self.write_script(
+                    project_id,
+                    model=writer_model,
+                    prompt_version=prompt_version,
+                )
             else:
-                verification = self.verify_script(
-                    project_id,
-                    model=verifier_model,
-                    prompt_version=prompt_version,
-                )
+                self._ensure_script_ready(project_id, script)
+
+            checks = self.script_store.load_checks_optional(project_id)
+            if checks is None:
+                stage("checking_draft")
+                self._ensure_script_ready(project_id, script)
+                checks = self.run_checks(project_id)
+
+            verification = self.script_store.load_verification_optional(project_id)
+            if verification is None:
+                if checks.verdict == "reject":
+                    self._ensure_script_verifying(project_id, script)
+                    verification = VerificationDraft(
+                        verdict="revise",
+                        issues=[],
+                        unsupported_claim_ratio=0,
+                    )
+                    self.script_store.save_verification(project_id, verification)
+                else:
+                    stage("verifying_draft")
+                    self._ensure_script_ready(project_id, script)
+                    verification = self.verify_script(
+                        project_id,
+                        model=verifier_model,
+                        prompt_version=prompt_version,
+                    )
+
             if checks.verdict != "pass" or verification.verdict != "pass":
-                script = self.revise_script(
+                revised = self.script_store.load_script_optional(project_id, revised=True)
+                if revised is None:
+                    stage("revising")
+                    self._ensure_script_verifying(project_id, script)
+                    revised = self.revise_script(
+                        project_id,
+                        model=reviser_model,
+                        prompt_version=prompt_version,
+                    )
+                else:
+                    self._ensure_script_ready(project_id, revised)
+
+                revised_checks = self.script_store.load_checks_optional(
                     project_id,
-                    model=reviser_model,
-                    prompt_version=prompt_version,
-                )
-                checks = self.run_checks(project_id, revised=True)
-                if checks.verdict != "pass":
-                    raise ValueError("Revised script failed deterministic checks.")
-                verification = self.verify_script(
-                    project_id,
-                    model=verifier_model,
                     revised=True,
-                    prompt_version=prompt_version,
                 )
+                if revised_checks is None:
+                    stage("checking_revision")
+                    self._ensure_script_ready(project_id, revised)
+                    revised_checks = self.run_checks(project_id, revised=True)
+                if revised_checks.verdict != "pass":
+                    raise ValueError("Revised script failed deterministic checks.")
+
+                revised_verification = self.script_store.load_verification_optional(
+                    project_id,
+                    revised=True,
+                )
+                if revised_verification is None:
+                    stage("verifying_revision")
+                    self._ensure_script_ready(project_id, revised)
+                    revised_verification = self.verify_script(
+                        project_id,
+                        model=verifier_model,
+                        revised=True,
+                        prompt_version=prompt_version,
+                    )
+                script = revised
+                checks = revised_checks
+                verification = revised_verification
+
             if verification.verdict != "pass" or verification.unsupported_claim_ratio != 0:
                 raise ValueError("Script failed verification after one targeted revision.")
+            self._ensure_script_verifying(project_id, script)
             project = self.workspace_store.load_project(project_id)
             transition(project, ProjectState.SCRIPT_VERIFIED)
             project.script = script
             self.workspace_store.save_project(project)
             manifest = self.script_store.load_manifest(project_id)
             manifest.status = "verified"
+            manifest.last_error = None
             manifest.updated_at = datetime.now(UTC)
             self.script_store.save_manifest(manifest)
             return ScriptPipelineResult(
@@ -297,16 +383,86 @@ class ScriptPipelineService:
             raise
 
     def _load_claims(self, project_id: UUID) -> list[ClaimRecord]:
-        claims = []
-        for source_id in self.source_store.list_claim_ready_source_ids(project_id):
-            claims.extend(self.source_store.load_claim_ledger(project_id, source_id).claims)
+        project = self.workspace_store.load_project(project_id)
+        claim_ready_ids = self.source_store.list_claim_ready_source_ids(project_id)
+        source_ids = [
+            source.source_id for source in project.sources if source.usable_as_evidence
+        ]
+        if not project.sources:
+            source_ids = claim_ready_ids
+        if not source_ids:
+            raise ValueError("The project has no confirmed evidence sources.")
+        missing = sorted(set(source_ids) - set(claim_ready_ids), key=str)
+        if missing:
+            raise ValueError(
+                "Confirmed corpus contains sources that are not claim-ready: "
+                + ", ".join(str(source_id) for source_id in missing)
+            )
+        claims: list[ClaimRecord] = []
+        for source_id in source_ids:
+            claims.extend(
+                self.source_store.load_claim_ledger(project_id, source_id).claims
+            )
         return claims
 
-    def _enter_script_verifying(self, project_id: UUID) -> None:
+    def _ensure_script_drafting(self, project_id: UUID) -> None:
         project = self.workspace_store.load_project(project_id)
-        self._require_state(project.state, ProjectState.SCRIPT_READY)
+        if project.state == ProjectState.SCRIPT_DRAFTING:
+            return
+        if project.state in {
+            ProjectState.EPISODE_PLANNED,
+            ProjectState.FAILED_RETRYABLE,
+            ProjectState.SCRIPT_READY,
+            ProjectState.SCRIPT_VERIFYING,
+        }:
+            transition(project, ProjectState.SCRIPT_DRAFTING)
+        else:
+            raise ValueError(f"Cannot restore script drafting from {project.state.value}.")
+        self.workspace_store.save_project(project)
+
+    def _ensure_script_ready(self, project_id: UUID, script: Script) -> None:
+        project = self.workspace_store.load_project(project_id)
+        if project.state == ProjectState.SCRIPT_READY:
+            if project.script != script:
+                project.script = script
+                self.workspace_store.save_project(project)
+            return
+        if project.state == ProjectState.SCRIPT_VERIFYING:
+            transition(project, ProjectState.SCRIPT_DRAFTING)
+        if project.state in {ProjectState.EPISODE_PLANNED, ProjectState.FAILED_RETRYABLE}:
+            transition(project, ProjectState.SCRIPT_DRAFTING)
+        if project.state != ProjectState.SCRIPT_DRAFTING:
+            raise ValueError(f"Cannot restore script readiness from {project.state.value}.")
+        project.script = script
+        transition(project, ProjectState.SCRIPT_READY)
+        self.workspace_store.save_project(project)
+
+    def _ensure_script_verifying(self, project_id: UUID, script: Script) -> None:
+        project = self.workspace_store.load_project(project_id)
+        if project.state == ProjectState.SCRIPT_VERIFYING:
+            return
+        self._ensure_script_ready(project_id, script)
+        project = self.workspace_store.load_project(project_id)
         transition(project, ProjectState.SCRIPT_VERIFYING)
         self.workspace_store.save_project(project)
+
+    @staticmethod
+    def _materialize_segment_turns(
+        segment_id: str,
+        draft: SegmentScriptDraft,
+    ) -> list[ScriptTurn]:
+        return [
+            ScriptTurn(
+                turn_id=f"{segment_id}-turn-{index:03d}",
+                segment_id=segment_id,
+                speaker=turn.speaker,
+                spoken_text_fa=turn.spoken_text_fa.strip(),
+                claim_ids=turn.claim_ids,
+                evidence_ids=turn.evidence_ids,
+                editorial_only=turn.editorial_only,
+            )
+            for index, turn in enumerate(draft.turns, start=1)
+        ]
 
     @staticmethod
     def _require_state(actual: ProjectState, expected: ProjectState) -> None:
@@ -314,10 +470,12 @@ class ScriptPipelineService:
             raise ValueError(f"Expected {expected.value} state, found {actual.value}.")
 
     @staticmethod
-    def _enter_script_drafting(project) -> None:
+    def _enter_script_drafting(project: Project) -> None:
         if project.state in {
             ProjectState.EPISODE_PLANNED,
             ProjectState.FAILED_RETRYABLE,
+            ProjectState.SCRIPT_READY,
+            ProjectState.SCRIPT_VERIFYING,
         }:
             transition(project, ProjectState.SCRIPT_DRAFTING)
         elif project.state != ProjectState.SCRIPT_DRAFTING:
@@ -325,6 +483,8 @@ class ScriptPipelineService:
 
     def _mark_failed(self, project_id: UUID, message: str) -> None:
         project = self.workspace_store.load_project(project_id)
+        if project.state == ProjectState.EPISODE_PLANNED:
+            return
         if project.state != ProjectState.FAILED_RETRYABLE:
             mark_failed(project, message)
         else:

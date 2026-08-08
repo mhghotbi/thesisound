@@ -52,7 +52,10 @@ ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
         ProjectState.SCRIPT_DRAFTING,
         ProjectState.FAILED_RETRYABLE,
     },
-    ProjectState.SCRIPT_VERIFIED: {ProjectState.AUDIO_GENERATING},
+    ProjectState.SCRIPT_VERIFIED: {
+        ProjectState.AUDIO_GENERATING,
+        ProjectState.FAILED_RETRYABLE,
+    },
     ProjectState.AUDIO_GENERATING: {
         ProjectState.AUDIO_READY,
         ProjectState.FAILED_RETRYABLE,
