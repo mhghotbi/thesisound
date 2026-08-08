@@ -4,11 +4,9 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from threading import RLock
 from time import monotonic
-from typing import Any, TypeVar
+from typing import Any
 
 from thesisound.modeling import ModelConfigurationError
-
-T = TypeVar("T")
 
 
 class GeminiKeyPoolExhausted(RuntimeError):
@@ -60,7 +58,7 @@ class GeminiKeyPool:
     def size(self) -> int:
         return len(self._states)
 
-    def call(self, operation: Callable[[Any], T]) -> T:
+    def call[T](self, operation: Callable[[Any], T]) -> T:
         last_quota_error: Exception | None = None
         now = self._clock()
         order = self._candidate_order()
