@@ -9,7 +9,11 @@ from pydantic import BaseModel
 
 from thesisound.audio import AsrTranscript
 from thesisound.audio_ports import TtsRequest, TtsResponse
-from thesisound.gemini_key_pool import GeminiKeyPool, shared_gemini_key_pool
+from thesisound.gemini_key_pool import (
+    GeminiKeyPool,
+    is_gemini_quota_error,
+    shared_gemini_key_pool,
+)
 from thesisound.modeling import ModelConfigurationError, ModelProviderError, ModelRateLimitError
 
 
@@ -44,20 +48,23 @@ class GeminiTtsAdapter:
             f"{request.style_prompt.strip()}\n\n"
             f"متن را دقیقاً و بدون افزودن توضیح بخوان:\n{request.text}"
         )
-        operation = lambda client: client.models.generate_content(
-            model=request.model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_modalities=["AUDIO"],
-                speech_config=types.SpeechConfig(
-                    voice_config=types.VoiceConfig(
-                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                            voice_name=request.voice_name
+
+        def operation(client: Any) -> Any:
+            return client.models.generate_content(
+                model=request.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                voice_name=request.voice_name
+                            )
                         )
-                    )
+                    ),
                 ),
-            ),
-        )
+            )
+
         try:
             response = self._pool.call(operation) if self._pool else operation(self._client)
             data = _audio_data(response)
@@ -104,17 +111,20 @@ class GeminiAsrAdapter:
             "گفتار این فایل را بدون خلاصه‌سازی و بدون اصلاح محتوایی رونویسی کن. "
             f"زبان مورد انتظار {language} و گوینده مورد انتظار {expected_speaker} است."
         )
-        operation = lambda client: client.models.generate_content(
-            model=model,
-            contents=[
-                prompt,
-                types.Part.from_bytes(data=wav_bytes, mime_type="audio/wav"),
-            ],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=_AsrOutput,
-            ),
-        )
+
+        def operation(client: Any) -> Any:
+            return client.models.generate_content(
+                model=model,
+                contents=[
+                    prompt,
+                    types.Part.from_bytes(data=wav_bytes, mime_type="audio/wav"),
+                ],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=_AsrOutput,
+                ),
+            )
+
         try:
             response = self._pool.call(operation) if self._pool else operation(self._client)
             output = _coerce_asr(response)
@@ -151,8 +161,7 @@ def _resolve_client(
 
 
 def _audio_provider_error(exc: Exception) -> Exception:
-    status = getattr(exc, "status_code", None)
-    if status == 429:
+    if is_gemini_quota_error(exc):
         return ModelRateLimitError(str(exc) or type(exc).__name__)
     return ModelProviderError(str(exc) or type(exc).__name__, retryable=True)
 
