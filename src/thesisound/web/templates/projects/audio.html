@@ -2,6 +2,7 @@
 {% from "components.html" import status_label, technical_details %}
 {% block title %}شنیدن | Thesisound{% endblock %}
 {% block content %}
+{% set speaker_labels = {'A': 'اول', 'B': 'دوم'} %}
 <header class="page-heading page-heading--compact">
   <div>
     <p class="kicker">شنیدن و دریافت</p>
@@ -56,7 +57,8 @@
     </div>
     {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', audio_run.status) }}
   </div>
-  <p class="lede">درصد و ETA حدس زده نمی‌شود. قطعه‌های سالم در تلاش دوباره ساخته نمی‌شوند.</p>
+  <p class="lede">درصد و زمان باقی‌مانده حدس زده نمی‌شود. قطعه‌های سالم در تلاش دوباره ساخته نمی‌شوند.</p>
+  <p class="operator-only">No synthetic ETA; healthy chunks are reused.</p>
 </section>
 {% endif %}
 
@@ -110,9 +112,9 @@
     {% for item in segment_views %}
     <article class="transcript-turn" id="chunk-{{ item.chunk.chunk_id }}">
       <div class="transcript-turn__meta">
-        <span class="transcript-turn__speaker">گوینده {{ item.chunk.speaker }}</span>
+        <span class="transcript-turn__speaker">گوینده {{ speaker_labels.get(item.chunk.speaker, item.chunk.speaker) }}</span>
         <span class="transcript-turn__number">{{ loop.index | fa_num }}</span>
-        <code class="operator-only"><bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></code>
+        <code class="operator-only">speaker <bdi dir="ltr">{{ item.chunk.speaker }}</bdi> · chunk <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></code>
       </div>
       <p class="transcript-turn__text">{{ item.chunk.text }}</p>
       {% if item.record or item.transcript or item.qa %}
