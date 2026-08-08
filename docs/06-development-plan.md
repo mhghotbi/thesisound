@@ -12,7 +12,8 @@ input fidelity
 → audio fidelity
 → operator control and observability
 → discovery and multi-source breadth
-→ end-user UI and deployment
+→ end-user UI
+→ persistence and deployment
 ```
 
 Operator UI و End-user UI دو milestone متفاوت‌اند. اولی ابزار محلی برای اجرای pipeline، مشاهده artifact و recovery است؛ دومی تجربه ساده‌شده و polished برای کاربر غیرمتخصص.
@@ -328,7 +329,7 @@ Disagreement Graph فعلی stanceهای صریح را نگه می‌دارد؛ 
 
 ---
 
-## Milestone 9 — End-user Product UI و Deployment
+## Milestone 9 — End-user Product UI
 
 فقط پس از تثبیت workflow در Operator UI و اجرای موفق چند پروژه واقعی:
 
@@ -339,9 +340,31 @@ Disagreement Graph فعلی stanceهای صریح را نگه می‌دارد؛ 
 - episode/script review متناسب با کاربر غیرمتخصص؛
 - player، transcript و source/locator trace؛
 - privacy و data lifecycle controls؛
-- authentication و hosted private deployment در صورت نیاز؛
 - onboarding و empty states محصولی؛
 - accessibility و responsive design؛
 - telemetry محصول با حفظ privacy.
 
 End-user UI نباید APIهای داخلی Operator UI را بدون boundary عمومی expose کند. ابتدا use caseها و permission model مستقل تعریف شوند.
+
+---
+
+## Milestone 10 — Persistence، Jobs و Deployment
+
+فقط وقتی usage واقعی نیاز را اثبات کرد:
+
+- SQLite repository و job table؛
+- resumable stage runner؛
+- block/model/audio cache؛
+- cleanup و delete project؛
+- private deployment؛
+- object storage؛
+- access control و authentication؛
+- PostgreSQL/Redis فقط با نیاز concurrency واقعی.
+
+Operator UI در ابتدا می‌تواند روی filesystem artifact store و process محلی کار کند. مهاجرت به job queue یا database نباید پیش‌شرط ساخت UI شود، اما UI باید command boundary داشته باشد تا این مهاجرت بعداً بدون بازنویسی page logic ممکن باشد.
+
+---
+
+## کار بعدی دقیق
+
+گام بعدی توسعه **TTS + ASR + Audio QA vertical slice** است. پس از اینکه یک source واقعی به صوت فارسی verified تبدیل شد، **Local Operator UI** ساخته می‌شود. Source Discovery و End-user UI تا آن زمان اولویت ندارند.
