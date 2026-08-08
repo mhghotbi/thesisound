@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID, uuid4
 
+import pytest
+
 from thesisound.domain import (
     ClaimRecord,
     ClaimType,
@@ -13,14 +15,15 @@ from thesisound.domain import (
     Project,
     ProjectState,
     ResearchBrief,
+    SourceAccess,
+    SourceCandidate,
+    SourceDecision,
+    SourceRole,
     SupportStatus,
     TopicType,
     VerificationIssue,
 )
-from thesisound.episode import (
-    DisagreementGraph,
-    SegmentEvidencePack,
-)
+from thesisound.episode import DisagreementGraph, SegmentEvidencePack
 from thesisound.modeling import ModelExecution, ModelRunRecord
 from thesisound.pipeline import WorkspaceStore
 from thesisound.script import (
@@ -35,6 +38,7 @@ from thesisound.script import (
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.persian_script_writer import PersianScriptWriterService
+from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
 from thesisound.services.script_pipeline_service import ScriptPipelineService
@@ -52,6 +56,7 @@ from thesisound.source_analysis import (
 class FakeScriptRunner:
     def __init__(self) -> None:
         self.verification_calls = 0
+        self.segment_calls = 0
 
     def run(
         self,
@@ -77,6 +82,7 @@ class FakeScriptRunner:
                 ]
             )
         elif output_type is SegmentScriptDraft:
+            self.segment_calls += 1
             segment = variables["segment"]
             pack = variables["evidence_pack"]
             assert isinstance(segment, dict)
@@ -163,7 +169,7 @@ def _spoken(prefix: str, count: int) -> str:
     return " ".join(f"{prefix}{index}" for index in range(count))
 
 
-def _seed(root: Path) -> tuple[UUID, str]:
+def _seed(root: Path) -> tuple[UUID, UUID, str]:
     project_id = uuid4()
     source_id = uuid4()
     claim_id = "clm-1"
@@ -226,6 +232,17 @@ def _seed(root: Path) -> tuple[UUID, str]:
             output_language="fa",
             learning_objectives=["توضیح نسبت کنش و کثرت"],
         ),
+        sources=[
+            SourceCandidate(
+                source_id=source_id,
+                title="منبع اصلی",
+                role=SourceRole.PRIMARY,
+                source_type="book",
+                origin="fixture",
+                access=SourceAccess.FULL_TEXT,
+                user_decision=SourceDecision.INCLUDE,
+            )
+        ],
         episode_plan=plan,
     )
     WorkspaceStore(root).save_project(project)
@@ -270,10 +287,8 @@ def _seed(root: Path) -> tuple[UUID, str]:
             )
         ],
     )
-    episode_store.save_disagreement_graph(
-        DisagreementGraph(project_id=project_id)
-    )
-    return project_id, claim_id
+    episode_store.save_disagreement_graph(DisagreementGraph(project_id=project_id))
+    return project_id, source_id, claim_id
 
 
 def _service(root: Path, runner: FakeScriptRunner) -> ScriptPipelineService:
@@ -282,6 +297,7 @@ def _service(root: Path, runner: FakeScriptRunner) -> ScriptPipelineService:
         source_store=SourceArtifactStore(root),
         episode_store=EpisodeArtifactStore(root),
         script_store=ScriptArtifactStore(root),
+        approval_store=EpisodePlanApprovalStore(root),
         glossary_builder=GlossaryBuilderService(runner),
         script_writer=PersianScriptWriterService(runner),
         script_checker=ScriptChecker(words_per_minute=20),
@@ -290,9 +306,18 @@ def _service(root: Path, runner: FakeScriptRunner) -> ScriptPipelineService:
     )
 
 
+def _approve(root: Path, project_id: UUID) -> None:
+    workspace = WorkspaceStore(root)
+    EpisodePlanApprovalStore(root).approve(
+        workspace.load_project(project_id),
+        approved_by="test-user",
+    )
+
+
 def test_script_pipeline_revises_only_flagged_turn_and_verifies(tmp_path: Path) -> None:
     root = tmp_path / "workspaces"
-    project_id, _ = _seed(root)
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
     runner = FakeScriptRunner()
 
     result = _service(root, runner).run(
@@ -318,16 +343,85 @@ def test_script_pipeline_revises_only_flagged_turn_and_verifies(tmp_path: Path) 
     assert (script_dir / "verification-revised.json").exists()
 
 
+def test_script_pipeline_requires_current_explicit_plan_approval(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+
+    with pytest.raises(ValueError, match="not been explicitly approved"):
+        _service(root, FakeScriptRunner()).run(
+            project_id,
+            glossary_model="fake",
+            writer_model="fake",
+            verifier_model="fake",
+            reviser_model="fake",
+        )
+
+    assert WorkspaceStore(root).load_project(project_id).state == ProjectState.EPISODE_PLANNED
+
+
+def test_script_writer_resumes_completed_segment_draft(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
+    runner = FakeScriptRunner()
+    service = _service(root, runner)
+    service.build_glossary(project_id, model="fake")
+    service.write_script(project_id, model="fake")
+    assert runner.segment_calls == 1
+
+    project = WorkspaceStore(root).load_project(project_id)
+    project.state = ProjectState.SCRIPT_DRAFTING
+    project.script = None
+    WorkspaceStore(root).save_project(project)
+    (root / str(project_id) / "script" / "script-draft.json").unlink()
+
+    service.write_script(project_id, model="fake")
+
+    assert runner.segment_calls == 1
+
+
+def test_script_claim_scope_excludes_unselected_claim_ready_source(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    stale_source = uuid4()
+    SourceArtifactStore(root).save_claim_ledger(
+        project_id,
+        stale_source,
+        ClaimLedger(
+            source_id=stale_source,
+            claims=[
+                ClaimRecord(
+                    claim_id="stale-claim",
+                    claim="Stale claim",
+                    claim_type=ClaimType.AUTHOR_POSITION,
+                    evidence_ids=["stale-evidence"],
+                    support_status=SupportStatus.STRONG,
+                )
+            ],
+        ),
+    )
+    SourceArtifactStore(root).save_manifest(
+        SourceAnalysisManifest(
+            project_id=project_id,
+            source_id=stale_source,
+            source_sha256="b" * 64,
+            status="claims_ready",
+            claim_count=1,
+        )
+    )
+
+    claims = _service(root, FakeScriptRunner())._load_claims(project_id)
+
+    assert [claim.claim_id for claim in claims] == ["clm-1"]
+
+
 def test_script_turn_contract_rejects_substantive_turn_without_evidence() -> None:
     from pydantic import ValidationError
 
-    try:
+    with pytest.raises(ValidationError):
         ScriptTurnDraft(
             speaker="A",
             spoken_text_fa="این یک ادعای محتوایی است.",
             claim_ids=["clm-1"],
             evidence_ids=[],
         )
-    except ValidationError:
-        return
-    raise AssertionError("Substantive turn without evidence IDs must be rejected.")

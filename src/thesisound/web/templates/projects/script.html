@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}سناریو | Thesisound{% endblock %}
+{% block content %}
+<div class="reading-layout reading-layout--wide">
+  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
+    <span class="step-rail__item is-complete"><b>۱</b> تعریف هدف</span>
+    <span class="step-rail__item is-complete"><b>۲</b> منابع</span>
+    <span class="step-rail__item is-complete"><b>۳</b> مجموعه شواهد</span>
+    <span class="step-rail__item is-complete"><b>۴</b> طرح اپیزود</span>
+    <span class="step-rail__item is-current"><b>۵</b> سناریو</span>
+  </nav>
+
+  <header class="page-heading page-heading--compact">
+    <div>
+      <p class="eyebrow">متن مستند و قابل‌ردیابی</p>
+      <h1>{{ project_title(project) }}</h1>
+      <p>هر turn محتوایی باید به claim و evidence همان بخش متصل باشد و پیش از صدا از کنترل قطعی و verifier مستقل عبور کند.</p>
+    </div>
+  </header>
+
+  {% if error %}<div class="notice notice--danger" role="alert">{{ error }}</div>{% endif %}
+
+  {% if can_approve and not script_active %}
+  <section class="interpretation">
+    <p class="eyebrow">تأیید انسانی لازم است</p>
+    <h2>ساخت سناریو هنوز شروع نشده است</h2>
+    <p>با تأیید، hash همین نسخه از Episode Plan ثبت می‌شود. اگر طرح بعداً تغییر کند، این تأیید معتبر نخواهد بود.</p>
+  </section>
+  <form method="post" action="/projects/{{ project.project_id }}/script/approve" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">تأیید همین طرح و ساخت سناریو</button>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">بازگشت به طرح</a>
+  </form>
+  {% endif %}
+
+  {% if approval %}
+  <div class="notice notice--info">
+    طرح توسط <bdi dir="ltr">{{ approval.approved_by }}</bdi> تأیید شده است.
+    شناسه نسخه: <code><bdi dir="ltr">{{ approval.plan_hash[:12] }}</bdi></code>
+  </div>
+  {% endif %}
+
+  {% if script_run and script_active %}
+  <section class="source-list" aria-labelledby="script-progress-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">اجرای جاری</p>
+        <h2 id="script-progress-title">
+          {% if script_run.stage == "queued" %}در صف اجرا
+          {% elif script_run.stage == "building_glossary" %}ساخت واژه‌نامه دوزبانه
+          {% elif script_run.stage == "writing_segments" %}نوشتن بخش‌های سناریو
+          {% elif script_run.stage == "checking_draft" %}کنترل قطعی پیش‌نویس
+          {% elif script_run.stage == "verifying_draft" %}راستی‌آزمایی مستقل پیش‌نویس
+          {% elif script_run.stage == "revising" %}اصلاح هدفمند turnهای معیوب
+          {% elif script_run.stage == "checking_revision" %}کنترل قطعی نسخه اصلاح‌شده
+          {% elif script_run.stage == "verifying_revision" %}راستی‌آزمایی نسخه اصلاح‌شده
+          {% else %}در حال پردازش{% endif %}
+        </h2>
+      </div>
+      <span><bdi dir="ltr">{{ script_run.status }}</bdi></span>
+    </div>
+    <p>در retry، segmentها و artifactهای سالم دوباره تولید نمی‌شوند. درصد و ETA ساختگی نمایش داده نمی‌شود.</p>
+  </section>
+  {% endif %}
+
+  {% if script_run and script_run.status == "failed" %}
+  <div class="notice notice--danger" role="alert">
+    <strong>ساخت یا راستی‌آزمایی سناریو متوقف شد.</strong>
+    <p>{{ script_run.last_error }}</p>
+  </div>
+  {% if can_retry %}
+  <form method="post" action="/projects/{{ project.project_id }}/script/retry" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">ادامه از artifactهای سالم</button>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">بررسی طرح</a>
+  </form>
+  {% endif %}
+  {% endif %}
+
+  {% if script_run and script_run.status == "succeeded" and script and checks and verification %}
+  <section class="interpretation">
+    <p class="eyebrow">خروجی نهایی این مرحله</p>
+    <h2>{{ script.title }}</h2>
+    <p>
+      {{ checks.word_count }} واژه · حدود
+      <bdi dir="ltr">{{ checks.estimated_minutes | round(1) }} دقیقه</bdi>
+      · {{ script.turns | length }} turn
+      {% if used_revision %}· یک اصلاح هدفمند انجام شده{% endif %}
+    </p>
+  </section>
+
+  <section class="source-list" aria-labelledby="script-quality-title">
+    <div class="section-heading">
+      <h2 id="script-quality-title">گزارش کنترل کیفیت</h2>
+    </div>
+    <article class="source-row">
+      <div class="source-row__identity">
+        <strong>کنترل قطعی</strong>
+        <span><bdi dir="ltr">{{ checks.verdict }}</bdi></span>
+      </div>
+      <p>{{ checks.substantive_turn_count }} turn محتوایی بررسی شد.</p>
+      {% if checks.issues %}
+      <ul>{% for issue in checks.issues %}<li>{{ issue.explanation }}</li>{% endfor %}</ul>
+      {% else %}<p class="source-row__issue">هیچ issue قطعی باقی نمانده است.</p>{% endif %}
+    </article>
+    <article class="source-row">
+      <div class="source-row__identity">
+        <strong>Verifier مستقل</strong>
+        <span><bdi dir="ltr">{{ verification.verdict }}</bdi></span>
+      </div>
+      <p>نسبت ادعاهای بدون پشتوانه: <bdi dir="ltr">{{ (verification.unsupported_claim_ratio * 100) | round(1) }}٪</bdi></p>
+      {% if verification.issues %}
+      <ul>{% for issue in verification.issues %}<li>{{ issue.explanation }}</li>{% endfor %}</ul>
+      {% else %}<p class="source-row__issue">Verifier مسئله باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
+    </article>
+  </section>
+
+  {% for view in segment_views %}
+  <section class="source-list" aria-labelledby="segment-{{ view.segment.segment_id }}">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">بخش {{ loop.index }}</p>
+        <h2 id="segment-{{ view.segment.segment_id }}">{{ view.segment.title }}</h2>
+      </div>
+      <span><bdi dir="ltr">{{ view.segment.estimated_minutes | round(1) }} دقیقه</bdi></span>
+    </div>
+    {% for item in view.turns %}
+    <article class="source-row">
+      <div class="source-row__identity">
+        <strong>گوینده {{ item.turn.speaker }}</strong>
+        <span><bdi dir="ltr">{{ item.turn.turn_id }}</bdi></span>
+      </div>
+      <p>{{ item.turn.spoken_text_fa }}</p>
+      {% if item.turn.editorial_only %}
+      <p class="source-row__issue">turn انتقالی؛ بدون ادعای محتوایی</p>
+      {% else %}
+      <p class="source-row__issue">Claimها: <bdi dir="ltr">{{ item.turn.claim_ids | join(', ') }}</bdi></p>
+      {% endif %}
+      {% if item.references %}
+      <details>
+        <summary>ردیابی شواهد این turn</summary>
+        <ul>
+          {% for reference in item.references %}
+          <li>
+            <strong><bdi dir="auto">{{ reference.source_title }}</bdi></strong>
+            · {{ reference.locator }}
+            · <bdi dir="ltr">{{ reference.evidence_id }}</bdi>
+            <blockquote>{{ reference.excerpt }}</blockquote>
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </section>
+  {% endfor %}
+
+  <div class="notice notice--success">
+    سناریو به `SCRIPT_VERIFIED` رسیده است. تولید صدا هنوز شروع نشده و گام مستقل بعدی خواهد بود.
+  </div>
+  {% endif %}
+
+  <div class="form-actions">
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">مشاهده طرح اپیزود</a>
+    <a class="button button--quiet" href="/projects">بازگشت به پروژه‌ها</a>
+  </div>
+</div>
+{% if script_active %}
+<script>window.setTimeout(() => window.location.reload(), 3000);</script>
+{% endif %}
+{% endblock %}

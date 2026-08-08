@@ -18,9 +18,7 @@
     </div>
   </header>
 
-  {% if error %}
-  <div class="notice notice--danger" role="alert">{{ error }}</div>
-  {% endif %}
+  {% if error %}<div class="notice notice--danger" role="alert">{{ error }}</div>{% endif %}
 
   {% if can_start and not planning_active %}
   <section class="interpretation">
@@ -83,8 +81,7 @@
       <h2>منابع برای مدت درخواستی کافی نیستند</h2>
       <p>{{ planning_run.last_error }}</p>
       <p>
-        مدت درخواستی:
-        <bdi dir="ltr">{{ planning_run.target_duration_minutes }} دقیقه</bdi>
+        مدت درخواستی: <bdi dir="ltr">{{ planning_run.target_duration_minutes }} دقیقه</bdi>
         {% if planning_run.supported_duration_minutes is not none %}
         · مدت قابل‌پشتیبانی:
         <strong><bdi dir="ltr">{{ planning_run.supported_duration_minutes | round(1) }} دقیقه</bdi></strong>
@@ -95,12 +92,8 @@
 
   {% if planning_run.material_gaps %}
   <section class="source-list" aria-labelledby="material-gaps-title">
-    <div class="section-heading">
-      <h2 id="material-gaps-title">خلأهای اصلی</h2>
-    </div>
-    <ul>
-      {% for gap in planning_run.material_gaps %}<li>{{ gap }}</li>{% endfor %}
-    </ul>
+    <div class="section-heading"><h2 id="material-gaps-title">خلأهای اصلی</h2></div>
+    <ul>{% for gap in planning_run.material_gaps %}<li>{{ gap }}</li>{% endfor %}</ul>
   </section>
   {% endif %}
 
@@ -110,19 +103,11 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <label class="field">
         <span>مدت کوتاه‌تر</span>
-        <input
-          type="number"
-          name="duration_minutes"
-          min="5"
-          max="{{ planning_run.supported_duration_minutes | int }}"
-          value="{{ planning_run.supported_duration_minutes | int }}"
-          required
-        >
+        <input type="number" name="duration_minutes" min="5" max="{{ planning_run.supported_duration_minutes | int }}" value="{{ planning_run.supported_duration_minutes | int }}" required>
       </label>
       <button class="button button--primary" type="submit">کاهش مدت و ارزیابی دوباره</button>
     </form>
     {% endif %}
-
     <form method="post" action="/projects/{{ project.project_id }}/episode/reopen-inputs" class="form-actions">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button class="button button--secondary" name="action" value="add-source" type="submit">افزودن منبع</button>
@@ -132,7 +117,7 @@
   <div class="notice notice--info">ادامه‌دادن با corpus ناکافی مجاز نیست.</div>
   {% endif %}
 
-  {% if planning_run and planning_run.status == "succeeded" and episode_plan %}
+  {% if episode_plan and ((planning_run and planning_run.status == "succeeded") or project.state.value in ["episode_planned", "script_drafting", "script_ready", "script_verifying", "script_verified"]) %}
   <section class="interpretation">
     <p class="eyebrow">نتیجه ارزیابی</p>
     <h2>{{ episode_plan.title }}</h2>
@@ -140,14 +125,8 @@
     <p>
       مدت طرح:
       <strong><bdi dir="ltr">{{ episode_plan.estimated_duration_minutes | round(1) }} دقیقه</bdi></strong>
-      {% if coverage %}
-      · سقف گزارش‌شده منابع:
-      <bdi dir="ltr">{{ coverage.max_supported_minutes }} دقیقه</bdi>
-      {% endif %}
-      {% if budget %}
-      · مدت مؤثر قابل‌پشتیبانی:
-      <bdi dir="ltr">{{ budget.effective_supported_minutes | round(1) }} دقیقه</bdi>
-      {% endif %}
+      {% if coverage %}· سقف گزارش‌شده منابع: <bdi dir="ltr">{{ coverage.max_supported_minutes }} دقیقه</bdi>{% endif %}
+      {% if budget %}· مدت مؤثر قابل‌پشتیبانی: <bdi dir="ltr">{{ budget.effective_supported_minutes | round(1) }} دقیقه</bdi>{% endif %}
     </p>
   </section>
 
@@ -169,9 +148,19 @@
     {% endfor %}
   </section>
 
+  {% if project.state.value == "episode_planned" %}
   <div class="notice notice--info">
-    طرح آماده بررسی است. نوشتن سناریو هنوز شروع نشده و در گام بعد فقط پس از تأیید صریح این طرح آغاز می‌شود.
+    ساخت سناریو فقط پس از ثبت تأیید صریح همین نسخه از طرح شروع می‌شود. تأیید به hash طرح متصل است و با تغییر طرح باطل می‌شود.
   </div>
+  <form method="post" action="/projects/{{ project.project_id }}/script/approve" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">تأیید طرح و ساخت سناریو</button>
+  </form>
+  {% else %}
+  <div class="form-actions">
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/script">مشاهده سناریو و راستی‌آزمایی</a>
+  </div>
+  {% endif %}
   {% endif %}
 
   <div class="form-actions">
@@ -179,9 +168,5 @@
     <a class="button button--quiet" href="/projects">بازگشت به پروژه‌ها</a>
   </div>
 </div>
-{% if planning_active %}
-<script>
-  window.setTimeout(() => window.location.reload(), 3000);
-</script>
-{% endif %}
+{% if planning_active %}<script>window.setTimeout(() => window.location.reload(), 3000);</script>{% endif %}
 {% endblock %}

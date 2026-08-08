@@ -38,7 +38,7 @@ def register_episode_routes(
         run = planner.run_store.load_optional(project_id)
         coverage = _load_optional(episode_store.load_coverage, project_id)
         budget = _load_optional(episode_store.load_budget, project_id)
-        plan = _load_optional(episode_store.load_plan, project_id)
+        plan = _load_optional(episode_store.load_plan, project_id) or project.episode_plan
         return render(
             request,
             "projects/episode.html",
@@ -179,6 +179,7 @@ def _episode_error(
 ) -> HTMLResponse:
     project = workspace.load_project(project_id)
     run = planner.run_store.load_optional(project_id)
+    plan = _load_optional(episode_store.load_plan, project_id) or project.episode_plan
     return render(
         request,
         "projects/episode.html",
@@ -188,7 +189,7 @@ def _episode_error(
             "planning_active": bool(run and run.status in {"queued", "running"}),
             "coverage": _load_optional(episode_store.load_coverage, project_id),
             "budget": _load_optional(episode_store.load_budget, project_id),
-            "episode_plan": _load_optional(episode_store.load_plan, project_id),
+            "episode_plan": plan,
             "can_start": project.state == ProjectState.CORPUS_READY,
             "can_retry": bool(
                 run

@@ -19,6 +19,7 @@ from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
 from thesisound.services.persian_script_writer import PersianScriptWriterService
+from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
 from thesisound.services.script_pipeline_service import ScriptPipelineService
@@ -30,6 +31,7 @@ console = Console()
 
 
 def register_script_commands(app: typer.Typer) -> None:
+    app.command("approve-plan")(_approve_plan)
     app.command("build-glossary")(_build_glossary)
     app.command("write-script")(_write_script)
     app.command("check-script")(_check_script)
@@ -37,6 +39,25 @@ def register_script_commands(app: typer.Typer) -> None:
     app.command("revise-script")(_revise_script)
     app.command("prepare-script")(_prepare_script)
     app.command("record-budget-calibration")(_record_budget_calibration)
+
+
+def _approve_plan(
+    project_id: Annotated[UUID, typer.Argument()],
+    approved_by: Annotated[str, typer.Option("--approved-by")] = "cli",
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    root = _root(settings, workspace_root)
+    workspace = WorkspaceStore(root)
+    try:
+        project = workspace.load_project(project_id)
+        approval = EpisodePlanApprovalStore(root).approve(
+            project,
+            approved_by=approved_by,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        _fail(exc)
+    _print_json(approval.model_dump(mode="json"))
 
 
 def _build_glossary(
@@ -196,6 +217,7 @@ def _service(settings: Settings, root: Path) -> ScriptPipelineService:
         source_store=SourceArtifactStore(root),
         episode_store=EpisodeArtifactStore(root),
         script_store=ScriptArtifactStore(root),
+        approval_store=EpisodePlanApprovalStore(root),
         glossary_builder=GlossaryBuilderService(runner),
         script_writer=PersianScriptWriterService(runner),
         script_checker=ScriptChecker(),
