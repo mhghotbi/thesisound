@@ -1,0 +1,135 @@
+name: One-shot Maqaal language cleanup
+
+on:
+  push:
+    branches: [agent/ui-refactor-v2]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.event.head_commit.message == 'chore: run Maqaal language cleanup'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out UI branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/ui-refactor-v2
+          fetch-depth: 0
+
+      - name: Apply exact copy corrections
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              "src/thesisound/web/templates/projects/episode.html": [
+                  ("واقعاً ذخیره شده است.", "واقعاً ذخیره‌شده است."),
+                  ("کاستی‌های پوشش", "کاستی‌های کفایت منابع"),
+                  ("جزئیات بسندگی شواهد و بودجه", "جزئیات بسندگی شاهدها و بودجه"),
+              ],
+              "src/thesisound/web/templates/projects/processing.html": [
+                  ("منبع تکمیل شده است", "منبع تکمیل‌شده است"),
+              ],
+              "src/thesisound/web/templates/projects/script.html": [
+                  ("برای نگارش تأیید شده است.", "برای نگارش تأییدشده است."),
+                  ("قابل استفاده است.", "قابل‌استفاده است."),
+              ],
+              "src/thesisound/web/read_models.py": [
+                  (
+                      "طرح گفتار بر پایهٔ بسندگی شواهد ساخته شده و ",
+                      "طرح گفتار بر پایهٔ بسندگی شاهدها ساخته‌شده و ",
+                  ),
+              ],
+              "src/thesisound/web/source_discovery.py": [
+                  (
+                      "و نمی‌تواند وارد شواهد شود.",
+                      "و نمی‌تواند مبنای استخراج شاهد قرار گیرد.",
+                  ),
+                  (
+                      "این نتیجه خودکار وارد شواهد نمی‌شود.",
+                      "این نتیجه به‌طور خودکار مبنای استخراج شاهد قرار نمی‌گیرد.",
+                  ),
+              ],
+              "src/thesisound/web/source_ingestion.py": [
+                  (
+                      "متن برای ساخت شواهد قابل‌استفاده است.",
+                      "متن برای استخراج شاهد قابل‌استفاده است.",
+                  ),
+                  (
+                      "متن قابل‌استفاده است و پردازش ادامه پیدا می‌کند.",
+                      "متن قابل‌استفاده است و تحلیل ادامه پیدا می‌کند.",
+                  ),
+                  (
+                      "تا زمان رفع مسئله وارد شواهد نمی‌شود.",
+                      "تا زمان رفع مسئله مبنای استخراج شاهد قرار نمی‌گیرد.",
+                  ),
+              ],
+              "src/thesisound/web/source_routes.py": [
+                  (
+                      "بازیابی این منبع کامل نشد و وارد شواهد نشد.",
+                      "بازیابی این منبع کامل نشد و مبنای استخراج شاهد قرار نگرفت.",
+                  ),
+                  (
+                      "انتخاب منابع برای این پروژه قفل شده است.",
+                      "انتخاب منابع برای این گفتار قفل شده است.",
+                  ),
+                  (
+                      '("ساخت مجموعه شواهد", corpus_ready),',
+                      '("تحلیل منابع و استخراج شاهدها", corpus_ready),',
+                  ),
+                  (
+                      '("ارزیابی پوشش و ساخت طرح اپیزود", plan_ready),',
+                      '("سنجش کفایت منابع و ساخت طرح گفتار", plan_ready),',
+                  ),
+              ],
+              "src/thesisound/web/__init__.py": [
+                  (
+                      '"""Server-rendered web interface for Thesisound."""',
+                      '"""Server-rendered web interface for Maqaal."""',
+                  ),
+              ],
+              "tests/test_web_brief_validation.py": [
+                  (
+                      'assert "سؤال مرکزی نمی‌تواند خالی باشد" in response.text',
+                      'assert "پرسش مرکزی نمی‌تواند خالی باشد" in response.text',
+                  ),
+              ],
+          }
+
+          for filename, pairs in replacements.items():
+              path = Path(filename)
+              content = path.read_text(encoding="utf-8")
+              for old, new in pairs:
+                  count = content.count(old)
+                  if count != 1:
+                      raise SystemExit(f"{filename}: expected exactly one occurrence of {old!r}, found {count}")
+                  content = content.replace(old, new)
+              path.write_text(content, encoding="utf-8")
+          PY
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Verify language contracts
+        run: |
+          uv sync --extra dev --extra web-ui
+          uv run ruff check .
+          uv run pytest tests/test_ui_language_contract.py tests/test_web_brief_validation.py
+
+      - name: Commit verified cleanup
+        run: |
+          git rm .github/workflows/one-shot-maqaal-language-cleanup.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/thesisound/web tests/test_web_brief_validation.py
+          git commit -m "fix: finalize Maqaal UI language"
+          git push origin HEAD:agent/ui-refactor-v2
