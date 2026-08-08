@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}آمادگی اجرا | Thesisound{% endblock %}
+{% block content %}
+<div class="reading-layout reading-layout--wide">
+  <header class="page-heading page-heading--compact">
+    <div>
+      <p class="eyebrow">Runtime preflight</p>
+      <h1>آمادگی اجرای واقعی</h1>
+      <p>این بررسی پیش از queue شدن مرحله‌های هزینه‌دار اجرا می‌شود؛ بنابراین نبودن کلید، SDK یا FFmpeg پس از مصرف API آشکار نمی‌شود.</p>
+    </div>
+  </header>
+
+  {% if blocked %}
+  <div class="notice notice--danger" role="alert">
+    اجرای مرحله متوقف شد، چون حداقل یک پیش‌نیاز مسدودکننده آماده نیست.
+  </div>
+  {% endif %}
+
+  {% if ready %}
+  <div class="notice notice--success">پیش‌نیازهای مسدودکننده این scope آماده‌اند.</div>
+  {% else %}
+  <div class="notice notice--danger">تا رفع موارد FAIL، اجرای واقعی شروع نمی‌شود.</div>
+  {% endif %}
+
+  <section class="source-list" aria-labelledby="checks-title">
+    <div class="section-heading">
+      <h2 id="checks-title">نتیجه بررسی</h2>
+      <span><bdi dir="ltr">scope={{ selected_scope }}</bdi></span>
+    </div>
+    {% for check in checks %}
+    <article class="source-row">
+      <div class="source-row__identity">
+        <strong>{{ check.label }}</strong>
+        <span>
+          {% if check.status == "pass" %}PASS
+          {% elif check.status == "warning" %}WARN
+          {% else %}FAIL{% endif %}
+        </span>
+      </div>
+      <p class="source-row__issue">{{ check.detail }}</p>
+      <code><bdi dir="ltr">{{ check.code }}</bdi></code>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="interpretation">
+    <h2>بررسی معادل در CLI</h2>
+    <pre dir="ltr"><code>uv run thesisound doctor</code></pre>
+  </section>
+
+  <div class="form-actions">
+    <a class="button button--primary" href="/system-check">بررسی کامل دوباره</a>
+    <a class="button button--secondary" href="/projects">بازگشت به پروژه‌ها</a>
+  </div>
+</div>
+{% endblock %}

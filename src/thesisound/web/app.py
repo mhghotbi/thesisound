@@ -17,6 +17,7 @@ from thesisound.audio_runtime import create_audio_builder
 from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState, ResearchBrief, TopicType
 from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
 from thesisound.web.audio_routes import register_audio_routes
 from thesisound.web.auth import NullOtpSender, OtpError, OtpService
 from thesisound.web.corpus_runtime import create_corpus_builder
@@ -35,6 +36,17 @@ _EDITABLE_BRIEF_STATES = {
     ProjectState.SOURCES_COLLECTING,
     ProjectState.SOURCE_SELECTION_REQUIRED,
 }
+_PREFLIGHT_POST_SCOPES: tuple[tuple[str, PreflightScope], ...] = (
+    ("/corpus/confirm", "model"),
+    ("/corpus/retry", "model"),
+    ("/episode/prepare", "model"),
+    ("/episode/retry", "model"),
+    ("/episode/reduce-duration", "model"),
+    ("/script/approve", "model"),
+    ("/script/retry", "model"),
+    ("/audio/generate", "audio"),
+    ("/audio/retry", "audio"),
+)
 
 
 def _ensure_csrf(request: Request) -> str:
@@ -84,6 +96,15 @@ def _corpus_stage_label(stage: str) -> str:
     }.get(stage, stage)
 
 
+def _preflight_scope(request: Request) -> PreflightScope | None:
+    if request.method != "POST":
+        return None
+    for suffix, scope in _PREFLIGHT_POST_SCOPES:
+        if request.url.path.endswith(suffix):
+            return scope
+    return None
+
+
 def create_app(
     settings: Settings | None = None,
     *,
@@ -94,6 +115,7 @@ def create_app(
 ) -> FastAPI:
     runtime = settings or Settings()
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
+    preflight = RuntimePreflight(runtime)
     corpus_builder = create_corpus_builder(runtime, workspace)
     episode_planner = create_episode_planner(runtime, workspace)
     script_builder = create_script_builder(runtime, workspace)
@@ -113,6 +135,20 @@ def create_app(
         max_age=60 * 60 * 24 * 14,
     )
     app.mount("/static", StaticFiles(directory=_STATIC_ROOT), name="static")
+
+    @app.middleware("http")
+    async def guard_live_runs(request: Request, call_next: Callable) -> Response:
+        scope = _preflight_scope(request)
+        if (
+            runtime.environment != "test"
+            and scope is not None
+            and not preflight.ready(scope)
+        ):
+            return RedirectResponse(
+                f"/system-check?blocked=1&scope={scope}",
+                status_code=HTTP_303_SEE_OTHER,
+            )
+        return await call_next(request)
 
     from fastapi.templating import Jinja2Templates
 
@@ -134,6 +170,7 @@ def create_app(
     app.state.settings = runtime
     app.state.workspace = workspace
     app.state.otp = otp
+    app.state.preflight = preflight
     app.state.corpus_builder = corpus_builder
     app.state.episode_planner = episode_planner
     app.state.script_builder = script_builder
@@ -241,6 +278,25 @@ def create_app(
         _validate_csrf(request, csrf_token)
         request.session.clear()
         return RedirectResponse("/login", status_code=HTTP_303_SEE_OTHER)
+
+    @app.get("/system-check", response_class=HTMLResponse)
+    def system_check(request: Request, scope: str = "full") -> Response:
+        if redirect := _login_redirect(request):
+            return redirect
+        selected_scope: PreflightScope = (
+            scope if scope in {"model", "audio", "full"} else "full"
+        )
+        checks = preflight.run(selected_scope)
+        return render(
+            request,
+            "system-check.html",
+            {
+                "checks": checks,
+                "ready": not any(check.blocking for check in checks),
+                "selected_scope": selected_scope,
+                "blocked": request.query_params.get("blocked") == "1",
+            },
+        )
 
     @app.get("/projects", response_class=HTMLResponse)
     def projects_page(request: Request) -> Response:

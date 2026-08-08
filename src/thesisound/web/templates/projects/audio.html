@@ -23,11 +23,12 @@
   {% if can_generate and not audio_active %}
   <section class="interpretation">
     <h2>سناریوی تأییدشده آماده تبدیل به صوت است</h2>
-    <p>این اجرا به hash نسخه فعلی سناریو متصل است و خروجی نسخه دیگر را reuse نمی‌کند.</p>
+    <p>این اجرا به hash نسخه فعلی سناریو متصل است و خروجی نسخه دیگر را reuse نمی‌کند. پیش از queue شدن، کلید Gemini، SDK، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
   </section>
   <form method="post" action="/projects/{{ project.project_id }}/audio/generate" class="form-actions">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <button class="button button--primary" type="submit">ساخت و کنترل صوت</button>
+    <a class="button button--secondary" href="/system-check?scope=audio">بررسی پیش‌نیازهای صوت</a>
   </form>
   {% endif %}
 
@@ -61,6 +62,7 @@
   <form method="post" action="/projects/{{ project.project_id }}/audio/retry" class="form-actions">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <button class="button button--primary" type="submit">ادامه از قطعه‌های سالم</button>
+    <a class="button button--secondary" href="/system-check?scope=audio">بررسی محیط</a>
   </form>
   {% endif %}
   {% endif %}
@@ -79,7 +81,7 @@
     </audio>
     <div class="form-actions">
       <a class="button button--primary" href="/projects/{{ project.project_id }}/audio/final.wav" download>دانلود فایل صوتی</a>
-      <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">خواندن سناریو</a>
+      <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">خواندن سناریو و منابع</a>
     </div>
   </section>
   {% endif %}

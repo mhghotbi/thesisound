@@ -157,7 +157,11 @@
   {% endfor %}
 
   <div class="notice notice--success">
-    سناریو به `SCRIPT_VERIFIED` رسیده است. تولید صدا هنوز شروع نشده و گام مستقل بعدی خواهد بود.
+    سناریو به `SCRIPT_VERIFIED` رسیده و آماده‌ی تولید و کنترل صوت است.
+  </div>
+  <div class="form-actions">
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/audio">ادامه به ساخت صوت</a>
+    <a class="button button--secondary" href="/system-check?scope=audio">بررسی پیش‌نیازهای صوت</a>
   </div>
   {% endif %}
 

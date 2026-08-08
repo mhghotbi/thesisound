@@ -66,6 +66,33 @@ class UiSourceManifestStore:
         self.save(sources)
         return source
 
+    def get(self, source_id: UUID) -> UiSourceManifest:
+        source = next((item for item in self.load() if item.source_id == source_id), None)
+        if source is None:
+            raise FileNotFoundError(f"Source not found: {source_id}")
+        return source
+
+    def replace(self, source: UiSourceManifest) -> UiSourceManifest:
+        sources = self.load()
+        replaced = False
+        for index, current in enumerate(sources):
+            if current.source_id == source.source_id:
+                sources[index] = source
+                replaced = True
+                break
+        if not replaced:
+            raise FileNotFoundError(f"Source not found: {source.source_id}")
+        self.save(sources)
+        return source
+
+    def remove(self, source_id: UUID) -> UiSourceManifest:
+        sources = self.load()
+        removed = next((item for item in sources if item.source_id == source_id), None)
+        if removed is None:
+            raise FileNotFoundError(f"Source not found: {source_id}")
+        self.save([item for item in sources if item.source_id != source_id])
+        return removed
+
     def toggle(self, source_id: UUID) -> UiSourceManifest:
         sources = self.load()
         selected: UiSourceManifest | None = None

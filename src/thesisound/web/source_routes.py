@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
@@ -148,6 +149,98 @@ def register_source_routes(
         ):
             transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
         workspace.save_project(project)
+        return _source_redirect(project_id)
+
+    @app.post("/projects/{project_id}/sources/{source_id}/retry")
+    async def retry_source_ingestion(
+        request: Request,
+        project_id: UUID,
+        source_id: UUID,
+        csrf_token: Annotated[str, Form()],
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        try:
+            validate_csrf(request, csrf_token)
+            project = workspace.load_project(project_id)
+            if project.state not in _EDITABLE_SOURCE_STATES:
+                raise ValueError("Source selection is locked")
+            store = UiSourceManifestStore(workspace.project_dir(project_id))
+            source = store.get(source_id)
+            upload = (
+                workspace.project_dir(project_id)
+                / "uploads"
+                / str(source_id)
+                / source.filename
+            )
+            if not upload.is_file():
+                raise FileNotFoundError("Original upload is missing")
+            artifact_root = (
+                settings.ensure_ingestion_artifact_root() / str(project_id) / str(source_id)
+            )
+            reparsed = await run_in_threadpool(
+                partial(
+                    ingest_uploaded_source,
+                    upload,
+                    source_id=source_id,
+                    filename=source.filename,
+                    content_type=source.content_type,
+                    size_bytes=source.size_bytes,
+                    settings=settings,
+                    artifact_root=artifact_root,
+                )
+            )
+            reparsed.selected = source.selected and reparsed.status == UiSourceStatus.READY
+            store.replace(reparsed)
+            sources = store.load()
+            has_ready_source = any(
+                item.status == UiSourceStatus.READY for item in sources
+            )
+            if project.state == ProjectState.SOURCES_COLLECTING and has_ready_source:
+                transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
+            elif (
+                project.state == ProjectState.SOURCE_SELECTION_REQUIRED
+                and not has_ready_source
+            ):
+                transition(project, ProjectState.SOURCES_COLLECTING)
+            workspace.save_project(project)
+        except (OSError, RuntimeError, ValueError):
+            return _source_redirect(project_id, error="source-retry-failed")
+        return _source_redirect(project_id)
+
+    @app.post("/projects/{project_id}/sources/{source_id}/delete")
+    def delete_source(
+        request: Request,
+        project_id: UUID,
+        source_id: UUID,
+        csrf_token: Annotated[str, Form()],
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        try:
+            validate_csrf(request, csrf_token)
+            project = workspace.load_project(project_id)
+            if project.state not in _EDITABLE_SOURCE_STATES:
+                raise ValueError("Source selection is locked")
+            store = UiSourceManifestStore(workspace.project_dir(project_id))
+            store.remove(source_id)
+            shutil.rmtree(
+                workspace.project_dir(project_id) / "uploads" / str(source_id),
+                ignore_errors=True,
+            )
+            shutil.rmtree(
+                settings.ensure_ingestion_artifact_root() / str(project_id) / str(source_id),
+                ignore_errors=True,
+            )
+            sources = store.load()
+            if (
+                project.state == ProjectState.SOURCE_SELECTION_REQUIRED
+                and not any(item.status == UiSourceStatus.READY for item in sources)
+            ):
+                transition(project, ProjectState.SOURCES_COLLECTING)
+            workspace.save_project(project)
+        except (OSError, ValueError):
+            return _source_redirect(project_id, error="source-delete-failed")
         return _source_redirect(project_id)
 
     @app.post("/projects/{project_id}/sources/{source_id}/toggle")
