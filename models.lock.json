@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "models": [
+    {
+      "name": "pp-ocrv6-medium-det",
+      "role": "text_detection",
+      "repo_id": "PaddlePaddle/PP-OCRv6_medium_det",
+      "revision": "e42c869",
+      "required": true,
+      "allow_patterns": [
+        "inference.*",
+        "*.json",
+        "*.yml",
+        "*.yaml",
+        "README.md",
+        "LICENSE*"
+      ],
+      "anchors": [
+        {
+          "path": "inference.pdiparams",
+          "sha256": "85218d2e3d98f5a21c58b4220627be923a97aee5db3cc71f39536ab31ac53960"
+        }
+      ]
+    },
+    {
+      "name": "bina-0.2-rizehpizeh",
+      "role": "persian_recognition",
+      "repo_id": "Reza2kn/Bina-0.2-RizehPizeh",
+      "revision": "6d05289",
+      "required": true,
+      "allow_patterns": [
+        "inference/**",
+        "bina_text_recognition.py",
+        "persian_arabic_bina02_dict.txt",
+        "config.yml",
+        "MODEL_PROVENANCE.json",
+        "README.md",
+        "LICENSE*"
+      ],
+      "anchors": [
+        {
+          "path": "inference/inference.pdiparams",
+          "sha256": "4f84e43243e9bb2a6b5617da2a22c071f5ebf2db489c1fb55d7e3dd1e2dc99e3"
+        }
+      ]
+    },
+    {
+      "name": "pp-ocrv6-small-rec",
+      "role": "latin_recognition",
+      "repo_id": "PaddlePaddle/PP-OCRv6_small_rec",
+      "revision": "728113c",
+      "required": true,
+      "allow_patterns": [
+        "inference.*",
+        "*.json",
+        "*.yml",
+        "*.yaml",
+        "README.md",
+        "LICENSE*"
+      ],
+      "anchors": [
+        {
+          "path": "inference.pdiparams",
+          "sha256": "406e1e689c9a7fbb04178007a3fe10cf852afe7bf8bb3bc6dbb9d532b13bd907"
+        }
+      ]
+    },
+    {
+      "name": "pp-doclayout-v3",
+      "role": "layout_analysis",
+      "repo_id": "PaddlePaddle/PP-DocLayoutV3",
+      "revision": "7b48a7566925fa464281f930c58eee04fe2c862a",
+      "required": true,
+      "allow_patterns": [
+        "inference.*",
+        "*.json",
+        "*.yml",
+        "*.yaml",
+        "README.md",
+        "LICENSE*"
+      ],
+      "anchors": [
+        {
+          "path": "inference.pdiparams",
+          "sha256": "70bd316b0582769ec968829fd1feb1a6a58b7c941b938327e551b6b12b45c137"
+        }
+      ]
+    },
+    {
+      "name": "paddleocr-vl-1.6",
+      "role": "structural_fallback",
+      "repo_id": "PaddlePaddle/PaddleOCR-VL-1.6",
+      "revision": "04f4914a147b84d7dabe3490dcf67152d2e097a9",
+      "required": false,
+      "allow_patterns": [],
+      "anchors": [
+        {
+          "path": "model.safetensors",
+          "sha256": "85a479d506a11e724e7285d395c551be69f41dbc16b6342d3cacfb189aed71db"
+        }
+      ]
+    }
+  ]
+}

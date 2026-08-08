@@ -1,0 +1,17 @@
+
+{
+  "schema_version": 1,
+  "pages": [
+    {
+      "id": "scan-fa-degraded-complex-001",
+      "file": "runtime/corpus/example.pdf",
+      "page": 1,
+      "source_type": "scanned",
+      "language": "persian",
+      "quality": "degraded",
+      "layout": "complex",
+      "ground_truth": "runtime/ground-truth/scan-fa-degraded-complex-001.json",
+      "features": ["columns", "footnotes", "table"]
+    }
+  ]
+}

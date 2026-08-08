@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -30,6 +31,9 @@ jobs:
 
       - name: Lint
         run: uv run ruff check . --output-format=github
+
+      - name: Validate OCR lock without downloading models
+        run: uv run thesisound models verify --allow-missing
 
       - name: Test
         run: uv run pytest

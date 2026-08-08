@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import shutil
@@ -7,6 +8,7 @@ from uuid import UUID
 
 from thesisound.adapters.parsers.docling_adapter import DoclingParser
 from thesisound.adapters.parsers.epub_adapter import EpubDocumentParser
+from thesisound.adapters.parsers.local_ocr_adapter import LocalOcrParser
 from thesisound.adapters.parsers.mineru_adapter import MineruParser
 from thesisound.adapters.parsers.native_adapter import NativeDocumentParser
 from thesisound.config import Settings
@@ -29,10 +31,7 @@ _ISSUE_LABELS = {
     "other": "یک مسئله استخراج ثبت شده",
 }
 _SEVERITY_LABELS = {
-    "low": "کم‌اهمیت",
-    "medium": "متوسط",
-    "high": "جدی",
-    "blocking": "مسدودکننده",
+    "low": "کم‌اهمیت", "medium": "متوسط", "high": "جدی", "blocking": "مسدودکننده",
 }
 
 
@@ -102,14 +101,19 @@ def build_web_parsers(
     settings: Settings,
     writer: IngestionArtifactWriter,
 ) -> dict[str, DocumentParserPort]:
-    """Configure locally available parsers with safe native and EPUB baselines."""
+    """Configure parsers without loading any model into the web process."""
 
     parsers: dict[str, DocumentParserPort] = {
         "native": NativeDocumentParser(),
         "epub": EpubDocumentParser(),
     }
+    local_ocr = LocalOcrParser.from_environment(
+        output_root=writer.root / "raw" / "local-ocr"
+    )
+    if local_ocr.is_ready():
+        parsers["local-ocr"] = local_ocr
     if find_spec("docling") is not None:
-        parsers["docling"] = DoclingParser()
+        parsers["docling"] = DoclingParser(offline=True)
     if _command_available(settings.mineru_command):
         parsers["mineru"] = MineruParser(
             command=settings.mineru_command,
@@ -128,10 +132,7 @@ def _command_available(command: str) -> bool:
     return shutil.which(command) is not None
 
 
-def _quality_summary(
-    status: UiSourceStatus,
-    quality: ParseReport | None,
-) -> str | None:
+def _quality_summary(status: UiSourceStatus, quality: ParseReport | None) -> str | None:
     verdict = quality.verdict if quality else None
     if status == UiSourceStatus.READY and verdict == "pass":
         return "استخراج با موفقیت انجام شد و متن برای ساخت شواهد قابل‌استفاده است."
@@ -146,9 +147,7 @@ def _quality_summary(
             "متن استخراج شده، اما کیفیت آن برای استناد خودکار کافی نیست. این منبع "
             "تا زمان رفع مسئله وارد شواهد نمی‌شود."
         )
-    return (
-        "از این فایل متن قابل‌اتکایی تولید نشد؛ فایل یا استخراج‌کننده دیگری لازم است."
-    )
+    return "از این فایل متن قابل‌اتکایی تولید نشد؛ فایل یا استخراج‌کننده دیگری لازم است."
 
 
 def _quality_issue_messages(quality: ParseReport | None) -> list[str]:

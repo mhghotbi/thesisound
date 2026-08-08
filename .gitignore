@@ -1,4 +1,6 @@
+
 .venv/
+.venv-ocr/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -13,10 +15,14 @@ build/
 .idea/
 .vscode/
 
-# Local Thesisound workspaces and generated artifacts
+# Local Thesisound workspaces, models, caches, and generated artifacts
 .thesisound/
+.cache/huggingface/
+.cache/paddle/
 workspaces/
 artifacts/
+benchmarks/ocr/runtime/
+benchmarks/persian_ocr/runtime/
 *.wav
 *.mp3
 *.flac
