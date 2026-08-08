@@ -1,0 +1,91 @@
+name: Persian OCR line benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Number of deterministic Persian test lines
+        required: false
+        default: "50"
+      offset:
+        description: Offset after Persian filtering
+        required: false
+        default: "0"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/persian-ocr-line-benchmark.yml"
+      - "benchmarks/persian_ocr/**"
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      HF_HOME: ${{ github.workspace }}/.cache/huggingface
+      PADDLE_HOME: ${{ github.workspace }}/.cache/paddle
+      TOKENIZERS_PARALLELISM: "false"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Cache public OCR models
+        uses: actions/cache@v5
+        with:
+          path: |
+            .cache/huggingface
+            .cache/paddle
+          key: persian-ocr-line-v1-${{ runner.os }}
+
+      - name: Install system OCR baseline
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-fas
+
+      - name: Install benchmark dependencies
+        run: |
+          uv venv --python 3.12 .venv-ocr
+          uv pip install --python .venv-ocr/bin/python \
+            datasets huggingface-hub pillow pyarrow requests \
+            torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          uv pip install --python .venv-ocr/bin/python \
+            paddlepaddle paddleocr opencv-python-headless
+
+      - name: Run real Persian line benchmark
+        run: |
+          mkdir -p benchmarks/persian_ocr/runtime
+          .venv-ocr/bin/python benchmarks/persian_ocr/run_line_benchmark.py \
+            --limit "${{ github.event.inputs.limit || '50' }}" \
+            --offset "${{ github.event.inputs.offset || '0' }}" \
+            --output benchmarks/persian_ocr/runtime/line-results.json
+
+      - name: Record environment
+        if: always()
+        run: |
+          {
+            .venv-ocr/bin/python --version || true
+            tesseract --version | head -n 1 || true
+            .venv-ocr/bin/python -c "import torch; print('torch', torch.__version__)" || true
+            .venv-ocr/bin/python -c "import paddle; print('paddle', paddle.__version__)" || true
+            .venv-ocr/bin/python -c "import paddleocr; print('paddleocr', getattr(paddleocr, '__version__', 'unknown'))" || true
+          } > benchmarks/persian_ocr/runtime/versions.txt
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: persian-ocr-line-benchmark
+          path: benchmarks/persian_ocr/runtime/
+          if-no-files-found: error
+          retention-days: 14
