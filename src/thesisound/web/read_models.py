@@ -24,21 +24,21 @@ class ProjectReadModel:
 
 _STATE_LABELS = {
     ProjectState.DRAFT: "پیش‌نویس",
-    ProjectState.BRIEF_READY: "برداشت آماده بررسی",
+    ProjectState.BRIEF_READY: "برداشت اولیه آمادهٔ بررسی است",
     ProjectState.SOURCES_COLLECTING: "در حال تکمیل منابع",
-    ProjectState.SOURCE_SELECTION_REQUIRED: "منابع آماده تأیید",
-    ProjectState.CORPUS_BUILDING: "در حال استخراج شواهد",
-    ProjectState.CORPUS_READY: "مجموعه شواهد آماده",
-    ProjectState.EPISODE_PLANNING: "در حال ارزیابی پوشش",
-    ProjectState.EPISODE_PLANNED: "طرح اپیزود آماده",
-    ProjectState.SCRIPT_DRAFTING: "در حال نوشتن متن اپیزود",
-    ProjectState.SCRIPT_READY: "متن آماده کنترل",
-    ProjectState.SCRIPT_VERIFYING: "در حال راستی‌آزمایی متن",
-    ProjectState.SCRIPT_VERIFIED: "متن اپیزود تأیید شد",
-    ProjectState.AUDIO_GENERATING: "در حال تولید صدا",
-    ProjectState.AUDIO_READY: "صدا آماده کنترل",
-    ProjectState.AUDIO_VERIFYING: "در حال کنترل شنیداری",
-    ProjectState.COMPLETE: "آماده شنیدن",
+    ProjectState.SOURCE_SELECTION_REQUIRED: "منابع آمادهٔ تأییدند",
+    ProjectState.CORPUS_BUILDING: "در حال تحلیل منابع",
+    ProjectState.CORPUS_READY: "تحلیل منابع آماده است",
+    ProjectState.EPISODE_PLANNING: "در حال سنجش کفایت منابع",
+    ProjectState.EPISODE_PLANNED: "طرح گفتار آماده است",
+    ProjectState.SCRIPT_DRAFTING: "در حال نوشتن متن گفتار",
+    ProjectState.SCRIPT_READY: "متن گفتار آمادهٔ وارسی است",
+    ProjectState.SCRIPT_VERIFYING: "در حال راستی‌آزمایی متن گفتار",
+    ProjectState.SCRIPT_VERIFIED: "متن گفتار تأیید شد",
+    ProjectState.AUDIO_GENERATING: "در حال ساخت نسخهٔ شنیداری",
+    ProjectState.AUDIO_READY: "نسخهٔ شنیداری آمادهٔ وارسی است",
+    ProjectState.AUDIO_VERIFYING: "در حال وارسی شنیداری",
+    ProjectState.COMPLETE: "آمادهٔ شنیدن",
     ProjectState.FAILED_RETRYABLE: "اجرا متوقف شد — قابل تلاش دوباره",
     ProjectState.FAILED_PERMANENT: "اجرا متوقف شد — نیازمند اصلاح ورودی",
 }
@@ -106,16 +106,16 @@ def build_project_read_model(
     if project.state in {ProjectState.DRAFT, ProjectState.BRIEF_READY}:
         return _read_model(
             project,
-            attention_label="برداشت سیستم را بررسی و تأیید کنید",
-            primary_action_label="بررسی برداشت",
+            attention_label="برداشت اولیه را بررسی و تأیید کنید",
+            primary_action_label="بررسی برداشت اولیه",
             primary_action_url=f"/projects/{project_id}/brief",
             tone="attention",
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
-                "موضوع به یک سؤال مرکزی و محدوده اولیه تبدیل شده است؛ "
-                "ادامه کار به تأیید شما وابسته است."
+                "موضوع به یک پرسش مرکزی و محدودهٔ اولیه تبدیل شده است؛ "
+                "ادامهٔ کار به تأیید شما وابسته است."
             ),
         )
 
@@ -127,20 +127,20 @@ def build_project_read_model(
         return _read_model(
             project,
             attention_label=(
-                "منابع آماده‌اند؛ مجموعه نهایی را تأیید کنید"
+                "منابع آماده‌اند؛ مجموعهٔ نهایی را تأیید کنید"
                 if ready
                 else "منبع اضافه کنید یا جست‌وجوی وب را اجرا کنید"
             ),
-            primary_action_label="ادامه منابع",
+            primary_action_label="ادامهٔ منابع",
             primary_action_url=f"/projects/{project_id}/sources",
             tone="attention",
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
-                "حداقل یک منبع از کنترل کیفیت عبور کرده و برای انتخاب نهایی آماده است."
+                "حداقل یک منبع از وارسی کیفیت عبور کرده و برای انتخاب نهایی آماده است."
                 if ready
-                else "هنوز مجموعه‌ای که بتواند مبنای شواهد اپیزود باشد تأیید نشده است."
+                else "هنوز مجموعهٔ منابعی که بتواند مبنای گفتار باشد تأیید نشده است."
             ),
         )
 
@@ -148,31 +148,31 @@ def build_project_read_model(
         return _read_model(
             project,
             attention_label="اقدامی از شما لازم نیست",
-            primary_action_label="دیدن پردازش",
+            primary_action_label="دیدن تحلیل منابع",
             primary_action_url=f"/projects/{project_id}/processing",
             tone="running",
             group_key="running",
             group_label="در حال انجام",
             requires_action=False,
             overview_summary=(
-                "منابع انتخاب‌شده در حال تبدیل‌شدن به بلوک‌های معنایی، "
-                "شواهد و ادعاهای قابل‌ردیابی‌اند."
+                "منابع منتخب در حال تبدیل‌شدن به نقشهٔ منبع، پاره‌متن‌ها، "
+                "مدعاها و شاهدهای قابل‌ردیابی‌اند."
             ),
         )
 
     if project.state == ProjectState.CORPUS_READY:
         return _read_model(
             project,
-            attention_label="پوشش منابع را ارزیابی و ساخت طرح را شروع کنید",
-            primary_action_label="رفتن به طرح اپیزود",
+            attention_label="کفایت منابع را بسنجید و ساخت طرح گفتار را شروع کنید",
+            primary_action_label="رفتن به طرح گفتار",
             primary_action_url=f"/projects/{project_id}/episode",
             tone="attention",
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
-                "مجموعه شواهد آماده است؛ حالا باید روشن شود "
-                "چه مدت محتوای معتبر پشتیبانی می‌شود."
+                "تحلیل منابع آماده است؛ اکنون باید روشن شود "
+                "منابع برای چه مدت گفتار، شاهد کافی دارند."
             ),
         )
 
@@ -180,27 +180,27 @@ def build_project_read_model(
         return _read_model(
             project,
             attention_label="اقدامی از شما لازم نیست",
-            primary_action_label="دیدن ارزیابی پوشش",
+            primary_action_label="دیدن کفایت منابع",
             primary_action_url=f"/projects/{project_id}/episode",
             tone="running",
             group_key="running",
             group_label="در حال انجام",
             requires_action=False,
-            overview_summary="پوشش منابع، اختلاف دیدگاه‌ها و بودجه محتوایی در حال ارزیابی است.",
+            overview_summary="کفایت منابع، اختلاف دیدگاه‌ها و مدت قابل‌پشتیبانی در حال سنجش است.",
         )
 
     if project.state == ProjectState.EPISODE_PLANNED:
         return _read_model(
             project,
-            attention_label="ساختار اپیزود را بررسی و تأیید کنید",
-            primary_action_label="بررسی طرح اپیزود",
+            attention_label="ساختار گفتار را بررسی و تأیید کنید",
+            primary_action_label="بررسی طرح گفتار",
             primary_action_url=f"/projects/{project_id}/episode",
             tone="attention",
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
-                "طرح اپیزود بر اساس سقف شواهد موجود ساخته شده و "
+                "طرح گفتار بر پایهٔ بسندگی شواهد ساخته شده و "
                 "برای تأیید انسانی آماده است."
             ),
         )
@@ -213,26 +213,26 @@ def build_project_read_model(
         return _read_model(
             project,
             attention_label="اقدامی از شما لازم نیست",
-            primary_action_label="دیدن متن اپیزود",
+            primary_action_label="دیدن متن گفتار",
             primary_action_url=f"/projects/{project_id}/script",
             tone="running",
             group_key="running",
             group_label="در حال انجام",
             requires_action=False,
-            overview_summary="متن اپیزود در حال نگارش، کنترل قطعی و راستی‌آزمایی مستقل است.",
+            overview_summary="متن گفتار در حال نگارش، وارسی ساختاری و راستی‌آزمایی مستقل است.",
         )
 
     if project.state == ProjectState.SCRIPT_VERIFIED:
         return _read_model(
             project,
-            attention_label="متن تأییدشده آماده تولید صوت است",
-            primary_action_label="ساخت صوت",
+            attention_label="متن گفتار آمادهٔ ساخت نسخهٔ شنیداری است",
+            primary_action_label="ساخت نسخهٔ شنیداری",
             primary_action_url=f"/projects/{project_id}/audio",
             tone="attention",
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
-            overview_summary="همه turnهای محتوایی از کنترل قطعی و verifier عبور کرده‌اند.",
+            overview_summary="همهٔ گفته‌های محتوایی از وارسی ساختاری و راستی‌آزمایی مستقل عبور کرده‌اند.",
         )
 
     if project.state in {
@@ -243,13 +243,13 @@ def build_project_read_model(
         return _read_model(
             project,
             attention_label="اقدامی از شما لازم نیست",
-            primary_action_label="دیدن تولید صوت",
+            primary_action_label="دیدن نسخهٔ شنیداری",
             primary_action_url=f"/projects/{project_id}/audio",
             tone="running",
             group_key="running",
             group_label="در حال انجام",
             requires_action=False,
-            overview_summary="قطعه‌های صوتی در حال تولید، رونویسی و مقایسه با متن تأییدشده‌اند.",
+            overview_summary="قطعه‌های صوتی در حال ساخت، رونویسی و مقایسه با متن گفتارند.",
         )
 
     if project.state in {ProjectState.FAILED_RETRYABLE, ProjectState.FAILED_PERMANENT}:
@@ -269,7 +269,7 @@ def build_project_read_model(
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
-                "آخرین artifactهای سالم باقی مانده‌اند و فقط مرحله ناموفق "
+                "آخرین خروجی‌های سالم باقی مانده‌اند و فقط مرحلهٔ ناموفق "
                 "نیازمند اقدام است."
             ),
             technical_detail=project.last_error,
@@ -278,24 +278,24 @@ def build_project_read_model(
     if project.state == ProjectState.COMPLETE:
         return _read_model(
             project,
-            attention_label="اپیزود کنترل‌شده آماده شنیدن است",
-            primary_action_label="گوش دادن",
+            attention_label="گفتار آمادهٔ شنیدن است",
+            primary_action_label="شنیدن گفتار",
             primary_action_url=f"/projects/{project_id}/audio",
             tone="success",
             group_key="complete",
-            group_label="آماده و بایگانی‌شده",
+            group_label="آمادهٔ شنیدن",
             requires_action=False,
-            overview_summary="فایل نهایی، transcript و مسیر ردیابی شواهد آماده‌اند.",
+            overview_summary="نسخهٔ شنیداری، متن همگام و مسیر ردیابی شاهدها آماده‌اند.",
         )
 
     return _read_model(
         project,
         attention_label="فرایند در حال انجام است",
-        primary_action_label="مشاهده وضعیت",
+        primary_action_label="مشاهدهٔ وضعیت",
         primary_action_url=f"/projects/{project_id}/processing",
         tone="running",
         group_key="running",
         group_label="در حال انجام",
         requires_action=False,
-        overview_summary="پروژه از آخرین artifact معتبر ادامه پیدا می‌کند.",
+        overview_summary="گفتار از آخرین مرحلهٔ معتبر ادامه پیدا می‌کند.",
     )
