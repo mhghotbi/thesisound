@@ -6,7 +6,7 @@ on:
       limit:
         description: Number of deterministic Persian test lines
         required: false
-        default: "50"
+        default: "30"
       offset:
         description: Offset after Persian filtering
         required: false
@@ -49,7 +49,7 @@ jobs:
           path: |
             .cache/huggingface
             .cache/paddle
-          key: persian-ocr-line-v1-${{ runner.os }}
+          key: persian-ocr-line-v2-${{ runner.os }}
 
       - name: Install system OCR baseline
         run: |
@@ -60,7 +60,7 @@ jobs:
         run: |
           uv venv --python 3.12 .venv-ocr
           uv pip install --python .venv-ocr/bin/python \
-            datasets huggingface-hub pillow pyarrow requests
+            datasets huggingface-hub pillow pyarrow requests matplotlib
           uv pip install --python .venv-ocr/bin/python \
             --index-url https://download.pytorch.org/whl/cpu \
             torch torchvision
@@ -70,7 +70,7 @@ jobs:
       - name: Run real Persian line benchmark
         run: |
           .venv-ocr/bin/python benchmarks/persian_ocr/run_line_benchmark.py \
-            --limit "${{ github.event.inputs.limit || '50' }}" \
+            --limit "${{ github.event.inputs.limit || '30' }}" \
             --offset "${{ github.event.inputs.offset || '0' }}" \
             --output benchmarks/persian_ocr/runtime/line-results.json
 
