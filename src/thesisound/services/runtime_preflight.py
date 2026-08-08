@@ -194,7 +194,7 @@ class RuntimePreflight:
 def _module_available(module: str) -> bool:
     try:
         return find_spec(module) is not None
-    except (ImportError, ModuleNotFoundError, ValueError):
+    except (ImportError, ValueError):
         return False
 
 
