@@ -13,7 +13,7 @@
     <div>
       <p class="eyebrow">مبنای اپیزود</p>
       <h1>منابع را اضافه و انتخاب کنید</h1>
-      <p>فقط منابع انتخاب‌شده وارد اپیزود می‌شوند.</p>
+      <p>هر فایل ابتدا واقعاً استخراج و از quality gate عبور می‌کند؛ فقط منابع آماده قابل انتخاب‌اند.</p>
     </div>
   </header>
 
@@ -32,19 +32,13 @@
         <span>PDF، DOCX، TXT یا Markdown</span>
         <input type="file" name="source_file" accept=".pdf,.docx,.txt,.md" required>
       </label>
-      <button class="button button--secondary" type="submit">افزودن فایل</button>
+      <button class="button button--secondary" type="submit">افزودن و بررسی فایل</button>
     </form>
     <div class="unavailable-option" aria-disabled="true">
       <strong>پژوهش کمکی</strong>
       <span>پس از پیاده‌سازی Source Discovery فعال می‌شود.</span>
     </div>
   </section>
-
-  {% if demo_mode %}
-  <div class="notice notice--info">
-    وضعیت «آماده» در این vertical slice شبیه‌سازی شده است و جای parse quality واقعی را نمی‌گیرد.
-  </div>
-  {% endif %}
 
   <section class="source-list" aria-labelledby="source-list-title">
     <div class="section-heading">
@@ -64,6 +58,17 @@
           {% elif source.status == "review" %}نیازمند بازبینی
           {% else %}قابل‌استفاده نیست{% endif %}
         </div>
+        {% if source.parser_name %}
+        <p class="source-row__issue">
+          parser: <bdi dir="ltr">{{ source.parser_name }}</bdi>
+          · verdict: <bdi dir="ltr">{{ source.quality_verdict or 'unknown' }}</bdi>
+          · {{ source.block_count }} بلوک
+          · {{ source.text_characters }} نویسه
+          {% if source.attempted_parsers %}
+          · مسیر آزموده‌شده: <bdi dir="ltr">{{ source.attempted_parsers | join(' → ') }}</bdi>
+          {% endif %}
+        </p>
+        {% endif %}
         {% if source.issue_summary %}
         <p class="source-row__issue">{{ source.issue_summary }}</p>
         {% endif %}
