@@ -42,6 +42,9 @@ packages = ["src/thesisound"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+  "live: calls external model APIs and is skipped unless explicitly enabled",
+]
 
 [tool.ruff]
 target-version = "py312"
