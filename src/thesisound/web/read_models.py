@@ -113,7 +113,10 @@ def build_project_read_model(
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
-            overview_summary="موضوع به یک سؤال مرکزی و محدوده اولیه تبدیل شده است؛ ادامه کار به تأیید شما وابسته است.",
+            overview_summary=(
+                "موضوع به یک سؤال مرکزی و محدوده اولیه تبدیل شده است؛ "
+                "ادامه کار به تأیید شما وابسته است."
+            ),
         )
 
     if project.state in {
@@ -151,7 +154,10 @@ def build_project_read_model(
             group_key="running",
             group_label="در حال انجام",
             requires_action=False,
-            overview_summary="منابع انتخاب‌شده در حال تبدیل‌شدن به بلوک‌های معنایی، شواهد و ادعاهای قابل‌ردیابی‌اند.",
+            overview_summary=(
+                "منابع انتخاب‌شده در حال تبدیل‌شدن به بلوک‌های معنایی، "
+                "شواهد و ادعاهای قابل‌ردیابی‌اند."
+            ),
         )
 
     if project.state == ProjectState.CORPUS_READY:
@@ -164,7 +170,10 @@ def build_project_read_model(
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
-            overview_summary="مجموعه شواهد آماده است؛ حالا باید روشن شود چه مدت محتوای معتبر پشتیبانی می‌شود.",
+            overview_summary=(
+                "مجموعه شواهد آماده است؛ حالا باید روشن شود "
+                "چه مدت محتوای معتبر پشتیبانی می‌شود."
+            ),
         )
 
     if project.state == ProjectState.EPISODE_PLANNING:
@@ -190,7 +199,10 @@ def build_project_read_model(
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
-            overview_summary="طرح اپیزود بر اساس سقف شواهد موجود ساخته شده و برای تأیید انسانی آماده است.",
+            overview_summary=(
+                "طرح اپیزود بر اساس سقف شواهد موجود ساخته شده و "
+                "برای تأیید انسانی آماده است."
+            ),
         )
 
     if project.state in {
@@ -256,7 +268,10 @@ def build_project_read_model(
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
-            overview_summary="آخرین artifactهای سالم باقی مانده‌اند و فقط مرحله ناموفق نیازمند اقدام است.",
+            overview_summary=(
+                "آخرین artifactهای سالم باقی مانده‌اند و فقط مرحله ناموفق "
+                "نیازمند اقدام است."
+            ),
             technical_detail=project.last_error,
         )
 
