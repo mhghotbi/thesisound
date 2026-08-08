@@ -8,6 +8,8 @@ from thesisound.domain import ClaimRecord, EpisodePlan, EvidenceItem, Project, P
 from thesisound.episode import (
     ClaimPriorityReport,
     CoverageReport,
+    DisagreementGraph,
+    EpisodeBudgetReport,
     EpisodePreparationManifest,
     SegmentEvidencePack,
 )
@@ -15,7 +17,9 @@ from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
 from thesisound.services.coverage_auditor import CoverageAuditorService
+from thesisound.services.disagreement_graph import DisagreementGraphBuilder
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
+from thesisound.services.episode_budget import EpisodeBudgetEstimator
 from thesisound.services.episode_planner import EpisodePlannerService
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
 from thesisound.services.source_artifact_store import SourceArtifactStore
@@ -44,6 +48,8 @@ class EpisodePreparationService:
         episode_store: EpisodeArtifactStore,
         coverage_auditor: CoverageAuditorService,
         claim_prioritizer: ClaimPrioritizer,
+        budget_estimator: EpisodeBudgetEstimator,
+        disagreement_builder: DisagreementGraphBuilder,
         episode_planner: EpisodePlannerService,
         evidence_pack_builder: EvidencePackBuilder,
     ) -> None:
@@ -52,6 +58,8 @@ class EpisodePreparationService:
         self.episode_store = episode_store
         self.coverage_auditor = coverage_auditor
         self.claim_prioritizer = claim_prioritizer
+        self.budget_estimator = budget_estimator
+        self.disagreement_builder = disagreement_builder
         self.episode_planner = episode_planner
         self.evidence_pack_builder = evidence_pack_builder
 
@@ -106,6 +114,45 @@ class EpisodePreparationService:
         self.episode_store.save_manifest(manifest)
         return report
 
+    def estimate_budget(self, project_id: UUID) -> EpisodeBudgetReport:
+        project = self.workspace_store.load_project(project_id)
+        self._require_planning_state(project)
+        if project.brief is None:
+            raise ValueError("ResearchBrief is required for budget estimation.")
+        corpus = self._load_corpus(project_id)
+        coverage = self.episode_store.load_coverage(project_id)
+        priorities = self.episode_store.load_priorities(project_id)
+        report = self.budget_estimator.estimate(
+            project_id=project_id,
+            target_duration_minutes=project.brief.target_duration_minutes,
+            coverage=coverage,
+            priorities=priorities,
+            original_blocks=corpus.blocks,
+        )
+        self.episode_store.save_budget(report)
+        manifest = self.episode_store.load_manifest(project_id)
+        manifest.status = "budget_ready"
+        manifest.updated_at = datetime.now(UTC)
+        self.episode_store.save_manifest(manifest)
+        return report
+
+    def build_disagreement_graph(self, project_id: UUID) -> DisagreementGraph:
+        project = self.workspace_store.load_project(project_id)
+        self._require_planning_state(project)
+        corpus = self._load_corpus(project_id)
+        graph = self.disagreement_builder.build(
+            project_id=project_id,
+            claims=corpus.claims,
+            evidence_items=corpus.evidence_items,
+        )
+        self.episode_store.save_disagreement_graph(graph)
+        manifest = self.episode_store.load_manifest(project_id)
+        manifest.status = "disagreement_ready"
+        manifest.disagreement_count = len(graph.nodes)
+        manifest.updated_at = datetime.now(UTC)
+        self.episode_store.save_manifest(manifest)
+        return graph
+
     def plan_episode(
         self,
         project_id: UUID,
@@ -119,13 +166,17 @@ class EpisodePreparationService:
             raise ValueError("ResearchBrief is required for episode planning.")
         corpus = self._load_corpus(project_id)
         coverage = self.episode_store.load_coverage(project_id)
+        budget = self.episode_store.load_budget(project_id)
         priorities = self.episode_store.load_priorities(project_id)
+        disagreement_graph = self.episode_store.load_disagreement_graph(project_id)
         plan, draft, run = self.episode_planner.plan(
             project_id=project_id,
             brief=project.brief,
             claims=corpus.claims,
             coverage=coverage,
+            budget=budget,
             priorities=priorities,
+            disagreement_graph=disagreement_graph,
             extraction_plans=corpus.extraction_plans,
             model=model,
             prompt_version=prompt_version,
@@ -174,6 +225,8 @@ class EpisodePreparationService:
     ) -> tuple[
         CoverageReport,
         ClaimPriorityReport,
+        EpisodeBudgetReport,
+        DisagreementGraph,
         EpisodePlan,
         list[SegmentEvidencePack],
     ]:
@@ -189,13 +242,21 @@ class EpisodePreparationService:
                     f"{coverage.recommendation_reason}"
                 )
             priorities = self.prioritize_claims(project_id)
+            budget = self.estimate_budget(project_id)
+            if budget.effective_supported_minutes < budget.target_duration_minutes * 0.8:
+                raise ValueError(
+                    "Deterministic budget blocked episode planning: corpus supports "
+                    f"{budget.effective_supported_minutes:.1f} minutes for a "
+                    f"{budget.target_duration_minutes}-minute request."
+                )
+            graph = self.build_disagreement_graph(project_id)
             plan = self.plan_episode(
                 project_id,
                 model=planning_model,
                 prompt_version=prompt_version,
             )
             packs = self.build_evidence_packs(project_id)
-            return coverage, priorities, plan, packs
+            return coverage, priorities, budget, graph, plan, packs
         except (FileNotFoundError, ModelError, ValueError) as exc:
             self._mark_failed(project_id, str(exc))
             raise
