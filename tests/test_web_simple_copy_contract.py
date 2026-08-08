@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 ROOT = Path(__file__).parents[1]
 TEMPLATES_ROOT = ROOT / "src" / "thesisound" / "web" / "templates"
 STATIC_ROOT = ROOT / "src" / "thesisound" / "web" / "static"
