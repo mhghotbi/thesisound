@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from thesisound.domain import ClaimRecord, ClaimType, ResearchBrief, SupportStatus
 from thesisound.episode import ClaimPriorityRecord, ClaimPriorityReport, CoverageReport
 
@@ -23,7 +25,7 @@ class ClaimPrioritizer:
     def prioritize(
         self,
         *,
-        project_id,
+        project_id: UUID,
         brief: ResearchBrief,
         claims: list[ClaimRecord],
         coverage: CoverageReport,
@@ -110,9 +112,11 @@ class ClaimPrioritizer:
         score += min(20, objective_hits.get(claim.claim_id, 0) * 10)
         score += min(8, len(claim.evidence_ids) * 2)
         score += min(5, len(claim.qualifications))
-        if claim.claim_type in {ClaimType.CRITICISM, ClaimType.COUNTERARGUMENT}:
-            if {"critical", "debate"} & set(brief.modes):
-                score += 15
+        if (
+            claim.claim_type in {ClaimType.CRITICISM, ClaimType.COUNTERARGUMENT}
+            and {"critical", "debate"} & set(brief.modes)
+        ):
+            score += 15
         if claim.claim_type == ClaimType.HISTORICAL_CONTEXT and brief.target_duration_minutes <= 10:
             score -= 8
         return max(0, min(100, score))
