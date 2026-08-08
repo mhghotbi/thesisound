@@ -51,7 +51,9 @@ class ScriptChecker:
                         segment_id=turn.segment_id,
                         severity="blocking",
                         issue_type="other",
-                        explanation="Turn references an unknown segment or missing evidence pack.",
+                        explanation=(
+                            "Turn references an unknown segment or missing evidence pack."
+                        ),
                     )
                 )
                 continue
@@ -95,28 +97,32 @@ class ScriptChecker:
                     )
                 else:
                     expected_evidence.update(claim.evidence_ids)
-            if not turn.editorial_only and not (set(turn.evidence_ids) & expected_evidence):
+            has_linked_evidence = bool(set(turn.evidence_ids) & expected_evidence)
+            if not turn.editorial_only and not has_linked_evidence:
                 issues.append(
                     ScriptCheckIssue(
                         turn_id=turn.turn_id,
                         segment_id=turn.segment_id,
                         severity="blocking",
                         issue_type="missing_grounding",
-                        explanation="Substantive turn has no evidence linked to its claim IDs.",
+                        explanation=(
+                            "Substantive turn has no evidence linked to its claim IDs."
+                        ),
                     )
                 )
 
             normalized = " ".join(turn.spoken_text_fa.casefold().split())
             seen_text[normalized] += 1
-            lowered = normalized
-            if any(marker in lowered for marker in _PROMPT_LEAKAGE):
+            if any(marker in normalized for marker in _PROMPT_LEAKAGE):
                 issues.append(
                     ScriptCheckIssue(
                         turn_id=turn.turn_id,
                         segment_id=turn.segment_id,
                         severity="blocking",
                         issue_type="prompt_leakage",
-                        explanation="Turn appears to expose pipeline instructions or prompt markers.",
+                        explanation=(
+                            "Turn appears to expose pipeline instructions or prompt markers."
+                        ),
                     )
                 )
             if turn.speaker == previous_speaker:
@@ -147,9 +153,9 @@ class ScriptChecker:
 
         joined = " ".join(turn.spoken_text_fa for turn in script.turns)
         for term in glossary.terms:
-            if term.source_term.casefold() in joined.casefold() and (
-                term.preferred_persian not in joined
-            ):
+            source_used = term.source_term.casefold() in joined.casefold()
+            preferred_missing = term.preferred_persian not in joined
+            if source_used and preferred_missing:
                 issues.append(
                     ScriptCheckIssue(
                         severity="high",
