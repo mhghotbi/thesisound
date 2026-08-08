@@ -16,10 +16,14 @@ from thesisound.domain import (
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.services.evidence_validator import validate_evidence_extraction
 from thesisound.services.model_runner import ModelRunner
-from thesisound.source_analysis import EvidenceExtractionDraft, SourceDocumentBlock
+from thesisound.source_analysis import (
+    BlockEvidenceExtraction,
+    EvidenceExtractionDraft,
+    SourceDocumentBlock,
+)
 
 _WHITESPACE = re.compile(r"\s+")
-ExtractionCallback = Callable[[EvidenceExtraction, str], None]
+ExtractionCallback = Callable[[BlockEvidenceExtraction], None]
 
 
 class EvidenceExtractorService:
@@ -36,7 +40,7 @@ class EvidenceExtractorService:
         model: str,
         prompt_version: str | None = None,
         on_extraction: ExtractionCallback | None = None,
-    ) -> tuple[list[EvidenceExtraction], list[ModelRunRecord]]:
+    ) -> tuple[list[BlockEvidenceExtraction], list[ModelRunRecord]]:
         if document_map.source_id != source_id:
             raise ValueError("Document map belongs to a different source.")
         section_by_block = {
@@ -44,7 +48,7 @@ class EvidenceExtractorService:
             for section in document_map.sections
             for block_id in section.source_block_ids
         }
-        extractions: list[EvidenceExtraction] = []
+        records: list[BlockEvidenceExtraction] = []
         runs: list[ModelRunRecord] = []
 
         for block in blocks:
@@ -71,11 +75,16 @@ class EvidenceExtractorService:
             )
             extraction = _materialize_extraction(execution.output, block)
             validate_evidence_extraction(extraction, block)
+            record = BlockEvidenceExtraction(
+                source_id=source_id,
+                block_id=block.block_id,
+                extraction=extraction,
+            )
             if on_extraction is not None:
-                on_extraction(extraction, block.block_id)
-            extractions.append(extraction)
+                on_extraction(record)
+            records.append(record)
             runs.append(execution.record)
-        return extractions, runs
+        return records, runs
 
 
 def _validate_draft(
