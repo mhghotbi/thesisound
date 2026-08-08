@@ -1,10 +1,12 @@
 {% extends "base.html" %}
-{% block title %}تأیید کد | Thesisound{% endblock %}
+{% block title %}تأیید کد | مقال{% endblock %}
 {% block body_class %}auth-page{% endblock %}
 {% block main_class %}auth-shell{% endblock %}
 {% block content %}
 <section class="auth-card" aria-labelledby="verify-title">
-  <div class="auth-brand"><span class="brand__mark" aria-hidden="true">▥</span><strong>Thesisound</strong></div>
+  <div class="auth-brand">
+    <img class="auth-brand__logo" src="{{ url_for('static', path='/maghal-logo-full.webp') }}" alt="مقال؛ گفتار مستند شنیدنی" width="497" height="520">
+  </div>
   <p class="eyebrow">تأیید ورود</p>
   <h1 id="verify-title">کد شش‌رقمی را وارد کنید</h1>
   <p class="lede">کد برای <bdi dir="ltr">{{ phone }}</bdi> درخواست شده است.</p>

@@ -3,12 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Thesisound{% endblock %}</title>
+  <title>{% block title %}مقال{% endblock %}</title>
   <meta name="color-scheme" content="light">
+  <link rel="icon" type="image/webp" href="{{ url_for('static', path='/maghal-logo-mark.webp') }}">
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=vazirmatn:400,500,600,700" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', path='/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='/workflow.css') }}">
+  <style>
+    .brand__logo {
+      display: block;
+      width: 76px;
+      height: 46px;
+      object-fit: cover;
+      object-position: center;
+      flex: 0 0 auto;
+      border-radius: 7px;
+    }
+    .brand__identity { display: block; }
+    .auth-brand {
+      display: flex;
+      justify-content: center;
+      margin-block-end: 32px;
+    }
+    .auth-brand__logo {
+      display: block;
+      width: min(260px, 82%);
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 14px 36px rgb(15 23 42 / 0.16);
+    }
+    @media (max-width: 760px) {
+      .brand__logo { width: 60px; height: 36px; }
+      .brand small { display: none; }
+    }
+  </style>
   <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
   <script src="{{ url_for('static', path='/app.js') }}" defer></script>
 </head>
@@ -17,10 +46,10 @@
   {% if current_user %}
   <header class="app-header">
     <div class="shell app-header__inner">
-      <a class="brand" href="/projects" aria-label="صفحه اصلی Thesisound">
-        <span class="brand__mark" aria-hidden="true">▥</span>
-        <span>
-          <strong>Thesisound</strong>
+      <a class="brand" href="/projects" aria-label="صفحه اصلی مقال">
+        <img class="brand__logo" src="{{ url_for('static', path='/maghal-logo-mark.webp') }}" alt="" width="320" height="192">
+        <span class="brand__identity">
+          <strong>مقال</strong>
           <small>مطالعه‌ای که شنیده می‌شود</small>
         </span>
       </a>

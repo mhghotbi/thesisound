@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% block title %}ورود | Thesisound{% endblock %}
+{% block title %}ورود | مقال{% endblock %}
 {% block body_class %}auth-page{% endblock %}
 {% block main_class %}auth-shell{% endblock %}
 {% block content %}
 <section class="auth-card" aria-labelledby="login-title">
   <div class="auth-brand">
-    <span class="brand__mark" aria-hidden="true">▥</span>
-    <strong>Thesisound</strong>
+    <img class="auth-brand__logo" src="{{ url_for('static', path='/maghal-logo-full.webp') }}" alt="مقال؛ گفتار مستند شنیدنی" width="497" height="520">
   </div>
   <p class="eyebrow">ورود به فضای مطالعه</p>
   <h1 id="login-title">شماره موبایل را وارد کنید</h1>
