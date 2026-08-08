@@ -11,6 +11,8 @@ from thesisound.domain import EpisodePlan
 from thesisound.episode import (
     ClaimPriorityReport,
     CoverageReport,
+    DisagreementGraph,
+    EpisodeBudgetReport,
     EpisodePlanDraft,
     EpisodePreparationManifest,
     SegmentEvidencePack,
@@ -27,6 +29,9 @@ class EpisodeArtifactStore:
         path.mkdir(parents=True, exist_ok=True)
         return path
 
+    def retrieval_database_path(self, project_id: UUID) -> Path:
+        return self.episode_dir(project_id) / "retrieval.sqlite3"
+
     def save_coverage(self, report: CoverageReport) -> None:
         self._write_json(
             self.episode_dir(report.project_id) / "coverage-report.json",
@@ -36,6 +41,32 @@ class EpisodeArtifactStore:
     def load_coverage(self, project_id: UUID) -> CoverageReport:
         return CoverageReport.model_validate_json(
             (self.episode_dir(project_id) / "coverage-report.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+    def save_budget(self, report: EpisodeBudgetReport) -> None:
+        self._write_json(
+            self.episode_dir(report.project_id) / "budget-report.json",
+            report,
+        )
+
+    def load_budget(self, project_id: UUID) -> EpisodeBudgetReport:
+        return EpisodeBudgetReport.model_validate_json(
+            (self.episode_dir(project_id) / "budget-report.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+    def save_disagreement_graph(self, graph: DisagreementGraph) -> None:
+        self._write_json(
+            self.episode_dir(graph.project_id) / "disagreement-graph.json",
+            graph,
+        )
+
+    def load_disagreement_graph(self, project_id: UUID) -> DisagreementGraph:
+        return DisagreementGraph.model_validate_json(
+            (self.episode_dir(project_id) / "disagreement-graph.json").read_text(
                 encoding="utf-8"
             )
         )
