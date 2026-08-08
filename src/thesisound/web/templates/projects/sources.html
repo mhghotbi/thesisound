@@ -24,6 +24,10 @@
     <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بیشتر است.</div>
   {% elif request.query_params.get('error') == 'selection-locked' %}
     <div class="notice notice--danger" role="alert">پس از تأیید مجموعه، انتخاب منابع تا پایان این اجرا قفل است.</div>
+  {% elif request.query_params.get('error') == 'source-retry-failed' %}
+    <div class="notice notice--danger" role="alert">تلاش دوباره برای استخراج منبع انجام نشد. اصل فایل یا ابزار parser را بررسی کنید.</div>
+  {% elif request.query_params.get('error') == 'source-delete-failed' %}
+    <div class="notice notice--danger" role="alert">حذف منبع انجام نشد. صفحه را تازه کنید و دوباره تلاش کنید.</div>
   {% endif %}
   {% if selection_locked %}
     <div class="notice notice--info">این مجموعه تأیید شده و اکنون فقط خواندنی است.</div>
@@ -79,13 +83,27 @@
         {% if source.issue_summary %}
         <p class="source-row__issue">{{ source.issue_summary }}</p>
         {% endif %}
-        {% if source.status == "ready" and not selection_locked %}
-        <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/toggle">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button class="button button--quiet" type="submit">
-            {% if source.selected %}حذف از مجموعه{% else %}انتخاب برای اپیزود{% endif %}
-          </button>
-        </form>
+
+        {% if not selection_locked %}
+        <div class="form-actions">
+          {% if source.status == "ready" %}
+          <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/toggle">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button--quiet" type="submit">
+              {% if source.selected %}حذف از مجموعه{% else %}انتخاب برای اپیزود{% endif %}
+            </button>
+          </form>
+          {% else %}
+          <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/retry">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button--secondary" type="submit">تلاش دوباره برای استخراج</button>
+          </form>
+          {% endif %}
+          <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/delete">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button--quiet" type="submit">حذف منبع</button>
+          </form>
+        </div>
         {% elif source.selected %}
         <p class="source-row__issue">در مجموعه تأییدشده قرار دارد.</p>
         {% endif %}
