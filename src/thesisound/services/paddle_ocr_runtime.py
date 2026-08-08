@@ -48,7 +48,9 @@ class PaddleRuntime:
                     vlm = self._vlm_page(page_path)
                     if vlm.strip():
                         blocks.append(_block(page_number, "vlm", 1, vlm.strip(), "text"))
-                        warnings.append(f"Page {page_number} used PaddleOCR-VL structural fallback.")
+                        warnings.append(
+                            f"Page {page_number} used PaddleOCR-VL structural fallback."
+                        )
                         continue
                 for index, line in enumerate(lines, start=1):
                     blocks.append(_block(page_number, "line", index, line["text"], line["kind"]))
@@ -72,7 +74,7 @@ class PaddleRuntime:
             import fitz
             from pypdf import PdfReader
         except ImportError as exc:
-            raise OcrRuntimeError("PyMuPDF and pypdf are required for PDF OCR.") from exc
+            raise OcrRuntimeError(_"all_required_pdf_ocr_dependencies") from exc
         reader = PdfReader(source, strict=False)
         document = fitz.open(source)
         scale = self.request.render_dpi / 72
@@ -126,7 +128,9 @@ class PaddleRuntime:
             try:
                 from paddleocr import TextDetection
             except ImportError as exc:
-                raise OcrRuntimeError("paddleocr is required in the isolated OCR environment.") from exc
+                raise OcrRuntimeError(
+                    "paddleocr is required in the isolated OCR environment."
+                ) from exc
             self._detector = TextDetection(
                 model_name="PP-OCRv6_medium_det",
                 model_dir=str(self.request.model_dirs["pp-ocrv6-medium-det"]),
@@ -156,16 +160,20 @@ class PaddleRuntime:
 
     def _bina_line(self, path: Path) -> dict[str, Any]:
         if self._bina is None:
-            import importlib.util
-
             root = self.request.model_dirs["bina-0.2-rizehpizeh"]
             module_path = root / "bina_text_recognition.py"
-            spec = importlib.util.spec_from_file_location("thesisound_bina", module_path)
+            import importlib.util
+
+            spec = importlib.util.spec_from_file_location(
+                "thesisound_bina", module_path
+            )
             if spec is None or spec.loader is None:
                 raise OcrRuntimeError(f"Cannot load Bina wrapper from {module_path}")
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            self._bina = module.BinaTextRecognition(str(root / "inference"), device=self.request.device)
+            self._bina = module.BinaTextRecognition(
+                str(root / "inference"), device=self.request.device
+            )
         values = list(self._bina.predict(str(path)))
         value = values[0] if values else {}
         return {
@@ -210,7 +218,9 @@ class PaddleRuntime:
             try:
                 from paddleocr import PaddleOCRVL
             except ImportError as exc:
-                raise OcrRuntimeError("Install paddleocr[doc-parser] for PaddleOCR-VL fallback.") from exc
+                raise OcrRuntimeError(
+                    "Install paddleocr[doc-parser] for PaddleOCR-VL fallback."
+                ) from exc
             self._vlm = PaddleOCRVL(
                 pipeline_version="v1.6",
                 layout_detection_model_name="PP-DocLayoutV3",
@@ -238,7 +248,11 @@ def _native_blocks(text: str, page: int) -> list[ParsedBlock]:
         "\n".join(line.strip() for line in part.splitlines() if line.strip())
         for part in text.split("\n\n")
     ]
-    return [_block(page, "native", index, part, "text") for index, part in enumerate(parts, 1) if part]
+    return [
+        _block(page, "native", index, part, "text")
+        for index, part in enumerate(parts, 1)
+        if part
+    ]
 
 
 def _block(page: int, source: str, index: int, text: str, kind: str) -> ParsedBlock:
@@ -262,12 +276,9 @@ def _needs_vlm(lines: list[dict[str, Any]]) -> bool:
 
 def _candidate_rank(value: dict[str, Any]) -> tuple[float, int]:
     script = detect_script(value["text"])
-    bonus = (
-        0.08
-        if (value["engine"] == "bina" and script in {"persian", "mixed"})
-        or (value["engine"] == "latin" and script == "latin")
-        else 0
-    )
+    bonus = 0.08 if (value["engine"] == "bina" and script in {"persian", "mixed"}) or (
+        value["engine"] == "latin" and script == "latin"
+    ) else 0
     return float(value["score"]) + bonus, len(value["text"])
 
 
@@ -323,9 +334,7 @@ def _polygon(value: Any) -> list[tuple[float, float]]:
     ]
 
 
-def _bbox(
-    poly: list[tuple[float, float]], width: int, height: int
-) -> tuple[int, int, int, int]:
+def _bbox(poly: list[tuple[float, float]], width: int, height: int) -> tuple[int, int, int, int]:
     xs = [point[0] for point in poly]
     ys = [point[1] for point in poly]
     return (

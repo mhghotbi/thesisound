@@ -79,9 +79,10 @@ class LocalOcrParser:
         if not self.registry.core_ready():
             return False
         candidate = Path(self.python_command).expanduser()
-        if candidate.is_file() or shutil.which(self.python_command):
-            if self.python_command != sys.executable:
-                return True
+        if (candidate.is_file() or shutil.which(self.python_command)) and (
+            self.python_command != sys.executable
+        ):
+            return True
         return self.python_command == sys.executable and find_spec("paddleocr") is not None
 
     def supports(self, inspection: DocumentInspection) -> bool:
@@ -146,7 +147,7 @@ class LocalOcrParser:
             )
         try:
             parsed = ParsedDocument.model_validate_json(output_path.read_text(encoding="utf-8"))
-        except (OSError, ValueEError) as exc:
+        except (OSError, ValueError) as exc:
             raise LocalOcrParseError("Local OCR worker returned no valid parsed document.") from exc
         if not parsed.blocks:
             raise LocalOcrParseError("Local OCR produced no usable content blocks.")
