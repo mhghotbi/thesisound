@@ -6,6 +6,10 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/parser-benchmark.yml"
+      - "src/thesisound/services/parse_quality.py"
+      - "src/thesisound/services/parser_benchmark.py"
+      - "src/thesisound/services/document_normalizer.py"
+      - "src/thesisound/adapters/parsers/**"
 
 permissions:
   contents: read
