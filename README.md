@@ -10,7 +10,7 @@ Thesisound یک ابزار شخصی و کوچک برای تبدیل یک موض�
 
 ## وضعیت فعلی
 
-دو subsystem اصلی اکنون قابل اجرا هستند.
+سه subsystem اصلی اکنون قابل اجرا هستند.
 
 ### Document ingestion
 
@@ -35,7 +35,22 @@ Thesisound یک ابزار شخصی و کوچک برای تبدیل یک موض�
 - عدم ذخیره rendered prompt به‌صورت پیش‌فرض؛
 - stage کامل `ResearchBrief` و transition پروژه به `brief_ready`.
 
-هنوز source discovery، document mapping، evidence extraction، سناریو، verification و TTS پیاده نشده‌اند.
+### One-source evidence analysis
+
+- semantic block building؛
+- حذف محافظه‌کارانه header و footer؛
+- حفظ heading، locator، source block key و reading order؛
+- Document Map با حداقل ۹۰ درصد block coverage؛
+- evidence extraction مستقل برای هر block؛
+- supporting excerpt عینی از متن اصلی؛
+- evidence validation قطعی؛
+- deterministic evidence ID و claim ID؛
+- Claim Ledger و ثبت evidenceهای unresolved؛
+- artifactهای block-level برای debugging؛
+- CLI مرحله‌ای و فرمان end-to-end `analyze-source`؛
+- transition پروژه تا `corpus_ready`.
+
+هنوز source discovery، multi-source reconciliation، retrieval، episode planning، سناریو، verification و TTS پیاده نشده‌اند.
 
 ## محدوده MVP
 
@@ -68,10 +83,14 @@ MVP فقط این مسیر را پوشش می‌دهد:
 User intent
   -> Research brief
   -> User-source ingestion
+  -> Semantic document blocks
+  -> Document map
+  -> Block-scoped evidence extraction
+  -> Deterministic evidence validation
+  -> Claim ledger
   -> Source discovery
   -> Human source selection
-  -> Document structure + evidence records
-  -> Coverage audit
+  -> Multi-source synthesis and coverage audit
   -> Episode plan
   -> Original-evidence retrieval
   -> Persian script generation
@@ -108,15 +127,15 @@ cp .env.example .env
 
 MinerU یک runtime مستقل است و باید جداگانه نصب شود؛ فرمان `mineru` باید روی `PATH` قرار داشته باشد.
 
-## اجرای Research Brief
+## اجرای vertical slice فعلی
 
-ابتدا پروژه را بسازید:
+### ۱. ساخت پروژه
 
 ```bash
 uv run thesisound init "آرنت و مفهوم کنش"
 ```
 
-UUID خروجی را در فرمان بعدی استفاده کنید:
+### ۲. ساخت Research Brief
 
 ```bash
 uv run thesisound build-brief <project-id> \
@@ -127,16 +146,38 @@ uv run thesisound build-brief <project-id> \
   --language fa
 ```
 
-فرمان:
+### ۳. Parse منبع
 
-1. prompt contract نسخه‌دار را بارگذاری می‌کند؛
-2. Gemini را با schema مدل `ResearchBrief` فراخوانی می‌کند؛
-3. validation قطعی را اجرا می‌کند؛
-4. در صورت schema failure فقط یک repair محدود انجام می‌دهد؛
-5. model run و خروجی معتبر را ذخیره می‌کند؛
-6. سپس project state را به `brief_ready` تغییر می‌دهد.
+```bash
+uv run thesisound parse chapter.pdf \
+  --parser auto \
+  --output parse-result.json
+```
 
-Artifactها در این مسیر قرار می‌گیرند:
+اگر parse از quality gate عبور نکند، فرمان با exit code برابر ۲ متوقف می‌شود و نباید source analysis اجرا شود.
+
+### ۴. تحلیل یک منبع
+
+اجرای کل pipeline:
+
+```bash
+uv run thesisound analyze-source \
+  <project-id> \
+  parse-result.json
+```
+
+یا اجرای مرحله‌ای:
+
+```bash
+uv run thesisound build-blocks <project-id> parse-result.json
+uv run thesisound map-document <project-id> <source-id>
+uv run thesisound extract-evidence <project-id> <source-id>
+uv run thesisound build-claims <project-id> <source-id>
+```
+
+`build-blocks` به API key نیاز ندارد. سه فرمان بعدی structured model را فراخوانی می‌کنند.
+
+## Artifactها
 
 ```text
 workspaces/<project-id>/
@@ -147,6 +188,18 @@ workspaces/<project-id>/
     validated-output.json
     error.json                 only on failure
     rendered-prompts.json      only when explicitly enabled
+  sources/<source-id>/
+    manifest.json
+    ingestion-result.json
+    parsed-document.json
+    block-build-report.json
+    document-blocks.jsonl
+    document-map.json
+    evidence/
+      extractions/<block-id>.json
+    evidence-extractions.jsonl
+    evidence-items.jsonl
+    claim-ledger.json
 ```
 
 به‌صورت پیش‌فرض متن prompt ذخیره نمی‌شود. برای debugging محلی می‌توان موقتاً این تنظیم را فعال کرد:
@@ -157,21 +210,7 @@ THESISOUND_KEEP_RENDERED_PROMPTS=true
 
 این تنظیم برای اسناد خصوصی مناسب نیست.
 
-## اجرای ingestion
-
-بازرسی بدون parser:
-
-```bash
-uv run thesisound inspect path/to/file.pdf
-```
-
-انتخاب خودکار parser، fallback و quality gate:
-
-```bash
-uv run thesisound parse path/to/file.pdf --parser auto
-```
-
-مقایسه parserها:
+## Benchmark parserها
 
 ```bash
 uv run thesisound compare-parsers path/to/file.pdf --output benchmark.json
@@ -188,7 +227,7 @@ THESISOUND_MODEL_STRONG=gemini-3.6-flash
 THESISOUND_MODEL_TTS=gemini-3.1-flash-tts-preview
 ```
 
-مدل‌های فعلی Gemini پارامترهای `temperature`، `top_p` و `top_k` را deprecated کرده‌اند؛ Thesisound این پارامترها را ارسال نمی‌کند. کنترل خروجی از schema، prompt contract و deterministic validation انجام می‌شود.
+نام مدل‌ها config است و در business logic hard-code نشده است.
 
 ## کنترل کیفیت کد
 
@@ -207,13 +246,17 @@ uv run pytest
 4. [`docs/03-agent-workflow.md`](docs/03-agent-workflow.md)
 5. [`docs/10-document-ingestion.md`](docs/10-document-ingestion.md)
 6. [`docs/11-structured-model-execution.md`](docs/11-structured-model-execution.md)
-7. [`prompts/README.md`](prompts/README.md)
-8. [`docs/06-development-plan.md`](docs/06-development-plan.md)
-9. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
+7. [`docs/12-one-source-evidence-pipeline.md`](docs/12-one-source-evidence-pipeline.md)
+8. [`prompts/README.md`](prompts/README.md)
+9. [`docs/06-development-plan.md`](docs/06-development-plan.md)
+10. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
 
 ## قواعد غیرقابل‌مذاکره
 
 - metadata یا abstract به‌تنهایی evidence متن کامل محسوب نمی‌شود.
+- مدل source ID، block ID، locator، evidence ID یا claim ID نمی‌سازد.
+- supporting excerpt باید واقعاً در همان source block وجود داشته باشد.
+- هر evidence باید در یک claim مصرف شود یا صریحاً unresolved ثبت شود.
 - هر ادعای محتوایی سناریو باید به evidence ID و locator متصل باشد.
 - اختلاف تفسیرها نباید به اجماع جعلی تبدیل شود.
 - کاربر منبع نهایی را انتخاب می‌کند؛ سیستم بدون اطلاع او corpus را تغییر نمی‌دهد.
