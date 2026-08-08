@@ -14,10 +14,12 @@ from thesisound.adapters.parsers.docling_adapter import DoclingParser
 from thesisound.adapters.parsers.mineru_adapter import MineruParser
 from thesisound.config import Settings
 from thesisound.domain import Project
+from thesisound.episode_cli import register_episode_commands
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore
 from thesisound.ports import DocumentParserPort
 from thesisound.prompt_loader import PromptLoader
+from thesisound.script_cli import register_script_commands
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_ingestion import ingest_document
 from thesisound.services.document_inspector import inspect_document
@@ -30,6 +32,8 @@ from thesisound.source_cli import register_source_commands
 app = typer.Typer(no_args_is_help=True, help="Thesisound local development CLI")
 console = Console()
 register_source_commands(app)
+register_episode_commands(app)
+register_script_commands(app)
 
 WorkspaceRootOption = Annotated[
     Path | None,
