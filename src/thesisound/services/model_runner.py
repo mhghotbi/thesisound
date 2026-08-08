@@ -6,7 +6,7 @@ import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from time import perf_counter
-from typing import Any, TypeVar
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -24,8 +24,7 @@ from thesisound.prompt_loader import PromptLoader
 from thesisound.services.model_retry import decide_retry
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 
-T = TypeVar("T", bound=BaseModel)
-Validator = Callable[[T], None]
+type Validator[T: BaseModel] = Callable[[T], None]
 
 
 class ModelRunner:
@@ -46,7 +45,7 @@ class ModelRunner:
         self.base_retry_delay_seconds = base_retry_delay_seconds
         self.sleeper = sleeper
 
-    def run(
+    def run[T: BaseModel](
         self,
         *,
         project_id: UUID,
