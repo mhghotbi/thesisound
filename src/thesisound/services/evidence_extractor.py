@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Callable
 from uuid import UUID
 
 from thesisound.domain import (
@@ -17,6 +18,7 @@ from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import EvidenceExtractionDraft, SourceDocumentBlock
 
 _WHITESPACE = re.compile(r"\s+")
+ExtractionCallback = Callable[[EvidenceExtraction, str], None]
 
 
 class EvidenceExtractorService:
@@ -32,6 +34,7 @@ class EvidenceExtractorService:
         document_map: DocumentMap,
         model: str,
         prompt_version: str | None = None,
+        on_extraction: ExtractionCallback | None = None,
     ) -> tuple[list[EvidenceExtraction], list[ModelRunRecord]]:
         if document_map.source_id != source_id:
             raise ValueError("Document map belongs to a different source.")
@@ -71,6 +74,8 @@ class EvidenceExtractorService:
             )
             extraction = _materialize_extraction(execution.output, block)
             validate_evidence_extraction(extraction, block)
+            if on_extraction is not None:
+                on_extraction(extraction, block.block_id)
             extractions.append(extraction)
             runs.append(execution.record)
         return extractions, runs
