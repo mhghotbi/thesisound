@@ -192,7 +192,11 @@ def _project() -> Project:
 
 def test_block_builder_removes_margin_and_preserves_traceability() -> None:
     source_id = uuid4()
-    blocks, report = BlockBuilder(target_tokens=50, maximum_tokens=100).build(
+    blocks, report = BlockBuilder(
+        minimum_tokens=20,
+        target_tokens=50,
+        maximum_tokens=100,
+    ).build(
         _parsed_document(),
         source_id=source_id,
     )
