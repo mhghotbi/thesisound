@@ -22,10 +22,10 @@ def create_audio_builder(
 ) -> AudioBuildRunService:
     script_store = ScriptArtifactStore(workspace.root)
     audio_store = AudioArtifactStore(workspace.root)
-    gemini_pool = shared_gemini_key_pool(settings.gemini_api_keys)
 
     def pipeline_factory(project_id: UUID) -> AudioPipelineService:
         del project_id
+        gemini_pool = shared_gemini_key_pool(settings.gemini_api_keys)
         return AudioPipelineService(
             workspace_store=workspace,
             script_store=script_store,
