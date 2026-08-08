@@ -15,6 +15,12 @@ build/
 .idea/
 .vscode/
 
+# Merge/patch leftovers and scratch files
+*.orig
+*.rej
+*.bak
+*.tmp
+
 # Local Thesisound workspaces, models, caches, and generated artifacts
 .thesisound/
 .cache/huggingface/
