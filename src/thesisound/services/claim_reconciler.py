@@ -4,10 +4,11 @@ import hashlib
 import re
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, EvidenceExtraction, EvidenceItem
+from thesisound.domain import ClaimRecord, EvidenceItem
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
+    BlockEvidenceExtraction,
     ClaimLedger,
     ClaimReconciliationDraft,
 )
@@ -24,11 +25,15 @@ class ClaimReconcilerService:
         *,
         project_id: UUID,
         source_id: UUID,
-        extractions: list[EvidenceExtraction],
+        extractions: list[BlockEvidenceExtraction],
         model: str,
         prompt_version: str | None = None,
     ) -> tuple[ClaimLedger, ModelRunRecord]:
-        evidence = [item for extraction in extractions for item in extraction.claims]
+        evidence = [
+            item
+            for record in extractions
+            for item in record.extraction.claims
+        ]
         if not evidence:
             return (
                 ClaimLedger(
@@ -74,7 +79,8 @@ def _validate_draft(
         unknown = set(claim.evidence_ids) - evidence_ids
         if unknown:
             raise DeterministicValidationError(
-                f"Claim referenced unknown evidence IDs: {', '.join(sorted(unknown))}."
+                "Claim referenced unknown evidence IDs: "
+                f"{', '.join(sorted(unknown))}."
             )
         normalized = _normalize(claim.claim).casefold()
         if normalized in normalized_claims:
@@ -91,7 +97,8 @@ def _validate_draft(
     overlap = set(referenced) & set(draft.unresolved_evidence_ids)
     if overlap:
         raise DeterministicValidationError(
-            f"Evidence cannot be both claimed and unresolved: {', '.join(sorted(overlap))}."
+            "Evidence cannot be both claimed and unresolved: "
+            f"{', '.join(sorted(overlap))}."
         )
     accounted_for = set(referenced) | set(draft.unresolved_evidence_ids)
     missing = evidence_ids - accounted_for
