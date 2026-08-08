@@ -83,7 +83,7 @@ def test_brief_validation_preserves_all_submitted_values(tmp_path: Path) -> None
         )
 
     assert response.status_code == 422
-    assert "سؤال مرکزی نمی‌تواند خالی باشد" in response.text
+    assert "پرسش مرکزی نمی‌تواند خالی باشد" in response.text
     assert "زمینه تاریخی مغرب\nچرخه عصبیت" in response.text
     assert "زندگی‌نامه تفصیلی" in response.text
 
