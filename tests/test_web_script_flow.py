@@ -120,7 +120,7 @@ def test_get_has_no_side_effect_and_post_approval_queues_exact_plan(
         _login(client)
         page = client.get(f"/projects/{project.project_id}/script")
         assert page.status_code == 200
-        assert "تأیید همین طرح و ساخت سناریو" in page.text
+        assert "تأیید همین طرح و نوشتن متن گفتار" in page.text
         assert EpisodePlanApprovalStore(settings.workspace_root).load_optional(
             project.project_id
         ) is None
@@ -162,7 +162,7 @@ def test_episode_page_exposes_explicit_plan_approval_gate(tmp_path: Path) -> Non
         page = client.get(f"/projects/{project.project_id}/episode")
 
     assert page.status_code == 200
-    assert "تأیید طرح و ساخت سناریو" in page.text
+    assert "تأیید طرح و نوشتن متن گفتار" in page.text
     assert f"/projects/{project.project_id}/script/approve" in page.text
 
 
@@ -268,8 +268,8 @@ def test_verified_script_page_shows_quality_and_source_trace(tmp_path: Path) -> 
 
     assert page.status_code == 200
     assert "سناریوی آزمون" in page.text
-    assert "کنترل قطعی" in page.text
-    assert "Verifier مستقل" in page.text
+    assert "وارسی ساختاری" in page.text
+    assert "راستی‌آزمایی مستقل" in page.text
     assert "کتاب اصلی" in page.text
     assert "صفحه 12" in page.text
     assert "عبارت دقیق منبع" in page.text
