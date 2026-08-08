@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}پروژه جدید | Thesisound{% endblock %}
+{% block content_class %}{% endblock %}
 {% block content %}
 {% set selected_audience = values.audience if values else 'دانشجوی علوم انسانی' %}
 {% set selected_knowledge = values.prior_knowledge if values else 'introductory' %}
@@ -18,7 +19,7 @@
   </ol>
 </nav>
 
-<div class="page-content--narrow">
+<div class="page-content page-content--narrow">
   <header class="page-heading page-heading--compact">
     <div>
       <p class="kicker">شروع یک مطالعه تازه</p>
