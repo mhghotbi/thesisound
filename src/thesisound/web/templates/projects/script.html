@@ -1,48 +1,48 @@
 {% extends "base.html" %}
 {% from "components.html" import status_label, technical_details %}
-{% block title %}متن اپیزود | Thesisound{% endblock %}
+{% block title %}متن گفتار | مقال{% endblock %}
 {% block content %}
 {% set speaker_labels = {'A': 'اول', 'B': 'دوم'} %}
 <header class="page-heading page-heading--compact">
   <div>
     <p class="kicker">متن مستند و قابل‌ردیابی</p>
     <h1>{{ project_title(project) }}</h1>
-    <p>در حالت ساده، متن برای خواندن آرام و پیوسته نمایش داده می‌شود. ردیابی هر بخش تا نقل‌قول و منبع در همان‌جا در دسترس است.</p>
+    <p>در حالت ساده، متن برای خواندن آرام و پیوسته نمایش داده می‌شود. ردیابی هر گفته تا شاهد و منبع در همان‌جا در دسترس است.</p>
   </div>
   {% if script_active %}
-    {{ status_label('در حال ساخت و راستی‌آزمایی', 'اقدامی از شما لازم نیست', 'running', script_run.stage if script_run else '') }}
+    {{ status_label('در حال نگارش و راستی‌آزمایی', 'اقدامی از شما لازم نیست', 'running', script_run.stage if script_run else '') }}
   {% elif script_run and script_run.status == 'failed' %}
     {{ status_label('اجرا متوقف شد', 'قابل بررسی و ادامه', 'danger', script_run.status) }}
   {% elif script %}
-    {{ status_label('متن اپیزود تأیید شد', 'آماده تولید صوت', 'success', project.state.value) }}
+    {{ status_label('متن گفتار تأیید شد', 'آمادهٔ ساخت نسخهٔ شنیداری', 'success', project.state.value) }}
   {% else %}
-    {{ status_label('منتظر تأیید طرح', 'تصمیم شما لازم است', 'attention', project.state.value) }}
+    {{ status_label('منتظر تأیید طرح گفتار', 'تصمیم شما لازم است', 'attention', project.state.value) }}
   {% endif %}
 </header>
 
 {% if error %}
-<div class="notice notice--danger" role="alert">ساخت یا تأیید متن کامل نشد. طرح و خروجی‌های سالم باقی مانده‌اند.<p class="operator-only">Artifacts preserved · <bdi dir="ltr">{{ error }}</bdi></p></div>
+<div class="notice notice--danger" role="alert">نگارش یا تأیید متن گفتار کامل نشد. طرح و خروجی‌های سالم باقی مانده‌اند.<p class="operator-only">Artifacts preserved · <bdi dir="ltr">{{ error }}</bdi></p></div>
 {% endif %}
 
 {% if can_approve and not script_active %}
 <section class="attention-panel" aria-labelledby="script-approval-title">
   <div>
     <span class="attention-panel__label">تأیید انسانی لازم است</span>
-    <h2 id="script-approval-title">ساخت متن اپیزود هنوز شروع نشده است</h2>
+    <h2 id="script-approval-title">نگارش متن گفتار هنوز شروع نشده است</h2>
     <p class="simple-only">با تأیید، نگارش و راستی‌آزمایی بر اساس همین ساختار شروع می‌شود.</p>
     <p class="operator-only">Approval به hash همین Episode Plan متصل می‌شود و با تغییر plan باطل خواهد شد.</p>
   </div>
   <form method="post" action="/projects/{{ project.project_id }}/script/approve">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <button class="button button--primary" type="submit">تأیید همین طرح و ساخت سناریو (متن اپیزود)</button>
+    <button class="button button--primary" type="submit">تأیید همین طرح و نوشتن متن گفتار</button>
   </form>
 </section>
-<div class="form-actions"><a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">بازگشت به طرح اپیزود</a></div>
+<div class="form-actions"><a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">بازگشت به طرح گفتار</a></div>
 {% endif %}
 
 {% if approval %}
 <div class="notice notice--info">
-  <strong>نسخه طرح برای نگارش تأیید شده است.</strong>
+  <strong>نسخهٔ طرح گفتار برای نگارش تأیید شده است.</strong>
   <p class="operator-only">تأییدکننده: <code><bdi dir="ltr">{{ approval.approved_by }}</bdi></code> · hash: <code><bdi dir="ltr">{{ approval.plan_hash }}</bdi></code></p>
 </div>
 {% endif %}
@@ -54,19 +54,19 @@
       <p class="kicker">اجرای جاری</p>
       <h2 id="script-progress-title" aria-live="polite">
         {% if script_run.stage == 'queued' %}در صف اجرا
-        {% elif script_run.stage == 'building_glossary' %}ساخت واژه‌نامه دوزبانه
-        {% elif script_run.stage == 'writing_segments' %}نوشتن بخش‌های متن اپیزود
-        {% elif script_run.stage == 'checking_draft' %}کنترل قطعی پیش‌نویس
+        {% elif script_run.stage == 'building_glossary' %}ساخت واژه‌نامهٔ دوزبانه
+        {% elif script_run.stage == 'writing_segments' %}نوشتن بخش‌های متن گفتار
+        {% elif script_run.stage == 'checking_draft' %}وارسی ساختاری پیش‌نویس
         {% elif script_run.stage == 'verifying_draft' %}راستی‌آزمایی مستقل پیش‌نویس
-        {% elif script_run.stage == 'revising' %}اصلاح هدفمند بخش‌های معیوب
-        {% elif script_run.stage == 'checking_revision' %}کنترل قطعی نسخه اصلاح‌شده
-        {% elif script_run.stage == 'verifying_revision' %}راستی‌آزمایی نسخه اصلاح‌شده
-        {% else %}در حال پردازش{% endif %}
+        {% elif script_run.stage == 'revising' %}اصلاح هدفمند گفته‌های معیوب
+        {% elif script_run.stage == 'checking_revision' %}وارسی ساختاری نسخهٔ اصلاح‌شده
+        {% elif script_run.stage == 'verifying_revision' %}راستی‌آزمایی مستقل نسخهٔ اصلاح‌شده
+        {% else %}در حال نگارش{% endif %}
       </h2>
     </div>
     {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', script_run.status) }}
   </div>
-  <p class="lede">در تلاش دوباره، بخش‌ها و خروجی‌های سالم دوباره ساخته نمی‌شوند. درصد یا زمان باقی‌مانده حدسی نمایش داده نمی‌شود.</p>
+  <p class="lede">در تلاش دوباره، بخش‌ها و خروجی‌های سالم دوباره ساخته نمی‌شوند. درصد یا زمان باقی‌ماندهٔ حدسی نمایش داده نمی‌شود.</p>
   <p class="operator-only">Healthy artifacts are reused; no synthetic ETA.</p>
 </section>
 {% endif %}
@@ -76,8 +76,8 @@
   <div class="error-recovery__grid">
     <div>
       <span class="attention-panel__label">چه شد</span>
-      <h2>ساخت یا راستی‌آزمایی متن اپیزود متوقف شد</h2>
-      <p class="error-recovery__impact"><strong>اثر:</strong> طرح تأییدشده و بخش‌های سالم باقی مانده‌اند؛ متن ناقص به تولید صوت نمی‌رود.</p>
+      <h2>نگارش یا راستی‌آزمایی متن گفتار متوقف شد</h2>
+      <p class="error-recovery__impact"><strong>اثر:</strong> طرح تأییدشده و بخش‌های سالم باقی مانده‌اند؛ متن ناقص وارد ساخت نسخهٔ شنیداری نمی‌شود.</p>
     </div>
     {% if can_retry %}
     <form method="post" action="/projects/{{ project.project_id }}/script/retry">
@@ -87,7 +87,7 @@
     {% endif %}
   </div>
   <div class="error-recovery__options">
-    <a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/episode">بررسی طرح اپیزود</a>
+    <a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/episode">بررسی طرح گفتار</a>
     <a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a>
   </div>
   {% if script_run.last_error %}{% call technical_details('کد و متن خطا') %}<p><bdi dir="ltr">{{ script_run.last_error }}</bdi></p>{% endcall %}{% endif %}
@@ -96,9 +96,9 @@
 
 {% if script_run and script_run.status == 'succeeded' and script and checks and verification %}
 <section class="coverage-verdict">
-  <p class="kicker">نتیجه این مرحله</p>
+  <p class="kicker">نتیجهٔ این مرحله</p>
   <h2>{{ script.title }}</h2>
-  <p>{{ checks.word_count | fa_num }} واژه · حدود {{ checks.estimated_minutes | round(1) | fa_num }} دقیقه · {{ script.turns | length | fa_num }} نوبت گفتار{% if used_revision %} · یک اصلاح هدفمند انجام شده{% endif %}</p>
+  <p>{{ checks.word_count | fa_num }} واژه · حدود {{ checks.estimated_minutes | round(1) | fa_num }} دقیقه · {{ script.turns | length | fa_num }} گفته{% if used_revision %} · یک اصلاح هدفمند انجام شده{% endif %}</p>
   <code class="operator-only"><bdi dir="ltr">{{ project.state.name }}</bdi></code>
 </section>
 
@@ -106,16 +106,16 @@
   <div class="section-heading"><h2 id="quality-title">گزارش کیفیت</h2></div>
   <div class="quality-summary">
     <article class="quality-row">
-      <h3>کنترل قطعی ساختار و ارجاع‌ها</h3>
-      {% if checks.issues %}<p>{{ checks.issues | length | fa_num }} مسئله ثبت شده که جزئیات آن در حالت پیشرفته دیده می‌شود.</p>{% else %}<p>همه بخش‌های محتوایی ارجاع لازم را دارند و مسئله قطعی باقی نمانده است.</p>{% endif %}
+      <h3>وارسی ساختاری</h3>
+      {% if checks.issues %}<p>{{ checks.issues | length | fa_num }} ایراد ثبت شده است که جزئیات آن در حالت پیشرفته دیده می‌شود.</p>{% else %}<p>همهٔ گفته‌های محتوایی به مدعا و شاهد لازم متصل‌اند و ایراد ساختاری باقی نمانده است.</p>{% endif %}
     </article>
     <article class="quality-row">
-      <h3>راستی‌آزمایی مستقل <span class="operator-only">· Verifier مستقل</span></h3>
-      {% if verification.issues %}<p>راستی‌آزما هنوز {{ verification.issues | length | fa_num }} نکته ثبت کرده است؛ این نسخه فقط پس از عبور نهایی قابل استفاده است.</p>{% else %}<p>راستی‌آزما ادعای بدون پشتوانه یا نسبت‌دادن نادرست باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
+      <h3>راستی‌آزمایی مستقل <span class="operator-only">· Verifier</span></h3>
+      {% if verification.issues %}<p>راستی‌آزما هنوز {{ verification.issues | length | fa_num }} نکته ثبت کرده است؛ این نسخه فقط پس از عبور نهایی قابل استفاده است.</p>{% else %}<p>راستی‌آزما مدعای بی‌پشتوانه یا انتساب نادرست باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
     </article>
   </div>
 
-  {% call technical_details('جزئیات کامل کنترل کیفیت') %}
+  {% call technical_details('جزئیات کامل گزارش کیفیت') %}
     <p>Deterministic verdict: <code><bdi dir="ltr">{{ checks.verdict }}</bdi></code> · substantive turns: <code><bdi dir="ltr">{{ checks.substantive_turn_count }}</bdi></code> · estimated minutes: <code><bdi dir="ltr">{{ checks.estimated_minutes | round(2) }}</bdi></code></p>
     {% if checks.issues %}<ul>{% for issue in checks.issues %}<li><code><bdi dir="ltr">{{ issue.turn_id if issue.turn_id is defined else '' }}</bdi></code> — {{ issue.explanation }}</li>{% endfor %}</ul>{% endif %}
     <p>Verifier verdict: <code><bdi dir="ltr">{{ verification.verdict }}</bdi></code> · unsupported claim ratio: <code><bdi dir="ltr">{{ (verification.unsupported_claim_ratio * 100) | round(2) }}%</bdi></code></p>
@@ -134,22 +134,22 @@
       {% for item in view.turns %}
       <article class="transcript-turn">
         <div class="transcript-turn__meta">
-          <span class="transcript-turn__speaker">گوینده {{ speaker_labels.get(item.turn.speaker, item.turn.speaker) }}</span>
+          <span class="transcript-turn__speaker">گویندهٔ {{ speaker_labels.get(item.turn.speaker, item.turn.speaker) }}</span>
           <span class="transcript-turn__number">{{ loop.index | fa_num }}</span>
-          <code class="operator-only">speaker <bdi dir="ltr">{{ item.turn.speaker }}</bdi> · turn <bdi dir="ltr">{{ item.turn.turn_id }}</bdi></code>
+          <code class="operator-only">speaker <bdi dir="ltr">{{ item.turn.speaker }}</bdi> · نوبت سخن <bdi dir="ltr">{{ item.turn.turn_id }}</bdi></code>
         </div>
         <p class="transcript-turn__text">{{ item.turn.spoken_text_fa }}</p>
 
         {% if item.turn.editorial_only %}
-        <p class="source-row__issue">این جمله نقش انتقالی دارد و ادعای محتوایی تازه‌ای مطرح نمی‌کند.</p>
+        <p class="source-row__issue">این گفته نقش انتقالی دارد و مدعای محتوایی تازه‌ای مطرح نمی‌کند.</p>
         {% elif item.references %}
         <details class="evidence-drawer">
-          <summary>دیدن شواهد این بخش</summary>
+          <summary>نمایش شاهدهای این گفته</summary>
           {% for reference in item.references %}
           <article class="evidence-card">
             <strong><bdi dir="auto">{{ reference.source_title }}</bdi></strong>
             <blockquote>{{ reference.excerpt }}</blockquote>
-            <p>موقعیت در منبع: {{ reference.locator }}</p>
+            <p>نشانی در منبع: {{ reference.locator }}</p>
             <p class="operator-only">Evidence ID: <code><bdi dir="ltr">{{ reference.evidence_id }}</bdi></code></p>
           </article>
           {% endfor %}
@@ -157,7 +157,7 @@
         {% endif %}
 
         {% if not item.turn.editorial_only %}
-        <p class="source-row__issue operator-only">Claim IDs: <code><bdi dir="ltr">{{ item.turn.claim_ids | join(', ') }}</bdi></code> · Evidence IDs: <code><bdi dir="ltr">{{ item.turn.evidence_ids | join(', ') }}</bdi></code></p>
+        <p class="source-row__issue operator-only">مدعاها: <code><bdi dir="ltr">{{ item.turn.claim_ids | join(', ') }}</bdi></code> · شاهدها: <code><bdi dir="ltr">{{ item.turn.evidence_ids | join(', ') }}</bdi></code></p>
         {% endif %}
       </article>
       {% endfor %}
@@ -167,18 +167,18 @@
 </div>
 
 <div class="notice notice--success section-block">
-  <strong>متن اپیزود از کنترل و راستی‌آزمایی عبور کرده است.</strong>
-  <p>نسخه تأییدشده آماده تولید و کنترل صوت است.</p>
+  <strong>متن گفتار از وارسی ساختاری و راستی‌آزمایی مستقل عبور کرده است.</strong>
+  <p>نسخهٔ تأییدشده آمادهٔ ساخت و وارسی نسخهٔ شنیداری است.</p>
 </div>
 <div class="form-actions">
-  <a class="button button--primary" href="/projects/{{ project.project_id }}/audio">ادامه به ساخت صوت</a>
+  <a class="button button--primary" href="/projects/{{ project.project_id }}/audio">ساخت نسخهٔ شنیداری</a>
   <a class="button button--secondary operator-only" href="/system-check?scope=audio">بررسی پیش‌نیازهای صوت</a>
 </div>
 {% endif %}
 
 <div class="form-actions section-block">
-  <a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">طرح اپیزود</a>
-  <a class="button button--quiet" href="/projects/{{ project.project_id }}">خانه پروژه</a>
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">طرح گفتار</a>
+  <a class="button button--quiet" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
 </div>
 {% if script_active %}<div data-auto-refresh="3000" aria-hidden="true"></div>{% endif %}
 {% endblock %}
