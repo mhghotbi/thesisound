@@ -28,6 +28,7 @@ BlockType = Literal[
     "code",
     "other",
 ]
+AnalysisDepth = Literal["brief", "standard", "deep", "extended"]
 
 
 class SourceDocumentBlock(BaseModel):
@@ -50,6 +51,37 @@ class BlockBuildReport(BaseModel):
     removed_margin_block_keys: list[str] = Field(default_factory=list)
     split_source_block_keys: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+
+
+class AnalysisProfile(BaseModel):
+    depth: AnalysisDepth
+    target_duration_minutes: int = Field(ge=5, le=120)
+    block_coverage_target: float = Field(ge=0, le=1)
+    evidence_input_token_budget: int = Field(ge=1)
+    max_claims_per_block: int = Field(ge=1, le=12)
+    neighbor_context_blocks: int = Field(ge=0, le=2)
+    include_examples: bool
+    include_objections_and_responses: bool
+    second_pass_for_core_sections: bool
+    rationale: list[str] = Field(default_factory=list)
+
+
+class EvidenceExtractionPlan(BaseModel):
+    source_id: UUID
+    profile: AnalysisProfile
+    selected_block_ids: list[str] = Field(default_factory=list)
+    deferred_block_ids: list[str] = Field(default_factory=list)
+    selected_source_tokens: int = Field(ge=0)
+    total_source_tokens: int = Field(ge=0)
+    achieved_token_coverage: float = Field(ge=0, le=1)
+
+    @model_validator(mode="after")
+    def require_disjoint_block_sets(self) -> EvidenceExtractionPlan:
+        selected = set(self.selected_block_ids)
+        deferred = set(self.deferred_block_ids)
+        if selected & deferred:
+            raise ValueError("Selected and deferred block IDs must be disjoint.")
+        return self
 
 
 class DocumentMapDraftSection(BaseModel):
@@ -165,6 +197,10 @@ class SourceAnalysisManifest(BaseModel):
         "failed",
     ]
     block_count: int = Field(default=0, ge=0)
+    selected_block_count: int = Field(default=0, ge=0)
+    deferred_block_count: int = Field(default=0, ge=0)
+    analysis_depth: AnalysisDepth | None = None
+    evidence_token_coverage: float | None = Field(default=None, ge=0, le=1)
     evidence_count: int = Field(default=0, ge=0)
     claim_count: int = Field(default=0, ge=0)
     model_run_ids: list[UUID] = Field(default_factory=list)
