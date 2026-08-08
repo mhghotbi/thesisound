@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from time import perf_counter
 from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
+from thesisound.gemini_key_pool import GeminiKeyPool, shared_gemini_key_pool
 from thesisound.modeling import (
     ModelConfigurationError,
     ModelError,
@@ -21,27 +23,31 @@ from thesisound.ports import RunMetadata
 
 
 class GeminiStructuredModel:
-    """Gemini generateContent adapter with Pydantic structured outputs.
-
-    The adapter deliberately sends no temperature, top-p, or top-k parameters.
-    Those parameters are deprecated for the current Gemini 3.5/3.6 model family.
-    """
+    """Gemini generateContent adapter with Pydantic structured outputs."""
 
     provider = "gemini"
 
-    def __init__(self, *, api_key: str | None = None, client: Any | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        api_key: str | None = None,
+        api_keys: Sequence[str] | None = None,
+        pool: GeminiKeyPool | None = None,
+        client: Any | None = None,
+    ) -> None:
         if client is not None:
             self._client = client
+            self._pool = None
             return
-        if not api_key:
-            raise ModelConfigurationError("GEMINI_API_KEY is required for live model calls.")
-        try:
-            from google import genai
-        except ImportError as exc:
+        keys = list(api_keys or [])
+        if api_key:
+            keys.append(api_key)
+        if pool is None and not keys:
             raise ModelConfigurationError(
-                "Install the Gemini extra with: uv sync --extra gemini"
-            ) from exc
-        self._client = genai.Client(api_key=api_key)
+                "GEMINI_API_KEY or GEMINI_API_KEYS is required for live model calls."
+            )
+        self._client = None
+        self._pool = pool or shared_gemini_key_pool(keys)
 
     def generate_structured[T: BaseModel](
         self,
@@ -60,12 +66,21 @@ class GeminiStructuredModel:
             "response_schema": output_type,
         }
         try:
-            response = self._client.models.generate_content(
-                model=model,
-                contents=user_prompt,
-                config=config,
-            )
-        except Exception as exc:  # provider SDK exceptions vary by transport
+            if self._pool is not None:
+                response = self._pool.call(
+                    lambda client: client.models.generate_content(
+                        model=model,
+                        contents=user_prompt,
+                        config=config,
+                    )
+                )
+            else:
+                response = self._client.models.generate_content(
+                    model=model,
+                    contents=user_prompt,
+                    config=config,
+                )
+        except Exception as exc:
             raise _map_provider_error(exc) from exc
 
         latency_ms = max(0, round((perf_counter() - started) * 1000))
