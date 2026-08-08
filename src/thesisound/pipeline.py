@@ -69,7 +69,7 @@ ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
         ProjectState.AUDIO_GENERATING,
         ProjectState.FAILED_RETRYABLE,
     },
-    ProjectState.COMPLETE: set(),
+    ProjectState.COMPLETE: {ProjectState.FAILED_RETRYABLE},
     ProjectState.FAILED_RETRYABLE: {
         ProjectState.BRIEF_READY,
         ProjectState.SOURCES_COLLECTING,

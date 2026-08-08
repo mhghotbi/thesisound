@@ -13,9 +13,11 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 
+from thesisound.audio_runtime import create_audio_builder
 from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState, ResearchBrief, TopicType
 from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.web.audio_routes import register_audio_routes
 from thesisound.web.auth import NullOtpSender, OtpError, OtpService
 from thesisound.web.corpus_runtime import create_corpus_builder
 from thesisound.web.episode_routes import register_episode_routes
@@ -88,15 +90,18 @@ def create_app(
     corpus_executor: Callable[[UUID], None] | None = None,
     episode_executor: Callable[[UUID], None] | None = None,
     script_executor: Callable[[UUID], None] | None = None,
+    audio_executor: Callable[[UUID], None] | None = None,
 ) -> FastAPI:
     runtime = settings or Settings()
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
     corpus_builder = create_corpus_builder(runtime, workspace)
     episode_planner = create_episode_planner(runtime, workspace)
     script_builder = create_script_builder(runtime, workspace)
+    audio_builder = create_audio_builder(runtime, workspace)
     execute_corpus = corpus_executor or corpus_builder.run
     execute_episode = episode_executor or episode_planner.run
     execute_script = script_executor or script_builder.run
+    execute_audio = audio_executor or audio_builder.run
 
     docs_url = "/api/docs" if runtime.environment != "production" else None
     app = FastAPI(title="Thesisound", docs_url=docs_url)
@@ -132,6 +137,7 @@ def create_app(
     app.state.corpus_builder = corpus_builder
     app.state.episode_planner = episode_planner
     app.state.script_builder = script_builder
+    app.state.audio_builder = audio_builder
 
     def render(
         request: Request,
@@ -248,9 +254,12 @@ def create_app(
                 ProjectState.FAILED_RETRYABLE,
                 ProjectState.FAILED_PERMANENT,
             }:
+                audio_run = audio_builder.run_store.load_optional(project.project_id)
                 script_run = script_builder.run_store.load_optional(project.project_id)
                 episode_run = episode_planner.run_store.load_optional(project.project_id)
-                if script_run is not None and script_run.status == "failed":
+                if audio_run is not None and audio_run.status == "failed":
+                    failure_action_url = f"/projects/{project.project_id}/audio"
+                elif script_run is not None and script_run.status == "failed":
                     failure_action_url = f"/projects/{project.project_id}/script"
                 elif episode_run is not None and episode_run.status == "failed":
                     failure_action_url = f"/projects/{project.project_id}/episode"
@@ -410,6 +419,15 @@ def create_app(
         workspace=workspace,
         builder=script_builder,
         execute=execute_script,
+        render=render,
+        login_redirect=_login_redirect,
+        validate_csrf=_validate_csrf,
+    )
+    register_audio_routes(
+        app,
+        workspace=workspace,
+        builder=audio_builder,
+        execute=execute_audio,
         render=render,
         login_redirect=_login_redirect,
         validate_csrf=_validate_csrf,

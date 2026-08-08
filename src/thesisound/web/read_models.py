@@ -90,19 +90,36 @@ def build_project_read_model(
         ProjectState.SCRIPT_DRAFTING,
         ProjectState.SCRIPT_READY,
         ProjectState.SCRIPT_VERIFYING,
-        ProjectState.SCRIPT_VERIFIED,
     }:
         return ProjectReadModel(
             project=project,
             state_label=_STATE_LABELS[project.state],
-            attention_label=(
-                "سناریوی مستند و گزارش راستی‌آزمایی را بررسی کنید"
-                if project.state == ProjectState.SCRIPT_VERIFIED
-                else "وضعیت نگارش و راستی‌آزمایی سناریو را ببینید"
-            ),
+            attention_label="وضعیت نگارش و راستی‌آزمایی سناریو را ببینید",
             primary_action_label="مشاهده سناریو",
             primary_action_url=f"/projects/{project_id}/script",
-            tone="success" if project.state == ProjectState.SCRIPT_VERIFIED else "running",
+            tone="running",
+        )
+    if project.state == ProjectState.SCRIPT_VERIFIED:
+        return ProjectReadModel(
+            project=project,
+            state_label=_STATE_LABELS[project.state],
+            attention_label="سناریوی تأییدشده آماده تولید و کنترل صوت است",
+            primary_action_label="ساخت صوت",
+            primary_action_url=f"/projects/{project_id}/audio",
+            tone="attention",
+        )
+    if project.state in {
+        ProjectState.AUDIO_GENERATING,
+        ProjectState.AUDIO_READY,
+        ProjectState.AUDIO_VERIFYING,
+    }:
+        return ProjectReadModel(
+            project=project,
+            state_label=_STATE_LABELS[project.state],
+            attention_label="وضعیت تولید، ASR و کنترل قطعه‌های صوتی را ببینید",
+            primary_action_label="مشاهده صوت",
+            primary_action_url=f"/projects/{project_id}/audio",
+            tone="running",
         )
     if project.state in {ProjectState.FAILED_RETRYABLE, ProjectState.FAILED_PERMANENT}:
         destination = failure_action_url or f"/projects/{project_id}/processing"
@@ -118,9 +135,9 @@ def build_project_read_model(
         return ProjectReadModel(
             project=project,
             state_label=_STATE_LABELS[project.state],
-            attention_label="اپیزود آماده است",
+            attention_label="اپیزود صوتی verified آماده است",
             primary_action_label="گوش دادن",
-            primary_action_url=f"/projects/{project_id}/listen",
+            primary_action_url=f"/projects/{project_id}/audio",
             tone="success",
         )
     return ProjectReadModel(

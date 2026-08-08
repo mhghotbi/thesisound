@@ -42,7 +42,7 @@ parsers = [
 ]
 
 [project.scripts]
-thesisound = "thesisound.cli:app"
+thesisound = "thesisound.cli_with_audio:app"
 thesisound-web = "thesisound.web.app:main"
 
 [tool.hatch.build.targets.wheel]

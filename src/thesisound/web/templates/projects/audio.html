@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}صوت | Thesisound{% endblock %}
+{% block content %}
+<div class="reading-layout reading-layout--wide">
+  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
+    <span class="step-rail__item is-complete"><b>۱</b> هدف</span>
+    <span class="step-rail__item is-complete"><b>۲</b> منابع</span>
+    <span class="step-rail__item is-complete"><b>۳</b> طرح</span>
+    <span class="step-rail__item is-complete"><b>۴</b> سناریو</span>
+    <span class="step-rail__item is-current"><b>۵</b> صوت</span>
+  </nav>
+
+  <header class="page-heading page-heading--compact">
+    <div>
+      <p class="eyebrow">تولید و کنترل شنیداری</p>
+      <h1>{{ project_title(project) }}</h1>
+      <p>هر قطعه جدا تولید، از نظر ساختار WAV بررسی، با ASR رونویسی و فقط در صورت نیاز بازتولید می‌شود.</p>
+    </div>
+  </header>
+
+  {% if error %}<div class="notice notice--danger" role="alert">{{ error }}</div>{% endif %}
+
+  {% if can_generate and not audio_active %}
+  <section class="interpretation">
+    <h2>سناریوی تأییدشده آماده تبدیل به صوت است</h2>
+    <p>این اجرا به hash نسخه فعلی سناریو متصل است و خروجی نسخه دیگر را reuse نمی‌کند.</p>
+  </section>
+  <form method="post" action="/projects/{{ project.project_id }}/audio/generate" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">ساخت و کنترل صوت</button>
+  </form>
+  {% endif %}
+
+  {% if audio_run and audio_active %}
+  <section class="source-list">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">اجرای جاری</p>
+        <h2>
+          {% if audio_run.stage == "queued" %}در صف اجرا
+          {% elif audio_run.stage == "segmenting" %}تقسیم سناریو به قطعه‌های گفتاری
+          {% elif audio_run.stage == "synthesizing" %}تولید قطعه‌های صوتی
+          {% elif audio_run.stage == "transcribing" %}رونویسی و مقایسه با متن
+          {% elif audio_run.stage == "regenerating" %}بازتولید قطعه معیوب
+          {% elif audio_run.stage == "assembling" %}نرمال‌سازی و اتصال صوت
+          {% else %}در حال پردازش{% endif %}
+        </h2>
+      </div>
+      <span><bdi dir="ltr">{{ audio_run.status }}</bdi></span>
+    </div>
+    <p>درصد و ETA حدس زده نمی‌شود. قطعه‌های سالم در retry دوباره تولید نمی‌شوند.</p>
+  </section>
+  {% endif %}
+
+  {% if audio_run and audio_run.status == "failed" %}
+  <div class="notice notice--danger">
+    <strong>تولید یا کنترل صوت متوقف شد.</strong>
+    <p>{{ audio_run.last_error }}</p>
+  </div>
+  {% if can_retry %}
+  <form method="post" action="/projects/{{ project.project_id }}/audio/retry" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">ادامه از قطعه‌های سالم</button>
+  </form>
+  {% endif %}
+  {% endif %}
+
+  {% if project.state.value == "complete" and manifest and manifest.status == "verified" %}
+  <section class="interpretation">
+    <p class="eyebrow">خروجی نهایی</p>
+    <h2>اپیزود آماده شنیدن است</h2>
+    <p>
+      {{ manifest.chunk_count }} قطعه ·
+      <bdi dir="ltr">{{ (manifest.final_duration_seconds / 60) | round(1) }} دقیقه</bdi> ·
+      {{ manifest.regenerated_chunk_ids | length }} بازتولید هدفمند
+    </p>
+    <audio controls preload="metadata" style="width:100%">
+      <source src="/projects/{{ project.project_id }}/audio/final.wav" type="audio/wav">
+    </audio>
+    <div class="form-actions">
+      <a class="button button--primary" href="/projects/{{ project.project_id }}/audio/final.wav" download>دانلود فایل صوتی</a>
+      <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">خواندن سناریو</a>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if segment_views %}
+  <section class="source-list">
+    <div class="section-heading">
+      <h2>کنترل قطعه‌ها</h2>
+      <span>{{ segment_views | length }} قطعه</span>
+    </div>
+    {% for item in segment_views %}
+    <article class="source-row">
+      <div class="source-row__identity">
+        <strong>گوینده {{ item.chunk.speaker }} · <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></strong>
+        <span>{% if item.qa %}<bdi dir="ltr">{{ item.qa.verdict }}</bdi>{% else %}در انتظار QA{% endif %}</span>
+      </div>
+      <p>{{ item.chunk.text }}</p>
+      {% if item.record %}
+      <audio controls preload="none">
+        <source src="/projects/{{ project.project_id }}/audio/segments/{{ item.chunk.chunk_id }}.wav" type="audio/wav">
+      </audio>
+      <p class="source-row__issue">
+        مدت: <bdi dir="ltr">{{ item.record.validation.duration_seconds | round(1) }} ثانیه</bdi>
+        · تلاش: {{ item.record.generation_attempts }}
+      </p>
+      {% endif %}
+      {% if item.transcript %}
+      <details>
+        <summary>ASR و اختلاف با متن</summary>
+        <p>{{ item.transcript.text }}</p>
+        {% if item.qa %}
+        <p>شباهت: <bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(1) }}٪</bdi></p>
+        {% if item.qa.missing_sentences %}
+        <ul>
+          {% for value in item.qa.missing_sentences %}
+          <li>افتادگی احتمالی: {{ value }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% endif %}
+      </details>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <div class="form-actions">
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">بازگشت به سناریو</a>
+    <a class="button button--quiet" href="/projects">پروژه‌ها</a>
+  </div>
+</div>
+{% if audio_active %}
+<script>window.setTimeout(() => window.location.reload(), 3000);</script>
+{% endif %}
+{% endblock %}
