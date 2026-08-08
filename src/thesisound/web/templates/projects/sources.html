@@ -1,206 +1,192 @@
 {% extends "base.html" %}
+{% from "components.html" import status_label, technical_details %}
 {% block title %}منابع | Thesisound{% endblock %}
 {% block content %}
-<div class="reading-layout reading-layout--wide">
-  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
-    <span class="step-rail__item is-complete"><b>۱</b> تعریف هدف</span>
-    <span class="step-rail__item is-complete"><b>۲</b> تأیید برداشت</span>
-    <span class="step-rail__item is-current"><b>۳</b> منابع</span>
-    <span class="step-rail__item"><b>۴</b> پردازش</span>
-  </nav>
+<header class="page-heading page-heading--compact">
+  <div>
+    <p class="kicker">مبنای اپیزود</p>
+    <h1>منابع را اضافه و انتخاب کنید</h1>
+    <p>فقط متن کامل و عبورکرده از کنترل کیفیت می‌تواند وارد شواهد شود. نتیجه جست‌وجو یا snippet به‌تنهایی منبع محسوب نمی‌شود.</p>
+  </div>
+  {{ status_label((selected_count | fa_num) ~ ' منبع انتخاب‌شده', 'مبنای اپیزود', 'success' if selected_count else 'attention') }}
+</header>
 
-  <header class="page-heading page-heading--compact">
-    <div>
-      <p class="eyebrow">مبنای اپیزود</p>
-      <h1>منابع را اضافه و انتخاب کنید</h1>
-      <p>می‌توانید فایل بدهید یا پیدا کردن منابع را به جست‌وجوی Gemini بسپارید. در هر دو مسیر، فقط متن بازیابی‌شده و عبورکرده از کنترل کیفیت وارد شواهد می‌شود.</p>
-    </div>
-  </header>
+{% if error %}
+  <div class="notice notice--danger" role="alert">
+    بازیابی یا بررسی منبع کامل نشد. منبع ناقص وارد اپیزود نشده است.
+    <p class="operator-only"><bdi dir="ltr">{{ error }}</bdi></p>
+  </div>
+{% endif %}
+{% if request.query_params.get('error') == 'file-too-large' %}
+  <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بارگذاری بیشتر است.</div>
+{% elif request.query_params.get('error') == 'selection-locked' %}
+  <div class="notice notice--danger" role="alert">این مجموعه وارد پردازش شده است. برای تغییر، از «بازگشت و اصلاح ورودی‌های قبلی» استفاده کنید.</div>
+{% elif request.query_params.get('error') == 'source-retry-failed' %}
+  <div class="notice notice--danger" role="alert">استخراج دوباره انجام نشد. اصل فایل باقی مانده است و می‌توانید پس از بررسی محیط دوباره تلاش کنید.</div>
+{% elif request.query_params.get('error') == 'source-delete-failed' %}
+  <div class="notice notice--danger" role="alert">حذف منبع انجام نشد. هیچ خروجی دیگری تغییر نکرد.</div>
+{% elif request.query_params.get('searched') %}
+  <div class="notice notice--success" role="status">پیشنهادهای جست‌وجو آماده‌اند. برای ورود به شواهد باید متن کامل هر مورد بازیابی و بررسی شود.</div>
+{% elif request.query_params.get('auto-search') %}
+  <div class="notice notice--success" role="status">جست‌وجو و افزودن خودکار انجام شد. فقط منابع کامل و آماده انتخاب شده‌اند.</div>
+{% endif %}
 
-  {% if error %}
-    <div class="notice notice--danger" role="alert">{{ error }}</div>
-  {% endif %}
-  {% if request.query_params.get('error') == 'file-too-large' %}
-    <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بارگذاری بیشتر است.</div>
-  {% elif request.query_params.get('error') == 'selection-locked' %}
-    <div class="notice notice--danger" role="alert">این مجموعه وارد پردازش شده است. از بخش «بازگشت و اصلاح مراحل قبلی» استفاده کنید تا خروجی‌های وابسته archive شوند.</div>
-  {% elif request.query_params.get('error') == 'source-retry-failed' %}
-    <div class="notice notice--danger" role="alert">استخراج دوباره انجام نشد. اصل فایل، parser و جزئیات کنترل کیفیت را بررسی کنید.</div>
-  {% elif request.query_params.get('error') == 'source-delete-failed' %}
-    <div class="notice notice--danger" role="alert">حذف منبع انجام نشد. صفحه را تازه کنید و دوباره تلاش کنید.</div>
-  {% elif request.query_params.get('searched') %}
-    <div class="notice notice--success" role="status">پیشنهادهای جست‌وجو آماده‌اند. هنوز هیچ snippet یا نتیجه جست‌وجویی evidence محسوب نمی‌شود؛ منبع موردنظر را اضافه کنید تا متن آن بازیابی و بررسی شود.</div>
-  {% elif request.query_params.get('auto-search') %}
-    <div class="notice notice--success" role="status">جست‌وجو و تلاش برای افزودن خودکار منابع انجام شد. منابع کامل و آماده به‌طور خودکار انتخاب شده‌اند؛ نتایج ناقص پایین صفحه مشخص‌اند.</div>
-  {% endif %}
-  {% if selection_locked %}
-    <div class="notice notice--info">این مجموعه فعلاً فقط خواندنی است. برای تغییر آن، از کنترل بازگشت بالای صفحه استفاده کنید.</div>
-  {% endif %}
+{% if selection_locked %}
+<div class="notice notice--info"><strong>مجموعه منابع فقط خواندنی است.</strong><p>نسخه تأییدشده وارد پردازش شده و تغییر آن خروجی‌های بعدی را stale می‌کند.</p></div>
+{% endif %}
 
-  {% if not selection_locked %}
-  <section class="source-paths" aria-label="روش‌های افزودن منبع">
-    <article class="source-path-card">
-      <p class="eyebrow">مسیر اول</p>
-      <h2>بارگذاری فایل</h2>
-      <p>برای کتاب، مقاله یا سندی که خودتان دارید.</p>
-      <form method="post" action="/projects/{{ project.project_id }}/sources/upload" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <label class="drop-field">
-          <span class="drop-field__title">فایل را انتخاب کنید</span>
-          <span>PDF، EPUB، DOCX، TXT یا Markdown</span>
-          <input type="file" name="source_file" accept=".pdf,.epub,.docx,.txt,.md" required>
-        </label>
-        <button class="button button--secondary" type="submit">افزودن و بررسی فایل</button>
-      </form>
-    </article>
+{% if not selection_locked %}
+<section class="source-paths section-block" aria-label="روش‌های افزودن منبع">
+  <article class="source-path-card">
+    <p class="kicker">فایل خودتان</p>
+    <h2>بارگذاری و بررسی فایل</h2>
+    <p>برای کتاب، مقاله یا سندی که از قبل در اختیار دارید.</p>
+    <form method="post" action="/projects/{{ project.project_id }}/sources/upload" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="drop-field">
+        <span class="drop-field__title">فایل را انتخاب کنید</span>
+        <span>PDF، EPUB، DOCX، TXT یا Markdown</span>
+        <input type="file" name="source_file" accept=".pdf,.epub,.docx,.txt,.md" required>
+      </label>
+      <button class="button button--secondary" type="submit">افزودن و بررسی فایل</button>
+    </form>
+  </article>
 
-    <article class="source-path-card">
-      <p class="eyebrow">مسیر دوم</p>
-      <h2>پیدا کردن منبع با Gemini</h2>
-      <p>برای پروژه‌ای که فقط موضوع یا عنوان دارد. جست‌وجو candidate می‌سازد؛ متن URL جداگانه بازیابی و quality-gate می‌شود.</p>
-      <form method="post" action="/projects/{{ project.project_id }}/sources/search">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <label class="field">
-          <span>عبارت جست‌وجو</span>
-          <textarea name="query" rows="3">{{ search_query }}</textarea>
-        </label>
-        <div class="form-actions">
-          <button class="button button--secondary" type="submit" name="mode" value="preview">نمایش پیشنهادها</button>
-          <button class="button button--primary" type="submit" name="mode" value="auto">پیدا و اضافه‌کردن خودکار تا ۳ منبع</button>
-        </div>
-      </form>
-    </article>
-  </section>
-  {% endif %}
-
-  {% if search_candidates and not selection_locked %}
-  <section aria-labelledby="search-results-title">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">نتایج Gemini Google Search</p>
-        <h2 id="search-results-title">پیشنهادهای منبع</h2>
+  <article class="source-path-card">
+    <p class="kicker">جست‌وجوی هدایت‌شده</p>
+    <h2>پیدا کردن منبع با Gemini</h2>
+    <p>جست‌وجو candidate می‌سازد؛ متن URL در یک گام جدا بازیابی و quality-gate می‌شود.</p>
+    <form method="post" action="/projects/{{ project.project_id }}/sources/search">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="field">
+        <span>عبارت جست‌وجو</span>
+        <textarea name="query" rows="3">{{ search_query }}</textarea>
+      </label>
+      <div class="form-actions">
+        <button class="button button--secondary" type="submit" name="mode" value="preview">نمایش پیشنهادها</button>
+        <button class="button button--primary" type="submit" name="mode" value="auto">پیدا و اضافه‌کردن تا ۳ منبع</button>
       </div>
-      <span>{{ search_candidates | length }} نتیجه</span>
-    </div>
-    <div class="search-candidate-list">
-      {% for candidate in search_candidates %}
-      <article class="search-candidate">
-        <strong><bdi dir="auto">{{ candidate.title }}</bdi></strong>
-        <p class="search-candidate__url"><bdi dir="ltr">{{ candidate.url }}</bdi></p>
-        {% if candidate.snippet %}<p>{{ candidate.snippet }}</p>{% endif %}
-        {% if candidate.status == 'added' %}
-          <p class="source-status source-status--ready">متن کامل بازیابی و به منابع اضافه شد.</p>
-        {% elif candidate.status == 'failed' %}
-          <p class="source-status source-status--review">متن کامل و قابل‌استناد بازیابی نشد.</p>
-          {% if candidate.issue_summary %}<p>{{ candidate.issue_summary }}</p>{% endif %}
+    </form>
+  </article>
+</section>
+{% endif %}
+
+{% if search_candidates and not selection_locked %}
+<section class="section-block" aria-labelledby="search-results-title">
+  <div class="section-heading">
+    <div><p class="kicker">پیشنهادهای جست‌وجو</p><h2 id="search-results-title">نتایج قابل بررسی</h2></div>
+    <span>{{ search_candidates | length | fa_num }} نتیجه</span>
+  </div>
+  <div class="search-candidate-list">
+    {% for candidate in search_candidates %}
+    <article class="search-candidate">
+      <strong><bdi dir="auto">{{ candidate.title }}</bdi></strong>
+      <p class="search-candidate__url"><bdi dir="ltr">{{ candidate.url }}</bdi></p>
+      {% if candidate.snippet %}<p>{{ candidate.snippet }}</p>{% endif %}
+      {% if candidate.status == 'added' %}
+        {{ status_label('متن کامل بازیابی شد', 'به منابع اضافه شده', 'success') }}
+      {% elif candidate.status == 'failed' %}
+        {{ status_label('متن کامل بازیابی نشد', 'وارد شواهد نشده', 'danger') }}
+        {% if candidate.issue_summary %}<p class="operator-only">{{ candidate.issue_summary }}</p>{% endif %}
+      {% else %}
+        <form method="post" action="/projects/{{ project.project_id }}/sources/web/{{ candidate.candidate_id }}/add">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button button--secondary" type="submit">بازیابی متن و افزودن</button>
+        </form>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="section-block" aria-labelledby="source-list-title">
+  <div class="section-heading">
+    <h2 id="source-list-title">منابع پروژه</h2>
+    <span>{{ sources | length | fa_num }} منبع</span>
+  </div>
+  {% if sources %}
+  <div class="source-list">
+    {% for source in sources %}
+    <article class="source-row {% if source.selected %}is-selected{% endif %}" data-source-id="{{ source.source_id }}">
+      <div class="source-row__identity">
+        <strong><bdi dir="auto">{{ source.title }}</bdi></strong>
+        <span>
+          {% if source.origin == 'gemini_web_search' %}منبع وب بازیابی‌شده{% else %}فایل کاربر{% endif %}
+          · <bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) }} MB</bdi>
+        </span>
+        {% if source.canonical_url %}<a href="{{ source.canonical_url }}" rel="noreferrer" target="_blank"><bdi dir="ltr">URL اصلی</bdi></a>{% endif %}
+      </div>
+
+      {% if source.status == 'ready' %}
+        {{ status_label('آماده استفاده', 'انتخاب‌شده' if source.selected else 'هنوز انتخاب نشده', 'success', source.quality_verdict or 'unknown') }}
+      {% elif source.status == 'processing' %}
+        {{ status_label('در حال بررسی', 'اقدامی لازم نیست', 'running', source.status) }}
+      {% elif source.status == 'review' %}
+        {{ status_label('نیازمند بازبینی', 'متن کامل یا کیفیت کافی نیست', 'attention', source.quality_verdict or 'review') }}
+      {% else %}
+        {{ status_label('قابل‌استفاده نیست', 'وارد شواهد نمی‌شود', 'danger', source.quality_verdict or 'blocked') }}
+      {% endif %}
+
+      {% if source.issue_summary %}<p class="source-row__summary">{{ source.issue_summary }}</p>{% endif %}
+
+      {% call technical_details('جزئیات فنی استخراج') %}
+        <p>Source ID: <code><bdi dir="ltr">{{ source.source_id }}</bdi></code></p>
+        <p>Parser: <code><bdi dir="ltr">{{ source.parser_name or 'unknown' }}</bdi></code> · verdict: <code><bdi dir="ltr">{{ source.quality_verdict or 'unknown' }}</bdi></code> · {{ source.block_count | fa_num }} بلوک · {{ source.text_characters | fa_num }} نویسه</p>
+        {% if source.retrieval_scope %}<p>دامنه بازیابی: <code><bdi dir="ltr">{{ source.retrieval_scope }}</bdi></code></p>{% endif %}
+        {% if source.attempted_parsers %}<p>Parserهای آزموده‌شده: <code><bdi dir="ltr">{{ source.attempted_parsers | join(' → ') }}</bdi></code></p>{% endif %}
+        {% if source.quality_issues %}<ul>{% for issue in source.quality_issues %}<li>{{ issue }}</li>{% endfor %}</ul>{% endif %}
+      {% endcall %}
+
+      {% if not selection_locked %}
+      <div class="source-row__actions">
+        {% if source.status == 'ready' %}
+        <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/toggle">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button button--secondary button--small" type="submit">{% if source.selected %}کنار گذاشتن از اپیزود{% else %}افزودن به اپیزود{% endif %}</button>
+        </form>
         {% else %}
-          <form method="post" action="/projects/{{ project.project_id }}/sources/web/{{ candidate.candidate_id }}/add">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <button class="button button--secondary" type="submit">بازیابی متن و افزودن به منابع</button>
-          </form>
+        <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/retry">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button button--secondary button--small" type="submit">تلاش دوباره برای استخراج</button>
+        </form>
         {% endif %}
-      </article>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
 
-  <section class="source-list" aria-labelledby="source-list-title">
-    <div class="section-heading">
-      <h2 id="source-list-title">منابع پروژه</h2>
-      <span>{{ sources | length }} منبع</span>
-    </div>
-    {% if sources %}
-      {% for source in sources %}
-      <article class="source-row" data-source-id="{{ source.source_id }}">
-        <div class="source-row__identity">
-          <strong><bdi dir="auto">{{ source.title }}</bdi></strong>
-          <span>
-            {% if source.origin == 'gemini_web_search' %}منبع وب بازیابی‌شده{% else %}فایل کاربر{% endif %}
-            · <bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) }} MB</bdi>
-          </span>
-          {% if source.canonical_url %}<a href="{{ source.canonical_url }}" rel="noreferrer" target="_blank"><bdi dir="ltr">مشاهده URL اصلی</bdi></a>{% endif %}
-        </div>
-        <div class="source-status source-status--{{ source.status }}">
-          {% if source.status == "ready" %}آماده استفاده
-          {% elif source.status == "processing" %}در حال بررسی
-          {% elif source.status == "review" %}نیازمند منبع کامل‌تر یا بازبینی
-          {% else %}قابل‌استفاده نیست{% endif %}
-        </div>
-
-        {% if source.issue_summary %}
-        <p class="source-row__issue quality-summary">{{ source.issue_summary }}</p>
-        {% endif %}
-        {% if source.quality_issues %}
-        <ul class="quality-issues">
-          {% for issue in source.quality_issues %}<li>{{ issue }}</li>{% endfor %}
-        </ul>
-        {% endif %}
-        {% if source.parser_name %}
         <details class="technical-details">
-          <summary>جزئیات فنی استخراج</summary>
-          <p>
-            استخراج‌کننده: <bdi dir="ltr">{{ source.parser_name }}</bdi>
-            · verdict داخلی: <bdi dir="ltr">{{ source.quality_verdict or 'unknown' }}</bdi>
-            · {{ source.block_count }} بلوک
-            · {{ source.text_characters }} نویسه
-            {% if source.retrieval_scope %}· دامنه بازیابی: <bdi dir="ltr">{{ source.retrieval_scope }}</bdi>{% endif %}
-            {% if source.attempted_parsers %}
-            · parserهای آزموده‌شده: <bdi dir="ltr">{{ source.attempted_parsers | join(' → ') }}</bdi>
-            {% endif %}
-          </p>
+          <summary>حذف فایل…</summary>
+          <div class="technical-details__body">
+            <strong>اثر حذف</strong>
+            <p>این منبع و artifact استخراج آن حذف می‌شود. منابع دیگر و فایل‌های خروجی مستقل باقی می‌مانند. اگر منبع انتخاب شده باشد، شمار مجموعه اپیزود کم می‌شود.</p>
+            <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/delete" class="form-actions">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button class="button button--danger button--small" type="submit">تأیید حذف این منبع</button>
+            </form>
+          </div>
         </details>
-        {% endif %}
-
-        {% if not selection_locked %}
-        <div class="form-actions">
-          {% if source.status == "ready" %}
-          <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/toggle">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <button class="button button--quiet" type="submit">
-              {% if source.selected %}حذف از مجموعه{% else %}انتخاب برای اپیزود{% endif %}
-            </button>
-          </form>
-          {% else %}
-          <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/retry">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <button class="button button--secondary" type="submit">تلاش دوباره برای استخراج</button>
-          </form>
-          {% endif %}
-          <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/delete">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <button class="button button--quiet" type="submit">حذف منبع</button>
-          </form>
-        </div>
-        {% elif source.selected %}
-        <p class="source-row__issue">در مجموعه تأییدشده قرار دارد.</p>
-        {% endif %}
-      </article>
-      {% endfor %}
-    {% else %}
-      <div class="empty-inline">
-        <strong>هنوز منبعی اضافه نشده است.</strong>
-        <span>فایل بارگذاری کنید یا دکمه «پیدا و اضافه‌کردن خودکار» را بزنید؛ داشتن فایل از قبل الزامی نیست.</span>
       </div>
-    {% endif %}
-  </section>
+      {% elif source.selected %}
+      <p class="source-row__issue">این منبع در مجموعه تأییدشده قرار دارد.</p>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-inline"><strong>هنوز منبعی اضافه نشده است.</strong><span>فایل بارگذاری کنید یا جست‌وجوی خودکار را اجرا کنید؛ داشتن فایل از قبل الزامی نیست.</span></div>
+  {% endif %}
+</section>
 
-  <section class="corpus-confirmation">
-    <div>
-      <p class="eyebrow">تأیید مجموعه</p>
-      <h2>اپیزود فقط بر اساس {{ selected_count }} منبع انتخاب‌شده ساخته می‌شود</h2>
-      <p>نتایج جست‌وجو و منابع انتخاب‌نشده وارد evidence و سناریو نمی‌شوند.</p>
-    </div>
-    {% if selection_locked %}
+<section class="sticky-confirmation" aria-labelledby="corpus-confirm-title">
+  <div>
+    <h2 id="corpus-confirm-title">اپیزود بر اساس {{ selected_count | fa_num }} منبع ساخته می‌شود</h2>
+    <p id="corpus-confirm-hint">نتایج جست‌وجو و منابع انتخاب‌نشده وارد شواهد و متن اپیزود نمی‌شوند.{% if selected_count == 0 %} برای ادامه حداقل یک منبع آماده را انتخاب کنید.{% endif %}</p>
+  </div>
+  {% if selection_locked %}
     <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">مشاهده پردازش</a>
-    {% else %}
+  {% else %}
     <form method="post" action="/projects/{{ project.project_id }}/corpus/confirm">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <button class="button button--primary" type="submit" {% if selected_count == 0 %}disabled{% endif %}>
-        تأیید منابع و شروع ساخت مجموعه شواهد
-      </button>
+      <button class="button button--primary" type="submit" {% if selected_count == 0 %}disabled aria-describedby="corpus-confirm-hint"{% endif %}>تأیید منابع و شروع پردازش</button>
     </form>
-    {% endif %}
-  </section>
-</div>
+  {% endif %}
+</section>
 {% endblock %}
