@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% from "components.html" import status_label %}
-{% block title %}پروژه‌ها | Thesisound{% endblock %}
+{% block title %}گفتارها | مقال{% endblock %}
 {% block content %}
 <header class="page-heading">
   <div>
     <p class="kicker">میز مطالعه</p>
-    <h1>پروژه‌های شما</h1>
-    <p>هر پروژه از آخرین artifact معتبر ادامه پیدا می‌کند. مواردی که به تصمیم شما نیاز دارند بالاتر آمده‌اند.</p>
+    <h1>گفتارهای شما</h1>
+    <p>هر گفتار از آخرین مرحلهٔ معتبر ادامه پیدا می‌کند. مواردی که به تصمیم شما نیاز دارند بالاتر آمده‌اند.</p>
   </div>
-  <a class="button button--primary" href="/projects/new">پروژه جدید</a>
+  <a class="button button--primary" href="/projects/new">گفتار تازه</a>
 </header>
 
 {% if projects %}
   {% if projects | length > 7 %}
   <label class="field project-search">
-    <span>پیدا کردن پروژه</span>
+    <span>پیدا کردن گفتار</span>
     <input type="search" data-project-search placeholder="جست‌وجو در عنوان و وضعیت" autocomplete="off">
   </label>
   {% endif %}
@@ -43,7 +43,7 @@
                 <p>{{ item.overview_summary }}</p>
                 {% if item.technical_detail %}<p class="operator-only"><bdi dir="ltr">{{ item.technical_detail }}</bdi></p>{% endif %}
               </div>
-              <a class="button button--secondary button--small" href="/projects/{{ item.project.project_id }}">باز کردن پروژه</a>
+              <a class="button button--secondary button--small" href="/projects/{{ item.project.project_id }}">باز کردن گفتار</a>
             </article>
             {% endif %}
           {% endfor %}
@@ -54,10 +54,10 @@
   </div>
 {% else %}
 <section class="empty-state">
-  <p class="kicker">هنوز پروژه‌ای ندارید</p>
+  <p class="kicker">هنوز گفتاری ندارید</p>
   <h2>از یک سؤال واقعی شروع کنید</h2>
-  <p>موضوع، مخاطب و مدت را مشخص کنید. بعد می‌توانید فایل‌های خودتان را بدهید یا جست‌وجوی منبع را به Thesisound بسپارید.</p>
-  <a class="button button--primary" href="/projects/new">ساخت اولین پروژه</a>
+  <p>موضوع، مخاطب و مدت را مشخص کنید. بعد می‌توانید فایل‌های خودتان را بدهید یا جست‌وجوی منبع را به مقال بسپارید.</p>
+  <a class="button button--primary" href="/projects/new">ساخت نخستین گفتار</a>
 </section>
 {% endif %}
 {% endblock %}
