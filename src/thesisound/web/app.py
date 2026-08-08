@@ -515,6 +515,11 @@ def create_app(
         if redirect := _login_redirect(request):
             return redirect
         project = workspace.load_project(project_id)
+        values = {
+            "central_question": central_question,
+            "must_include": must_include,
+            "exclusions": exclusions,
+        }
         try:
             _validate_csrf(request, csrf_token)
             if project.state not in _EDITABLE_BRIEF_STATES:
@@ -544,6 +549,7 @@ def create_app(
                     "project": current,
                     "brief_locked": current.state not in _EDITABLE_BRIEF_STATES,
                     "error": str(error),
+                    "values": values,
                 },
                 status_code=422,
             )
