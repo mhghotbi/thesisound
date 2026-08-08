@@ -105,10 +105,10 @@ def _project_title(project: Project) -> str:
 def _corpus_stage_label(stage: str) -> str:
     return {
         "queued": "در صف اجرا",
-        "building_blocks": "ساخت بلوک‌های معنایی",
-        "mapping_document": "ساخت نقشه سند",
-        "extracting_evidence": "استخراج شواهد",
-        "building_claims": "ساخت دفتر ادعاها",
+        "building_blocks": "ساخت پاره‌متن‌ها",
+        "mapping_document": "ساخت نقشهٔ منبع",
+        "extracting_evidence": "استخراج شاهدها",
+        "building_claims": "ساخت دفتر مدعاها",
         "complete": "آماده",
         "failed": "متوقف‌شده",
     }.get(stage, stage)
@@ -183,7 +183,7 @@ def create_app(
     execute_audio = audio_executor or audio_builder.run
 
     docs_url = "/api/docs" if runtime.environment != "production" else None
-    app = FastAPI(title="Thesisound", docs_url=docs_url)
+    app = FastAPI(title="مقال", docs_url=docs_url)
     app.add_middleware(
         SessionMiddleware,
         secret_key=runtime.web_session_secret,
@@ -524,10 +524,10 @@ def create_app(
             _validate_csrf(request, csrf_token)
             if project.state not in _EDITABLE_BRIEF_STATES:
                 raise ValueError(
-                    "این برداشت وارد پردازش شده است و بدون recovery قابل ویرایش نیست."
+                    "این برداشت اولیه وارد تحلیل منابع شده است و بدون بازگشت به مرحلهٔ قبلی قابل ویرایش نیست."
                 )
             if project.brief is None:
-                raise ValueError("برداشت پژوهش وجود ندارد.")
+                raise ValueError("صورت‌بندی گفتار وجود ندارد.")
             project.brief.central_question = central_question.strip()
             project.brief.scope_inclusions = [
                 item.strip() for item in must_include.splitlines() if item.strip()
@@ -536,7 +536,7 @@ def create_app(
                 item.strip() for item in exclusions.splitlines() if item.strip()
             ]
             if not project.brief.central_question:
-                raise ValueError("سؤال مرکزی نمی‌تواند خالی باشد.")
+                raise ValueError("پرسش مرکزی نمی‌تواند خالی باشد.")
             if action == "confirm" and project.state == ProjectState.BRIEF_READY:
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
