@@ -78,9 +78,7 @@ class WebSourceCandidateStore:
                 candidates[index] = candidate
                 self.save(candidates)
                 return
-        raise FileNotFoundError(
-            f"Web source candidate not found: {candidate.candidate_id}"
-        )
+        raise FileNotFoundError(f"Web source candidate not found: {candidate.candidate_id}")
 
 
 class WebSourceSectionDraft(BaseModel):
@@ -191,24 +189,20 @@ class WebSourceDiscoveryService:
                     "و نمی‌تواند وارد شواهد شود."
                 ),
                 origin="gemini_web_search",
-                canonical_url=str(capture.canonical_url),
+                canonical_url=str(candidate.url),
                 retrieval_scope=capture.access,
                 quality_issues=capture.limitations,
             )
 
         markdown = _render_capture(capture)
-        upload_root = (
-            self.workspace.project_dir(project_id) / "uploads" / "web" / str(source_id)
-        )
+        upload_root = self.workspace.project_dir(project_id) / "uploads" / "web" / str(source_id)
         upload_root.mkdir(parents=True, exist_ok=True)
         filename = _web_filename(capture.title)
         path = upload_root / filename
         path.write_text(markdown, encoding="utf-8")
         size_bytes = path.stat().st_size
         artifact_root = (
-            self.settings.ensure_ingestion_artifact_root()
-            / str(project_id)
-            / str(source_id)
+            self.settings.ensure_ingestion_artifact_root() / str(project_id) / str(source_id)
         )
         manifest = ingest_uploaded_source(
             path,
@@ -221,7 +215,7 @@ class WebSourceDiscoveryService:
         )
         manifest.display_title = capture.title
         manifest.origin = "gemini_web_search"
-        manifest.canonical_url = str(capture.canonical_url)
+        manifest.canonical_url = str(candidate.url)
         manifest.retrieval_scope = capture.access
         manifest.quality_issues = [
             *manifest.quality_issues,

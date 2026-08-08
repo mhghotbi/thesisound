@@ -5,7 +5,11 @@ from uuid import UUID, uuid4
 import pytest
 
 from thesisound.domain import Locator
-from thesisound.modeling import ModelExecution, ModelRunRecord
+from thesisound.modeling import (
+    DeterministicValidationError,
+    ModelExecution,
+    ModelRunRecord,
+)
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.source_analysis import (
     CrossSectionThreadDraft,
@@ -89,6 +93,29 @@ class HierarchicalRunner:
         return ModelExecution(output=output, record=record)
 
 
+class OmittingPartitionRunner(HierarchicalRunner):
+    def run(self, **kwargs):
+        output_type = kwargs["output_type"]
+        if output_type is DocumentMapDraft:
+            variables = kwargs["variables"]
+            blocks = variables["blocks"]
+            assert isinstance(blocks, list)
+            output = DocumentMapDraft(
+                sections=[
+                    DocumentMapDraftSection(
+                        section_id="section",
+                        source_block_ids=[str(item["block_id"]) for item in blocks[:-1]],
+                        title="Incomplete partition",
+                        function="argument",
+                    )
+                ]
+            )
+            validator = kwargs.get("validator")
+            if validator is not None:
+                validator(output)
+        return super().run(**kwargs)
+
+
 def _blocks() -> list[SourceDocumentBlock]:
     source_id = uuid4()
     return [
@@ -142,5 +169,24 @@ def test_oversized_single_semantic_block_requests_blockbuilder_split() -> None:
             project_id=uuid4(),
             source_id=block.source_id,
             blocks=[block],
+            model="fake",
+        )
+
+
+def test_large_document_rejects_any_omitted_content_block() -> None:
+    blocks = _blocks()
+    mapper = DocumentMapperService(
+        OmittingPartitionRunner(),
+        maximum_input_characters=700,
+    )
+
+    with pytest.raises(
+        DeterministicValidationError,
+        match="required coverage is 100%",
+    ):
+        mapper.map_document(
+            project_id=uuid4(),
+            source_id=blocks[0].source_id,
+            blocks=blocks,
             model="fake",
         )

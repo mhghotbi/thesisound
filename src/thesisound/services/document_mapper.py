@@ -70,6 +70,7 @@ class DocumentMapperService:
                 model=model,
                 prompt_version=prompt_version,
                 part_number=part_number,
+                require_complete_coverage=True,
             )
             part_drafts.append(_namespace_draft(draft, part_number))
 
@@ -122,6 +123,7 @@ class DocumentMapperService:
             merged,
             known_ids=known_block_ids,
             content_ids=content_block_ids,
+            minimum_coverage=1.0,
         )
         return _materialize_document_map(source_id, blocks, merged), merge_execution.record
 
@@ -134,6 +136,7 @@ class DocumentMapperService:
         model: str,
         prompt_version: str | None,
         part_number: int | None,
+        require_complete_coverage: bool = False,
     ) -> tuple[DocumentMapDraft, ModelRunRecord]:
         variables = {
             "source_id": str(source_id),
@@ -145,7 +148,12 @@ class DocumentMapperService:
         content_ids = {block.block_id for block in blocks if block.block_type != "front_matter"}
 
         def validate(draft: DocumentMapDraft) -> None:
-            _validate_map_draft(draft, known_ids=known_ids, content_ids=content_ids)
+            _validate_map_draft(
+                draft,
+                known_ids=known_ids,
+                content_ids=content_ids,
+                minimum_coverage=1.0 if require_complete_coverage else 0.9,
+            )
 
         execution = self.model_runner.run(
             project_id=project_id,
@@ -353,6 +361,7 @@ def _validate_map_draft(
     *,
     known_ids: set[str],
     content_ids: set[str],
+    minimum_coverage: float = 0.9,
 ) -> None:
     section_ids = [section.section_id for section in draft.sections]
     if len(section_ids) != len(set(section_ids)):
@@ -380,9 +389,11 @@ def _validate_map_draft(
         )
     mapped_content = set(mapped) & content_ids
     coverage = len(mapped_content) / len(content_ids) if content_ids else 1
-    if coverage < 0.9:
+    if coverage < minimum_coverage:
         raise DeterministicValidationError(
-            f"Document map covered only {coverage:.0%} of non-front-matter blocks."
+            "Document map covered only "
+            f"{coverage:.0%} of non-front-matter blocks; "
+            f"required coverage is {minimum_coverage:.0%}."
         )
     for thread in draft.cross_section_threads:
         unknown = set(thread.section_ids) - known_sections
