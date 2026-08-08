@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from thesisound.config import Settings
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore
+from thesisound.services.corpus_building import CorpusBuildRunStore
 from thesisound.web.app import create_app
 from thesisound.web.source_manifest import UiSourceManifestStore, UiSourceStatus
 
@@ -23,6 +24,10 @@ def _settings(tmp_path: Path) -> Settings:
         otp_resend_cooldown_seconds=5,
         ui_demo_mode=False,
     )
+
+
+def _app(settings: Settings):
+    return create_app(settings, corpus_executor=lambda _: None)
 
 
 def _csrf(html: str) -> str:
@@ -81,7 +86,7 @@ def _confirm_brief(client: TestClient, project_id: UUID) -> None:
 
 def test_create_and_confirm_brief(tmp_path: Path) -> None:
     settings = _settings(tmp_path)
-    with TestClient(create_app(settings)) as client:
+    with TestClient(_app(settings)) as client:
         _login(client)
         page = client.get("/projects/new")
         response = client.post(
@@ -121,9 +126,9 @@ def test_create_and_confirm_brief(tmp_path: Path) -> None:
     assert project.brief.scope_inclusions == ["زمینه تاریخی"]
 
 
-def test_upload_select_and_confirm_real_corpus(tmp_path: Path) -> None:
+def test_upload_select_and_queue_real_corpus(tmp_path: Path) -> None:
     settings = _settings(tmp_path)
-    with TestClient(create_app(settings)) as client:
+    with TestClient(_app(settings)) as client:
         _login(client)
         project_id = _create_project(client)
         _confirm_brief(client, project_id)
@@ -136,9 +141,8 @@ def test_upload_select_and_confirm_real_corpus(tmp_path: Path) -> None:
             files={"source_file": ("kant.txt", source_text, "text/plain")},
         )
 
-        manifest_store = UiSourceManifestStore(
-            WorkspaceStore(settings.workspace_root).project_dir(project_id)
-        )
+        workspace = WorkspaceStore(settings.workspace_root)
+        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
         source = manifest_store.load()[0]
         assert source.status == UiSourceStatus.READY
         assert source.parser_name == "native"
@@ -170,10 +174,25 @@ def test_upload_select_and_confirm_real_corpus(tmp_path: Path) -> None:
             data={"csrf_token": _csrf(page.text)},
             follow_redirects=False,
         )
+        assert response.status_code == 303
 
-    assert response.status_code == 303
+        run = CorpusBuildRunStore(settings.workspace_root).load(project_id)
+        assert run.status == "queued"
+        assert [item.source_id for item in run.sources] == [source_id]
+        assert run.sources[0].ingestion_path.exists()
+
+        locked_page = client.get(f"/projects/{project_id}/sources")
+        locked = client.post(
+            f"/projects/{project_id}/sources/{source_id}/toggle",
+            data={"csrf_token": _csrf(locked_page.text)},
+            follow_redirects=False,
+        )
+        assert locked.status_code == 303
+        assert locked.headers["location"].endswith("error=selection-locked")
+
     project = WorkspaceStore(settings.workspace_root).load_project(project_id)
     assert project.state == ProjectState.CORPUS_BUILDING
     assert len(project.sources) == 1
     assert project.sources[0].title == "kant.txt"
     assert "real parse-quality gate" in project.sources[0].relevance_reasons[0]
+    assert manifest_store.load()[0].selected

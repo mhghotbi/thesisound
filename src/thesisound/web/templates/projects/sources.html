@@ -22,8 +22,14 @@
   {% endif %}
   {% if request.query_params.get('error') == 'file-too-large' %}
     <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بیشتر است.</div>
+  {% elif request.query_params.get('error') == 'selection-locked' %}
+    <div class="notice notice--danger" role="alert">پس از تأیید مجموعه، انتخاب منابع تا پایان این اجرا قفل است.</div>
+  {% endif %}
+  {% if selection_locked %}
+    <div class="notice notice--info">این مجموعه تأیید شده و اکنون فقط خواندنی است.</div>
   {% endif %}
 
+  {% if not selection_locked %}
   <section class="source-upload">
     <form method="post" action="/projects/{{ project.project_id }}/sources/upload" enctype="multipart/form-data">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -39,6 +45,7 @@
       <span>پس از پیاده‌سازی Source Discovery فعال می‌شود.</span>
     </div>
   </section>
+  {% endif %}
 
   <section class="source-list" aria-labelledby="source-list-title">
     <div class="section-heading">
@@ -72,13 +79,15 @@
         {% if source.issue_summary %}
         <p class="source-row__issue">{{ source.issue_summary }}</p>
         {% endif %}
-        {% if source.status == "ready" %}
+        {% if source.status == "ready" and not selection_locked %}
         <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/toggle">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <button class="button button--quiet" type="submit">
             {% if source.selected %}حذف از مجموعه{% else %}انتخاب برای اپیزود{% endif %}
           </button>
         </form>
+        {% elif source.selected %}
+        <p class="source-row__issue">در مجموعه تأییدشده قرار دارد.</p>
         {% endif %}
       </article>
       {% endfor %}
@@ -96,12 +105,16 @@
       <h2>اپیزود فقط بر اساس {{ selected_count }} منبع انتخاب‌شده ساخته می‌شود</h2>
       <p>منابع انتخاب‌نشده وارد evidence و سناریو نمی‌شوند.</p>
     </div>
+    {% if selection_locked %}
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">مشاهده پردازش</a>
+    {% else %}
     <form method="post" action="/projects/{{ project.project_id }}/corpus/confirm">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button class="button button--primary" type="submit" {% if selected_count == 0 %}disabled{% endif %}>
-        تأیید منابع و ادامه
+        تأیید منابع و شروع ساخت مجموعه شواهد
       </button>
     </form>
+    {% endif %}
   </section>
 </div>
 {% endblock %}
