@@ -6,14 +6,6 @@
 {{ coverage_report }}
 </COVERAGE_REPORT_JSON>
 
-<BUDGET_REPORT_JSON>
-{{ budget_report }}
-</BUDGET_REPORT_JSON>
-
-<DISAGREEMENT_GRAPH_JSON>
-{{ disagreement_graph }}
-</DISAGREEMENT_GRAPH_JSON>
-
 <CLAIM_PRIORITIES_JSON>
 {{ claim_priorities }}
 </CLAIM_PRIORITIES_JSON>
@@ -26,4 +18,4 @@
 {{ extraction_plans }}
 </EXTRACTION_PLANS_JSON>
 
-Create a coherent episode plan for the requested duration. Use claim IDs exactly as supplied. Every selected claim must be included or deliberately omitted with a reason. Preserve explicit disagreement and qualification instead of collapsing them into consensus. Do not plan beyond the effective supported duration in the budget report.
+Create a coherent episode plan for the requested duration. Use claim IDs exactly as supplied. Every selected claim must be included or deliberately omitted with a reason.
