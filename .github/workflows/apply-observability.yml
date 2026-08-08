@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev --extra web-ui
 
+      - name: Normalize observability imports
+        run: uv run ruff check src/thesisound/gemini_key_pool.py --select I --fix
+
       - name: Lint
         run: uv run ruff check . --output-format=github
 
