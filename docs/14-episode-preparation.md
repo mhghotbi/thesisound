@@ -1,6 +1,6 @@
 # 14 — آماده‌سازی اپیزود و Evidence Pack
 
-این subsystem بین Claim Ledger و سناریونویسی فارسی قرار می‌گیرد. مسئولیت آن این است که پیش از نوشتن حتی یک جمله از سناریو، مشخص کند آیا corpus برای خروجی درخواستی کافی است، کدام claimها اهمیت بیشتری دارند، ترتیب آموزشی اپیزود چیست و برای هر segment دقیقاً کدام متن‌های اصلی باید در اختیار نویسنده قرار بگیرند.
+این subsystem بین Claim Ledger و سناریونویسی فارسی قرار می‌گیرد. پیش از نوشتن متن گفتاری مشخص می‌کند corpus برای خروجی درخواستی کافی است یا نه، کدام claimها اولویت دارند، اختلاف sourceها کجاست، ترتیب آموزشی چیست و هر segment دقیقاً به چه evidence و متن اصلی دسترسی دارد.
 
 ## جریان کامل
 
@@ -13,16 +13,18 @@ Coverage Audit
     ↓
 Deterministic Claim Prioritization
     ↓
+Deterministic Budget Report
+    ↓
+Explicit Disagreement Graph
+    ↓
 Output-aware Episode Plan
     ↓
-Original-evidence Retrieval
+Direct Evidence Mapping + SQLite FTS5 Retrieval
     ↓
 Segment Evidence Packs
 ```
 
-مرحله بعد از این subsystem، Glossary و Persian Script Writer است. Episode Preparation خودش سناریو یا متن گفتاری تولید نمی‌کند.
-
----
+Episode Preparation سناریو تولید نمی‌کند. خروجی آن ورودی subsystem سناریوی فارسی است.
 
 ## ۱. Coverage Audit
 
@@ -33,49 +35,15 @@ src/thesisound/services/coverage_auditor.py
 prompts/coverage_audit/1.0.0/
 ```
 
-ورودی:
+برای سؤال مرکزی و هر learning objective این موارد را ثبت می‌کند:
 
-- Research Brief؛
-- تمام claimهای grounded؛
-- Evidence Extraction Plan هر source؛
-- blockهای deferred و coverage واقعی extraction.
-
-خروجی:
-
-```text
-coverage-report.json
-```
-
-برای سؤال مرکزی و تک‌تک learning objectiveها این موارد ثبت می‌شود:
-
-- `well_covered`؛
-- `partially_covered`؛
-- `not_covered`؛
+- وضعیت `well_covered`، `partially_covered` یا `not_covered`؛
 - claim IDهای پشتیبان؛
-- rationale؛
 - material gaps؛
-- حداکثر مدت غیرتکراری که corpus می‌تواند پشتیبانی کند؛
-- recommendation.
+- برآورد مدل از حداکثر مدت قابل پشتیبانی؛
+- recommendation برابر `continue`، `narrow_scope` یا `more_evidence`.
 
-Recommendation یکی از این سه مقدار است:
-
-```text
-continue
-narrow_scope
-more_evidence
-```
-
-### Quality gate
-
-- مدل فقط claim ID موجود را می‌تواند استفاده کند؛
-- تمام learning objectiveها باید دقیقاً یک‌بار و به ترتیب ورودی برگردند؛
-- `well_covered` بدون claim ID پذیرفته نمی‌شود؛
-- recommendation برابر `continue` با صفر دقیقه محتوای پشتیبانی‌شده رد می‌شود؛
-- `can_plan_episode` فقط وقتی true است که recommendation ادامه باشد و corpus حداقل ۸۰٪ مدت هدف را پوشش دهد.
-
-اگر کاربر ۶۰ دقیقه درخواست کرده ولی corpus فقط ۲۰ دقیقه محتوای grounded دارد، pipeline متوقف می‌شود. سیستم اجازه ندارد باقی زمان را با padding، تکرار یا دانش آزاد مدل پر کند.
-
----
+مدل فقط claim ID موجود را می‌تواند استفاده کند و همه objectiveها باید دقیقاً یک‌بار برگردند.
 
 ## ۲. Claim Prioritization
 
@@ -85,9 +53,7 @@ more_evidence
 src/thesisound/services/claim_prioritizer.py
 ```
 
-این مرحله deterministic است. مدل زبانی در تعیین score یا level دخالت ندارد.
-
-هر claim یکی از levelهای زیر را می‌گیرد:
+این مرحله deterministic است. هر claim یکی از levelهای زیر را می‌گیرد:
 
 ```text
 must_include
@@ -96,89 +62,98 @@ optional
 deferred
 ```
 
-Score بر اساس این عوامل ساخته می‌شود:
+Score از support status، claim type، ارتباط با سؤال مرکزی، objectiveها، evidence count، qualification، mode و duration ساخته می‌شود. reason و estimated explanation seconds نیز در artifact ثبت می‌شوند.
 
-- support status؛
-- نوع claim؛
-- ارتباط مستقیم با سؤال مرکزی؛
-- تعداد learning objectiveهای پشتیبانی‌شده؛
-- تعداد evidenceهای معتبر؛
-- qualificationها؛
-- تناسب با critical/debate mode؛
-- تناسب با مدت خروجی.
+## ۳. Budget Report
 
-تعداد claimهای `must_include` و `supporting` به مدت خروجی وابسته است. بنابراین profile شصت‌دقیقه‌ای claimهای بیشتری از profile پنج‌دقیقه‌ای وارد plan می‌کند.
+فایل:
+
+```text
+src/thesisound/services/episode_budget.py
+```
+
+Coverage Audit تنها مرجع مدت نیست. Budget estimator مستقل، ظرفیت corpus را از این عوامل محدود می‌کند:
+
+- مجموع زمان توضیح claimهای قابل استفاده؛
+- expansion factor برای مثال، transition و dialogue؛
+- مقدار original evidence token؛
+- برآورد مدل.
+
+`effective_supported_minutes` حداقل برآورد مدل و deterministic estimator است. فرض‌های عددی داخل `budget-report.json` ثبت می‌شوند و پنهان نیستند.
+
+Defaultها خودکار از روی یک run تغییر نمی‌کنند. پس از script verification می‌توان calibration point ثبت کرد:
+
+```bash
+uv run thesisound record-budget-calibration <project-id>
+```
+
+پس از حداقل سه نمونه pass‌شده، گزارش به `ready_for_review` می‌رسد و medianهای واقعی قابل بررسی می‌شوند.
+
+## ۴. Disagreement Graph
+
+فایل:
+
+```text
+src/thesisound/services/disagreement_graph.py
+```
+
+Graph موضع sourceها را برای claimهای contested یا چندمنبعی صریح می‌کند:
+
+```text
+supports
+ disputes
+ qualifies
+ unclear
+```
+
+نسخه فعلی فقط stanceهایی را materialize می‌کند که از evidence source، `agreeing_source_ids` یا `disagreeing_source_ids` قابل اثبات باشند. relationهای معنایی میان claimها حدس زده نمی‌شوند؛ این بخش در cross-source reconciliation تکمیل خواهد شد.
 
 Artifact:
 
 ```text
-claim-priorities.json
+disagreement-graph.json
 ```
 
-این artifact علاوه بر level و score، تخمین زمان توضیح و reasons را ثبت می‌کند تا تصمیم editorial قابل ممیزی باشد.
-
----
-
-## ۳. Episode Plan
+## ۵. Episode Plan
 
 فایل‌ها:
 
 ```text
 src/thesisound/services/episode_planner.py
-prompts/episode_plan/1.0.0/
+prompts/episode_plan/1.1.0/
 ```
 
-Episode Plan یک semantic execution plan است، نه خلاصه و نه سناریو.
+نسخه `1.1.0` علاوه بر coverage و priorities، Budget Report و Disagreement Graph را دریافت می‌کند. نسخه `1.0.0` برای reproducibility بدون تغییر باقی مانده است.
 
 هر segment شامل این موارد است:
 
-- title؛
-- purpose؛
-- target minutes؛
+- title و purpose؛
+- estimated minutes؛
 - claim IDs؛
 - prerequisite claim IDs؛
 - key question؛
 - speaker dynamic.
 
-مدل segment ID تولید نمی‌کند. application به‌شکل deterministic شناسه‌های زیر را می‌سازد:
+Prerequisiteها هم در draft و هم در domain نهایی `EpisodeSegment` و `project.json` حفظ می‌شوند.
 
-```text
-seg-001
-seg-002
-...
-```
+Quality gateها:
 
-### Quality gate
-
-- مجموع زمان segmentها باید در محدوده ±۱۰٪ duration هدف باشد؛
-- تمام claim IDها باید موجود باشند؛
+- مدت کل در محدوده ±۱۰٪؛
+- claim ID ناشناخته ممنوع؛
+- prerequisite باید قبلاً معرفی شده باشد؛
 - claim در چند segment تکرار نمی‌شود؛
-- prerequisite باید در segment قبلی معرفی شده باشد؛
-- تمام `must_include`ها باید استفاده شوند؛
-- claimهای `supporting` و `optional` یا استفاده می‌شوند یا با reason در deliberate omission ثبت می‌شوند؛
-- claim نمی‌تواند هم استفاده‌شده و هم omitted باشد؛
-- sourceهای contested نباید به consensus تبدیل شوند.
+- تمام `must_include`ها استفاده می‌شوند؛
+- supporting/optional یا استفاده می‌شوند یا دلیل omission دارند؛
+- claim استفاده‌شده نمی‌تواند omitted باشد.
 
-خروجی‌ها:
+## ۶. Evidence Pack و Retrieval
 
-```text
-episode-plan-draft.json
-episode-plan.json
-```
-
-Draft شامل prerequisiteها و قرارداد کامل planner است. نسخه materialized با domain فعلی پروژه سازگار است و روی `project.json` نیز ثبت می‌شود.
-
----
-
-## ۴. Evidence Pack Builder
-
-فایل:
+فایل‌ها:
 
 ```text
 src/thesisound/services/evidence_pack_builder.py
+src/thesisound/services/sqlite_block_retriever.py
 ```
-
-این مرحله کاملاً deterministic است و هیچ مدل زبانی را صدا نمی‌زند.
 
 برای هر segment:
 
@@ -188,100 +163,49 @@ claim IDs
   → evidence IDs
   → EvidenceItem
   → original source blocks
-  → allowed neighbor context
+  → neighbor context
+  → SQLite FTS5 context retrieval
   → token-bounded Evidence Pack
 ```
 
-Evidence Pack شامل:
+قواعد:
 
-- claim IDها؛
-- EvidenceItemها؛
-- original blockهایی که واقعاً evidence را تأمین می‌کنند؛
-- context blockهای اختیاری؛
-- token budget؛
-- actual tokens؛
-- warnings.
+- original evidence برای رعایت budget حذف نمی‌شود؛
+- context نمی‌تواند evidence جدید بسازد؛
+- FTS فقط context مکمل می‌آورد؛
+- retrieval hit شامل block ID، source ID، query و score است؛
+- block و evidence تکراری deduplicate می‌شوند؛
+- اگر original evidence از budget بیشتر باشد، context حذف و grounding حفظ می‌شود.
 
-### قواعد grounding
-
-- هر claim باید evidence موجود داشته باشد؛
-- هر evidence باید block اصلی موجود داشته باشد؛
-- original block هیچ‌وقت برای رعایت budget حذف نمی‌شود؛
-- اگر original evidence از budget بیشتر باشد، grounding حفظ و context حذف می‌شود؛
-- context فقط بر اساس `neighbor_context_blocks` در AnalysisProfile اضافه می‌شود؛
-- context نمی‌تواند evidence ID جدید ایجاد کند؛
-- blockها و evidenceهای تکراری deduplicate می‌شوند.
-
-بودجه اولیه هر segment:
+SQLite index در مسیر زیر ساخته می‌شود:
 
 ```text
-max(1,800, min(18,000, segment_minutes * 1,400))
+episode/retrieval.sqlite3
 ```
 
-این عدد یک default مهندسی است و باید بعد از benchmark کیفیت سناریو تنظیم شود.
-
-خروجی:
-
-```text
-evidence-packs.jsonl
-evidence-packs/seg-001.json
-evidence-packs/seg-002.json
-```
-
-Script Writer آینده فقط Evidence Pack همان segment را دریافت می‌کند، نه کل corpus و نه صرفاً Claim Ledger را.
-
----
-
-## ۵. Orchestration و State Machine
-
-فایل:
-
-```text
-src/thesisound/services/episode_preparation_service.py
-```
-
-شروع معتبر:
-
-```text
-corpus_ready
-```
-
-مسیر:
+## ۷. State Machine
 
 ```text
 corpus_ready
   → episode_planning
   → coverage_ready
   → priorities_ready
+  → budget_ready
+  → disagreement_ready
   → plan_ready
   → evidence_packs_ready
   → episode_planned
 ```
 
-State فقط پس از ذخیره plan و تمام Evidence Packها به `episode_planned` تغییر می‌کند.
+State فقط بعد از ذخیره موفق artifact مربوط جلو می‌رود. Failure پروژه را به `failed_retryable` می‌برد و artifactهای موفق قبلی را حفظ می‌کند.
 
-در failure:
-
-- پروژه به `failed_retryable` می‌رود؛
-- خطا در project و episode manifest ثبت می‌شود؛
-- artifactهای موفق قبلی باقی می‌مانند؛
-- اجرای مجدد از `failed_retryable` یا `episode_planned` مجاز است.
-
-Artifact manifest:
-
-```text
-workspaces/<project-id>/episode/manifest.json
-```
-
----
-
-## ۶. CLI
-
-اجرای مرحله‌ای:
+## CLI
 
 ```bash
 uv run thesisound audit-coverage <project-id>
 uv run thesisound prioritize-claims <project-id>
+uv run thesisound estimate-episode-budget <project-id>
+uv run thesisound build-disagreement-graph <project-id>
 uv run thesisound plan-episode <project-id>
 uv run thesisound build-evidence-packs <project-id>
 ```
@@ -292,75 +216,40 @@ uv run thesisound build-evidence-packs <project-id>
 uv run thesisound prepare-episode <project-id>
 ```
 
-مدل coverage و planner را می‌توان جدا override کرد:
-
-```bash
-uv run thesisound prepare-episode <project-id> \
-  --coverage-model <model-id> \
-  --planning-model <model-id>
-```
-
-`prioritize-claims` و `build-evidence-packs` API call ندارند.
-
----
-
-## ساختار Artifact
+## Artifactها
 
 ```text
-workspaces/<project-id>/
-  project.json
-  episode/
-    manifest.json
-    coverage-report.json
-    claim-priorities.json
-    episode-plan-draft.json
-    episode-plan.json
-    evidence-packs.jsonl
-    evidence-packs/
-      seg-001.json
-      seg-002.json
+workspaces/<project-id>/episode/
+  manifest.json
+  coverage-report.json
+  claim-priorities.json
+  budget-report.json
+  disagreement-graph.json
+  retrieval.sqlite3
+  episode-plan-draft.json
+  episode-plan.json
+  evidence-packs.jsonl
+  evidence-packs/<segment-id>.json
 ```
-
-مدل runهای Coverage Audit و Episode Plan همچنان در مسیر عمومی زیر ثبت می‌شوند:
-
-```text
-model-runs/<run-id>/
-```
-
----
 
 ## تست‌ها
 
-فایل:
+- vertical slice از `corpus_ready` تا `episode_planned`؛
+- prerequisite persistence؛
+- budget gate؛
+- disagreement artifact؛
+- FTS5 retrieval فارسی؛
+- evidence و original block در هر pack؛
+- claim selection متفاوت برای durationهای مختلف؛
+- رد evidence مفقود؛
+- Ruff و pytest.
 
-```text
-tests/test_episode_preparation.py
-```
+## محدودیت تجربی باقی‌مانده
 
-تست‌های عادی بدون API خارجی اجرا می‌شوند و این موارد را پوشش می‌دهند:
+کد محدودیت‌های قبلی را رفع کرده، اما کیفیت عددهای budget و کیفیت واقعی مدل فقط با corpus و API key واقعی قابل سنجش است. برای این منظور:
 
-- vertical slice کامل از `corpus_ready` تا `episode_planned`؛
-- ذخیره تمام artifactها؛
-- وجود evidence و original block در هر pack؛
-- انتخاب claimهای بیشتر برای duration بلندتر؛
-- رد claim دارای evidence مفقود؛
-- state transition نهایی.
+- smoke test زنده Gemini opt-in است؛
+- calibration recorder داده واقعی را جمع می‌کند؛
+- defaultها تا رسیدن به حداقل نمونه و بازبینی انسانی خودکار تغییر نمی‌کنند.
 
-## محدودیت‌های فعلی
-
-1. Coverage Audit و Episode Plan با fake structured model در CI تست می‌شوند؛ کیفیت واقعی Gemini نیازمند live run است.
-2. prerequisiteها در draft artifact حفظ می‌شوند، اما domain `EpisodeSegment` فعلی آن‌ها را در project manifest نگه نمی‌دارد؛ پیش از Script Writer باید این field به domain نهایی منتقل شود.
-3. Retrieval فعلی مبتنی بر mapping مستقیم claim/evidence/block است. SQLite FTS برای بازیابی context مکمل هنوز اضافه نشده است.
-4. Evidence Pack از claimهای موجود استفاده می‌کند؛ cross-source disagreement graph هنوز در milestone چندمنبعی ساخته نشده است.
-5. benchmark واقعی token budget و max-supported-minutes هنوز لازم است.
-
-## Definition of Done این milestone
-
-- corpus ناکافی اجازه planning نمی‌گیرد؛
-- duration اپیزود معتبر است؛
-- must-includeها حذف نمی‌شوند؛
-- omissionها قابل ممیزی‌اند؛
-- هر segment دقیقاً یک Evidence Pack دارد؛
-- هر claim در pack به evidence و original block برمی‌گردد؛
-- project فقط پس از ذخیره تمام packها `episode_planned` می‌شود؛
-- Ruff و pytest سبز هستند.
+این یک محدودیت داده است، نه یک مسیر کدنویسی ناتمام.
