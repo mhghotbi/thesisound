@@ -1,140 +1,160 @@
 {% extends "base.html" %}
-{% block title %}صوت | Thesisound{% endblock %}
+{% from "components.html" import status_label, technical_details %}
+{% block title %}شنیدن | Thesisound{% endblock %}
 {% block content %}
-<div class="reading-layout reading-layout--wide">
-  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
-    <span class="step-rail__item is-complete"><b>۱</b> هدف</span>
-    <span class="step-rail__item is-complete"><b>۲</b> منابع</span>
-    <span class="step-rail__item is-complete"><b>۳</b> طرح</span>
-    <span class="step-rail__item is-complete"><b>۴</b> سناریو</span>
-    <span class="step-rail__item is-current"><b>۵</b> صوت</span>
-  </nav>
+<header class="page-heading page-heading--compact">
+  <div>
+    <p class="kicker">شنیدن و دریافت</p>
+    <h1>{{ project_title(project) }}</h1>
+    <p>فایل نهایی فقط پس از کنترل ساختار صوت، رونویسی و مقایسه با متن تأییدشده آماده می‌شود.</p>
+  </div>
+  {% if audio_active %}
+    {{ status_label('در حال تولید و کنترل صوت', 'اقدامی از شما لازم نیست', 'running', audio_run.stage if audio_run else '') }}
+  {% elif audio_run and audio_run.status == 'failed' %}
+    {{ status_label('تولید صوت متوقف شد', 'قابل بررسی و ادامه', 'danger', audio_run.status) }}
+  {% elif project.state.value == 'complete' %}
+    {{ status_label('آماده شنیدن', 'فایل نهایی کنترل شده است', 'success', project.state.value) }}
+  {% else %}
+    {{ status_label('آماده ساخت صوت', 'شروع تولید به تأیید شما نیاز دارد', 'attention', project.state.value) }}
+  {% endif %}
+</header>
 
-  <header class="page-heading page-heading--compact">
-    <div>
-      <p class="eyebrow">تولید و کنترل شنیداری</p>
-      <h1>{{ project_title(project) }}</h1>
-      <p>هر قطعه جدا تولید، از نظر ساختار WAV بررسی، با ASR رونویسی و فقط در صورت نیاز بازتولید می‌شود.</p>
-    </div>
-  </header>
+{% if error %}
+<div class="notice notice--danger" role="alert">تولید یا بازیابی صوت کامل نشد. متن تأییدشده و قطعه‌های سالم باقی مانده‌اند.<p class="operator-only"><bdi dir="ltr">{{ error }}</bdi></p></div>
+{% endif %}
 
-  {% if error %}<div class="notice notice--danger" role="alert">{{ error }}</div>{% endif %}
-
-  {% if can_generate and not audio_active %}
-  <section class="interpretation">
-    <h2>سناریوی تأییدشده آماده تبدیل به صوت است</h2>
-    <p>این اجرا به hash نسخه فعلی سناریو متصل است و خروجی نسخه دیگر را reuse نمی‌کند. پیش از queue شدن، کلید Gemini، SDK، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
-  </section>
-  <form method="post" action="/projects/{{ project.project_id }}/audio/generate" class="form-actions">
+{% if can_generate and not audio_active %}
+<section class="attention-panel" aria-labelledby="audio-start-title">
+  <div>
+    <span class="attention-panel__label">اقدام لازم</span>
+    <h2 id="audio-start-title">متن تأییدشده آماده تبدیل به صوت است</h2>
+    <p class="simple-only">هر قطعه جدا ساخته و با متن مقایسه می‌شود؛ فقط قطعه‌های نامعتبر دوباره تولید خواهند شد.</p>
+    <p class="operator-only">Run به hash نسخه فعلی Script متصل است. پیش از queue، کلید Gemini، SDK، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
+  </div>
+  <form method="post" action="/projects/{{ project.project_id }}/audio/generate">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <button class="button button--primary" type="submit">ساخت و کنترل صوت</button>
-    <a class="button button--secondary" href="/system-check?scope=audio">بررسی پیش‌نیازهای صوت</a>
   </form>
-  {% endif %}
+</section>
+<div class="form-actions operator-only"><a class="button button--secondary" href="/system-check?scope=audio">بررسی پیش‌نیازهای صوت</a></div>
+{% endif %}
 
-  {% if audio_run and audio_active %}
-  <section class="source-list">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">اجرای جاری</p>
-        <h2>
-          {% if audio_run.stage == "queued" %}در صف اجرا
-          {% elif audio_run.stage == "segmenting" %}تقسیم سناریو به قطعه‌های گفتاری
-          {% elif audio_run.stage == "synthesizing" %}تولید قطعه‌های صوتی
-          {% elif audio_run.stage == "transcribing" %}رونویسی و مقایسه با متن
-          {% elif audio_run.stage == "regenerating" %}بازتولید قطعه معیوب
-          {% elif audio_run.stage == "assembling" %}نرمال‌سازی و اتصال صوت
-          {% else %}در حال پردازش{% endif %}
-        </h2>
-      </div>
-      <span><bdi dir="ltr">{{ audio_run.status }}</bdi></span>
+{% if audio_run and audio_active %}
+<section class="data-panel section-block" aria-labelledby="audio-progress-title">
+  <div class="section-heading">
+    <div>
+      <p class="kicker">اجرای جاری</p>
+      <h2 id="audio-progress-title" aria-live="polite">
+        {% if audio_run.stage == 'queued' %}در صف اجرا
+        {% elif audio_run.stage == 'segmenting' %}تقسیم متن به قطعه‌های گفتاری
+        {% elif audio_run.stage == 'synthesizing' %}تولید قطعه‌های صوتی
+        {% elif audio_run.stage == 'transcribing' %}رونویسی و مقایسه با متن
+        {% elif audio_run.stage == 'regenerating' %}بازتولید قطعه معیوب
+        {% elif audio_run.stage == 'assembling' %}نرمال‌سازی و اتصال صوت
+        {% else %}در حال پردازش{% endif %}
+      </h2>
     </div>
-    <p>درصد و ETA حدس زده نمی‌شود. قطعه‌های سالم در retry دوباره تولید نمی‌شوند.</p>
-  </section>
-  {% endif %}
-
-  {% if audio_run and audio_run.status == "failed" %}
-  <div class="notice notice--danger">
-    <strong>تولید یا کنترل صوت متوقف شد.</strong>
-    <p>{{ audio_run.last_error }}</p>
+    {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', audio_run.status) }}
   </div>
-  {% if can_retry %}
-  <form method="post" action="/projects/{{ project.project_id }}/audio/retry" class="form-actions">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <button class="button button--primary" type="submit">ادامه از قطعه‌های سالم</button>
-    <a class="button button--secondary" href="/system-check?scope=audio">بررسی محیط</a>
-  </form>
-  {% endif %}
-  {% endif %}
+  <p class="lede">درصد و ETA حدس زده نمی‌شود. قطعه‌های سالم در تلاش دوباره ساخته نمی‌شوند.</p>
+</section>
+{% endif %}
 
-  {% if project.state.value == "complete" and manifest and manifest.status == "verified" %}
-  <section class="interpretation">
-    <p class="eyebrow">خروجی نهایی</p>
-    <h2>اپیزود آماده شنیدن است</h2>
-    <p>
-      {{ manifest.chunk_count }} قطعه ·
-      <bdi dir="ltr">{{ (manifest.final_duration_seconds / 60) | round(1) }} دقیقه</bdi> ·
-      {{ manifest.regenerated_chunk_ids | length }} بازتولید هدفمند
-    </p>
-    <audio controls preload="metadata" style="width:100%">
-      <source src="/projects/{{ project.project_id }}/audio/final.wav" type="audio/wav">
-    </audio>
-    <div class="form-actions">
-      <a class="button button--primary" href="/projects/{{ project.project_id }}/audio/final.wav" download>دانلود فایل صوتی</a>
-      <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">خواندن سناریو و منابع</a>
+{% if audio_run and audio_run.status == 'failed' %}
+<section class="error-recovery" role="alert">
+  <div class="error-recovery__grid">
+    <div>
+      <span class="attention-panel__label">چه شد</span>
+      <h2>تولید یا کنترل صوت متوقف شد</h2>
+      <p class="error-recovery__impact"><strong>اثر:</strong> متن تأییدشده و قطعه‌های سالم باقی مانده‌اند؛ فایل نهایی ناقص منتشر نشده است.</p>
     </div>
-  </section>
-  {% endif %}
+    {% if can_retry %}
+    <form method="post" action="/projects/{{ project.project_id }}/audio/retry">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="button button--primary" type="submit">ادامه از قطعه‌های سالم</button>
+    </form>
+    {% endif %}
+  </div>
+  <div class="error-recovery__options">
+    <a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/script">بررسی متن اپیزود</a>
+    <a class="button button--quiet button--small operator-only" href="/system-check?scope=audio">بررسی محیط صوت</a>
+  </div>
+  {% if audio_run.last_error %}{% call technical_details('کد و متن خطا') %}<p><bdi dir="ltr">{{ audio_run.last_error }}</bdi></p>{% endcall %}{% endif %}
+</section>
+{% endif %}
 
-  {% if segment_views %}
-  <section class="source-list">
-    <div class="section-heading">
-      <h2>کنترل قطعه‌ها</h2>
-      <span>{{ segment_views | length }} قطعه</span>
-    </div>
+{% if project.state.value == 'complete' and manifest and manifest.status == 'verified' %}
+<section class="audio-player" aria-labelledby="final-audio-title">
+  <p class="kicker">خروجی نهایی</p>
+  <h2 id="final-audio-title">اپیزود آماده شنیدن است</h2>
+  <div class="audio-player__meta">
+    <span>{{ manifest.chunk_count | fa_num }} قطعه</span>
+    <span>{{ (manifest.final_duration_seconds / 60) | round(1) | fa_num }} دقیقه</span>
+    <span>{{ manifest.regenerated_chunk_ids | length | fa_num }} بازتولید هدفمند</span>
+    <code class="operator-only"><bdi dir="ltr">{{ manifest.status }}</bdi></code>
+  </div>
+  <audio controls preload="metadata">
+    <source src="/projects/{{ project.project_id }}/audio/final.wav" type="audio/wav">
+    مرورگر شما پخش صوت را پشتیبانی نمی‌کند.
+  </audio>
+  <div class="form-actions">
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/audio/final.wav" download>دریافت فایل صوتی</a>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">خواندن متن و شواهد</a>
+  </div>
+</section>
+
+{% if segment_views %}
+<section class="section-block reading-column" aria-labelledby="audio-transcript-title">
+  <div class="section-heading"><h2 id="audio-transcript-title">متن اپیزود</h2><span>همراه فایل نهایی</span></div>
+  <div class="transcript-list">
     {% for item in segment_views %}
-    <article class="source-row">
-      <div class="source-row__identity">
-        <strong>گوینده {{ item.chunk.speaker }} · <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></strong>
-        <span>{% if item.qa %}<bdi dir="ltr">{{ item.qa.verdict }}</bdi>{% else %}در انتظار QA{% endif %}</span>
+    <article class="transcript-turn" id="chunk-{{ item.chunk.chunk_id }}">
+      <div class="transcript-turn__meta">
+        <span class="transcript-turn__speaker">گوینده {{ item.chunk.speaker }}</span>
+        <span class="transcript-turn__number">{{ loop.index | fa_num }}</span>
+        <code class="operator-only"><bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></code>
       </div>
-      <p>{{ item.chunk.text }}</p>
-      {% if item.record %}
-      <audio controls preload="none">
-        <source src="/projects/{{ project.project_id }}/audio/segments/{{ item.chunk.chunk_id }}.wav" type="audio/wav">
-      </audio>
-      <p class="source-row__issue">
-        مدت: <bdi dir="ltr">{{ item.record.validation.duration_seconds | round(1) }} ثانیه</bdi>
-        · تلاش: {{ item.record.generation_attempts }}
-      </p>
-      {% endif %}
-      {% if item.transcript %}
-      <details>
-        <summary>ASR و اختلاف با متن</summary>
-        <p>{{ item.transcript.text }}</p>
-        {% if item.qa %}
-        <p>شباهت: <bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(1) }}٪</bdi></p>
-        {% if item.qa.missing_sentences %}
-        <ul>
-          {% for value in item.qa.missing_sentences %}
-          <li>افتادگی احتمالی: {{ value }}</li>
-          {% endfor %}
-        </ul>
-        {% endif %}
-        {% endif %}
+      <p class="transcript-turn__text">{{ item.chunk.text }}</p>
+      {% if item.record or item.transcript or item.qa %}
+      <details class="evidence-drawer operator-only">
+        <summary>جزئیات قطعه و کنترل صوت</summary>
+        <div class="evidence-card">
+          {% if item.record %}
+          <audio controls preload="none"><source src="/projects/{{ project.project_id }}/audio/segments/{{ item.chunk.chunk_id }}.wav" type="audio/wav"></audio>
+          <p>Duration: <code><bdi dir="ltr">{{ item.record.validation.duration_seconds | round(2) }}s</bdi></code> · attempts: <code><bdi dir="ltr">{{ item.record.generation_attempts }}</bdi></code></p>
+          {% endif %}
+          {% if item.transcript %}<p><strong>ASR:</strong> {{ item.transcript.text }}</p>{% endif %}
+          {% if item.qa %}
+          <p>Verdict: <code><bdi dir="ltr">{{ item.qa.verdict }}</bdi></code> · similarity: <code><bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></code></p>
+          {% if item.qa.missing_sentences %}<ul>{% for value in item.qa.missing_sentences %}<li>افتادگی احتمالی: {{ value }}</li>{% endfor %}</ul>{% endif %}
+          {% endif %}
+        </div>
       </details>
       {% endif %}
     </article>
     {% endfor %}
-  </section>
-  {% endif %}
-
-  <div class="form-actions">
-    <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">بازگشت به سناریو</a>
-    <a class="button button--quiet" href="/projects">پروژه‌ها</a>
   </div>
-</div>
-{% if audio_active %}
-<script>window.setTimeout(() => window.location.reload(), 3000);</script>
+</section>
 {% endif %}
+{% elif segment_views %}
+<section class="section-block operator-only" aria-labelledby="chunk-control-title">
+  <div class="section-heading"><h2 id="chunk-control-title">کنترل قطعه‌ها</h2><span>{{ segment_views | length | fa_num }} قطعه</span></div>
+  <div class="chunk-list">
+    {% for item in segment_views %}
+    <article class="chunk-row">
+      <div class="source-row__identity"><strong>گوینده {{ item.chunk.speaker }} · <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></strong><span>{% if item.qa %}<bdi dir="ltr">{{ item.qa.verdict }}</bdi>{% else %}در انتظار QA{% endif %}</span></div>
+      <p class="source-row__summary">{{ item.chunk.text }}</p>
+      {% if item.record %}<audio controls preload="none"><source src="/projects/{{ project.project_id }}/audio/segments/{{ item.chunk.chunk_id }}.wav" type="audio/wav"></audio>{% endif %}
+      {% if item.transcript %}{% call technical_details('ASR و اختلاف با متن', always_visible=true) %}<p>{{ item.transcript.text }}</p>{% if item.qa %}<p>Similarity: <code><bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></code></p>{% endif %}{% endcall %}{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<div class="form-actions section-block">
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">متن اپیزود</a>
+  <a class="button button--quiet" href="/projects/{{ project.project_id }}">خانه پروژه</a>
+</div>
+{% if audio_active %}<div data-auto-refresh="3000" aria-hidden="true"></div>{% endif %}
 {% endblock %}
