@@ -34,7 +34,7 @@ def create_episode_planner(
     episode_store = EpisodeArtifactStore(workspace.root)
 
     def preparation_service_factory(project_id: UUID) -> EpisodePreparationService:
-        model_port = GeminiStructuredModel(api_key=settings.gemini_api_key)
+        model_port = GeminiStructuredModel(api_keys=settings.gemini_api_keys)
         runner = ModelRunner(
             model_port,
             PromptLoader(),
