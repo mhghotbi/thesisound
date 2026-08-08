@@ -9,16 +9,22 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.adapters.parsers.docling_adapter import DoclingParser
 from thesisound.adapters.parsers.mineru_adapter import MineruParser
 from thesisound.config import Settings
 from thesisound.domain import Project
+from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore
 from thesisound.ports import DocumentParserPort
+from thesisound.prompt_loader import PromptLoader
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_ingestion import ingest_document
 from thesisound.services.document_inspector import inspect_document
+from thesisound.services.model_run_store import WorkspaceModelRunStore
+from thesisound.services.model_runner import ModelRunner
 from thesisound.services.parser_benchmark import benchmark_directory, benchmark_document
+from thesisound.services.research_brief import ResearchBriefService
 
 app = typer.Typer(no_args_is_help=True, help="Thesisound local development CLI")
 console = Console()
@@ -130,6 +136,85 @@ def dump_project(
 
     project = _store(workspace_root).load_project(project_id)
     console.print_json(json.dumps(project.model_dump(mode="json"), ensure_ascii=False))
+
+
+@app.command("build-brief")
+def build_brief(
+    project_id: Annotated[UUID, typer.Argument(help="Existing project UUID")],
+    audience: Annotated[str, typer.Option(help="Intended listener profile")] = (
+        "educated general listener"
+    ),
+    prior_knowledge: Annotated[
+        str,
+        typer.Option(help="none, introductory, intermediate, or advanced"),
+    ] = "introductory",
+    target_duration_minutes: Annotated[
+        int,
+        typer.Option("--duration", min=5, max=120, help="Requested episode duration"),
+    ] = 30,
+    modes: Annotated[
+        str,
+        typer.Option(help="Comma-separated: explanatory, critical, comparative, debate"),
+    ] = "explanatory",
+    output_language: Annotated[
+        str,
+        typer.Option("--language", help="Output language code"),
+    ] = "fa",
+    model: Annotated[str | None, typer.Option(help="Override the configured fast model")] = None,
+    prompt_version: Annotated[
+        str | None,
+        typer.Option(help="Pin a specific prompt contract version"),
+    ] = None,
+    workspace_root: WorkspaceRootOption = None,
+    output: OutputOption = None,
+) -> None:
+    """Create a validated ResearchBrief with Gemini structured output."""
+
+    allowed_knowledge = {"none", "introductory", "intermediate", "advanced"}
+    if prior_knowledge not in allowed_knowledge:
+        raise typer.BadParameter(
+            f"Expected one of: {', '.join(sorted(allowed_knowledge))}.",
+            param_hint="--prior-knowledge",
+        )
+    requested_modes = [item.strip() for item in modes.split(",") if item.strip()]
+    allowed_modes = {"explanatory", "critical", "comparative", "debate"}
+    invalid_modes = set(requested_modes) - allowed_modes
+    if not requested_modes or invalid_modes:
+        detail = ", ".join(sorted(invalid_modes)) or "no modes supplied"
+        raise typer.BadParameter(f"Invalid mode selection: {detail}", param_hint="--modes")
+
+    settings = Settings()
+    root = (workspace_root or settings.workspace_root).expanduser().resolve()
+    workspace_store = WorkspaceStore(root)
+    try:
+        model_port = GeminiStructuredModel(api_key=settings.gemini_api_key)
+        runner = ModelRunner(
+            model_port,
+            PromptLoader(),
+            WorkspaceModelRunStore(root, keep_prompts=settings.keep_rendered_prompts),
+            base_retry_delay_seconds=settings.model_retry_base_seconds,
+        )
+        execution = ResearchBriefService(workspace_store, runner).build(
+            project_id,
+            model=model or settings.model_fast,
+            audience=audience,
+            prior_knowledge=prior_knowledge,
+            target_duration_minutes=target_duration_minutes,
+            modes=requested_modes,
+            output_language=output_language,
+            prompt_version=prompt_version,
+        )
+    except (FileNotFoundError, ModelError, ValueError) as exc:
+        console.print(f"[red]{exc}[/red]", stderr=True)
+        raise typer.Exit(code=1) from exc
+
+    _emit_json(
+        {
+            "brief": execution.output.model_dump(mode="json"),
+            "model_run": execution.record.model_dump(mode="json"),
+        },
+        output,
+    )
 
 
 @app.command("inspect")
