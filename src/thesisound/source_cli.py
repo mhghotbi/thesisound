@@ -10,6 +10,7 @@ from rich.console import Console
 
 from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.config import Settings
+from thesisound.episode_cli import register_episode_commands
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
@@ -31,6 +32,7 @@ def register_source_commands(app: typer.Typer) -> None:
     app.command("extract-evidence")(_extract_evidence)
     app.command("build-claims")(_build_claims)
     app.command("analyze-source")(_analyze_source)
+    register_episode_commands(app)
 
 
 def _build_blocks(
