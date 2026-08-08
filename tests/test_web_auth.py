@@ -67,7 +67,7 @@ def test_development_otp_logs_in(tmp_path: Path) -> None:
         response = client.get("/projects")
 
     assert response.status_code == 200
-    assert "پروژه‌های شما" in response.text
+    assert "گفتارهای شما" in response.text
 
 
 def test_wrong_otp_is_rejected(tmp_path: Path) -> None:
