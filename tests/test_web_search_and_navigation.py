@@ -134,7 +134,7 @@ def test_project_can_start_with_only_a_title_and_auto_add_web_sources(
         _login(client)
         project_id = _create_and_confirm(client)
         page = client.get(f"/projects/{project_id}/sources")
-        assert "پیدا کردن منبع با Gemini" in page.text
+        assert "پیدا کردن منبع در وب" in page.text
         assert "داشتن فایل از قبل الزامی نیست" in page.text
 
         response = client.post(
