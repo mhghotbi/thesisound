@@ -27,7 +27,9 @@ from thesisound.modeling import ModelExecution, ModelRunRecord
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
 from thesisound.services.coverage_auditor import CoverageAuditorService
+from thesisound.services.disagreement_graph import DisagreementGraphBuilder
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
+from thesisound.services.episode_budget import EpisodeBudgetEstimator
 from thesisound.services.episode_planner import EpisodePlannerService
 from thesisound.services.episode_preparation_service import EpisodePreparationService
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
@@ -266,6 +268,8 @@ def _service(root: Path) -> EpisodePreparationService:
         episode_store=EpisodeArtifactStore(root),
         coverage_auditor=CoverageAuditorService(runner),
         claim_prioritizer=ClaimPrioritizer(),
+        budget_estimator=EpisodeBudgetEstimator(),
+        disagreement_builder=DisagreementGraphBuilder(),
         episode_planner=EpisodePlannerService(runner),
         evidence_pack_builder=EvidencePackBuilder(),
     )
@@ -282,7 +286,7 @@ def test_prepare_episode_writes_plan_and_grounded_packs(tmp_path: Path) -> None:
     workspace.save_project(project)
     _seed_source(root, project.project_id)
 
-    coverage, priorities, plan, packs = _service(root).prepare_episode(
+    coverage, priorities, budget, graph, plan, packs = _service(root).prepare_episode(
         project.project_id,
         coverage_model="fake-strong",
         planning_model="fake-strong",
@@ -291,12 +295,18 @@ def test_prepare_episode_writes_plan_and_grounded_packs(tmp_path: Path) -> None:
     episode_dir = root / str(project.project_id) / "episode"
     assert coverage.can_plan_episode is True
     assert any(item.level == "must_include" for item in priorities.priorities)
+    assert budget.effective_supported_minutes >= 8
+    assert graph.project_id == project.project_id
     assert len(plan.segments) == len(packs)
     assert all(pack.original_blocks for pack in packs)
     assert all(pack.evidence_items for pack in packs)
+    if len(plan.segments) > 1:
+        assert plan.segments[1].prerequisite_claim_ids == [plan.segments[0].claim_ids[0]]
     assert workspace.load_project(project.project_id).state == ProjectState.EPISODE_PLANNED
     assert (episode_dir / "coverage-report.json").exists()
     assert (episode_dir / "claim-priorities.json").exists()
+    assert (episode_dir / "budget-report.json").exists()
+    assert (episode_dir / "disagreement-graph.json").exists()
     assert (episode_dir / "episode-plan.json").exists()
     assert (episode_dir / "evidence-packs.jsonl").exists()
 
