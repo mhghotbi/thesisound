@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from importlib import metadata
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from thesisound.ports import DocumentInspection, ParsedDocument
 from thesisound.services.document_normalizer import normalize_docling_document
