@@ -8,14 +8,14 @@
 {% elif path.endswith('/audio') %}{% set current_step = 6 %}
 {% elif state in ['draft', 'brief_ready'] %}{% set current_step = 1 %}
 {% elif state in ['sources_collecting', 'source_selection_required'] %}{% set current_step = 2 %}
-{% elif state in ['corpus_building', 'corpus_ready'] %}{% set current_step = 3 %}
+{% elif state in ['corpus_building', 'corpus_ready', 'failed_retryable', 'failed_permanent'] %}{% set current_step = 3 %}
 {% elif state in ['episode_planning', 'episode_planned'] %}{% set current_step = 4 %}
 {% elif state in ['script_drafting', 'script_ready', 'script_verifying', 'script_verified'] %}{% set current_step = 5 %}
 {% else %}{% set current_step = 6 %}{% endif %}
 
 {% if state in ['draft', 'brief_ready'] %}{% set available_step = 1 %}
 {% elif state in ['sources_collecting', 'source_selection_required'] %}{% set available_step = 2 %}
-{% elif state in ['corpus_building', 'corpus_ready'] %}{% set available_step = 3 %}
+{% elif state in ['corpus_building', 'corpus_ready', 'failed_retryable', 'failed_permanent'] %}{% set available_step = 3 %}
 {% elif state in ['episode_planning', 'episode_planned'] %}{% set available_step = 4 %}
 {% elif state in ['script_drafting', 'script_ready', 'script_verifying', 'script_verified'] %}{% set available_step = 5 %}
 {% elif state in ['audio_generating', 'audio_ready', 'audio_verifying', 'complete'] %}{% set available_step = 6 %}
