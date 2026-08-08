@@ -6,7 +6,7 @@
   <div>
     <p class="kicker">مبنای اپیزود</p>
     <h1>منابع را اضافه و انتخاب کنید</h1>
-    <p>فقط متن کامل و عبورکرده از کنترل کیفیت می‌تواند وارد شواهد شود. نتیجه جست‌وجو یا snippet به‌تنهایی منبع محسوب نمی‌شود.</p>
+    <p>فقط متن کامل و عبورکرده از کنترل کیفیت می‌تواند وارد شواهد شود. خلاصه نتیجه جست‌وجو به‌تنهایی منبع محسوب نمی‌شود.</p>
   </div>
   {{ status_label((selected_count | fa_num) ~ ' منبع انتخاب‌شده', 'مبنای اپیزود', 'success' if selected_count else 'attention') }}
 </header>
@@ -20,7 +20,7 @@
 {% if request.query_params.get('error') == 'file-too-large' %}
   <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بارگذاری بیشتر است.</div>
 {% elif request.query_params.get('error') == 'selection-locked' %}
-  <div class="notice notice--danger" role="alert">این مجموعه وارد پردازش شده است. برای تغییر، از «بازگشت و اصلاح ورودی‌های قبلی» استفاده کنید.</div>
+  <div class="notice notice--danger" role="alert">این مجموعه وارد پردازش شده است. برای تغییر، از «بازگشت و اصلاح مراحل قبلی» استفاده کنید.</div>
 {% elif request.query_params.get('error') == 'source-retry-failed' %}
   <div class="notice notice--danger" role="alert">استخراج دوباره انجام نشد. اصل فایل باقی مانده است و می‌توانید پس از بررسی محیط دوباره تلاش کنید.</div>
 {% elif request.query_params.get('error') == 'source-delete-failed' %}
@@ -32,7 +32,11 @@
 {% endif %}
 
 {% if selection_locked %}
-<div class="notice notice--info"><strong>مجموعه منابع فقط خواندنی است.</strong><p>نسخه تأییدشده وارد پردازش شده و تغییر آن خروجی‌های بعدی را stale می‌کند.</p></div>
+<div class="notice notice--info">
+  <strong>مجموعه منابع فقط خواندنی است.</strong>
+  <p>نسخه تأییدشده وارد پردازش شده و با تغییر آن، خروجی‌های بعدی نیازمند ساخت دوباره می‌شوند.</p>
+  <p class="operator-only">Dependent artifacts become <code><bdi dir="ltr">stale</bdi></code>.</p>
+</div>
 {% endif %}
 
 {% if not selection_locked %}
@@ -45,8 +49,8 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <label class="drop-field">
         <span class="drop-field__title">فایل را انتخاب کنید</span>
-        <span>PDF، EPUB، DOCX، TXT یا Markdown</span>
-        <input type="file" name="source_file" accept=".pdf,.epub,.docx,.txt,.md" required>
+        <span><bdi dir="ltr">PDF، EPUB، DOCX، TXT، Markdown</bdi></span>
+        <input type="file" name="source_file" accept=".pdf,.epub,.docx,.txt,.md" required aria-label="انتخاب فایل منبع" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">
       </label>
       <button class="button button--secondary" type="submit">افزودن و بررسی فایل</button>
     </form>
@@ -54,8 +58,9 @@
 
   <article class="source-path-card">
     <p class="kicker">جست‌وجوی هدایت‌شده</p>
-    <h2>پیدا کردن منبع با Gemini</h2>
-    <p>جست‌وجو candidate می‌سازد؛ متن URL در یک گام جدا بازیابی و quality-gate می‌شود.</p>
+    <h2>پیدا کردن منبع در وب</h2>
+    <p>جست‌وجو چند پیشنهاد می‌سازد؛ سپس متن کامل هر نشانی جداگانه بازیابی و از کنترل کیفیت عبور داده می‌شود.</p>
+    <p class="operator-only">Provider: <code><bdi dir="ltr">Gemini</bdi></code> · candidates → URL retrieval → quality gate</p>
     <form method="post" action="/projects/{{ project.project_id }}/sources/search">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <label class="field">
@@ -113,9 +118,9 @@
         <strong><bdi dir="auto">{{ source.title }}</bdi></strong>
         <span>
           {% if source.origin == 'gemini_web_search' %}منبع وب بازیابی‌شده{% else %}فایل کاربر{% endif %}
-          · <bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) }} MB</bdi>
+          · {{ (source.size_bytes / 1024 / 1024) | round(2) | fa_num }} مگابایت
         </span>
-        {% if source.canonical_url %}<a href="{{ source.canonical_url }}" rel="noreferrer" target="_blank"><bdi dir="ltr">URL اصلی</bdi></a>{% endif %}
+        {% if source.canonical_url %}<a href="{{ source.canonical_url }}" rel="noreferrer" target="_blank">نشانی اصلی</a>{% endif %}
       </div>
 
       {% if source.status == 'ready' %}
@@ -156,7 +161,7 @@
           <summary>حذف فایل…</summary>
           <div class="technical-details__body">
             <strong>اثر حذف</strong>
-            <p>این منبع و artifact استخراج آن حذف می‌شود. منابع دیگر و فایل‌های خروجی مستقل باقی می‌مانند. اگر منبع انتخاب شده باشد، شمار مجموعه اپیزود کم می‌شود.</p>
+            <p>این منبع و خروجی استخراج آن حذف می‌شود. منابع دیگر و فایل‌های خروجی مستقل باقی می‌مانند. اگر منبع انتخاب شده باشد، شمار مجموعه اپیزود کم می‌شود.</p>
             <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/delete" class="form-actions">
               <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
               <button class="button button--danger button--small" type="submit">تأیید حذف این منبع</button>
