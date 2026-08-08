@@ -1,0 +1,113 @@
+{
+  "benchmark_id": "attention-is-all-you-need-2026-08-08",
+  "executed_at": "2026-08-08",
+  "source": {
+    "title": "Attention Is All You Need",
+    "arxiv_id": "1706.03762v7",
+    "source_url": "https://arxiv.org/pdf/1706.03762",
+    "page_count": 15,
+    "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+    "selection_reason": "A real multi-column academic paper with figures, display equations, references, footnotes, and four tables."
+  },
+  "environment": {
+    "runner": "GitHub-hosted ubuntu-latest CPU runner",
+    "python": "3.12.13",
+    "uv": "0.12.3",
+    "docling": "2.118.1",
+    "mineru": "3.4.4",
+    "mineru_backend": "pipeline"
+  },
+  "evidence": {
+    "workflow_run_id": 31243393532,
+    "workflow_commit": "a6293c1dcc5811cd4c2fac64beb2dbf79c5cc995",
+    "artifact_id": 9017826879,
+    "artifact_digest": "sha256:d85f19f90eb99b3e830ffcb6975790190c1b091422a90e3d85bf817c2a3d6380"
+  },
+  "automatic_results": [
+    {
+      "parser": "docling",
+      "status": "success",
+      "duration_seconds": 305.864176618,
+      "verdict": "pass",
+      "safe_for_claim_extraction": true,
+      "block_count": 500,
+      "text_characters": 52201,
+      "locator_coverage": 1.0,
+      "page_coverage": 1.0,
+      "heading_coverage": 0.998,
+      "substantive_duplicate_ratio": 0.0,
+      "issue_count": 0,
+      "automatic_score": 100.0
+    },
+    {
+      "parser": "mineru",
+      "status": "success",
+      "duration_seconds": 139.98625459200002,
+      "verdict": "pass",
+      "safe_for_claim_extraction": true,
+      "block_count": 137,
+      "text_characters": 43478,
+      "locator_coverage": 1.0,
+      "page_coverage": 1.0,
+      "heading_coverage": 1.0,
+      "substantive_duplicate_ratio": 0.0,
+      "issue_count": 0,
+      "automatic_score": 100.0
+    }
+  ],
+  "derived_performance": {
+    "mineru_speedup_over_docling": 2.1849586411856157,
+    "mineru_duration_reduction_percent": 54.23254330080254
+  },
+  "manual_audit": {
+    "shared_successes": [
+      "Preserved the title, abstract, main section order, references, and all 15 page locators.",
+      "Preserved the headline BLEU values 28.4 and 41.8 and the section 6 results discussion.",
+      "Preserved all four tables as structured blocks."
+    ],
+    "docling": {
+      "block_length_median_characters": 6,
+      "blocks_under_20_characters": 349,
+      "formula_blocks": 0,
+      "table_blocks": 4,
+      "strengths": [
+        "Table 2 was rendered as clean Markdown with correctly separated rows and columns.",
+        "Body prose and heading hierarchy were accurate and page-located."
+      ],
+      "problems": [
+        "The displayed scaled dot-product attention equation between the surrounding paragraphs was absent from the normalized output.",
+        "Diagram labels and appendix token visualisations were fragmented into hundreds of tiny blocks.",
+        "Picture blocks contained unavailable-image placeholders because image generation was not enabled in the current adapter."
+      ]
+    },
+    "mineru": {
+      "block_length_median_characters": 198,
+      "blocks_under_20_characters": 24,
+      "formula_blocks": 5,
+      "table_blocks": 4,
+      "strengths": [
+        "Preserved the displayed attention, multi-head attention, feed-forward, positional encoding, and learning-rate equations as formula blocks.",
+        "Produced substantially more semantic block boundaries and retained extracted figure images.",
+        "Table 2 retained the key values and row identities."
+      ],
+      "problems": [
+        "LaTeX output contains excessive spacing between characters in operators and identifiers.",
+        "The Table 4 HTML output merged some neighboring row and cell contents.",
+        "Some front-matter and mathematical text requires cleanup before direct presentation."
+      ]
+    }
+  },
+  "decision": {
+    "recommended_parser_for_complex_or_formula_heavy_academic_pdfs": "mineru",
+    "reason": "Both parsers passed deterministic quality gates, but MinerU was about 2.18 times faster, preserved display equations, emitted fewer and more semantic blocks, and retained figure assets. These properties matter more for evidence extraction than Docling's cleaner tables on this paper.",
+    "docling_role": "Keep as the default or fallback for text-heavy and table-heavy documents where formula extraction is not material, after improving picture and formula handling.",
+    "router_implication": "Formula-heavy, multi-column, scanned, or visually complex academic PDFs should route to MinerU. Plain text-bearing books and reports can still start with Docling and fall back based on quality gates.",
+    "confidence": "medium",
+    "limitations": [
+      "This is one English technical paper, not a representative corpus.",
+      "The benchmark does not test Persian OCR, scanned books, EPUB, or ordinary prose books.",
+      "Automatic 100-point scores do not measure equation omission or table-cell semantic correctness; manual auditing remains required for benchmark cases.",
+      "Runtime was measured on a GitHub-hosted CPU runner and should not be treated as production latency."
+    ]
+  }
+}
