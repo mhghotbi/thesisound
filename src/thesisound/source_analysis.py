@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, model_validator
 from thesisound.domain import (
     ClaimRecord,
     ClaimType,
+    EvidenceExtraction,
     Locator,
     SupportStatus,
 )
@@ -116,6 +117,12 @@ class EvidenceExtractionDraft(BaseModel):
     references_to_other_sections: list[str] = Field(default_factory=list)
     unresolved_context: list[str] = Field(default_factory=list)
     must_not_be_lost: list[str] = Field(default_factory=list)
+
+
+class BlockEvidenceExtraction(BaseModel):
+    source_id: UUID
+    block_id: str = Field(min_length=1)
+    extraction: EvidenceExtraction
 
 
 class ClaimDraft(BaseModel):
