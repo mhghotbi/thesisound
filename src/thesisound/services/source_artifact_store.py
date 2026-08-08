@@ -7,10 +7,11 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from thesisound.domain import DocumentMap, EvidenceExtraction
+from thesisound.domain import DocumentMap
 from thesisound.ingestion import IngestionResult
 from thesisound.source_analysis import (
     BlockBuildReport,
+    BlockEvidenceExtraction,
     ClaimLedger,
     SourceAnalysisManifest,
     SourceDocumentBlock,
@@ -52,9 +53,15 @@ class SourceArtifactStore:
         self._write_jsonl(directory / "document-blocks.jsonl", blocks)
         self._write_json(directory / "block-build-report.json", report)
 
-    def load_blocks(self, project_id: UUID, source_id: UUID) -> list[SourceDocumentBlock]:
+    def load_blocks(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+    ) -> list[SourceDocumentBlock]:
         path = self.source_dir(project_id, source_id) / "document-blocks.jsonl"
-        return [SourceDocumentBlock.model_validate(item) for item in self._read_jsonl(path)]
+        return [
+            SourceDocumentBlock.model_validate(item) for item in self._read_jsonl(path)
+        ]
 
     def save_document_map(
         self,
@@ -78,30 +85,36 @@ class SourceArtifactStore:
         self,
         project_id: UUID,
         source_id: UUID,
-        extraction: EvidenceExtraction,
-        block_id: str,
+        record: BlockEvidenceExtraction,
     ) -> None:
         path = self.source_dir(project_id, source_id) / "evidence" / "extractions"
-        self._write_json(path / f"{_safe_id(block_id)}.json", extraction)
+        self._write_json(path / f"{_safe_id(record.block_id)}.json", record)
 
     def save_evidence(
         self,
         project_id: UUID,
         source_id: UUID,
-        extractions: list[EvidenceExtraction],
+        records: list[BlockEvidenceExtraction],
     ) -> None:
         directory = self.source_dir(project_id, source_id)
-        self._write_jsonl(directory / "evidence-extractions.jsonl", extractions)
-        evidence = [claim for extraction in extractions for claim in extraction.claims]
+        self._write_jsonl(directory / "evidence-extractions.jsonl", records)
+        evidence = [
+            claim
+            for record in records
+            for claim in record.extraction.claims
+        ]
         self._write_jsonl(directory / "evidence-items.jsonl", evidence)
 
     def load_extractions(
         self,
         project_id: UUID,
         source_id: UUID,
-    ) -> list[EvidenceExtraction]:
+    ) -> list[BlockEvidenceExtraction]:
         path = self.source_dir(project_id, source_id) / "evidence-extractions.jsonl"
-        return [EvidenceExtraction.model_validate(item) for item in self._read_jsonl(path)]
+        return [
+            BlockEvidenceExtraction.model_validate(item)
+            for item in self._read_jsonl(path)
+        ]
 
     def save_claim_ledger(
         self,
@@ -120,24 +133,41 @@ class SourceArtifactStore:
             manifest,
         )
 
-    def load_manifest(self, project_id: UUID, source_id: UUID) -> SourceAnalysisManifest:
+    def load_manifest(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+    ) -> SourceAnalysisManifest:
         path = self.source_dir(project_id, source_id) / "manifest.json"
-        return SourceAnalysisManifest.model_validate_json(path.read_text(encoding="utf-8"))
+        return SourceAnalysisManifest.model_validate_json(
+            path.read_text(encoding="utf-8")
+        )
 
     @staticmethod
     def load_ingestion(path: Path) -> IngestionResult:
         resolved = path.expanduser().resolve()
-        return IngestionResult.model_validate_json(resolved.read_text(encoding="utf-8"))
+        return IngestionResult.model_validate_json(
+            resolved.read_text(encoding="utf-8")
+        )
 
     @staticmethod
-    def _write_json(path: Path, value: BaseModel | dict[str, Any] | list[Any]) -> None:
-        payload: Any = value.model_dump(mode="json") if isinstance(value, BaseModel) else value
+    def _write_json(
+        path: Path,
+        value: BaseModel | dict[str, Any] | list[Any],
+    ) -> None:
+        payload: Any = (
+            value.model_dump(mode="json") if isinstance(value, BaseModel) else value
+        )
         _atomic_write(path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
 
     @staticmethod
     def _write_jsonl(path: Path, values: list[BaseModel]) -> None:
         lines = [
-            json.dumps(value.model_dump(mode="json"), ensure_ascii=False, sort_keys=True)
+            json.dumps(
+                value.model_dump(mode="json"),
+                ensure_ascii=False,
+                sort_keys=True,
+            )
             for value in values
         ]
         _atomic_write(path, "\n".join(lines) + ("\n" if lines else ""))
@@ -146,7 +176,11 @@ class SourceArtifactStore:
     def _read_jsonl(path: Path) -> list[dict[str, Any]]:
         if not path.exists():
             raise FileNotFoundError(f"Artifact not found: {path}")
-        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+        return [
+            json.loads(line)
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line
+        ]
 
 
 def _atomic_write(path: Path, content: str) -> None:
@@ -157,4 +191,7 @@ def _atomic_write(path: Path, content: str) -> None:
 
 
 def _safe_id(value: str) -> str:
-    return "".join(character if character.isalnum() or character in "-_." else "-" for character in value)
+    return "".join(
+        character if character.isalnum() or character in "-_." else "-"
+        for character in value
+    )
