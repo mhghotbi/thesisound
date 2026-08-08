@@ -87,7 +87,7 @@ class Settings(BaseSettings):
         return tuple(dict.fromkeys(value.strip() for value in values if value.strip()))
 
     @model_validator(mode="after")
-    def validate_runtime(self) -> "Settings":
+    def validate_runtime(self) -> Settings:
         pooled_keys = _parse_gemini_api_keys(self.gemini_api_keys_value)
         if not self.gemini_api_key and pooled_keys:
             self.gemini_api_key = pooled_keys[0]
@@ -123,7 +123,9 @@ def _parse_gemini_api_keys(raw: str | None) -> list[str]:
         try:
             parsed = json.loads(value)
         except json.JSONDecodeError as exc:
-            raise ValueError("GEMINI_API_KEYS must be a JSON list or comma-separated string") from exc
+            raise ValueError(
+                "GEMINI_API_KEYS must be a JSON list or comma-separated string"
+            ) from exc
         if not isinstance(parsed, list) or not all(isinstance(item, str) for item in parsed):
             raise ValueError("GEMINI_API_KEYS JSON value must be a list of strings")
         return parsed
