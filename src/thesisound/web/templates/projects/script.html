@@ -2,6 +2,7 @@
 {% from "components.html" import status_label, technical_details %}
 {% block title %}متن اپیزود | Thesisound{% endblock %}
 {% block content %}
+{% set speaker_labels = {'A': 'اول', 'B': 'دوم'} %}
 <header class="page-heading page-heading--compact">
   <div>
     <p class="kicker">متن مستند و قابل‌ردیابی</p>
@@ -20,7 +21,7 @@
 </header>
 
 {% if error %}
-<div class="notice notice--danger" role="alert">ساخت یا تأیید متن کامل نشد. طرح و artifactهای سالم باقی مانده‌اند.<p class="operator-only"><bdi dir="ltr">{{ error }}</bdi></p></div>
+<div class="notice notice--danger" role="alert">ساخت یا تأیید متن کامل نشد. طرح و خروجی‌های سالم باقی مانده‌اند.<p class="operator-only">Artifacts preserved · <bdi dir="ltr">{{ error }}</bdi></p></div>
 {% endif %}
 
 {% if can_approve and not script_active %}
@@ -65,7 +66,8 @@
     </div>
     {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', script_run.status) }}
   </div>
-  <p class="lede">در تلاش دوباره، بخش‌ها و artifactهای سالم دوباره ساخته نمی‌شوند. درصد و ETA ساختگی نمایش داده نمی‌شود.</p>
+  <p class="lede">در تلاش دوباره، بخش‌ها و خروجی‌های سالم دوباره ساخته نمی‌شوند. درصد یا زمان باقی‌مانده حدسی نمایش داده نمی‌شود.</p>
+  <p class="operator-only">Healthy artifacts are reused; no synthetic ETA.</p>
 </section>
 {% endif %}
 
@@ -80,7 +82,7 @@
     {% if can_retry %}
     <form method="post" action="/projects/{{ project.project_id }}/script/retry">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <button class="button button--primary" type="submit">ادامه از artifactهای سالم</button>
+      <button class="button button--primary" type="submit">ادامه از خروجی‌های سالم</button>
     </form>
     {% endif %}
   </div>
@@ -108,8 +110,8 @@
       {% if checks.issues %}<p>{{ checks.issues | length | fa_num }} مسئله ثبت شده که جزئیات آن در حالت پیشرفته دیده می‌شود.</p>{% else %}<p>همه بخش‌های محتوایی ارجاع لازم را دارند و مسئله قطعی باقی نمانده است.</p>{% endif %}
     </article>
     <article class="quality-row">
-      <h3>Verifier مستقل (راستی‌آزمایی)</h3>
-      {% if verification.issues %}<p>Verifier هنوز {{ verification.issues | length | fa_num }} نکته ثبت کرده است؛ این نسخه فقط در صورت عبور نهایی قابل استفاده است.</p>{% else %}<p>Verifier ادعای بدون پشتوانه یا نسبت‌دادن نادرست باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
+      <h3>راستی‌آزمایی مستقل <span class="operator-only">· Verifier مستقل</span></h3>
+      {% if verification.issues %}<p>راستی‌آزما هنوز {{ verification.issues | length | fa_num }} نکته ثبت کرده است؛ این نسخه فقط پس از عبور نهایی قابل استفاده است.</p>{% else %}<p>راستی‌آزما ادعای بدون پشتوانه یا نسبت‌دادن نادرست باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
     </article>
   </div>
 
@@ -132,9 +134,9 @@
       {% for item in view.turns %}
       <article class="transcript-turn">
         <div class="transcript-turn__meta">
-          <span class="transcript-turn__speaker">گوینده {{ item.turn.speaker }}</span>
+          <span class="transcript-turn__speaker">گوینده {{ speaker_labels.get(item.turn.speaker, item.turn.speaker) }}</span>
           <span class="transcript-turn__number">{{ loop.index | fa_num }}</span>
-          <code class="operator-only"><bdi dir="ltr">{{ item.turn.turn_id }}</bdi></code>
+          <code class="operator-only">speaker <bdi dir="ltr">{{ item.turn.speaker }}</bdi> · turn <bdi dir="ltr">{{ item.turn.turn_id }}</bdi></code>
         </div>
         <p class="transcript-turn__text">{{ item.turn.spoken_text_fa }}</p>
 
