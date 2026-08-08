@@ -71,18 +71,22 @@ class RuntimePreflight:
         return not any(check.blocking for check in self.run(scope))
 
     def _gemini_key(self) -> RuntimeCheck:
-        if self.settings.gemini_api_key:
+        key_count = len(self.settings.gemini_api_keys)
+        if key_count:
             return RuntimeCheck(
                 code="gemini-api-key",
                 label="کلید Gemini",
                 status="pass",
-                detail="تنظیم شده است.",
+                detail=f"{key_count} کلید در pool تنظیم شده است.",
             )
         return RuntimeCheck(
             code="gemini-api-key",
             label="کلید Gemini",
             status="fail",
-            detail="`GEMINI_API_KEY` در محیط یا فایل `.env` تنظیم نشده است.",
+            detail=(
+                "`GEMINI_API_KEYS` یا `GEMINI_API_KEY` در محیط یا فایل `.env` "
+                "تنظیم نشده است."
+            ),
         )
 
     def _ffmpeg(self) -> RuntimeCheck:
