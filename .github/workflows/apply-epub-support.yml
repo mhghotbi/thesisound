@@ -23,7 +23,27 @@ jobs:
         run: |
           set -euo pipefail
           base64 --decode .github/epub-support.patch.gz.b64 | gzip --decompress > /tmp/epub-support.patch
+          set +e
           patch -p1 --forward < /tmp/epub-support.patch
+          patch_status=$?
+          set -e
+          mapfile -t rejects < <(find . -name '*.rej' -print)
+          if (( patch_status != 0 )); then
+            if (( ${#rejects[@]} != 1 )) || [[ "${rejects[0]}" != "./src/thesisound/adapters/parsers/__init__.py.rej" ]]; then
+              printf 'Unexpected patch rejects:\n%s\n' "${rejects[*]:-none}" >&2
+              exit 1
+            fi
+          fi
+          rm -f src/thesisound/adapters/parsers/__init__.py.rej
+          cat > src/thesisound/adapters/parsers/__init__.py <<'PY'
+          """Document parser adapters."""
+
+          from thesisound.adapters.parsers.docling_adapter import DoclingParser
+          from thesisound.adapters.parsers.epub_adapter import EpubDocumentParser
+          from thesisound.adapters.parsers.native_adapter import NativeDocumentParser
+
+          __all__ = ["DoclingParser", "EpubDocumentParser", "NativeDocumentParser"]
+          PY
           rm .github/epub-support.patch.gz.b64
           rm .github/workflows/apply-epub-support.yml
       - name: Commit EPUB support
