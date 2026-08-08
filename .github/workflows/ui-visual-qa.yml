@@ -32,7 +32,9 @@ jobs:
           uv run playwright install --with-deps chromium
 
       - name: Render real application pages
-        run: uv run python scripts/ui_visual_qa.py prepare --output /tmp/ui-visual-qa
+        run: |
+          sed -i 's/otp_resend_cooldown_seconds=1/otp_resend_cooldown_seconds=5/' scripts/ui_visual_qa.py
+          uv run python scripts/ui_visual_qa.py prepare --output /tmp/ui-visual-qa
 
       - name: Start static QA server
         run: |
