@@ -250,3 +250,14 @@ workspaces/<project-id>/
 - [`docs/25-audio-vertical-slice.md`](docs/25-audio-vertical-slice.md)
 - [`docs/26-local-live-e2e-runbook.md`](docs/26-local-live-e2e-runbook.md)
 - [`docs/27-source-discovery-large-docs-and-revision.md`](docs/27-source-discovery-large-docs-and-revision.md)
+
+## Model routing and Okian provider
+
+Structured-text stages are routed through `config/model-routing.toml`. The committed
+configuration keeps every stage on Gemini. Okian is available as an OpenAI-compatible
+provider through `OKIAN_BASE_URL` and `OKIAN_API_KEY`, but credentials alone do not
+activate it. Define an Okian profile and assign a stage explicitly, or use
+`THESISOUND_MODEL_ROUTE_OVERRIDES` for a deployment-specific override.
+
+See `docs/30-okian-provider-and-model-routing.md`.
+

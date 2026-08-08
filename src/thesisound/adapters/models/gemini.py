@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from time import perf_counter
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ValidationError
 
 from thesisound.config import Settings
 from thesisound.gemini_key_pool import GeminiKeyPool, shared_gemini_key_pool
+from thesisound.model_routing import ModelRouter, ResolvedModelRoute, load_model_router
 from thesisound.modeling import (
     GroundingMetadata,
     GroundingSource,
@@ -52,6 +53,9 @@ class GeminiStructuredModel:
         settings: Settings | None = None,
     ) -> None:
         runtime = settings or _settings()
+        self._settings = runtime
+        self._router: ModelRouter = load_model_router(runtime)
+        self._okian_port: Any | None = None
         configured_search = runtime.gemini_google_search_enabled
         configured_urls = runtime.gemini_url_context_enabled
         self.enable_google_search = (
@@ -77,6 +81,19 @@ class GeminiStructuredModel:
         self._client = None
         self._pool = pool or shared_gemini_key_pool(keys)
 
+    def resolve_route(
+        self,
+        *,
+        stage: str,
+        requested_model: str,
+        model_tier: Literal["fast", "strong"],
+    ) -> ResolvedModelRoute:
+        return self._router.resolve(
+            stage=stage,
+            requested_model=requested_model,
+            model_tier=model_tier,
+        )
+
     def generate_structured[T: BaseModel](
         self,
         *,
@@ -86,6 +103,15 @@ class GeminiStructuredModel:
         model: str,
         metadata: RunMetadata,
     ) -> StructuredModelResponse[T]:
+        if metadata.provider == "okian":
+            return self._okian().generate_structured(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                output_type=output_type,
+                model=model,
+                metadata=metadata,
+            )
+
         started = perf_counter()
         timeout_ms = metadata.timeout_ms or self._default_timeout_ms
         config: dict[str, Any] = {
@@ -194,6 +220,16 @@ class GeminiStructuredModel:
             grounding=grounding,
             call_id=spec.call_id,
         )
+
+    def _okian(self) -> Any:
+        if self._okian_port is None:
+            from thesisound.adapters.models.okian import OkianStructuredModel
+
+            self._okian_port = OkianStructuredModel(
+                settings=self._settings,
+                observability=self.observability,
+            )
+        return self._okian_port
 
     def _tools(self, metadata: RunMetadata) -> list[dict[str, dict[str, object]]]:
         wants_search = metadata.grounding_mode in {
@@ -357,8 +393,7 @@ def _usage(response: Any) -> ModelUsage:
         return ModelUsage()
     return ModelUsage(
         input_tokens=_optional_int(
-            getattr(usage, "prompt_token_count", None)
-            or getattr(usage, "input_token_count", None)
+            getattr(usage, "prompt_token_count", None) or getattr(usage, "input_token_count", None)
         ),
         output_tokens=_optional_int(
             getattr(usage, "candidates_token_count", None)

@@ -12,6 +12,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from thesisound.model_routing import ResolvedModelRoute
 from thesisound.modeling import (
     DeterministicValidationError,
     GroundingMode,
@@ -80,6 +81,12 @@ class ModelRunner:
                 f"Prompt expects {bundle.contract.output_model}, not {output_type.__name__}."
             )
 
+        route = _resolve_model_route(
+            self.model_port,
+            stage=stage,
+            requested_model=model,
+            model_tier=bundle.contract.model_tier,
+        )
         resolved_urls = _resolve_grounding_urls(variables, grounding_urls)
         resolved_mode = _resolve_grounding_mode(
             stage,
@@ -91,6 +98,9 @@ class ModelRunner:
                 "variables": variables,
                 "grounding_mode": resolved_mode,
                 "grounding_urls": resolved_urls,
+                "provider": route.provider,
+                "model": route.model,
+                "model_profile": route.profile,
             }
         )
         record = ModelRunRecord(
@@ -100,8 +110,8 @@ class ModelRunner:
             prompt_version=bundle.contract.version,
             prompt_hash=bundle.content_hash,
             input_hash=input_hash,
-            provider=self.model_port.provider,
-            model=model,
+            provider=route.provider,
+            model=route.model,
             output_model=output_type.__name__,
             grounding_mode=resolved_mode,
             grounding_urls=resolved_urls,
@@ -109,7 +119,7 @@ class ModelRunner:
         self.run_store.initialize(
             record,
             bundle,
-            model=model,
+            model=route.model,
             variable_names=list(variables),
         )
 
@@ -120,7 +130,9 @@ class ModelRunner:
             metadata = RunMetadata(
                 stage=stage,
                 prompt_version=bundle.contract.version,
-                model_or_provider=model,
+                model_or_provider=route.model,
+                provider=route.provider,
+                model_profile=route.profile,
                 attempt=attempt_number,
                 input_artifact_hashes=[input_hash],
                 grounding_mode=resolved_mode,
@@ -139,7 +151,7 @@ class ModelRunner:
                     system_prompt=bundle.system_prompt,
                     user_prompt=user_prompt,
                     output_type=output_type,
-                    model=model,
+                    model=route.model,
                     metadata=metadata,
                 )
                 if validator is not None:
@@ -238,6 +250,26 @@ class ModelRunner:
                 raise wrapped from exc
 
         raise AssertionError("Model runner exhausted attempts without returning or raising.")
+
+
+def _resolve_model_route(
+    model_port: TextModelPort,
+    *,
+    stage: str,
+    requested_model: str,
+    model_tier: str,
+) -> ResolvedModelRoute:
+    resolver = getattr(model_port, "resolve_route", None)
+    if callable(resolver):
+        return resolver(
+            stage=stage,
+            requested_model=requested_model,
+            model_tier=model_tier,
+        )
+    return ResolvedModelRoute(
+        provider=model_port.provider,
+        model=requested_model,
+    )
 
 
 def grounding_policy_for_stage(stage: str) -> GroundingMode:

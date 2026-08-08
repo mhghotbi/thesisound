@@ -27,6 +27,21 @@ class Settings(BaseSettings):
     model_strong: str = "gemini-3.6-flash"
     model_tts: str = "gemini-3.1-flash-tts-preview"
     model_asr: str = "gemini-3.6-flash"
+    model_routing_file: Path = Path("./config/model-routing.toml")
+    model_route_overrides: dict[str, str] = Field(default_factory=dict)
+
+    okian_base_url: str | None = Field(
+        default=None,
+        validation_alias="OKIAN_BASE_URL",
+    )
+    okian_api_key: str | None = Field(
+        default=None,
+        validation_alias="OKIAN_API_KEY",
+        exclude=True,
+        repr=False,
+    )
+    okian_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
+
     model_retry_base_seconds: float = Field(default=1, ge=0, le=60)
     model_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
     search_timeout_seconds: int = Field(default=120, ge=5, le=3_600)

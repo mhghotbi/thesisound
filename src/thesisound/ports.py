@@ -14,6 +14,8 @@ class RunMetadata(BaseModel):
     stage: str
     prompt_version: str | None = None
     model_or_provider: str
+    provider: str | None = None
+    model_profile: str | None = None
     attempt: int = Field(default=1, ge=1)
     input_artifact_hashes: list[str] = Field(default_factory=list)
     grounding_mode: GroundingMode = "none"

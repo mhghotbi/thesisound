@@ -8,6 +8,8 @@ from typing import Literal
 from uuid import uuid4
 
 from thesisound.config import Settings
+from thesisound.model_routing import load_model_router
+from thesisound.modeling import ModelConfigurationError
 
 PreflightScope = Literal["model", "audio", "full"]
 PreflightStatus = Literal["pass", "warning", "fail"]
@@ -44,6 +46,8 @@ class RuntimePreflight:
                 self.settings.ingestion_artifact_root,
             ),
             self._gemini_key(),
+            self._model_routing(),
+            self._okian_provider(),
             self._python_module(
                 "google-genai",
                 "Gemini model SDK",
@@ -105,6 +109,71 @@ class RuntimePreflight:
                 "`GEMINI_API_KEYS` or `GEMINI_API_KEY` is not set in the environment "
                 "or `.env` file."
             ),
+        )
+
+    def _model_routing(self) -> RuntimeCheck:
+        try:
+            router = load_model_router(self.settings)
+        except ModelConfigurationError as exc:
+            return RuntimeCheck(
+                code="model-routing",
+                label="Model routing",
+                status="fail",
+                detail=str(exc),
+            )
+        return RuntimeCheck(
+            code="model-routing",
+            label="Model routing",
+            status="pass",
+            detail=(
+                f"Loaded `{self.settings.model_routing_file}`; "
+                f"Okian active: {router.uses_provider('okian')}."
+            ),
+        )
+
+    def _okian_provider(self) -> RuntimeCheck:
+        try:
+            active = load_model_router(self.settings).uses_provider("okian")
+        except ModelConfigurationError:
+            active = False
+        base_url = (self.settings.okian_base_url or "").strip()
+        api_key = (self.settings.okian_api_key or "").strip()
+        if active and (not base_url or not api_key):
+            return RuntimeCheck(
+                code="okian-provider",
+                label="Okian provider",
+                status="fail",
+                detail=(
+                    "An active route uses Okian, but OKIAN_BASE_URL and "
+                    "OKIAN_API_KEY are not both configured."
+                ),
+            )
+        if base_url and api_key:
+            return RuntimeCheck(
+                code="okian-provider",
+                label="Okian provider",
+                status="pass",
+                detail=(
+                    "Credentials configured; provider is active in routing."
+                    if active
+                    else "Credentials configured; no stage is routed to Okian."
+                ),
+            )
+        if base_url or api_key:
+            return RuntimeCheck(
+                code="okian-provider",
+                label="Okian provider",
+                status="warning",
+                detail=(
+                    "Only one of OKIAN_BASE_URL or OKIAN_API_KEY is configured; "
+                    "no active Okian route will run."
+                ),
+            )
+        return RuntimeCheck(
+            code="okian-provider",
+            label="Okian provider",
+            status="pass",
+            detail="Not configured and not used by any route.",
         )
 
     @staticmethod
