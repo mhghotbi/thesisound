@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}منابع | Thesisound{% endblock %}
+{% block content %}
+<div class="reading-layout reading-layout--wide">
+  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
+    <span class="step-rail__item is-complete"><b>۱</b> تعریف هدف</span>
+    <span class="step-rail__item is-complete"><b>۲</b> تأیید برداشت</span>
+    <span class="step-rail__item is-current"><b>۳</b> منابع</span>
+    <span class="step-rail__item"><b>۴</b> پردازش</span>
+  </nav>
+
+  <header class="page-heading page-heading--compact">
+    <div>
+      <p class="eyebrow">مبنای اپیزود</p>
+      <h1>منابع را اضافه و انتخاب کنید</h1>
+      <p>فقط منابع انتخاب‌شده وارد اپیزود می‌شوند.</p>
+    </div>
+  </header>
+
+  {% if error %}
+    <div class="notice notice--danger" role="alert">{{ error }}</div>
+  {% endif %}
+  {% if request.query_params.get('error') == 'file-too-large' %}
+    <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بیشتر است.</div>
+  {% endif %}
+
+  <section class="source-upload">
+    <form method="post" action="/projects/{{ project.project_id }}/sources/upload" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="drop-field">
+        <span class="drop-field__title">فایل را انتخاب کنید</span>
+        <span>PDF، DOCX، TXT یا Markdown</span>
+        <input type="file" name="source_file" accept=".pdf,.docx,.txt,.md" required>
+      </label>
+      <button class="button button--secondary" type="submit">افزودن فایل</button>
+    </form>
+    <div class="unavailable-option" aria-disabled="true">
+      <strong>پژوهش کمکی</strong>
+      <span>پس از پیاده‌سازی Source Discovery فعال می‌شود.</span>
+    </div>
+  </section>
+
+  {% if demo_mode %}
+  <div class="notice notice--info">
+    وضعیت «آماده» در این vertical slice شبیه‌سازی شده است و جای parse quality واقعی را نمی‌گیرد.
+  </div>
+  {% endif %}
+
+  <section class="source-list" aria-labelledby="source-list-title">
+    <div class="section-heading">
+      <h2 id="source-list-title">فایل‌های پروژه</h2>
+      <span>{{ sources | length }} منبع</span>
+    </div>
+    {% if sources %}
+      {% for source in sources %}
+      <article class="source-row" data-source-id="{{ source.source_id }}">
+        <div class="source-row__identity">
+          <strong><bdi dir="auto">{{ source.filename }}</bdi></strong>
+          <span><bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) }} MB</bdi></span>
+        </div>
+        <div class="source-status source-status--{{ source.status }}">
+          {% if source.status == "ready" %}آماده استفاده
+          {% elif source.status == "processing" %}در حال بررسی
+          {% elif source.status == "review" %}نیازمند بازبینی
+          {% else %}قابل‌استفاده نیست{% endif %}
+        </div>
+        {% if source.issue_summary %}
+        <p class="source-row__issue">{{ source.issue_summary }}</p>
+        {% endif %}
+        {% if source.status == "ready" %}
+        <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/toggle">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button button--quiet" type="submit">
+            {% if source.selected %}حذف از مجموعه{% else %}انتخاب برای اپیزود{% endif %}
+          </button>
+        </form>
+        {% endif %}
+      </article>
+      {% endfor %}
+    {% else %}
+      <div class="empty-inline">
+        <strong>هنوز منبعی اضافه نشده است.</strong>
+        <span>برای ادامه حداقل یک فایل قابل‌استفاده لازم است.</span>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="corpus-confirmation">
+    <div>
+      <p class="eyebrow">تأیید مجموعه</p>
+      <h2>اپیزود فقط بر اساس {{ selected_count }} منبع انتخاب‌شده ساخته می‌شود</h2>
+      <p>منابع انتخاب‌نشده وارد evidence و سناریو نمی‌شوند.</p>
+    </div>
+    <form method="post" action="/projects/{{ project.project_id }}/corpus/confirm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="button button--primary" type="submit" {% if selected_count == 0 %}disabled{% endif %}>
+        تأیید منابع و ادامه
+      </button>
+    </form>
+  </section>
+</div>
+{% endblock %}

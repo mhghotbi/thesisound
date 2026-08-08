@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}پروژه‌ها | Thesisound{% endblock %}
+{% block content %}
+<header class="page-heading">
+  <div>
+    <p class="eyebrow">فضای مطالعه</p>
+    <h1>پروژه‌های شما</h1>
+    <p>هر پروژه از آخرین مرحله معتبر ادامه پیدا می‌کند.</p>
+  </div>
+  <a class="button button--primary" href="/projects/new">پروژه جدید</a>
+</header>
+
+{% if projects %}
+<section class="project-list" aria-label="فهرست پروژه‌ها">
+  {% for item in projects %}
+  <article class="project-row">
+    <div class="project-row__main">
+      <h2>{{ project_title(item.project) }}</h2>
+      <p class="project-meta">
+        <span>{{ item.state_label }}</span>
+        {% if item.project.brief %}
+        <span>{{ item.project.brief.target_duration_minutes }} دقیقه</span>
+        {% endif %}
+        <time datetime="{{ item.project.updated_at.isoformat() }}">
+          آخرین تغییر {{ item.project.updated_at.strftime("%Y-%m-%d %H:%M") }}
+        </time>
+      </p>
+    </div>
+    <div class="project-row__attention project-row__attention--{{ item.tone }}">
+      <span>{{ item.attention_label }}</span>
+      <a href="{{ item.primary_action_url }}">{{ item.primary_action_label }}</a>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% else %}
+<section class="empty-state">
+  <p class="eyebrow">هنوز پروژه‌ای ندارید</p>
+  <h2>از یک سؤال واقعی شروع کنید</h2>
+  <p>موضوع، سطح و مدت را مشخص کنید؛ سپس منابعی را که باید مبنای اپیزود باشند اضافه کنید.</p>
+  <a class="button button--primary" href="/projects/new">ساخت اولین پروژه</a>
+</section>
+{% endif %}
+{% endblock %}

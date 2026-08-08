@@ -136,3 +136,12 @@ class WorkspaceStore:
         if not path.exists():
             raise FileNotFoundError(f"Project not found: {project_id}")
         return Project.model_validate_json(path.read_text(encoding="utf-8"))
+
+    def list_projects(self) -> list[Project]:
+        projects: list[Project] = []
+        for path in self.root.glob("*/project.json"):
+            try:
+                projects.append(Project.model_validate_json(path.read_text(encoding="utf-8")))
+            except (OSError, ValueError):
+                continue
+        return sorted(projects, key=lambda project: project.updated_at, reverse=True)

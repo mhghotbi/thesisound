@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Thesisound{% endblock %}</title>
+  <meta name="color-scheme" content="light">
+  <link rel="preconnect" href="https://fonts.bunny.net">
+  <link href="https://fonts.bunny.net/css?family=vazirmatn:400,500,600,700" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='/app.css') }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="{{ url_for('static', path='/app.js') }}" defer></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">رفتن به محتوای اصلی</a>
+  {% if current_user %}
+  <header class="app-header">
+    <div class="shell app-header__inner">
+      <a class="brand" href="/projects" aria-label="صفحه اصلی Thesisound">
+        <span class="brand__mark" aria-hidden="true">▥</span>
+        <span>
+          <strong>Thesisound</strong>
+          <small>مطالعه‌ای که شنیده می‌شود</small>
+        </span>
+      </a>
+      <nav class="app-nav" aria-label="ناوبری اصلی">
+        <a href="/projects">پروژه‌ها</a>
+        <a href="/projects/new">پروژه جدید</a>
+      </nav>
+      <form method="post" action="/logout">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="button button--quiet" type="submit">
+          خروج <bdi dir="ltr">{{ current_user }}</bdi>
+        </button>
+      </form>
+    </div>
+  </header>
+  {% endif %}
+  <main id="main" class="{% block main_class %}shell page{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

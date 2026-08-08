@@ -8,14 +8,13 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Callable
 from pathlib import Path
 from statistics import fmean
-from typing import Callable
 
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download, snapshot_download
 from PIL import Image
-
 from scoring import normalize_persian, score_text
 
 _PERSIAN_EXCLUSIVE = set("پچژگ")
@@ -118,11 +117,17 @@ def load_samples(limit: int, offset: int) -> list[dict[str, object]]:
         if len(selected) >= limit:
             break
     if len(selected) != limit:
-        raise RuntimeError(f"Requested {limit} identifiable Persian samples; found {len(selected)}")
+        raise RuntimeError(
+            f"Requested {limit} identifiable Persian samples; found {len(selected)}"
+        )
     return selected
 
 
-def run_system(name: str, predictor: Callable[[Path], str], samples: list[dict[str, object]]):
+def run_system(
+    name: str,
+    predictor: Callable[[Path], str],
+    samples: list[dict[str, object]],
+):
     rows = []
     with tempfile.TemporaryDirectory(prefix=f"persian-ocr-{name}-") as directory:
         root = Path(directory)
@@ -142,18 +147,20 @@ def run_system(name: str, predictor: Callable[[Path], str], samples: list[dict[s
                 error = f"{type(exc).__name__}: {exc}"[:500]
             duration = time.perf_counter() - started
             metrics = score_text(reference, prediction)
-            rows.append({
-                "index": index,
-                "reference": reference,
-                "prediction": prediction,
-                "reference_normalized": normalize_persian(reference),
-                "prediction_normalized": normalize_persian(prediction),
-                "cer": metrics.cer,
-                "wer": metrics.wer,
-                "exact": metrics.exact,
-                "duration_seconds": duration,
-                "error": error,
-            })
+            rows.append(
+                {
+                    "index": index,
+                    "reference": reference,
+                    "prediction": prediction,
+                    "reference_normalized": normalize_persian(reference),
+                    "prediction_normalized": normalize_persian(prediction),
+                    "cer": metrics.cer,
+                    "wer": metrics.wer,
+                    "exact": metrics.exact,
+                    "duration_seconds": duration,
+                    "error": error,
+                }
+            )
     successes = [row for row in rows if row["error"] is None]
     return {
         "system": name,
@@ -176,7 +183,11 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
-    builders = {"tesseract": build_tesseract, "weightedai": build_weightedai, "bina02": build_bina02}
+    builders = {
+        "tesseract": build_tesseract,
+        "weightedai": build_weightedai,
+        "bina02": build_bina02,
+    }
     samples = load_samples(args.limit, args.offset)
     payload = {
         "dataset": "mohajesmaeili/Persian_Arabic_TextLine_Image_Ocr_Small",
@@ -184,10 +195,19 @@ def main() -> None:
         "selection": {
             "limit": args.limit,
             "offset": args.offset,
-            "policy": "Arabic-script ratio >= 0.8 and either Persian-exclusive letters or Persian glyph forms without Arabic glyph forms",
-            "known_bias": "This raises Persian precision but favors lines containing identifiable Persian orthography; use a Persian-only corpus for the final benchmark.",
+            "policy": (
+                "Arabic-script ratio >= 0.8 and either Persian-exclusive letters "
+                "or Persian glyph forms without Arabic glyph forms"
+            ),
+            "known_bias": (
+                "This raises Persian precision but favors lines containing identifiable "
+                "Persian orthography; use a Persian-only corpus for the final benchmark."
+            ),
         },
-        "normalization": "NFKC, Arabic-to-Persian glyph mapping, digit unification, diacritic removal, whitespace normalization; ZWNJ preserved",
+        "normalization": (
+            "NFKC, Arabic-to-Persian glyph mapping, digit unification, diacritic removal, "
+            "whitespace normalization; ZWNJ preserved"
+        ),
         "systems": [],
     }
     for name in [item.strip() for item in args.systems.split(",") if item.strip()]:
@@ -197,14 +217,27 @@ def main() -> None:
         try:
             predictor = builders[name]()
             result = run_system(name, predictor, samples)
-            result["initialization_seconds"] = time.perf_counter() - started - result["total_duration_seconds"]
+            result["initialization_seconds"] = (
+                time.perf_counter() - started - result["total_duration_seconds"]
+            )
         except Exception as exc:
-            result = {"system": name, "status": "initialization_error", "error": f"{type(exc).__name__}: {exc}"[:1000]}
+            result = {
+                "system": name,
+                "status": "initialization_error",
+                "error": f"{type(exc).__name__}: {exc}"[:1000],
+            }
         payload["systems"].append(result)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps([{key: value for key, value in item.items() if key != "rows"} for item in payload["systems"]], ensure_ascii=False, indent=2))
+    args.output.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    summary = [
+        {key: value for key, value in item.items() if key != "rows"}
+        for item in payload["systems"]
+    ]
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

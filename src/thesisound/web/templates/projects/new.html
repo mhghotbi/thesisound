@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}پروژه جدید | Thesisound{% endblock %}
+{% block content %}
+<div class="reading-layout">
+  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
+    <span class="step-rail__item is-current"><b>۱</b> تعریف هدف</span>
+    <span class="step-rail__item"><b>۲</b> تأیید برداشت</span>
+    <span class="step-rail__item"><b>۳</b> منابع</span>
+    <span class="step-rail__item"><b>۴</b> پردازش</span>
+  </nav>
+
+  <header class="page-heading page-heading--compact">
+    <div>
+      <p class="eyebrow">پروژه جدید</p>
+      <h1>می‌خواهید چه چیزی را بهتر بفهمید؟</h1>
+      <p>همین اطلاعات برای ساخت برداشت اولیه کافی است.</p>
+    </div>
+  </header>
+
+  {% if error %}
+    <div class="notice notice--danger" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form class="form-sheet" method="post" action="/projects">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label class="field field--large">
+      <span>موضوع یا سؤال اصلی</span>
+      <textarea name="topic" rows="3" required autofocus placeholder="مثلاً: چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟">{{ values.topic if values else '' }}</textarea>
+    </label>
+
+    <div class="field-grid">
+      <label class="field">
+        <span>برای چه کسی؟</span>
+        <select name="audience">
+          <option value="دانشجوی علوم انسانی">دانشجوی علوم انسانی</option>
+          <option value="شنونده عمومی علاقه‌مند">شنونده عمومی علاقه‌مند</option>
+          <option value="دانشجوی تحصیلات تکمیلی">دانشجوی تحصیلات تکمیلی</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>آشنایی قبلی</span>
+        <select name="prior_knowledge">
+          <option value="none">بدون آشنایی</option>
+          <option value="introductory" selected>مقدماتی</option>
+          <option value="intermediate">متوسط</option>
+          <option value="advanced">پیشرفته</option>
+        </select>
+      </label>
+    </div>
+
+    <fieldset class="choice-group">
+      <legend>مدت هدف</legend>
+      {% for minutes in [10, 20, 30, 45] %}
+      <label>
+        <input type="radio" name="duration" value="{{ minutes }}" {% if minutes == 20 %}checked{% endif %}>
+        <span>{{ minutes }} دقیقه</span>
+      </label>
+      {% endfor %}
+    </fieldset>
+
+    <fieldset class="choice-group">
+      <legend>نوع روایت</legend>
+      <label><input type="radio" name="mode" value="explanatory" checked><span>توضیحی</span></label>
+      <label><input type="radio" name="mode" value="critical"><span>تحلیلی / انتقادی</span></label>
+      <label><input type="radio" name="mode" value="comparative"><span>مقایسه‌ای</span></label>
+    </fieldset>
+
+    <div class="form-actions">
+      <a class="button button--secondary" href="/projects">انصراف</a>
+      <button class="button button--primary" type="submit">ساخت برداشت اولیه</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
