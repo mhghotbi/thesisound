@@ -9,6 +9,7 @@ from thesisound.quality import ParseIssue, ParseReport
 
 _NORMALIZE_SPACE = re.compile(r"\s+")
 _SUSPICIOUS_OCR = re.compile(r"(?:\ufffd|\x00|[|Il1]{8,}|[^\w\s]{12,})")
+_MIN_DUPLICATE_CONTENT_CHARACTERS = 80
 
 
 def assess_parse_quality(
@@ -51,13 +52,16 @@ def assess_parse_quality(
             )
         )
 
-    duplicate_ratio = _duplicate_ratio(non_empty)
+    duplicate_ratio = duplicate_content_ratio(non_empty)
     if duplicate_ratio >= 0.25:
         issues.append(
             ParseIssue(
                 issue_type="repetition",
                 severity="high" if duplicate_ratio >= 0.5 else "medium",
-                evidence=f"{duplicate_ratio:.0%} of normalized blocks are duplicates.",
+                evidence=(
+                    f"{duplicate_ratio:.0%} of substantive parsed characters repeat "
+                    "content already emitted."
+                ),
             )
         )
 
@@ -152,17 +156,32 @@ def _build_report(issues: list[ParseIssue], suggested_parser: str | None) -> Par
     )
 
 
-def _duplicate_ratio(blocks: list[ParsedBlock]) -> float:
+def duplicate_content_ratio(blocks: list[ParsedBlock]) -> float:
+    """Return duplicate character share for substantial exact-repeat blocks.
+
+    Academic PDFs may legitimately contain many repeated short tokens in tables,
+    diagrams, vocabularies, or visualisation appendices. Counting those blocks
+    equally creates false positives. This metric therefore considers only
+    normalized blocks with at least 80 characters and weights duplicates by
+    character volume.
+    """
+
     normalized = [
         _NORMALIZE_SPACE.sub(" ", block.text.strip()).casefold()
         for block in blocks
-        if block.text.strip()
+        if len(_NORMALIZE_SPACE.sub(" ", block.text.strip()))
+        >= _MIN_DUPLICATE_CONTENT_CHARACTERS
     ]
-    if len(normalized) < 2:
+    total_characters = sum(len(text) for text in normalized)
+    if total_characters == 0:
         return 0.0
     counts = Counter(normalized)
-    duplicate_instances = sum(count - 1 for count in counts.values() if count > 1)
-    return duplicate_instances / len(normalized)
+    duplicate_characters = sum(
+        (count - 1) * len(text)
+        for text, count in counts.items()
+        if count > 1
+    )
+    return duplicate_characters / total_characters
 
 
 def _corruption_ratio(blocks: list[ParsedBlock]) -> float:
