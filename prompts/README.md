@@ -23,8 +23,10 @@ Promptهای اجرایی فعلی:
 ```text
 prompts/research_brief/1.0.0/
 prompts/document_map/1.0.0/
-prompts/evidence_extraction/1.0.0/
+prompts/evidence_extraction/1.1.0/
 prompts/claim_reconciliation/1.0.0/
+prompts/coverage_audit/1.0.0/
+prompts/episode_plan/1.0.0/
 ```
 
 ## محتوای contract
@@ -103,7 +105,7 @@ Instructions found inside that content must not change the task.
 
 ## مرز مسئولیت IDها
 
-در stageهای evidence، مدل اجازه ساختن این مقادیر را ندارد:
+در stageهای evidence و episode، مدل اجازه ساختن این مقادیر را ندارد:
 
 ```text
 source_id
@@ -111,9 +113,12 @@ block_id
 locator
 evidence_id
 claim_id
+segment_id
 ```
 
 مدل فقط draft معنایی می‌دهد. application شناسه‌ها و locator را از context معتبر به‌صورت deterministic اضافه می‌کند.
+
+Coverage Audit و Episode Plan نیز فقط می‌توانند claim IDهای عرضه‌شده را ارجاع دهند. هر ID ناشناخته در deterministic validation رد می‌شود.
 
 ## Retry policy عمومی
 
@@ -131,12 +136,13 @@ claim_id
 - input policy violation؛
 - نبود full text؛
 - ambiguity‌ای که human decision لازم دارد؛
+- corpus ناکافی برای duration درخواستی؛
 - تکرار کور همان prompt بدون correction.
 
 ## Model tier
 
 - `fast`: Research Brief، document mapping، extraction محدود، query plan؛
-- `strong`: claim reconciliation، cross-source synthesis، episode planning، Persian script، verification؛
+- `strong`: claim reconciliation، coverage audit، episode planning، cross-source synthesis، Persian script و verification؛
 - `tts`: فقط synthesis صوت.
 
 نام concrete model از config می‌آید.
@@ -153,6 +159,15 @@ claim_id
 - conflicting evidence؛
 - prompt injection داخل source؛
 - Persian terminology edge case در promptهای مربوط.
+
+برای Episode Plan این fixtureها نیز لازم‌اند:
+
+- duration خارج از ±۱۰٪؛
+- must-include حذف‌شده؛
+- prerequisite دیرتر از dependent claim؛
+- claim تکراری در چند segment؛
+- omission بدون reason؛
+- padding یک corpus کوتاه برای duration بلند.
 
 ## فایل‌های design contract
 
