@@ -9,10 +9,13 @@ Thesisound یک ابزار محلی برای تبدیل موضوع و منابع
 ```text
 OTP login
 → create project and confirm Research Brief
-→ upload and inspect sources
+→ upload sources OR discover candidates with Gemini Google Search
+→ capture selected URLs with Gemini URL Context
 → parse-quality gate
 → explicitly confirm corpus
-→ semantic blocks, evidence, and claims
+→ semantic blocks
+→ hierarchical document mapping for large sources
+→ evidence and claims
 → coverage audit and supported-duration gate
 → review and approve Episode Plan
 → grounded Persian script
@@ -29,7 +32,7 @@ OTP login
 → COMPLETE
 ```
 
-Source Discovery و production deployment هنوز جزو مسیر فعلی نیستند. کاربر منابع را خودش بارگذاری می‌کند.
+کاربر می‌تواند فقط موضوع یا عنوان را وارد کند و در مرحله منابع، «پیدا و اضافه‌کردن خودکار» را بزند. نتیجه Search به‌تنهایی evidence نیست: URL انتخاب‌شده باید جداگانه بازیابی، به متن ساختاری تبدیل و از quality gate عبور کند.
 
 ## نصب برای اجرای کامل محلی
 
@@ -38,7 +41,7 @@ Source Discovery و production deployment هنوز جزو مسیر فعلی نی
 - Python 3.12 یا جدیدتر؛
 - `uv`؛
 - FFmpeg روی `PATH`؛
-- کلید Gemini برای مرحله‌های مدل، TTS و ASR.
+- کلید Gemini برای مدل، Search، URL Context، TTS و ASR.
 
 نصب UI، Gemini و ابزار توسعه:
 
@@ -71,11 +74,12 @@ uv run thesisound doctor
 
 - تنظیم بودن `GEMINI_API_KEY`؛
 - نصب `google-genai`؛
+- فعال بودن Google Search و URL Context؛
 - وجود FFmpeg؛
 - writable بودن workspace و ingestion artifact roots؛
 - parserهای واقعاً در دسترس.
 
-همین preflight داخل UI نیز روی actionهای هزینه‌دار enforce می‌شود. اگر پیش‌نیازی ناقص باشد، run قبل از queue شدن متوقف و کاربر به `/system-check` هدایت می‌شود.
+همین preflight داخل UI نیز پیش از عملیات provider enforce می‌شود.
 
 ## اجرای وب
 
@@ -103,10 +107,12 @@ OTP تستی فقط در development مجاز است. startup در production ب
 1. وارد شوید.
 2. پروژه جدید بسازید و موضوع، مخاطب، مدت و mode را مشخص کنید.
 3. Research Brief را بررسی و صریحاً تأیید کنید.
-4. یک PDF، DOCX، TXT یا Markdown اضافه کنید.
-5. وضعیت parser و quality gate را ببینید.
-6. منبع آماده را انتخاب و corpus را تأیید کنید.
-7. منتظر ساخت semantic blocks، evidence و claims بمانید.
+4. یکی از دو مسیر منبع را انتخاب کنید:
+   - PDF، EPUB، DOCX، TXT یا Markdown بارگذاری کنید؛ یا
+   - فقط با موضوع پروژه، Gemini Search را اجرا کنید و منابع را دستی یا خودکار اضافه کنید.
+5. وضعیت انسانی quality gate را بخوانید. جزئیات parser/verdict در بخش فنی قرار دارد.
+6. منابع آماده را انتخاب و corpus را تأیید کنید.
+7. منتظر ساخت semantic blocks، document map، evidence و claims بمانید. اسناد بزرگ به‌صورت سلسله‌مراتبی و بدون truncation map می‌شوند.
 8. Coverage Audit و مدت قابل‌پشتیبانی را بررسی کنید.
 9. Episode Plan را صریحاً تأیید کنید.
 10. سناریو، verifier result و source trace را بررسی کنید.
@@ -115,7 +121,7 @@ OTP تستی فقط در development مجاز است. startup در production ب
 13. chunkها، ASR diff، regeneration و فایل نهایی را بررسی کنید.
 14. WAV نهایی را پخش یا دانلود کنید.
 
-اگر یک منبع `review` یا `blocked` شد، در همان صفحه می‌توان extraction را دوباره اجرا یا منبع را حذف کرد. نصب parser جدید و سپس retry باعث می‌شود مسیر auto با ابزارهای تازه در دسترس دوباره اجرا شود.
+در همه صفحات پروژه، نوار جابه‌جایی مراحل وجود دارد. بازگشت برای اصلاح Brief یا Sources خروجی‌های وابسته را به `archive/revisions/` منتقل می‌کند؛ فایل‌های خام حذف نمی‌شوند و خروجی stale دوباره مصرف نمی‌شود.
 
 ## فرمان‌های CLI اصلی
 
@@ -125,6 +131,7 @@ uv run thesisound init "آرنت و مفهوم کنش"
 uv run thesisound status <project-id>
 uv run thesisound parse source.pdf --parser auto --output parse-result.json
 uv run thesisound analyze-source <project-id> parse-result.json
+uv run thesisound search-web "آرنت و مفهوم کنش"
 uv run thesisound prepare-episode <project-id>
 uv run thesisound prepare-script <project-id>
 uv run thesisound prepare-audio <project-id>
@@ -133,8 +140,10 @@ uv run thesisound audio-status <project-id>
 
 ## قواعد اصلی pipeline
 
-- metadata یا abstract به‌تنهایی evidence متن کامل نیست.
+- metadata، snippet یا abstract به‌تنهایی evidence متن کامل نیست.
+- URL جست‌وجوشده فقط بعد از capture و quality gate می‌تواند وارد corpus شود.
 - parse، block ID و locator به مدت خروجی وابسته نیستند.
+- سند بزرگ truncate یا بر اساس تعداد کاراکتر کور slice نمی‌شود؛ تقسیم روی مرز semantic block/heading انجام و سپس global map merge می‌شود.
 - breadth و depth تحلیل به مدت، مخاطب و mode وابسته‌اند.
 - مدل حق ساختن source ID، locator، evidence ID، claim ID، segment ID یا turn ID را ندارد.
 - supporting excerpt باید واقعاً در source block موجود باشد.
@@ -144,6 +153,7 @@ uv run thesisound audio-status <project-id>
 - writer تنها verifier خروجی خودش نیست.
 - script و audio به hash نسخه بالادستی متصل‌اند.
 - retry artifactهای سالم را دوباره تولید نمی‌کند.
+- rewind خروجی downstream را archive و invalid می‌کند.
 - final audio فقط وقتی serve می‌شود که checksum و binding آن معتبر باشد.
 
 ## artifactها
@@ -152,10 +162,15 @@ uv run thesisound audio-status <project-id>
 workspaces/<project-id>/
   project.json
   ui-source-manifest.json
+  web-search-candidates.json
   corpus-build-run.json
   episode-planning-run.json
   script-build-run.json
   audio-build-run.json
+
+  uploads/
+    <source-id>/...
+    web/<source-id>/*.web.md
 
   sources/<source-id>/
     parsed-document.json
@@ -184,6 +199,14 @@ workspaces/<project-id>/
     qa/*.json
     final.wav
     manifest.json
+
+  archive/revisions/<timestamp>/
+    revision.json
+    sources/
+    episode/
+    script/
+    audio/
+    runs/
 ```
 
 ## وضعیت milestoneها
@@ -195,8 +218,8 @@ workspaces/<project-id>/
 - M4 Episode preparation: implemented
 - M5 Verified Persian script: implemented
 - M6 TTS, ASR, and Audio QA: implemented in code
-- M6.5 Local Operator UI: implemented for the current source-bound flow
-- M7 Source Discovery: not implemented
+- M6.5 Local Operator UI: implemented through final audio review
+- M7 Gemini Source Discovery vertical slice: implemented; general crawler and authority ranking remain open
 - M8 Full cross-source semantic reconciliation: not implemented
 - M9 General end-user product UI: not implemented
 - M10 Production persistence, jobs, deployment, and real OTP: not implemented
@@ -206,6 +229,8 @@ workspaces/<project-id>/
 کد مسیر کامل وجود دارد، اما کیفیت واقعی هنوز باید با اجرای زنده سنجیده شود:
 
 - کیفیت استخراج PDF فارسی و OCR؛
+- completeness واقعی URL Context در انواع سایت‌ها و paywallها؛
+- کیفیت authority ranking در Source Discovery؛
 - رفتار مدل‌های تنظیم‌شده در API واقعی؛
 - تلفظ، prosody و تفکیک voiceهای فارسی؛
 - دقت ASR و thresholdهای QA؛
@@ -224,3 +249,4 @@ workspaces/<project-id>/
 - [`docs/19-error-and-recovery-ux.md`](docs/19-error-and-recovery-ux.md)
 - [`docs/25-audio-vertical-slice.md`](docs/25-audio-vertical-slice.md)
 - [`docs/26-local-live-e2e-runbook.md`](docs/26-local-live-e2e-runbook.md)
+- [`docs/27-source-discovery-large-docs-and-revision.md`](docs/27-source-discovery-large-docs-and-revision.md)

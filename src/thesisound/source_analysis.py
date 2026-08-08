@@ -118,6 +118,22 @@ class DocumentMapDraft(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class DocumentMapSectionUpdateDraft(BaseModel):
+    section_id: str = Field(min_length=1)
+    depends_on_section_ids: list[str] = Field(default_factory=list)
+    unresolved_context: list[str] = Field(default_factory=list)
+
+
+class DocumentMapMergeDraft(BaseModel):
+    """Global relationships discovered after all complete partitions are mapped."""
+
+    working_thesis: str | None = None
+    section_updates: list[DocumentMapSectionUpdateDraft] = Field(default_factory=list)
+    globally_required_section_ids: list[str] = Field(default_factory=list)
+    cross_section_threads: list[CrossSectionThreadDraft] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 class EvidenceClaimDraft(BaseModel):
     claim: str = Field(min_length=1)
     claim_type: ClaimType

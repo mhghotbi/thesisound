@@ -5,6 +5,7 @@ from collections.abc import Callable
 from functools import partial
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import quote
 from uuid import UUID, uuid4
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, Request, UploadFile
@@ -14,6 +15,7 @@ from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound.config import Settings
 from thesisound.domain import (
+    Project,
     ProjectState,
     SourceAccess,
     SourceCandidate,
@@ -26,7 +28,14 @@ from thesisound.services.episode_planning_run import (
     EpisodePlanningRun,
     EpisodePlanningRunService,
 )
+from thesisound.services.runtime_preflight import RuntimePreflight
+from thesisound.services.workflow_revision import WorkflowRevisionService
 from thesisound.web.corpus_runtime import corpus_source_inputs
+from thesisound.web.source_discovery import (
+    WebSourceCandidate,
+    WebSourceCandidateStore,
+    WebSourceDiscoveryService,
+)
 from thesisound.web.source_ingestion import ingest_uploaded_source
 from thesisound.web.source_manifest import (
     UiSourceManifest,
@@ -57,6 +66,28 @@ def register_source_routes(
     login_redirect: LoginRedirect,
     validate_csrf: ValidateCsrf,
 ) -> None:
+    discovery = WebSourceDiscoveryService(settings, workspace)
+    revision = WorkflowRevisionService(workspace)
+
+    def source_context(
+        project: Project,
+        sources: list[UiSourceManifest],
+        *,
+        error: str | None = None,
+    ) -> dict[str, object]:
+        candidates = WebSourceCandidateStore(workspace.project_dir(project.project_id)).load()
+        return {
+            "project": project,
+            "sources": sources,
+            "search_candidates": candidates,
+            "search_query": (
+                project.brief.central_question if project.brief is not None else project.raw_input
+            ),
+            "selected_count": sum(source.selected for source in sources),
+            "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
+            "error": error,
+        }
+
     @app.get("/projects/{project_id}/sources", response_class=HTMLResponse)
     def sources_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
@@ -67,17 +98,11 @@ def register_source_routes(
                 f"/projects/{project_id}/brief",
                 status_code=HTTP_303_SEE_OTHER,
             )
-        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
-        sources = manifest_store.load()
+        sources = UiSourceManifestStore(workspace.project_dir(project_id)).load()
         return render(
             request,
             "projects/sources.html",
-            {
-                "project": project,
-                "sources": sources,
-                "selected_count": sum(source.selected for source in sources),
-                "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
-            },
+            source_context(project, sources),
         )
 
     @app.post("/projects/{project_id}/sources/upload", response_class=HTMLResponse)
@@ -143,12 +168,136 @@ def register_source_routes(
         manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
         manifest_store.add(manifest)
         sources = manifest_store.load()
-        if (
-            project.state == ProjectState.SOURCES_COLLECTING
-            and any(source.status == UiSourceStatus.READY for source in sources)
+        if project.state == ProjectState.SOURCES_COLLECTING and any(
+            source.status == UiSourceStatus.READY for source in sources
         ):
             transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
         workspace.save_project(project)
+        return _source_redirect(project_id)
+
+    @app.post("/projects/{project_id}/sources/search", response_class=HTMLResponse)
+    async def search_sources(
+        request: Request,
+        project_id: UUID,
+        csrf_token: Annotated[str, Form()],
+        query: Annotated[str, Form()] = "",
+        mode: Annotated[str, Form()] = "preview",
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        validate_csrf(request, csrf_token)
+        project = workspace.load_project(project_id)
+        if project.state not in _EDITABLE_SOURCE_STATES:
+            return _source_redirect(project_id, error="selection-locked")
+        try:
+            RuntimePreflight(settings).require("model")
+        except RuntimeError:
+            return RedirectResponse(
+                "/system-check?blocked=1&scope=model",
+                status_code=HTTP_303_SEE_OTHER,
+            )
+
+        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
+        candidate_store = WebSourceCandidateStore(workspace.project_dir(project_id))
+        try:
+            candidates = await run_in_threadpool(discovery.search, project, query)
+            candidate_store.replace_results(candidates)
+            if mode == "auto":
+                await _auto_import_candidates(
+                    project_id=project_id,
+                    candidates=candidates,
+                    discovery=discovery,
+                    candidate_store=candidate_store,
+                    manifest_store=manifest_store,
+                )
+                sources = manifest_store.load()
+                if project.state == ProjectState.SOURCES_COLLECTING and any(
+                    source.status == UiSourceStatus.READY for source in sources
+                ):
+                    transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
+                    workspace.save_project(project)
+        except (OSError, RuntimeError, ValueError) as error:
+            sources = manifest_store.load()
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    project,
+                    sources,
+                    error=(
+                        "جست‌وجوی وب یا بازیابی منبع انجام نشد. تنظیمات Gemini و "
+                        f"اتصال را بررسی کنید. جزئیات: {str(error)[:300]}"
+                    ),
+                ),
+                status_code=422,
+            )
+        suffix = "?auto-search=1" if mode == "auto" else "?searched=1"
+        return RedirectResponse(
+            f"/projects/{project_id}/sources{suffix}",
+            status_code=HTTP_303_SEE_OTHER,
+        )
+
+    @app.post(
+        "/projects/{project_id}/sources/web/{candidate_id}/add",
+        response_class=HTMLResponse,
+    )
+    async def add_web_source(
+        request: Request,
+        project_id: UUID,
+        candidate_id: UUID,
+        csrf_token: Annotated[str, Form()],
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        validate_csrf(request, csrf_token)
+        project = workspace.load_project(project_id)
+        if project.state not in _EDITABLE_SOURCE_STATES:
+            return _source_redirect(project_id, error="selection-locked")
+        try:
+            RuntimePreflight(settings).require("model")
+        except RuntimeError:
+            return RedirectResponse(
+                "/system-check?blocked=1&scope=model",
+                status_code=HTTP_303_SEE_OTHER,
+            )
+
+        candidate_store = WebSourceCandidateStore(workspace.project_dir(project_id))
+        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
+        try:
+            candidate = candidate_store.get(candidate_id)
+            existing = _source_for_url(manifest_store.load(), str(candidate.url))
+            if existing is None:
+                manifest = await run_in_threadpool(
+                    discovery.import_candidate,
+                    project_id,
+                    candidate,
+                )
+                manifest_store.add(manifest)
+            else:
+                manifest = existing
+            candidate.status = "added" if manifest.status == UiSourceStatus.READY else "failed"
+            candidate.source_id = manifest.source_id
+            candidate.issue_summary = manifest.issue_summary
+            candidate_store.replace(candidate)
+            if (
+                project.state == ProjectState.SOURCES_COLLECTING
+                and manifest.status == UiSourceStatus.READY
+            ):
+                transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
+                workspace.save_project(project)
+        except (OSError, RuntimeError, ValueError, FileNotFoundError) as error:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    project,
+                    manifest_store.load(),
+                    error=(
+                        f"بازیابی این منبع کامل نشد و وارد شواهد نشد. جزئیات: {str(error)[:300]}"
+                    ),
+                ),
+                status_code=422,
+            )
         return _source_redirect(project_id)
 
     @app.post("/projects/{project_id}/sources/{source_id}/retry")
@@ -167,12 +316,7 @@ def register_source_routes(
                 raise ValueError("Source selection is locked")
             store = UiSourceManifestStore(workspace.project_dir(project_id))
             source = store.get(source_id)
-            upload = (
-                workspace.project_dir(project_id)
-                / "uploads"
-                / str(source_id)
-                / source.filename
-            )
+            upload = _uploaded_source_path(workspace, project_id, source)
             if not upload.is_file():
                 raise FileNotFoundError("Original upload is missing")
             artifact_root = (
@@ -190,18 +334,24 @@ def register_source_routes(
                     artifact_root=artifact_root,
                 )
             )
+            reparsed.display_title = source.display_title
+            reparsed.origin = source.origin
+            reparsed.canonical_url = source.canonical_url
+            reparsed.retrieval_scope = source.retrieval_scope
+            reparsed.quality_issues = [
+                *reparsed.quality_issues,
+                *source.quality_issues,
+            ]
+            if source.origin == "gemini_web_search" and source.retrieval_scope != "full_text":
+                reparsed.status = UiSourceStatus.REVIEW
+                reparsed.safe_for_claim_extraction = False
             reparsed.selected = source.selected and reparsed.status == UiSourceStatus.READY
             store.replace(reparsed)
             sources = store.load()
-            has_ready_source = any(
-                item.status == UiSourceStatus.READY for item in sources
-            )
+            has_ready_source = any(item.status == UiSourceStatus.READY for item in sources)
             if project.state == ProjectState.SOURCES_COLLECTING and has_ready_source:
                 transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
-            elif (
-                project.state == ProjectState.SOURCE_SELECTION_REQUIRED
-                and not has_ready_source
-            ):
+            elif project.state == ProjectState.SOURCE_SELECTION_REQUIRED and not has_ready_source:
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
         except (OSError, RuntimeError, ValueError):
@@ -229,13 +379,16 @@ def register_source_routes(
                 ignore_errors=True,
             )
             shutil.rmtree(
+                workspace.project_dir(project_id) / "uploads" / "web" / str(source_id),
+                ignore_errors=True,
+            )
+            shutil.rmtree(
                 settings.ensure_ingestion_artifact_root() / str(project_id) / str(source_id),
                 ignore_errors=True,
             )
             sources = store.load()
-            if (
-                project.state == ProjectState.SOURCE_SELECTION_REQUIRED
-                and not any(item.status == UiSourceStatus.READY for item in sources)
+            if project.state == ProjectState.SOURCE_SELECTION_REQUIRED and not any(
+                item.status == UiSourceStatus.READY for item in sources
             ):
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
@@ -258,6 +411,39 @@ def register_source_routes(
             return _source_redirect(project_id, error="selection-locked")
         UiSourceManifestStore(workspace.project_dir(project_id)).toggle(source_id)
         return _source_redirect(project_id)
+
+    @app.post("/projects/{project_id}/workflow/rewind")
+    def rewind_workflow(
+        request: Request,
+        project_id: UUID,
+        csrf_token: Annotated[str, Form()],
+        target: Annotated[str, Form()],
+        reason: Annotated[str, Form()] = "",
+    ) -> RedirectResponse:
+        if redirect := login_redirect(request):
+            return redirect
+        validate_csrf(request, csrf_token)
+        destination = "brief" if target == "brief" else "sources"
+        try:
+            if target not in {"brief", "sources"}:
+                raise ValueError("مرحله مقصد معتبر نیست.")
+            actor = str(request.session.get("user_phone") or "unknown")
+            revision.rewind(
+                project_id,
+                target=target,
+                actor=actor,
+                reason=reason,
+            )
+        except (OSError, ValueError) as error:
+            return RedirectResponse(
+                f"/projects/{project_id}/{destination}?workflow_error="
+                + quote(str(error), safe=""),
+                status_code=HTTP_303_SEE_OTHER,
+            )
+        return RedirectResponse(
+            f"/projects/{project_id}/{destination}?rewound=1",
+            status_code=HTTP_303_SEE_OTHER,
+        )
 
     @app.post("/projects/{project_id}/corpus/confirm", response_class=HTMLResponse)
     def confirm_corpus(
@@ -282,29 +468,14 @@ def register_source_routes(
                 if source.selected and source.status == UiSourceStatus.READY
             ]
             if not selected:
-                raise ValueError("حداقل یک منبع آماده را انتخاب کنید.")
+                raise ValueError(
+                    "حداقل یک منبع آماده را انتخاب کنید یا جست‌وجوی خودکار وب را اجرا کنید."
+                )
             if any(not source.safe_for_claim_extraction for source in selected):
-                raise ValueError("همه منابع انتخاب‌شده باید از quality gate عبور کرده باشند.")
+                raise ValueError("همه منابع انتخاب‌شده باید از کنترل کیفیت عبور کرده باشند.")
             inputs = corpus_source_inputs(settings, project_id, selected)
 
-            project.sources = [
-                SourceCandidate(
-                    source_id=source.source_id,
-                    title=source.filename,
-                    role=SourceRole.USER_CONTEXT,
-                    source_type=Path(source.filename).suffix.lstrip(".") or "file",
-                    origin="local_upload",
-                    language=None,
-                    access=SourceAccess.FULL_TEXT,
-                    user_decision=SourceDecision.INCLUDE,
-                    relevance_reasons=[
-                        "Selected by the user after the real parse-quality gate "
-                        f"using {source.parser_name or 'an available parser'}"
-                    ],
-                    limitations=[source.issue_summary] if source.issue_summary else [],
-                )
-                for source in selected
-            ]
+            project.sources = [_source_candidate(source) for source in selected]
             if project.state == ProjectState.SOURCES_COLLECTING:
                 transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
             transition(project, ProjectState.CORPUS_BUILDING)
@@ -315,13 +486,7 @@ def register_source_routes(
             return render(
                 request,
                 "projects/sources.html",
-                {
-                    "project": current,
-                    "sources": sources,
-                    "selected_count": sum(source.selected for source in sources),
-                    "selection_locked": current.state not in _EDITABLE_SOURCE_STATES,
-                    "error": str(error),
-                },
+                source_context(current, sources, error=str(error)),
                 status_code=422,
             )
         return RedirectResponse(
@@ -367,15 +532,103 @@ def register_source_routes(
                 "project": project,
                 "stages": stages,
                 "corpus_run": corpus_run,
-                "corpus_active": bool(
-                    corpus_run and corpus_run.status in {"queued", "running"}
-                ),
+                "corpus_active": bool(corpus_run and corpus_run.status in {"queued", "running"}),
                 "planning_run": planning_run,
                 "planning_active": bool(
                     planning_run and planning_run.status in {"queued", "running"}
                 ),
             },
         )
+
+
+async def _auto_import_candidates(
+    *,
+    project_id: UUID,
+    candidates: list[WebSourceCandidate],
+    discovery: WebSourceDiscoveryService,
+    candidate_store: WebSourceCandidateStore,
+    manifest_store: UiSourceManifestStore,
+    target_ready_count: int = 3,
+) -> None:
+    ready_count = 0
+    existing_sources = manifest_store.load()
+    for candidate in candidates:
+        if ready_count >= target_ready_count:
+            break
+        existing = _source_for_url(existing_sources, str(candidate.url))
+        if existing is not None:
+            candidate.status = "added"
+            candidate.source_id = existing.source_id
+            candidate_store.replace(candidate)
+            if existing.status == UiSourceStatus.READY:
+                ready_count += 1
+            continue
+        try:
+            manifest = await run_in_threadpool(
+                discovery.import_candidate,
+                project_id,
+                candidate,
+            )
+            manifest_store.add(manifest)
+            existing_sources.append(manifest)
+            candidate.source_id = manifest.source_id
+            candidate.issue_summary = manifest.issue_summary
+            candidate.status = "added" if manifest.status == UiSourceStatus.READY else "failed"
+            if manifest.status == UiSourceStatus.READY:
+                ready_count += 1
+        except (OSError, RuntimeError, ValueError) as error:
+            candidate.status = "failed"
+            candidate.issue_summary = str(error)[:300]
+        candidate_store.replace(candidate)
+
+
+def _source_candidate(source: UiSourceManifest) -> SourceCandidate:
+    is_web = source.origin == "gemini_web_search"
+    relevance = (
+        "Discovered through Gemini Google Search, captured through URL Context, "
+        "then passed the same parse-quality gate."
+        if is_web
+        else "Selected by the user after the real parse-quality gate using "
+        f"{source.parser_name or 'an available parser'}."
+    )
+    limitations = [item for item in [source.issue_summary, *source.quality_issues] if item]
+    return SourceCandidate(
+        source_id=source.source_id,
+        title=source.title,
+        role=SourceRole.REFERENCE if is_web else SourceRole.USER_CONTEXT,
+        source_type="web" if is_web else Path(source.filename).suffix.lstrip(".") or "file",
+        origin=source.origin,
+        language=None,
+        canonical_url=source.canonical_url,
+        access=SourceAccess.FULL_TEXT,
+        user_decision=SourceDecision.INCLUDE,
+        relevance_reasons=[relevance],
+        limitations=limitations,
+    )
+
+
+def _uploaded_source_path(
+    workspace: WorkspaceStore,
+    project_id: UUID,
+    source: UiSourceManifest,
+) -> Path:
+    local = workspace.project_dir(project_id) / "uploads" / str(source.source_id) / source.filename
+    if local.is_file():
+        return local
+    return (
+        workspace.project_dir(project_id)
+        / "uploads"
+        / "web"
+        / str(source.source_id)
+        / source.filename
+    )
+
+
+def _source_for_url(
+    sources: list[UiSourceManifest],
+    url: str,
+) -> UiSourceManifest | None:
+    return next((source for source in sources if source.canonical_url == url), None)
 
 
 def _project_stages(

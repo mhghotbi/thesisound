@@ -19,11 +19,13 @@ class UiSourceStatus(StrEnum):
 class UiSourceManifest(BaseModel):
     source_id: UUID = Field(default_factory=uuid4)
     filename: str
+    display_title: str | None = None
     content_type: str | None = None
     size_bytes: int = Field(ge=0)
     status: UiSourceStatus = UiSourceStatus.PROCESSING
     selected: bool = False
     issue_summary: str | None = None
+    quality_issues: list[str] = Field(default_factory=list)
     is_demo_result: bool = False
     parser_name: str | None = None
     quality_verdict: str | None = None
@@ -33,6 +35,13 @@ class UiSourceManifest(BaseModel):
     attempted_parsers: list[str] = Field(default_factory=list)
     artifact_ref: str | None = None
     inspection_sha256: str | None = None
+    origin: str = "local_upload"
+    canonical_url: str | None = None
+    retrieval_scope: str | None = None
+
+    @property
+    def title(self) -> str:
+        return self.display_title or self.filename
 
 
 class UiSourceManifestStore:
@@ -107,3 +116,9 @@ class UiSourceManifestStore:
             raise FileNotFoundError(f"Source not found: {source_id}")
         self.save(sources)
         return selected
+
+    def reset_selection(self) -> None:
+        sources = self.load()
+        for source in sources:
+            source.selected = False
+        self.save(sources)

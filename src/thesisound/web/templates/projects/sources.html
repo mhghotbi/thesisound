@@ -13,7 +13,7 @@
     <div>
       <p class="eyebrow">مبنای اپیزود</p>
       <h1>منابع را اضافه و انتخاب کنید</h1>
-      <p>هر فایل ابتدا واقعاً استخراج و از quality gate عبور می‌کند؛ فقط منابع آماده قابل انتخاب‌اند.</p>
+      <p>می‌توانید فایل بدهید یا پیدا کردن منابع را به جست‌وجوی Gemini بسپارید. در هر دو مسیر، فقط متن بازیابی‌شده و عبورکرده از کنترل کیفیت وارد شواهد می‌شود.</p>
     </div>
   </header>
 
@@ -21,67 +21,135 @@
     <div class="notice notice--danger" role="alert">{{ error }}</div>
   {% endif %}
   {% if request.query_params.get('error') == 'file-too-large' %}
-    <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بیشتر است.</div>
+    <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بارگذاری بیشتر است.</div>
   {% elif request.query_params.get('error') == 'selection-locked' %}
-    <div class="notice notice--danger" role="alert">پس از تأیید مجموعه، انتخاب منابع تا پایان این اجرا قفل است.</div>
+    <div class="notice notice--danger" role="alert">این مجموعه وارد پردازش شده است. از بخش «بازگشت و اصلاح مراحل قبلی» استفاده کنید تا خروجی‌های وابسته archive شوند.</div>
   {% elif request.query_params.get('error') == 'source-retry-failed' %}
-    <div class="notice notice--danger" role="alert">تلاش دوباره برای استخراج منبع انجام نشد. اصل فایل یا ابزار parser را بررسی کنید.</div>
+    <div class="notice notice--danger" role="alert">استخراج دوباره انجام نشد. اصل فایل، parser و جزئیات کنترل کیفیت را بررسی کنید.</div>
   {% elif request.query_params.get('error') == 'source-delete-failed' %}
     <div class="notice notice--danger" role="alert">حذف منبع انجام نشد. صفحه را تازه کنید و دوباره تلاش کنید.</div>
+  {% elif request.query_params.get('searched') %}
+    <div class="notice notice--success" role="status">پیشنهادهای جست‌وجو آماده‌اند. هنوز هیچ snippet یا نتیجه جست‌وجویی evidence محسوب نمی‌شود؛ منبع موردنظر را اضافه کنید تا متن آن بازیابی و بررسی شود.</div>
+  {% elif request.query_params.get('auto-search') %}
+    <div class="notice notice--success" role="status">جست‌وجو و تلاش برای افزودن خودکار منابع انجام شد. منابع کامل و آماده به‌طور خودکار انتخاب شده‌اند؛ نتایج ناقص پایین صفحه مشخص‌اند.</div>
   {% endif %}
   {% if selection_locked %}
-    <div class="notice notice--info">این مجموعه تأیید شده و اکنون فقط خواندنی است.</div>
+    <div class="notice notice--info">این مجموعه فعلاً فقط خواندنی است. برای تغییر آن، از کنترل بازگشت بالای صفحه استفاده کنید.</div>
   {% endif %}
 
   {% if not selection_locked %}
-  <section class="source-upload">
-    <form method="post" action="/projects/{{ project.project_id }}/sources/upload" enctype="multipart/form-data">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <label class="drop-field">
-        <span class="drop-field__title">فایل را انتخاب کنید</span>
-        <span>PDF، EPUB، DOCX، TXT یا Markdown</span>
-        <input type="file" name="source_file" accept=".pdf,.epub,.docx,.txt,.md" required>
-      </label>
-      <button class="button button--secondary" type="submit">افزودن و بررسی فایل</button>
-    </form>
-    <div class="unavailable-option" aria-disabled="true">
-      <strong>پژوهش کمکی</strong>
-      <span>پس از پیاده‌سازی Source Discovery فعال می‌شود.</span>
+  <section class="source-paths" aria-label="روش‌های افزودن منبع">
+    <article class="source-path-card">
+      <p class="eyebrow">مسیر اول</p>
+      <h2>بارگذاری فایل</h2>
+      <p>برای کتاب، مقاله یا سندی که خودتان دارید.</p>
+      <form method="post" action="/projects/{{ project.project_id }}/sources/upload" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label class="drop-field">
+          <span class="drop-field__title">فایل را انتخاب کنید</span>
+          <span>PDF، EPUB، DOCX، TXT یا Markdown</span>
+          <input type="file" name="source_file" accept=".pdf,.epub,.docx,.txt,.md" required>
+        </label>
+        <button class="button button--secondary" type="submit">افزودن و بررسی فایل</button>
+      </form>
+    </article>
+
+    <article class="source-path-card">
+      <p class="eyebrow">مسیر دوم</p>
+      <h2>پیدا کردن منبع با Gemini</h2>
+      <p>برای پروژه‌ای که فقط موضوع یا عنوان دارد. جست‌وجو candidate می‌سازد؛ متن URL جداگانه بازیابی و quality-gate می‌شود.</p>
+      <form method="post" action="/projects/{{ project.project_id }}/sources/search">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label class="field">
+          <span>عبارت جست‌وجو</span>
+          <textarea name="query" rows="3">{{ search_query }}</textarea>
+        </label>
+        <div class="form-actions">
+          <button class="button button--secondary" type="submit" name="mode" value="preview">نمایش پیشنهادها</button>
+          <button class="button button--primary" type="submit" name="mode" value="auto">پیدا و اضافه‌کردن خودکار تا ۳ منبع</button>
+        </div>
+      </form>
+    </article>
+  </section>
+  {% endif %}
+
+  {% if search_candidates and not selection_locked %}
+  <section aria-labelledby="search-results-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">نتایج Gemini Google Search</p>
+        <h2 id="search-results-title">پیشنهادهای منبع</h2>
+      </div>
+      <span>{{ search_candidates | length }} نتیجه</span>
+    </div>
+    <div class="search-candidate-list">
+      {% for candidate in search_candidates %}
+      <article class="search-candidate">
+        <strong><bdi dir="auto">{{ candidate.title }}</bdi></strong>
+        <p class="search-candidate__url"><bdi dir="ltr">{{ candidate.url }}</bdi></p>
+        {% if candidate.snippet %}<p>{{ candidate.snippet }}</p>{% endif %}
+        {% if candidate.status == 'added' %}
+          <p class="source-status source-status--ready">متن کامل بازیابی و به منابع اضافه شد.</p>
+        {% elif candidate.status == 'failed' %}
+          <p class="source-status source-status--review">متن کامل و قابل‌استناد بازیابی نشد.</p>
+          {% if candidate.issue_summary %}<p>{{ candidate.issue_summary }}</p>{% endif %}
+        {% else %}
+          <form method="post" action="/projects/{{ project.project_id }}/sources/web/{{ candidate.candidate_id }}/add">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button--secondary" type="submit">بازیابی متن و افزودن به منابع</button>
+          </form>
+        {% endif %}
+      </article>
+      {% endfor %}
     </div>
   </section>
   {% endif %}
 
   <section class="source-list" aria-labelledby="source-list-title">
     <div class="section-heading">
-      <h2 id="source-list-title">فایل‌های پروژه</h2>
+      <h2 id="source-list-title">منابع پروژه</h2>
       <span>{{ sources | length }} منبع</span>
     </div>
     {% if sources %}
       {% for source in sources %}
       <article class="source-row" data-source-id="{{ source.source_id }}">
         <div class="source-row__identity">
-          <strong><bdi dir="auto">{{ source.filename }}</bdi></strong>
-          <span><bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) }} MB</bdi></span>
+          <strong><bdi dir="auto">{{ source.title }}</bdi></strong>
+          <span>
+            {% if source.origin == 'gemini_web_search' %}منبع وب بازیابی‌شده{% else %}فایل کاربر{% endif %}
+            · <bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) }} MB</bdi>
+          </span>
+          {% if source.canonical_url %}<a href="{{ source.canonical_url }}" rel="noreferrer" target="_blank"><bdi dir="ltr">مشاهده URL اصلی</bdi></a>{% endif %}
         </div>
         <div class="source-status source-status--{{ source.status }}">
           {% if source.status == "ready" %}آماده استفاده
           {% elif source.status == "processing" %}در حال بررسی
-          {% elif source.status == "review" %}نیازمند بازبینی
+          {% elif source.status == "review" %}نیازمند منبع کامل‌تر یا بازبینی
           {% else %}قابل‌استفاده نیست{% endif %}
         </div>
-        {% if source.parser_name %}
-        <p class="source-row__issue">
-          parser: <bdi dir="ltr">{{ source.parser_name }}</bdi>
-          · verdict: <bdi dir="ltr">{{ source.quality_verdict or 'unknown' }}</bdi>
-          · {{ source.block_count }} بلوک
-          · {{ source.text_characters }} نویسه
-          {% if source.attempted_parsers %}
-          · مسیر آزموده‌شده: <bdi dir="ltr">{{ source.attempted_parsers | join(' → ') }}</bdi>
-          {% endif %}
-        </p>
-        {% endif %}
+
         {% if source.issue_summary %}
-        <p class="source-row__issue">{{ source.issue_summary }}</p>
+        <p class="source-row__issue quality-summary">{{ source.issue_summary }}</p>
+        {% endif %}
+        {% if source.quality_issues %}
+        <ul class="quality-issues">
+          {% for issue in source.quality_issues %}<li>{{ issue }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% if source.parser_name %}
+        <details class="technical-details">
+          <summary>جزئیات فنی استخراج</summary>
+          <p>
+            استخراج‌کننده: <bdi dir="ltr">{{ source.parser_name }}</bdi>
+            · verdict داخلی: <bdi dir="ltr">{{ source.quality_verdict or 'unknown' }}</bdi>
+            · {{ source.block_count }} بلوک
+            · {{ source.text_characters }} نویسه
+            {% if source.retrieval_scope %}· دامنه بازیابی: <bdi dir="ltr">{{ source.retrieval_scope }}</bdi>{% endif %}
+            {% if source.attempted_parsers %}
+            · parserهای آزموده‌شده: <bdi dir="ltr">{{ source.attempted_parsers | join(' → ') }}</bdi>
+            {% endif %}
+          </p>
+        </details>
         {% endif %}
 
         {% if not selection_locked %}
@@ -112,7 +180,7 @@
     {% else %}
       <div class="empty-inline">
         <strong>هنوز منبعی اضافه نشده است.</strong>
-        <span>برای ادامه حداقل یک فایل قابل‌استفاده لازم است.</span>
+        <span>فایل بارگذاری کنید یا دکمه «پیدا و اضافه‌کردن خودکار» را بزنید؛ داشتن فایل از قبل الزامی نیست.</span>
       </div>
     {% endif %}
   </section>
@@ -121,7 +189,7 @@
     <div>
       <p class="eyebrow">تأیید مجموعه</p>
       <h2>اپیزود فقط بر اساس {{ selected_count }} منبع انتخاب‌شده ساخته می‌شود</h2>
-      <p>منابع انتخاب‌نشده وارد evidence و سناریو نمی‌شوند.</p>
+      <p>نتایج جست‌وجو و منابع انتخاب‌نشده وارد evidence و سناریو نمی‌شوند.</p>
     </div>
     {% if selection_locked %}
     <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">مشاهده پردازش</a>

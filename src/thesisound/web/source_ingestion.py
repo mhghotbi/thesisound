@@ -11,9 +11,29 @@ from thesisound.adapters.parsers.mineru_adapter import MineruParser
 from thesisound.adapters.parsers.native_adapter import NativeDocumentParser
 from thesisound.config import Settings
 from thesisound.ports import DocumentParserPort
+from thesisound.quality import ParseIssue, ParseReport
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_ingestion import ingest_document
 from thesisound.web.source_manifest import UiSourceManifest, UiSourceStatus
+
+_ISSUE_LABELS = {
+    "missing_text": "بخشی از متن احتمالاً استخراج نشده",
+    "wrong_reading_order": "ترتیب خواندن بخشی از متن مشکوک است",
+    "ocr_corruption": "در بخشی از OCR نویسه‌های خراب دیده شده",
+    "lost_headings": "برخی عنوان‌ها یا ساختار بخش‌ها از دست رفته",
+    "table_damage": "ساختار برخی جدول‌ها آسیب دیده",
+    "formula_damage": "برخی فرمول‌ها کامل استخراج نشده",
+    "repetition": "بخشی از متن تکراری تشخیص داده شده",
+    "locator_mismatch": "شماره صفحه یا نشانی بخشی از متن دقیق نیست",
+    "language_inconsistency": "زبان یا جهت متن در بخشی ناسازگار است",
+    "other": "یک مسئله استخراج ثبت شده",
+}
+_SEVERITY_LABELS = {
+    "low": "کم‌اهمیت",
+    "medium": "متوسط",
+    "high": "جدی",
+    "blocking": "مسدودکننده",
+}
 
 
 def ingest_uploaded_source(
@@ -65,7 +85,8 @@ def ingest_uploaded_source(
         content_type=content_type,
         size_bytes=size_bytes,
         status=status,
-        issue_summary=_quality_summary(status, quality.verdict if quality else None),
+        issue_summary=_quality_summary(status, quality),
+        quality_issues=_quality_issue_messages(quality),
         parser_name=result.selected_parser,
         quality_verdict=quality.verdict if quality else None,
         safe_for_claim_extraction=result.safe_for_claim_extraction,
@@ -107,14 +128,60 @@ def _command_available(command: str) -> bool:
     return shutil.which(command) is not None
 
 
-def _quality_summary(status: UiSourceStatus, verdict: str | None) -> str | None:
+def _quality_summary(
+    status: UiSourceStatus,
+    quality: ParseReport | None,
+) -> str | None:
+    verdict = quality.verdict if quality else None
     if status == UiSourceStatus.READY and verdict == "pass":
-        return None
+        return "استخراج با موفقیت انجام شد و متن برای ساخت شواهد قابل‌استفاده است."
     if status == UiSourceStatus.READY:
-        return "فایل قابل‌استفاده است، اما چند هشدار غیرمسدودکننده در استخراج ثبت شد."
+        return (
+            "متن قابل‌استفاده است و پردازش ادامه پیدا می‌کند. برچسب «هشدار» یعنی "
+            "استخراج متوقف نشده، اما چند مورد برای شفافیت ثبت شده است؛ جزئیات را "
+            "پایین همین منبع ببینید."
+        )
     if status == UiSourceStatus.REVIEW:
-        return "استخراج انجام شد، اما کیفیت برای استفاده خودکار کافی نیست و باید بازبینی شود."
-    return "هیچ خروجی قابل‌اتکایی برای این فایل تولید نشد."
+        return (
+            "متن استخراج شده، اما کیفیت آن برای استناد خودکار کافی نیست. این منبع "
+            "تا زمان رفع مسئله وارد شواهد نمی‌شود."
+        )
+    return (
+        "از این فایل متن قابل‌اتکایی تولید نشد؛ فایل یا استخراج‌کننده دیگری لازم است."
+    )
+
+
+def _quality_issue_messages(quality: ParseReport | None) -> list[str]:
+    if quality is None:
+        return []
+    return [_describe_issue(issue) for issue in quality.issues]
+
+
+def _describe_issue(issue: ParseIssue) -> str:
+    label = _ISSUE_LABELS.get(issue.issue_type, _ISSUE_LABELS["other"])
+    severity = _SEVERITY_LABELS.get(issue.severity, issue.severity)
+    locator = _locator_summary(issue)
+    evidence = " ".join(issue.evidence.split())[:240]
+    parts = [f"{label} (شدت: {severity})"]
+    if locator:
+        parts.append(locator)
+    if evidence:
+        parts.append(f"نشانه ثبت‌شده: {evidence}")
+    return "؛ ".join(parts)
+
+
+def _locator_summary(issue: ParseIssue) -> str | None:
+    pages: list[str] = []
+    for locator in issue.affected_locators:
+        if locator.page_start is None:
+            continue
+        if locator.page_end and locator.page_end != locator.page_start:
+            pages.append(f"صفحه‌های {locator.page_start} تا {locator.page_end}")
+        else:
+            pages.append(f"صفحه {locator.page_start}")
+    if not pages:
+        return None
+    return "محل: " + "، ".join(dict.fromkeys(pages))
 
 
 def _ingestion_error_message(error: Exception) -> str:
