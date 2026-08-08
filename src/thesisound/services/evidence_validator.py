@@ -4,7 +4,7 @@ import re
 
 from thesisound.domain import EvidenceExtraction
 from thesisound.modeling import DeterministicValidationError
-from thesisound.source_analysis import SourceDocumentBlock
+from thesisound.source_analysis import BlockEvidenceExtraction, SourceDocumentBlock
 
 _WHITESPACE = re.compile(r"\s+")
 
@@ -49,27 +49,29 @@ def validate_evidence_extraction(
 
 
 def validate_evidence_collection(
-    extractions: list[EvidenceExtraction],
+    records: list[BlockEvidenceExtraction],
     blocks: list[SourceDocumentBlock],
 ) -> None:
     block_by_id = {block.block_id: block for block in blocks}
     all_evidence_ids: list[str] = []
-    for extraction in extractions:
-        if not extraction.claims and not extraction.definitions and not extraction.distinctions:
-            continue
-        referenced_blocks = {item.block_id for item in extraction.claims}
-        if len(referenced_blocks) > 1:
+    seen_blocks: set[str] = set()
+    for record in records:
+        if record.block_id in seen_blocks:
             raise DeterministicValidationError(
-                "One EvidenceExtraction artifact may reference only one semantic block."
+                f"Multiple extraction records exist for block {record.block_id}."
             )
-        for item in extraction.claims:
-            block = block_by_id.get(item.block_id)
-            if block is None:
-                raise DeterministicValidationError(
-                    f"Evidence referenced unknown block {item.block_id}."
-                )
-            validate_evidence_extraction(extraction, block)
-            all_evidence_ids.append(item.evidence_id)
+        seen_blocks.add(record.block_id)
+        block = block_by_id.get(record.block_id)
+        if block is None:
+            raise DeterministicValidationError(
+                f"Evidence record referenced unknown block {record.block_id}."
+            )
+        if record.source_id != block.source_id:
+            raise DeterministicValidationError(
+                f"Evidence record source does not match block {record.block_id}."
+            )
+        validate_evidence_extraction(record.extraction, block)
+        all_evidence_ids.extend(item.evidence_id for item in record.extraction.claims)
     if len(all_evidence_ids) != len(set(all_evidence_ids)):
         raise DeterministicValidationError("Evidence IDs must be unique across the source.")
 
@@ -79,12 +81,18 @@ def _validate_locator(
     page_end: int | None,
     block: SourceDocumentBlock,
 ) -> None:
-    if page_start is not None and block.locator.page_start is not None:
-        if page_start < block.locator.page_start:
-            raise DeterministicValidationError("Evidence locator starts before its source block.")
-    if page_end is not None and block.locator.page_end is not None:
-        if page_end > block.locator.page_end:
-            raise DeterministicValidationError("Evidence locator ends after its source block.")
+    if (
+        page_start is not None
+        and block.locator.page_start is not None
+        and page_start < block.locator.page_start
+    ):
+        raise DeterministicValidationError("Evidence locator starts before its source block.")
+    if (
+        page_end is not None
+        and block.locator.page_end is not None
+        and page_end > block.locator.page_end
+    ):
+        raise DeterministicValidationError("Evidence locator ends after its source block.")
     if page_start is not None and page_end is not None and page_start > page_end:
         raise DeterministicValidationError("Evidence locator has an inverted page range.")
 
