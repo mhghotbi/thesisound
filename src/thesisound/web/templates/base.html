@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=vazirmatn:400,500,600,700" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', path='/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/workflow.css') }}">
   <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
   <script src="{{ url_for('static', path='/app.js') }}" defer></script>
 </head>
@@ -38,6 +39,9 @@
   </header>
   {% endif %}
   <main id="main" class="{% block main_class %}shell page{% endblock %}">
+    {% if project is defined and project %}
+      {% include "projects/_workflow_navigation.html" %}
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 </body>
