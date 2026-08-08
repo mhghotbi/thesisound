@@ -7,6 +7,9 @@ import pytest
 
 from thesisound.domain import (
     ClaimType,
+    DocumentMap,
+    DocumentMapSection,
+    Locator,
     Project,
     ProjectState,
     ResearchBrief,
@@ -22,6 +25,10 @@ from thesisound.modeling import (
 from thesisound.pipeline import WorkspaceStore
 from thesisound.ports import DocumentInspection, ParsedBlock, ParsedDocument
 from thesisound.quality import ParseReport
+from thesisound.services.analysis_profile import (
+    build_analysis_profile,
+    plan_evidence_extraction,
+)
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.document_mapper import DocumentMapperService
@@ -37,6 +44,7 @@ from thesisound.source_analysis import (
     DocumentMapDraftSection,
     EvidenceClaimDraft,
     EvidenceExtractionDraft,
+    SourceDocumentBlock,
 )
 
 
@@ -178,20 +186,84 @@ def _ingestion(path: Path) -> IngestionResult:
     )
 
 
+def _brief(duration: int = 30) -> ResearchBrief:
+    return ResearchBrief(
+        normalized_topic="Arendt and action",
+        topic_type=TopicType.CONCEPT,
+        central_question="What distinguishes action from fabrication?",
+        target_duration_minutes=duration,
+        learning_objectives=[
+            "Distinguish action from fabrication.",
+            "Explain why plurality matters.",
+        ],
+    )
+
+
 def _project() -> Project:
     return Project(
         raw_input="Arendt and action",
         state=ProjectState.BRIEF_READY,
-        brief=ResearchBrief(
-            normalized_topic="Arendt and action",
-            topic_type=TopicType.CONCEPT,
-            central_question="What distinguishes action from fabrication?",
-            learning_objectives=[
-                "Distinguish action from fabrication.",
-                "Explain why plurality matters.",
-            ],
-        ),
+        brief=_brief(),
     )
+
+
+def _planning_fixture() -> tuple[UUID, list[SourceDocumentBlock], DocumentMap]:
+    source_id = uuid4()
+    blocks = [
+        SourceDocumentBlock(
+            block_id=f"block-{index}",
+            source_id=source_id,
+            locator=Locator(page_start=index, page_end=index),
+            heading_path=[f"Section {index}"],
+            block_type="other",
+            text=f"Semantic content for block {index}." * 10,
+            estimated_token_count=100,
+            source_block_keys=[f"source-{index}"],
+        )
+        for index in range(1, 11)
+    ]
+    sections = [
+        DocumentMapSection(
+            section_id=f"section-{index}",
+            source_block_ids=[f"block-{index * 2 - 1}", f"block-{index * 2}"],
+            title=f"Section {index}",
+            function="argument" if index < 5 else "conclusion",
+            key_concepts=["action" if index == 1 else f"concept-{index}"],
+            required_for_global_understanding=index == 1,
+        )
+        for index in range(1, 6)
+    ]
+    document_map = DocumentMap(
+        source_id=source_id,
+        scope_locator=Locator(page_start=1, page_end=10),
+        working_thesis="Action differs from fabrication.",
+        sections=sections,
+    )
+    return source_id, blocks, document_map
+
+
+def test_analysis_profile_scales_with_requested_duration() -> None:
+    short = build_analysis_profile(_brief(5))
+    long = build_analysis_profile(_brief(60))
+
+    assert short.depth == "brief"
+    assert long.depth == "extended"
+    assert short.block_coverage_target < long.block_coverage_target
+    assert short.max_claims_per_block < long.max_claims_per_block
+    assert short.neighbor_context_blocks < long.neighbor_context_blocks
+    assert short.evidence_input_token_budget < long.evidence_input_token_budget
+
+
+def test_extraction_plan_spends_more_source_tokens_for_long_episode() -> None:
+    _, blocks, document_map = _planning_fixture()
+    short = plan_evidence_extraction(_brief(5), document_map, blocks)
+    long = plan_evidence_extraction(_brief(60), document_map, blocks)
+
+    assert len(short.selected_block_ids) < len(long.selected_block_ids)
+    assert short.selected_source_tokens < long.selected_source_tokens
+    assert short.deferred_block_ids
+    assert not long.deferred_block_ids
+    assert long.achieved_token_coverage == 1.0
 
 
 def test_block_builder_removes_margin_and_preserves_traceability() -> None:
@@ -272,12 +344,16 @@ def test_complete_one_source_pipeline_writes_auditable_artifacts(
     )
     assert manifest.status == "claims_ready"
     assert manifest.block_count == 1
+    assert manifest.selected_block_count == 1
+    assert manifest.deferred_block_count == 0
+    assert manifest.analysis_depth == "deep"
     assert manifest.evidence_count == 1
     assert manifest.claim_count == 1
     assert len(ledger.claims) == 1
     assert workspace.load_project(project.project_id).state == ProjectState.CORPUS_READY
     assert (source_dir / "document-blocks.jsonl").exists()
     assert (source_dir / "document-map.json").exists()
+    assert (source_dir / "evidence-extraction-plan.json").exists()
     assert (source_dir / "evidence-items.jsonl").exists()
     assert (source_dir / "claim-ledger.json").exists()
     assert list((source_dir / "evidence" / "extractions").glob("*.json"))
