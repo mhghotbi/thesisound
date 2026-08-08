@@ -46,6 +46,23 @@ jobs:
               "        await page.click(\".theme-switcher > summary\")\n"
               "        await page.click('[data-theme-value=\"wood\"]')",
           )
+          content = content.replace(
+              '                    await page.evaluate("document.fonts.ready")',
+              '                    await page.evaluate("document.fonts.ready")\n'
+              '                    await page.wait_for_timeout(200)',
+          )
+          content = content.replace(
+              '            await mobile.evaluate("document.fonts.ready")',
+              '            await mobile.evaluate("document.fonts.ready")\n'
+              '            await mobile.wait_for_timeout(200)',
+          )
+          content = content.replace(
+              '            await page.evaluate("document.fonts.ready")\n'
+              '            for index in range(source_count):',
+              '            await page.evaluate("document.fonts.ready")\n'
+              '            await page.wait_for_timeout(200)\n'
+              '            for index in range(source_count):',
+          )
           path.write_text(content, encoding="utf-8")
           PY
           uv run python scripts/ui_visual_qa.py prepare --output /tmp/ui-visual-qa
