@@ -135,7 +135,7 @@ def _command_available(command: str) -> bool:
 def _quality_summary(status: UiSourceStatus, quality: ParseReport | None) -> str | None:
     verdict = quality.verdict if quality else None
     if status == UiSourceStatus.READY and verdict == "pass":
-        return "استخراج با موفقیت انجام شد و متن برای ساخت شواهد قابل‌استفاده است."
+        return "استخراج با موفقیت انجام شد و متن برای ساخت شاهدها قابل‌استفاده است."
     if status == UiSourceStatus.READY:
         return (
             "متن قابل‌استفاده است و پردازش ادامه پیدا می‌کند. برچسب «هشدار» یعنی "
@@ -145,7 +145,7 @@ def _quality_summary(status: UiSourceStatus, quality: ParseReport | None) -> str
     if status == UiSourceStatus.REVIEW:
         return (
             "متن استخراج شده، اما کیفیت آن برای استناد خودکار کافی نیست. این منبع "
-            "تا زمان رفع مسئله وارد شواهد نمی‌شود."
+            "تا زمان رفع مسئله وارد شاهدها نمی‌شود."
         )
     return "از این فایل متن قابل‌اتکایی تولید نشد؛ فایل یا استخراج‌کننده دیگری لازم است."
 

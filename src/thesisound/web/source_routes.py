@@ -293,7 +293,7 @@ def register_source_routes(
                     project,
                     manifest_store.load(),
                     error=(
-                        f"بازیابی این منبع کامل نشد و وارد شواهد نشد. جزئیات: {str(error)[:300]}"
+                        f"بازیابی این منبع کامل نشد و وارد شاهدها نشد. جزئیات: {str(error)[:300]}"
                     ),
                 ),
                 status_code=422,
@@ -461,7 +461,7 @@ def register_source_routes(
         try:
             validate_csrf(request, csrf_token)
             if project.state not in _EDITABLE_SOURCE_STATES:
-                raise ValueError("انتخاب منابع برای این پروژه قفل شده است.")
+                raise ValueError("انتخاب منابع برای این گفتار قفل شده است.")
             selected = [
                 source
                 for source in sources
@@ -669,8 +669,8 @@ def _project_stages(
     return [
         ("برداشت هدف", True),
         ("افزودن و تأیید منابع", after_sources),
-        ("ساخت مجموعه شواهد", corpus_ready),
-        ("ارزیابی پوشش و ساخت طرح اپیزود", plan_ready),
+        ("ساخت مجموعه شاهدها", corpus_ready),
+        ("سنجش کفایت و ساخت طرح گفتار", plan_ready),
     ]
 
 

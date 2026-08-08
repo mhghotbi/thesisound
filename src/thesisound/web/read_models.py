@@ -200,7 +200,7 @@ def build_project_read_model(
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
-                "طرح گفتار بر پایهٔ بسندگی شواهد ساخته شده و "
+                "طرح گفتار بر پایهٔ بسندگی شاهدها ساخته‌شده و "
                 "برای تأیید انسانی آماده است."
             ),
         )

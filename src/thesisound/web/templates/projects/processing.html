@@ -45,7 +45,7 @@
 {% if corpus_run %}
 <section class="section-block" aria-labelledby="corpus-run-title">
   <div class="section-heading">
-    <div><p class="kicker">تحلیل مجموعه منابع</p><h2 id="corpus-run-title">{{ corpus_run.completed_source_count | fa_num }} از {{ corpus_run.sources | length | fa_num }} منبع تکمیل شده است</h2></div>
+    <div><p class="kicker">تحلیل مجموعه منابع</p><h2 id="corpus-run-title">{{ corpus_run.completed_source_count | fa_num }} از {{ corpus_run.sources | length | fa_num }} منبع تکمیل‌شده است</h2></div>
     {{ status_label('در حال اجرا' if corpus_run.status in ['queued', 'running'] else ('انجام شد' if corpus_run.status == 'succeeded' else 'متوقف شد'), '', 'running' if corpus_run.status in ['queued', 'running'] else ('success' if corpus_run.status == 'succeeded' else 'danger'), corpus_run.status) }}
   </div>
   <div class="source-list">

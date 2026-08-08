@@ -45,7 +45,7 @@
     </h2></div>
     {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', planning_run.stage) }}
   </div>
-  <p class="lede">درصد یا زمان باقی‌ماندهٔ حدسی نمایش داده نمی‌شود؛ فقط مرحله‌ای که واقعاً ذخیره شده است.</p>
+  <p class="lede">درصد یا زمان باقی‌ماندهٔ حدسی نمایش داده نمی‌شود؛ فقط مرحله‌ای که واقعاً ذخیره‌شده است.</p>
   <p class="operator-only">No synthetic ETA; persisted stage only.</p>
 </section>
 {% endif %}
@@ -136,7 +136,7 @@
   </div>
 </section>
 
-{% call technical_details('جزئیات بسندگی شواهد و بودجه') %}
+{% call technical_details('جزئیات بسندگی شاهدها و بودجه') %}
   <p>Target: <code><bdi dir="ltr">{{ project.brief.target_duration_minutes }}</bdi></code> min · plan: <code><bdi dir="ltr">{{ episode_plan.estimated_duration_minutes | round(2) }}</bdi></code> min{% if coverage %} · coverage max: <code><bdi dir="ltr">{{ coverage.max_supported_minutes }}</bdi></code>{% endif %}{% if budget %} · effective: <code><bdi dir="ltr">{{ budget.effective_supported_minutes | round(2) }}</bdi></code>{% endif %}</p>
 {% endcall %}
 

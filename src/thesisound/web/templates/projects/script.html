@@ -42,7 +42,7 @@
 
 {% if approval %}
 <div class="notice notice--info">
-  <strong>نسخهٔ طرح گفتار برای نگارش تأیید شده است.</strong>
+  <strong>نسخهٔ طرح گفتار برای نگارش تأییدشده است.</strong>
   <p class="operator-only">تأییدکننده: <code><bdi dir="ltr">{{ approval.approved_by }}</bdi></code> · hash: <code><bdi dir="ltr">{{ approval.plan_hash }}</bdi></code></p>
 </div>
 {% endif %}
@@ -111,7 +111,7 @@
     </article>
     <article class="quality-row">
       <h3>راستی‌آزمایی مستقل <span class="operator-only">· Verifier</span></h3>
-      {% if verification.issues %}<p>راستی‌آزما هنوز {{ verification.issues | length | fa_num }} نکته ثبت کرده است؛ این نسخه فقط پس از عبور نهایی قابل استفاده است.</p>{% else %}<p>راستی‌آزما مدعای بی‌پشتوانه یا انتساب نادرست باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
+      {% if verification.issues %}<p>راستی‌آزما هنوز {{ verification.issues | length | fa_num }} نکته ثبت کرده است؛ این نسخه فقط پس از عبور نهایی قابل‌استفاده است.</p>{% else %}<p>راستی‌آزما مدعای بی‌پشتوانه یا انتساب نادرست باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
     </article>
   </div>
 
