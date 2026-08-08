@@ -37,6 +37,7 @@ class ModelUsage(BaseModel):
     output_tokens: int | None = Field(default=None, ge=0)
     total_tokens: int | None = Field(default=None, ge=0)
     thinking_tokens: int | None = Field(default=None, ge=0)
+    cached_tokens: int | None = Field(default=None, ge=0)
 
 
 class GroundingSource(BaseModel):
@@ -65,6 +66,7 @@ class StructuredModelResponse[T: BaseModel](BaseModel):
     latency_ms: int = Field(ge=0)
     finish_reason: str | None = None
     grounding: GroundingMetadata = Field(default_factory=GroundingMetadata)
+    call_id: UUID | None = None
 
 
 class ModelAttemptRecord(BaseModel):
@@ -75,10 +77,12 @@ class ModelAttemptRecord(BaseModel):
     error_type: str | None = None
     error_message: str | None = None
     retryable: bool = False
+    retry_delay_ms: int | None = Field(default=None, ge=0)
     usage: ModelUsage | None = None
     finish_reason: str | None = None
     grounding_source_count: int = Field(default=0, ge=0)
     web_search_queries: list[str] = Field(default_factory=list)
+    call_id: UUID | None = None
 
 
 class ModelRunRecord(BaseModel):

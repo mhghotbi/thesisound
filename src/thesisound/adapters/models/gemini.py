@@ -3,10 +3,11 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from time import perf_counter
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel, ValidationError
 
+from thesisound.config import Settings
 from thesisound.gemini_key_pool import GeminiKeyPool, shared_gemini_key_pool
 from thesisound.modeling import (
     GroundingMetadata,
@@ -22,11 +23,19 @@ from thesisound.modeling import (
     StructuredModelResponse,
     UrlRetrieval,
 )
+from thesisound.observability import (
+    CallOperation,
+    ModelCallSpec,
+    ObservabilityLedger,
+    ObservedModelGateway,
+    ProviderMetadata,
+    ledger_from_settings,
+)
 from thesisound.ports import RunMetadata
 
 
 class GeminiStructuredModel:
-    """Gemini generateContent adapter with structured output and built-in tools."""
+    """Gemini structured output through the shared observed model gateway."""
 
     provider = "gemini"
 
@@ -39,19 +48,28 @@ class GeminiStructuredModel:
         client: Any | None = None,
         enable_google_search: bool | None = None,
         enable_url_context: bool | None = None,
+        observability: ObservabilityLedger | None = None,
+        settings: Settings | None = None,
     ) -> None:
-        configured_search, configured_urls = _grounding_settings()
+        runtime = settings or _settings()
+        configured_search = runtime.gemini_google_search_enabled
+        configured_urls = runtime.gemini_url_context_enabled
         self.enable_google_search = (
             configured_search if enable_google_search is None else enable_google_search
         )
         self.enable_url_context = (
             configured_urls if enable_url_context is None else enable_url_context
         )
+        self.observability = observability or ledger_from_settings(runtime)
+        self._gateway = ObservedModelGateway(self.observability)
+        self._default_timeout_ms = runtime.model_timeout_seconds * 1000
+        self._default_provider_attempts = runtime.provider_max_attempts
+        self._default_retry_base = runtime.provider_retry_base_seconds
         if client is not None:
             self._client = client
             self._pool = None
             return
-        keys = _configured_keys(api_key, api_keys)
+        keys = _configured_keys(api_key, api_keys, runtime)
         if pool is None and not keys:
             raise ModelConfigurationError(
                 "GEMINI_API_KEY or GEMINI_API_KEYS is required for live model calls."
@@ -69,47 +87,112 @@ class GeminiStructuredModel:
         metadata: RunMetadata,
     ) -> StructuredModelResponse[T]:
         started = perf_counter()
+        timeout_ms = metadata.timeout_ms or self._default_timeout_ms
         config: dict[str, Any] = {
             "system_instruction": system_prompt,
             "response_mime_type": "application/json",
             "response_schema": output_type,
+            "http_options": {
+                "timeout": timeout_ms,
+                "retry_options": {"attempts": 1},
+            },
         }
         tools = self._tools(metadata)
         if tools:
             config["tools"] = tools
 
+        operation = _observed_operation(metadata)
+        spec = ModelCallSpec(
+            call_id=metadata.call_id,
+            trace_id=metadata.trace_id,
+            parent_call_id=metadata.parent_call_id,
+            project_id=metadata.project_id,
+            workflow_run_id=metadata.workflow_run_id,
+            stage=metadata.stage,
+            operation=operation,
+            provider=self.provider,
+            requested_model=model,
+            prompt_id=metadata.prompt_id,
+            prompt_version=metadata.prompt_version,
+            subject_type=metadata.subject_type,
+            subject_id=metadata.subject_id,
+            logical_attempt=metadata.attempt,
+            timeout_ms=timeout_ms,
+            grounding_mode=metadata.grounding_mode,
+            metadata={
+                "input_artifact_hashes": metadata.input_artifact_hashes,
+                "grounding_urls": metadata.grounding_urls,
+                "output_model": output_type.__name__,
+            },
+        )
+        request_payload = {
+            "system_prompt": system_prompt,
+            "user_prompt": user_prompt,
+            "model": model,
+            "output_schema": output_type.model_json_schema(),
+            "grounding_mode": metadata.grounding_mode,
+            "grounding_urls": metadata.grounding_urls,
+            "tools": tools,
+            "timeout_ms": timeout_ms,
+        }
+
         try:
-            if self._pool is not None:
-                response = self._pool.call(
-                    lambda client: client.models.generate_content(
-                        model=model,
-                        contents=user_prompt,
-                        config=config,
-                    )
-                )
-            else:
-                response = self._client.models.generate_content(
+            observed = self._gateway.call(
+                spec=spec,
+                request_payload=request_payload,
+                operation=lambda client: client.models.generate_content(
                     model=model,
                     contents=user_prompt,
                     config=config,
-                )
+                ),
+                pool=self._pool,
+                client=self._client,
+                max_provider_attempts=(
+                    metadata.max_provider_attempts or self._default_provider_attempts
+                ),
+                base_retry_delay_seconds=(
+                    metadata.provider_retry_base_seconds or self._default_retry_base
+                ),
+                retryable_error=_is_retryable_provider_exception,
+                response_payload=_provider_snapshot,
+                usage=_usage,
+                provider_metadata=lambda response: _provider_metadata(response, model),
+            )
         except Exception as exc:
-            raise _map_provider_error(exc) from exc
+            mapped = _map_provider_error(exc)
+            self.observability.fail(spec.call_id, mapped, error_code=_error_code(exc))
+            raise mapped from exc
 
-        latency_ms = max(0, round((perf_counter() - started) * 1000))
+        response = observed.response
         finish_reason = _finish_reason(response)
         if _is_safety_blocked(response, finish_reason):
-            raise ModelSafetyError("Gemini blocked the request or response for safety reasons.")
+            error = ModelSafetyError("Gemini blocked the request or response for safety reasons.")
+            self.observability.fail(spec.call_id, error)
+            raise error
 
-        output = _coerce_output(response, output_type)
+        try:
+            output = _coerce_output(response, output_type)
+            grounding = _grounding_metadata(response, metadata)
+        except ModelError as exc:
+            self.observability.fail(spec.call_id, exc)
+            raise
+
+        self.observability.succeed(
+            spec.call_id,
+            {
+                "output": output,
+                "grounding": grounding,
+            },
+        )
         return StructuredModelResponse[T](
             output=output,
             provider=self.provider,
             model=model,
             usage=_usage(response),
-            latency_ms=latency_ms,
+            latency_ms=max(0, round((perf_counter() - started) * 1000)),
             finish_reason=finish_reason,
-            grounding=_grounding_metadata(response, metadata),
+            grounding=grounding,
+            call_id=spec.call_id,
         )
 
     def _tools(self, metadata: RunMetadata) -> list[dict[str, dict[str, object]]]:
@@ -138,35 +221,38 @@ class GeminiStructuredModel:
         return tools
 
 
-def _grounding_settings() -> tuple[bool, bool]:
+def _settings() -> Settings:
     try:
-        from thesisound.config import Settings
-
-        settings = Settings()
-        return (
-            settings.gemini_google_search_enabled,
-            settings.gemini_url_context_enabled,
-        )
+        return Settings()
     except ValueError:
-        return True, True
+        return Settings.model_construct()
 
 
 def _configured_keys(
     api_key: str | None,
     api_keys: Sequence[str] | None,
+    settings: Settings,
 ) -> list[str]:
-    if api_keys is not None:
-        keys = list(api_keys)
-    else:
-        try:
-            from thesisound.config import Settings
-
-            keys = list(Settings().gemini_api_keys)
-        except ValueError:
-            keys = []
+    keys = list(api_keys) if api_keys is not None else list(settings.gemini_api_keys)
     if api_key:
         keys.append(api_key)
     return list(dict.fromkeys(key.strip() for key in keys if key.strip()))
+
+
+def _observed_operation(metadata: RunMetadata) -> CallOperation:
+    if metadata.operation in {
+        "structured_text",
+        "google_search",
+        "url_context",
+        "tts",
+        "asr",
+    }:
+        return cast(CallOperation, metadata.operation)
+    if metadata.grounding_mode == "google_search":
+        return "google_search"
+    if metadata.grounding_mode == "url_context":
+        return "url_context"
+    return "structured_text"
 
 
 def _coerce_output[T: BaseModel](response: Any, output_type: type[T]) -> T:
@@ -217,9 +303,7 @@ def _grounding_metadata(response: Any, metadata: RunMetadata) -> GroundingMetada
     url_context = _value(candidate, "url_context_metadata")
     url_retrievals: list[UrlRetrieval] = []
     for item in _value(url_context, "url_metadata", []) or []:
-        url = _optional_string(
-            _value(item, "retrieved_url") or _value(item, "url")
-        )
+        url = _optional_string(_value(item, "retrieved_url") or _value(item, "url"))
         if not url:
             continue
         status = _value(item, "url_retrieval_status")
@@ -282,6 +366,10 @@ def _usage(response: Any) -> ModelUsage:
         ),
         total_tokens=_optional_int(getattr(usage, "total_token_count", None)),
         thinking_tokens=_optional_int(getattr(usage, "thoughts_token_count", None)),
+        cached_tokens=_optional_int(
+            getattr(usage, "cached_content_token_count", None)
+            or getattr(usage, "cache_tokens_details", None)
+        ),
     )
 
 
@@ -322,6 +410,11 @@ def _map_provider_error(exc: Exception) -> ModelError:
     return ModelProviderError(message, retryable=retryable)
 
 
+def _is_retryable_provider_exception(exc: Exception) -> bool:
+    mapped = _map_provider_error(exc)
+    return mapped.retryable and not isinstance(mapped, ModelRateLimitError)
+
+
 def _status_code(exc: Exception) -> int | None:
     for attribute in ("status_code", "code"):
         value = getattr(exc, attribute, None)
@@ -335,5 +428,54 @@ def _status_code(exc: Exception) -> int | None:
     return None
 
 
+def _error_code(exc: Exception) -> str | None:
+    for attribute in ("reason", "error_code", "code"):
+        value = getattr(exc, attribute, None)
+        if callable(value):
+            value = value()
+        if value is not None and not isinstance(value, int):
+            return str(getattr(value, "value", value))
+    status = _status_code(exc)
+    return str(status) if status is not None else None
+
+
 def _optional_int(value: Any) -> int | None:
     return value if isinstance(value, int) and value >= 0 else None
+
+
+def _provider_metadata(response: Any, model: str) -> ProviderMetadata:
+    http_response = getattr(response, "sdk_http_response", None)
+    headers = getattr(http_response, "headers", None) or {}
+    request_id = None
+    for name in ("x-request-id", "x-goog-request-id", "request-id"):
+        if isinstance(headers, dict) and headers.get(name):
+            request_id = str(headers[name])
+            break
+    status = getattr(http_response, "status_code", None)
+    return ProviderMetadata(
+        resolved_model=_optional_string(getattr(response, "model_version", None)) or model,
+        provider_request_id=request_id,
+        http_status=status if isinstance(status, int) else None,
+        finish_reason=_finish_reason(response),
+    )
+
+
+def _provider_snapshot(response: Any) -> dict[str, Any]:
+    candidates = getattr(response, "candidates", None) or []
+    return {
+        "text": getattr(response, "text", None),
+        "parsed": getattr(response, "parsed", None),
+        "usage_metadata": getattr(response, "usage_metadata", None),
+        "prompt_feedback": getattr(response, "prompt_feedback", None),
+        "model_version": getattr(response, "model_version", None),
+        "candidates": [
+            {
+                "finish_reason": getattr(candidate, "finish_reason", None),
+                "grounding_metadata": getattr(candidate, "grounding_metadata", None),
+                "url_context_metadata": getattr(candidate, "url_context_metadata", None),
+                "safety_ratings": getattr(candidate, "safety_ratings", None),
+                "content": getattr(candidate, "content", None),
+            }
+            for candidate in candidates
+        ],
+    }

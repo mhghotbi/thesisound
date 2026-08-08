@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Protocol
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
@@ -17,6 +18,18 @@ class RunMetadata(BaseModel):
     input_artifact_hashes: list[str] = Field(default_factory=list)
     grounding_mode: GroundingMode = "none"
     grounding_urls: list[str] = Field(default_factory=list)
+    call_id: UUID = Field(default_factory=uuid4)
+    trace_id: UUID | None = None
+    parent_call_id: UUID | None = None
+    project_id: UUID | None = None
+    workflow_run_id: UUID | None = None
+    operation: str = "structured_text"
+    prompt_id: str | None = None
+    subject_type: str | None = None
+    subject_id: str | None = None
+    timeout_ms: int | None = Field(default=None, ge=1)
+    max_provider_attempts: int = Field(default=1, ge=1, le=5)
+    provider_retry_base_seconds: float = Field(default=1, ge=0, le=60)
 
 
 class DocumentInspection(BaseModel):

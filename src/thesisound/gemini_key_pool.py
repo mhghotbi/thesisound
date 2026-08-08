@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from threading import RLock
-from time import monotonic
+from time import monotonic, perf_counter
 from typing import Any
 
 from thesisound.modeling import ModelConfigurationError
-
 
 _GEMINI_OAUTH_SCOPES = (
     "https://www.googleapis.com/auth/cloud-platform",
@@ -34,16 +35,13 @@ class _KeyState:
     blocked_until: float = 0.0
     authentication_failed: bool = False
 
+    @property
+    def fingerprint(self) -> str:
+        return hashlib.sha256(self.api_key.encode("utf-8")).hexdigest()[:12]
+
 
 class GeminiKeyPool:
-    """Sticky failover pool for independently authorized Gemini API keys.
-
-    A key remains active until Gemini returns a quota/rate-limit response. The pool
-    then blocks that key for a cooldown and moves to the next configured key. When
-    Gemini rejects an authorization key with ACCESS_TOKEN_TYPE_UNSUPPORTED, that key
-    is disabled for the process and the pool tries the remaining keys, then a valid
-    OAuth Application Default Credential as a final fallback.
-    """
+    """Sticky failover pool with observable, non-secret credential attempts."""
 
     def __init__(
         self,
@@ -76,7 +74,12 @@ class GeminiKeyPool:
     def size(self) -> int:
         return len(self._states)
 
-    def call[T](self, operation: Callable[[Any], T]) -> T:
+    def call[T](
+        self,
+        operation: Callable[[Any], T],
+        *,
+        on_attempt: Callable[[dict[str, Any]], None] | None = None,
+    ) -> T:
         last_quota_error: Exception | None = None
         last_auth_error: Exception | None = None
         now = self._clock()
@@ -88,36 +91,64 @@ class GeminiKeyPool:
                 state = self._states[index]
                 if state.authentication_failed or state.blocked_until > now:
                     continue
-                client = self._client(index)
             attempted = True
+            started_at = datetime.now(UTC)
+            started = perf_counter()
             try:
+                client = self._client(index)
                 result = operation(client)
             except Exception as exc:
+                event = _attempt_event(
+                    started_at=started_at,
+                    started=started,
+                    key_slot=index + 1,
+                    key_fingerprint=state.fingerprint,
+                    credential_type="api_key",
+                    status="failed",
+                    error=exc,
+                )
                 if is_unsupported_auth_credential_error(exc):
+                    event["status"] = "auth_failed"
+                    event["failure_scope"] = "unsupported_auth_credential"
+                    _emit(on_attempt, event)
                     last_auth_error = exc
                     with self._lock:
                         state.authentication_failed = True
                         self._current_index = (index + 1) % len(self._states)
                     continue
-                if not is_gemini_quota_error(exc):
-                    raise
-                last_quota_error = exc
-                with self._lock:
-                    duration = (
-                        self._daily_cooldown_seconds
-                        if is_daily_quota_error(exc)
-                        else self._cooldown_seconds
-                    )
-                    state.blocked_until = self._clock() + duration
-                    self._current_index = (index + 1) % len(self._states)
-                continue
+                if is_gemini_quota_error(exc):
+                    daily = is_daily_quota_error(exc)
+                    event["status"] = "quota_failed"
+                    event["failure_scope"] = "daily_quota" if daily else "rate_limit"
+                    _emit(on_attempt, event)
+                    last_quota_error = exc
+                    with self._lock:
+                        duration = (
+                            self._daily_cooldown_seconds if daily else self._cooldown_seconds
+                        )
+                        state.blocked_until = self._clock() + duration
+                        self._current_index = (index + 1) % len(self._states)
+                    continue
+                _emit(on_attempt, event)
+                raise
 
+            _emit(
+                on_attempt,
+                _attempt_event(
+                    started_at=started_at,
+                    started=started,
+                    key_slot=index + 1,
+                    key_fingerprint=state.fingerprint,
+                    credential_type="api_key",
+                    status="succeeded",
+                ),
+            )
             with self._lock:
                 self._current_index = index
             return result
 
         if last_auth_error is not None or self._has_authentication_failures():
-            return self._call_with_adc(operation, last_auth_error)
+            return self._call_with_adc(operation, last_auth_error, on_attempt=on_attempt)
         if last_quota_error is not None:
             raise last_quota_error
         if not attempted:
@@ -156,24 +187,64 @@ class GeminiKeyPool:
         self,
         operation: Callable[[Any], T],
         original_error: Exception | None,
+        *,
+        on_attempt: Callable[[dict[str, Any]], None] | None = None,
     ) -> T:
+        started_at = datetime.now(UTC)
+        started = perf_counter()
         try:
             client = self._adc_client()
         except Exception as adc_error:
+            event = _attempt_event(
+                started_at=started_at,
+                started=started,
+                key_slot=None,
+                key_fingerprint="adc",
+                credential_type="adc",
+                status="auth_failed",
+                error=adc_error,
+            )
+            event["failure_scope"] = "adc_unavailable"
+            _emit(on_attempt, event)
             raise GeminiAuthenticationError(
                 _authentication_failure_message(original_error, adc_error)
-            ) from (original_error or adc_error)
+            ) from adc_error
 
         try:
-            return operation(client)
+            result = operation(client)
         except Exception as adc_error:
+            event = _attempt_event(
+                started_at=started_at,
+                started=started,
+                key_slot=None,
+                key_fingerprint="adc",
+                credential_type="adc",
+                status="failed",
+                error=adc_error,
+            )
             if _status_code(adc_error) in {401, 403} or is_unsupported_auth_credential_error(
                 adc_error
             ):
+                event["status"] = "auth_failed"
+                event["failure_scope"] = "adc_authentication"
+                _emit(on_attempt, event)
                 raise GeminiAuthenticationError(
                     _authentication_failure_message(original_error, adc_error)
                 ) from adc_error
+            _emit(on_attempt, event)
             raise
+        _emit(
+            on_attempt,
+            _attempt_event(
+                started_at=started_at,
+                started=started,
+                key_slot=None,
+                key_fingerprint="adc",
+                credential_type="adc",
+                status="succeeded",
+            ),
+        )
+        return result
 
 
 _SHARED_POOLS: dict[tuple[str, ...], GeminiKeyPool] = {}
@@ -231,6 +302,46 @@ def is_daily_quota_error(exc: Exception) -> bool:
             "quota_exceeded",
         )
     )
+
+
+def _attempt_event(
+    *,
+    started_at: datetime,
+    started: float,
+    key_slot: int | None,
+    key_fingerprint: str,
+    credential_type: str,
+    status: str,
+    error: Exception | None = None,
+) -> dict[str, Any]:
+    ended_at = datetime.now(UTC)
+    event: dict[str, Any] = {
+        "started_at": started_at,
+        "ended_at": ended_at,
+        "latency_ms": max(0, round((perf_counter() - started) * 1000)),
+        "key_slot": key_slot,
+        "key_fingerprint": key_fingerprint,
+        "credential_type": credential_type,
+        "status": status,
+    }
+    if error is not None:
+        event.update(
+            {
+                "http_status": _status_code(error),
+                "error_type": type(error).__name__,
+                "error_code": _error_code(error),
+                "error_message": str(error) or type(error).__name__,
+            }
+        )
+    return event
+
+
+def _emit(
+    callback: Callable[[dict[str, Any]], None] | None,
+    event: dict[str, Any],
+) -> None:
+    if callback is not None:
+        callback(event)
 
 
 def _normalize_keys(api_keys: Sequence[str]) -> list[str]:
@@ -302,3 +413,14 @@ def _status_code(exc: Exception) -> int | None:
         if isinstance(enum_value, int):
             return enum_value
     return None
+
+
+def _error_code(exc: Exception) -> str | None:
+    for attribute in ("reason", "error_code", "code"):
+        value = getattr(exc, attribute, None)
+        if callable(value):
+            value = value()
+        if value is not None and not isinstance(value, int):
+            return str(getattr(value, "value", value))
+    status = _status_code(exc)
+    return str(status) if status is not None else None
