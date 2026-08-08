@@ -1,0 +1,108 @@
+name: Real paper parser benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/parser-benchmark.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      THESISOUND_MINERU_BACKEND: pipeline
+      THESISOUND_MINERU_TIMEOUT_SECONDS: "5400"
+      MINERU_MODEL_SOURCE: huggingface
+      HF_HOME: ${{ github.workspace }}/.cache/huggingface
+      DOCLING_ARTIFACTS_PATH: ${{ github.workspace }}/.cache/docling
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Cache parser models
+        uses: actions/cache@v5
+        with:
+          path: |
+            .cache/huggingface
+            .cache/docling
+          key: parser-models-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
+
+      - name: Install Thesisound and Docling
+        run: uv sync --extra dev --extra parsers
+
+      - name: Install CPU PyTorch and MinerU pipeline
+        run: |
+          uv pip install --python .venv/bin/python \
+            --index-url https://download.pytorch.org/whl/cpu \
+            torch torchvision
+          uv pip install --python .venv/bin/python "mineru[pipeline]"
+
+      - name: Download benchmark article
+        run: |
+          mkdir -p benchmarks/parser/runtime
+          curl --fail --location --retry 3 \
+            https://arxiv.org/pdf/1706.03762 \
+            --output benchmarks/parser/runtime/attention-is-all-you-need.pdf
+          sha256sum benchmarks/parser/runtime/attention-is-all-you-need.pdf \
+            | tee benchmarks/parser/runtime/source.sha256
+
+      - name: Record tool versions
+        run: |
+          {
+            python --version
+            uv --version
+            uv run python -c "import docling; print('docling', getattr(docling, '__version__', 'unknown'))"
+            uv run mineru --version
+          } | tee benchmarks/parser/runtime/versions.txt
+
+      - name: Run both parsers
+        run: |
+          uv run thesisound compare-parsers \
+            benchmarks/parser/runtime/attention-is-all-you-need.pdf \
+            --artifact-root benchmarks/parser/runtime/artifacts \
+            --output benchmarks/parser/runtime/benchmark.json
+
+      - name: Require both parsers to complete
+        run: |
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path("benchmarks/parser/runtime/benchmark.json").read_text())
+          metrics = {item["parser_name"]: item for item in result["metrics"]}
+          required = {"docling", "mineru"}
+          missing = required - metrics.keys()
+          failed = {
+              name: metrics[name]
+              for name in required & metrics.keys()
+              if metrics[name]["status"] != "success"
+          }
+          if missing or failed:
+              raise SystemExit(f"Parser benchmark incomplete; missing={missing}, failed={failed}")
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Upload benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-paper-parser-benchmark
+          path: benchmarks/parser/runtime/
+          if-no-files-found: error
+          retention-days: 14
