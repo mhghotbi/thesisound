@@ -1,49 +1,58 @@
 {% extends "base.html" %}
 {% block title %}پروژه جدید | Thesisound{% endblock %}
 {% block content %}
-<div class="reading-layout">
-  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
-    <span class="step-rail__item is-current"><b>۱</b> تعریف هدف</span>
-    <span class="step-rail__item"><b>۲</b> تأیید برداشت</span>
-    <span class="step-rail__item"><b>۳</b> منابع</span>
-    <span class="step-rail__item"><b>۴</b> پردازش</span>
-  </nav>
+{% set selected_audience = values.audience if values else 'دانشجوی علوم انسانی' %}
+{% set selected_knowledge = values.prior_knowledge if values else 'introductory' %}
+{% set selected_duration = values.duration if values else 20 %}
+{% set selected_mode = values.mode if values else 'explanatory' %}
 
+<nav class="workflow-rail" aria-label="مراحل ساخت اپیزود">
+  <div class="workflow-rail__topline"><span class="workflow-rail__project">پروژه جدید</span></div>
+  <ol class="workflow-rail__steps">
+    {% for label in ['هدف و برداشت', 'منابع', 'پردازش', 'طرح اپیزود', 'متن اپیزود', 'شنیدن'] %}
+    <li class="workflow-step {% if loop.first %}is-current{% else %}is-locked{% endif %}" {% if loop.first %}aria-current="step"{% endif %}>
+      <span class="workflow-step__mark" aria-hidden="true">{{ loop.index | fa_num }}</span>
+      <span><strong>{{ label }}</strong><small>{% if loop.first %}مرحله جاری{% else %}پس از ساخت پروژه{% endif %}</small></span>
+    </li>
+    {% endfor %}
+  </ol>
+</nav>
+
+<div class="page-content--narrow">
   <header class="page-heading page-heading--compact">
     <div>
-      <p class="eyebrow">پروژه جدید</p>
+      <p class="kicker">شروع یک مطالعه تازه</p>
       <h1>می‌خواهید چه چیزی را بهتر بفهمید؟</h1>
-      <p>همین اطلاعات برای ساخت برداشت اولیه کافی است.</p>
+      <p>یک سؤال واقعی بنویسید و فقط مخاطب، سطح و مدت را مشخص کنید. برداشت اولیه قبل از هر پردازش برای تأیید شما نمایش داده می‌شود.</p>
     </div>
   </header>
 
-  {% if error %}
-    <div class="notice notice--danger" role="alert">{{ error }}</div>
-  {% endif %}
+  {% if error %}<div class="notice notice--danger" role="alert">اطلاعات پروژه کامل نیست. مورد مشخص‌شده را اصلاح کنید.</div>{% endif %}
 
-  <form class="form-sheet" method="post" action="/projects">
+  <form class="form-sheet" method="post" action="/projects" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label class="field field--large">
       <span>موضوع یا سؤال اصلی</span>
-      <textarea name="topic" rows="3" required autofocus placeholder="مثلاً: چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟">{{ values.topic if values else '' }}</textarea>
+      <textarea name="topic" rows="4" required autofocus placeholder="مثلاً: چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟" {% if error %}aria-invalid="true" aria-describedby="topic-error"{% endif %}>{{ values.topic if values else '' }}</textarea>
+      {% if error %}<small class="field-error" id="topic-error">{{ error }}</small>{% else %}<small class="field-hint">هرچه سؤال مشخص‌تر باشد، جست‌وجو و ارزیابی پوشش دقیق‌تر می‌شود.</small>{% endif %}
     </label>
 
     <div class="field-grid">
       <label class="field">
         <span>برای چه کسی؟</span>
         <select name="audience">
-          <option value="دانشجوی علوم انسانی">دانشجوی علوم انسانی</option>
-          <option value="شنونده عمومی علاقه‌مند">شنونده عمومی علاقه‌مند</option>
-          <option value="دانشجوی تحصیلات تکمیلی">دانشجوی تحصیلات تکمیلی</option>
+          {% for value in ['دانشجوی علوم انسانی', 'شنونده عمومی علاقه‌مند', 'دانشجوی تحصیلات تکمیلی'] %}
+          <option value="{{ value }}" {% if selected_audience == value %}selected{% endif %}>{{ value }}</option>
+          {% endfor %}
         </select>
       </label>
       <label class="field">
         <span>آشنایی قبلی</span>
         <select name="prior_knowledge">
-          <option value="none">بدون آشنایی</option>
-          <option value="introductory" selected>مقدماتی</option>
-          <option value="intermediate">متوسط</option>
-          <option value="advanced">پیشرفته</option>
+          <option value="none" {% if selected_knowledge == 'none' %}selected{% endif %}>بدون آشنایی</option>
+          <option value="introductory" {% if selected_knowledge == 'introductory' %}selected{% endif %}>مقدماتی</option>
+          <option value="intermediate" {% if selected_knowledge == 'intermediate' %}selected{% endif %}>متوسط</option>
+          <option value="advanced" {% if selected_knowledge == 'advanced' %}selected{% endif %}>پیشرفته</option>
         </select>
       </label>
     </div>
@@ -51,21 +60,23 @@
     <fieldset class="choice-group">
       <legend>مدت هدف</legend>
       {% for minutes in [10, 20, 30, 45] %}
-      <label>
-        <input type="radio" name="duration" value="{{ minutes }}" {% if minutes == 20 %}checked{% endif %}>
-        <span>{{ minutes }} دقیقه</span>
-      </label>
+      <label><input type="radio" name="duration" value="{{ minutes }}" {% if selected_duration | int == minutes %}checked{% endif %}><span>{{ minutes | fa_num }} دقیقه</span></label>
       {% endfor %}
     </fieldset>
 
     <fieldset class="choice-group">
       <legend>نوع روایت</legend>
-      <label><input type="radio" name="mode" value="explanatory" checked><span>توضیحی</span></label>
-      <label><input type="radio" name="mode" value="critical"><span>تحلیلی / انتقادی</span></label>
-      <label><input type="radio" name="mode" value="comparative"><span>مقایسه‌ای</span></label>
+      <label><input type="radio" name="mode" value="explanatory" {% if selected_mode == 'explanatory' %}checked{% endif %}><span>توضیحی</span></label>
+      <label><input type="radio" name="mode" value="critical" {% if selected_mode == 'critical' %}checked{% endif %}><span>تحلیلی / انتقادی</span></label>
+      <label><input type="radio" name="mode" value="comparative" {% if selected_mode == 'comparative' %}checked{% endif %}><span>مقایسه‌ای</span></label>
     </fieldset>
 
-    <div class="form-actions">
+    <section class="data-panel operator-only" aria-label="پارامترهای عملیاتی">
+      <h2>پارامترهای نسخه فعلی</h2>
+      <p class="lede">زبان خروجی <code><bdi dir="ltr">fa</bdi></code> است؛ هدف یادگیری اولیه به‌صورت پیش‌فرض ساخته می‌شود و پس از ایجاد پروژه در برداشت قابل اصلاح است.</p>
+    </section>
+
+    <div class="form-actions form-actions--split">
       <a class="button button--secondary" href="/projects">انصراف</a>
       <button class="button button--primary" type="submit">ساخت برداشت اولیه</button>
     </div>
