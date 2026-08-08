@@ -36,6 +36,18 @@ jobs:
           sed -i 's/otp_resend_cooldown_seconds=1/otp_resend_cooldown_seconds=5/' scripts/ui_visual_qa.py
           sed -i 's/speaker_dynamic="analysis"/speaker_dynamic="critique"/' scripts/ui_visual_qa.py
           sed -i 's/speaker_dynamic="synthesis"/speaker_dynamic="recap"/' scripts/ui_visual_qa.py
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("scripts/ui_visual_qa.py")
+          content = path.read_text(encoding="utf-8")
+          content = content.replace(
+              "        await page.click('[data-theme-value=\"wood\"]')",
+              "        await page.click(\".theme-switcher > summary\")\n"
+              "        await page.click('[data-theme-value=\"wood\"]')",
+          )
+          path.write_text(content, encoding="utf-8")
+          PY
           uv run python scripts/ui_visual_qa.py prepare --output /tmp/ui-visual-qa
 
       - name: Start static QA server
