@@ -39,9 +39,7 @@ class GeminiStructuredModel:
             self._client = client
             self._pool = None
             return
-        keys = list(api_keys or [])
-        if api_key:
-            keys.append(api_key)
+        keys = _configured_keys(api_key, api_keys)
         if pool is None and not keys:
             raise ModelConfigurationError(
                 "GEMINI_API_KEY or GEMINI_API_KEYS is required for live model calls."
@@ -97,6 +95,24 @@ class GeminiStructuredModel:
             latency_ms=latency_ms,
             finish_reason=finish_reason,
         )
+
+
+def _configured_keys(
+    api_key: str | None,
+    api_keys: Sequence[str] | None,
+) -> list[str]:
+    if api_keys is not None:
+        keys = list(api_keys)
+    else:
+        try:
+            from thesisound.config import Settings
+
+            keys = list(Settings().gemini_api_keys)
+        except ValueError:
+            keys = []
+    if api_key:
+        keys.append(api_key)
+    return list(dict.fromkeys(key.strip() for key in keys if key.strip()))
 
 
 def _coerce_output[T: BaseModel](response: Any, output_type: type[T]) -> T:
