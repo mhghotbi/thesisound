@@ -65,7 +65,7 @@ class SQLiteBlockRetriever:
                 RetrievalHit(
                     block_id=block_id,
                     source_id=UUID(source_id),
-                    score=round(1 / (1 + max(0.0, float(rank))), 6),
+                    score=round(1 / (1 + abs(float(rank))), 6),
                     query=query,
                 )
             )
