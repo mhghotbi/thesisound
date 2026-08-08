@@ -15,9 +15,9 @@ def register_doctor_command(app: typer.Typer) -> None:
 
         checks = RuntimePreflight(Settings()).run("full")
         table = Table(title="Thesisound runtime preflight")
-        table.add_column("وضعیت")
-        table.add_column("بررسی")
-        table.add_column("جزئیات")
+        table.add_column("Status")
+        table.add_column("Check")
+        table.add_column("Details")
         labels = {"pass": "PASS", "warning": "WARN", "fail": "FAIL"}
         styles = {"pass": "green", "warning": "yellow", "fail": "red"}
         for check in checks:
