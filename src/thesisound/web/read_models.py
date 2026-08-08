@@ -232,7 +232,10 @@ def build_project_read_model(
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
-            overview_summary="همهٔ گفته‌های محتوایی از وارسی ساختاری و راستی‌آزمایی مستقل عبور کرده‌اند.",
+            overview_summary=(
+                "همهٔ گفته‌های محتوایی از وارسی ساختاری و "
+                "راستی‌آزمایی مستقل عبور کرده‌اند."
+            ),
         )
 
     if project.state in {
