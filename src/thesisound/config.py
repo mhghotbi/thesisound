@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     model_asr: str = "gemini-3.6-flash"
     model_retry_base_seconds: float = Field(default=1, ge=0, le=60)
     keep_rendered_prompts: bool = False
+    gemini_google_search_enabled: bool = True
+    gemini_url_context_enabled: bool = True
 
     tts_voice_a: str = "Kore"
     tts_voice_b: str = "Puck"
@@ -52,19 +54,12 @@ class Settings(BaseSettings):
         exclude=True,
         repr=False,
     )
-    firecrawl_api_key: str | None = Field(default=None, validation_alias="FIRECRAWL_API_KEY")
-    openalex_api_key: str | None = Field(default=None, validation_alias="OPENALEX_API_KEY")
-    semantic_scholar_api_key: str | None = Field(
-        default=None,
-        validation_alias="SEMANTIC_SCHOLAR_API_KEY",
-    )
 
     mineru_command: str = "mineru"
     mineru_timeout_seconds: int = Field(default=1_800, ge=30)
     mineru_backend: str | None = None
     mineru_model_source: str | None = None
 
-    enable_firecrawl_parse: bool = False
     allow_provider_uploads: bool = True
     keep_raw_provider_responses: bool = False
 

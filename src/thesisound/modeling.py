@@ -6,6 +6,13 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+type GroundingMode = Literal[
+    "none",
+    "google_search",
+    "url_context",
+    "google_search_and_url_context",
+]
+
 
 class PromptContract(BaseModel):
     id: str = Field(min_length=1)
@@ -32,6 +39,24 @@ class ModelUsage(BaseModel):
     thinking_tokens: int | None = Field(default=None, ge=0)
 
 
+class GroundingSource(BaseModel):
+    uri: str
+    title: str | None = None
+    domain: str | None = None
+
+
+class UrlRetrieval(BaseModel):
+    url: str
+    status: str | None = None
+
+
+class GroundingMetadata(BaseModel):
+    mode: GroundingMode = "none"
+    web_search_queries: list[str] = Field(default_factory=list)
+    sources: list[GroundingSource] = Field(default_factory=list)
+    url_retrievals: list[UrlRetrieval] = Field(default_factory=list)
+
+
 class StructuredModelResponse[T: BaseModel](BaseModel):
     output: T
     provider: str
@@ -39,6 +64,7 @@ class StructuredModelResponse[T: BaseModel](BaseModel):
     usage: ModelUsage = Field(default_factory=ModelUsage)
     latency_ms: int = Field(ge=0)
     finish_reason: str | None = None
+    grounding: GroundingMetadata = Field(default_factory=GroundingMetadata)
 
 
 class ModelAttemptRecord(BaseModel):
@@ -51,6 +77,8 @@ class ModelAttemptRecord(BaseModel):
     retryable: bool = False
     usage: ModelUsage | None = None
     finish_reason: str | None = None
+    grounding_source_count: int = Field(default=0, ge=0)
+    web_search_queries: list[str] = Field(default_factory=list)
 
 
 class ModelRunRecord(BaseModel):
@@ -68,6 +96,10 @@ class ModelRunRecord(BaseModel):
     status: Literal["running", "succeeded", "failed"] = "running"
     attempts: list[ModelAttemptRecord] = Field(default_factory=list)
     output_model: str
+    grounding_mode: GroundingMode = "none"
+    grounding_urls: list[str] = Field(default_factory=list)
+    grounding_source_count: int = Field(default=0, ge=0)
+    web_search_queries: list[str] = Field(default_factory=list)
     error_type: str | None = None
     error_message: str | None = None
 

@@ -27,7 +27,6 @@ gemini = [
 ]
 web = [
   "httpx>=0.28,<1",
-  "firecrawl-py>=2.0,<4",
 ]
 web-ui = [
   "fastapi>=0.116,<1",

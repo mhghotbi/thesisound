@@ -6,7 +6,7 @@ from typing import Any, Protocol
 from pydantic import BaseModel, Field
 
 from thesisound.domain import SearchQuery
-from thesisound.modeling import StructuredModelResponse
+from thesisound.modeling import GroundingMode, StructuredModelResponse
 
 
 class RunMetadata(BaseModel):
@@ -15,6 +15,8 @@ class RunMetadata(BaseModel):
     model_or_provider: str
     attempt: int = Field(default=1, ge=1)
     input_artifact_hashes: list[str] = Field(default_factory=list)
+    grounding_mode: GroundingMode = "none"
+    grounding_urls: list[str] = Field(default_factory=list)
 
 
 class DocumentInspection(BaseModel):

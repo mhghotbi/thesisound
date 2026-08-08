@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -13,6 +14,7 @@ from pydantic import BaseModel
 
 from thesisound.modeling import (
     DeterministicValidationError,
+    GroundingMode,
     ModelAttemptRecord,
     ModelError,
     ModelExecution,
@@ -25,6 +27,15 @@ from thesisound.services.model_retry import decide_retry
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 
 type Validator[T: BaseModel] = Callable[[T], None]
+
+_GROUNDING_POLICY_BY_STAGE: dict[str, GroundingMode] = {
+    "research_brief": "google_search_and_url_context",
+    "query_planner": "google_search",
+    "source_discovery": "google_search_and_url_context",
+    "source_triage": "url_context",
+    "glossary": "google_search",
+}
+_URL_PATTERN = re.compile(r"https?://[^\s<>\"']+")
 
 
 class ModelRunner:
@@ -56,6 +67,8 @@ class ModelRunner:
         model: str,
         prompt_version: str | None = None,
         validator: Validator[T] | None = None,
+        grounding_mode: GroundingMode | None = None,
+        grounding_urls: list[str] | None = None,
     ) -> ModelExecution[T]:
         bundle = self.prompt_loader.load_bundle(
             prompt_name,
@@ -67,7 +80,19 @@ class ModelRunner:
                 f"Prompt expects {bundle.contract.output_model}, not {output_type.__name__}."
             )
 
-        input_hash = _hash_variables(variables)
+        resolved_urls = _resolve_grounding_urls(variables, grounding_urls)
+        resolved_mode = _resolve_grounding_mode(
+            stage,
+            grounding_mode,
+            has_urls=bool(resolved_urls),
+        )
+        input_hash = _hash_variables(
+            {
+                "variables": variables,
+                "grounding_mode": resolved_mode,
+                "grounding_urls": resolved_urls,
+            }
+        )
         record = ModelRunRecord(
             project_id=project_id,
             stage=stage,
@@ -78,6 +103,8 @@ class ModelRunner:
             provider=self.model_port.provider,
             model=model,
             output_model=output_type.__name__,
+            grounding_mode=resolved_mode,
+            grounding_urls=resolved_urls,
         )
         self.run_store.initialize(
             record,
@@ -95,6 +122,8 @@ class ModelRunner:
                 model_or_provider=model,
                 attempt=attempt_number,
                 input_artifact_hashes=[input_hash],
+                grounding_mode=resolved_mode,
+                grounding_urls=resolved_urls,
             )
             try:
                 response = self.model_port.generate_structured(
@@ -112,6 +141,8 @@ class ModelRunner:
                     except ValueError as exc:
                         raise DeterministicValidationError(str(exc)) from exc
 
+                record.grounding_source_count = len(response.grounding.sources)
+                record.web_search_queries = response.grounding.web_search_queries
                 record.attempts.append(
                     ModelAttemptRecord(
                         attempt=attempt_number,
@@ -119,11 +150,14 @@ class ModelRunner:
                         success=True,
                         usage=response.usage,
                         finish_reason=response.finish_reason,
+                        grounding_source_count=len(response.grounding.sources),
+                        web_search_queries=response.grounding.web_search_queries,
                     )
                 )
                 record.status = "succeeded"
                 record.completed_at = datetime.now(UTC)
                 self.run_store.save_output(record, response.output)
+                self.run_store.save_grounding(record, response.grounding)
                 self.run_store.save_record(record)
                 return ModelExecution[T](output=response.output, record=record)
             except ModelError as exc:
@@ -180,6 +214,34 @@ class ModelRunner:
                 raise wrapped from exc
 
         raise AssertionError("Model runner exhausted attempts without returning or raising.")
+
+
+def grounding_policy_for_stage(stage: str) -> GroundingMode:
+    return _GROUNDING_POLICY_BY_STAGE.get(stage, "none")
+
+
+def _resolve_grounding_mode(
+    stage: str,
+    requested: GroundingMode | None,
+    *,
+    has_urls: bool,
+) -> GroundingMode:
+    mode = requested or grounding_policy_for_stage(stage)
+    if mode == "url_context" and not has_urls:
+        return "none"
+    if mode == "google_search_and_url_context" and not has_urls:
+        return "google_search"
+    return mode
+
+
+def _resolve_grounding_urls(
+    variables: dict[str, Any],
+    supplied: list[str] | None,
+) -> list[str]:
+    urls = list(supplied or [])
+    urls.extend(_URL_PATTERN.findall(json.dumps(variables, ensure_ascii=False, default=str)))
+    cleaned = [url.rstrip(".,);]}") for url in urls]
+    return list(dict.fromkeys(cleaned))[:20]
 
 
 def _hash_variables(variables: dict[str, Any]) -> str:

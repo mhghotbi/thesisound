@@ -50,6 +50,18 @@ class RuntimePreflight:
                 "google.genai",
                 "با `uv sync --extra gemini` نصب شود.",
             ),
+            self._grounding_tool(
+                "gemini-google-search",
+                "Gemini Google Search",
+                self.settings.gemini_google_search_enabled,
+                "برای brief، discovery و اصطلاح‌شناسی فعال است.",
+            ),
+            self._grounding_tool(
+                "gemini-url-context",
+                "Gemini URL Context",
+                self.settings.gemini_url_context_enabled,
+                "برای URL عمومیِ صریح در prompt فعال است.",
+            ),
         ]
         if scope in {"audio", "full"}:
             checks.append(self._ffmpeg())
@@ -87,6 +99,27 @@ class RuntimePreflight:
                 "`GEMINI_API_KEYS` یا `GEMINI_API_KEY` در محیط یا فایل `.env` "
                 "تنظیم نشده است."
             ),
+        )
+
+    @staticmethod
+    def _grounding_tool(
+        code: str,
+        label: str,
+        enabled: bool,
+        enabled_detail: str,
+    ) -> RuntimeCheck:
+        if enabled:
+            return RuntimeCheck(
+                code=code,
+                label=label,
+                status="pass",
+                detail=enabled_detail,
+            )
+        return RuntimeCheck(
+            code=code,
+            label=label,
+            status="warning",
+            detail="در تنظیمات غیرفعال شده است.",
         )
 
     def _ffmpeg(self) -> RuntimeCheck:

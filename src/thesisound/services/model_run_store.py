@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from thesisound.modeling import ModelRunRecord, PromptBundle
+from thesisound.modeling import GroundingMetadata, ModelRunRecord, PromptBundle
 
 
 class WorkspaceModelRunStore:
@@ -39,6 +39,8 @@ class WorkspaceModelRunStore:
             "output_model": bundle.contract.output_model,
             "variable_names": sorted(variable_names),
             "raw_prompts_stored": self.keep_prompts,
+            "grounding_mode": record.grounding_mode,
+            "grounding_urls": record.grounding_urls,
         }
         self._write_json(directory / "request.json", request_metadata)
         if self.keep_prompts:
@@ -60,6 +62,17 @@ class WorkspaceModelRunStore:
     def save_output(self, record: ModelRunRecord, output: BaseModel) -> Path:
         path = self.run_dir(record.project_id, record.run_id) / "validated-output.json"
         self._write_json(path, output.model_dump(mode="json"))
+        return path
+
+    def save_grounding(
+        self,
+        record: ModelRunRecord,
+        grounding: GroundingMetadata,
+    ) -> Path | None:
+        if grounding.mode == "none" and not grounding.sources and not grounding.url_retrievals:
+            return None
+        path = self.run_dir(record.project_id, record.run_id) / "grounding.json"
+        self._write_json(path, grounding.model_dump(mode="json"))
         return path
 
     def save_error(self, record: ModelRunRecord) -> Path:
