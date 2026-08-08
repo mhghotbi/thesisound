@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import json
 from pathlib import Path
 from typing import Literal
 
@@ -43,6 +46,12 @@ class Settings(BaseSettings):
     ffmpeg_command: str = "ffmpeg"
 
     gemini_api_key: str | None = Field(default=None, validation_alias="GEMINI_API_KEY")
+    gemini_api_keys_value: str | None = Field(
+        default=None,
+        validation_alias="GEMINI_API_KEYS",
+        exclude=True,
+        repr=False,
+    )
     firecrawl_api_key: str | None = Field(default=None, validation_alias="FIRECRAWL_API_KEY")
     openalex_api_key: str | None = Field(default=None, validation_alias="OPENALEX_API_KEY")
     semantic_scholar_api_key: str | None = Field(
@@ -70,6 +79,13 @@ class Settings(BaseSettings):
     otp_max_attempts: int = Field(default=5, ge=1, le=10)
     ui_demo_mode: bool = True
 
+    @property
+    def gemini_api_keys(self) -> tuple[str, ...]:
+        values = _parse_gemini_api_keys(self.gemini_api_keys_value)
+        if self.gemini_api_key:
+            values.append(self.gemini_api_key)
+        return tuple(dict.fromkeys(value.strip() for value in values if value.strip()))
+
     @model_validator(mode="after")
     def validate_runtime(self) -> "Settings":
         if self.audio_qa_review_threshold >= self.audio_qa_pass_threshold:
@@ -94,3 +110,18 @@ class Settings(BaseSettings):
     def ensure_ingestion_artifact_root(self) -> Path:
         self.ingestion_artifact_root.mkdir(parents=True, exist_ok=True)
         return self.ingestion_artifact_root
+
+
+def _parse_gemini_api_keys(raw: str | None) -> list[str]:
+    if not raw or not raw.strip():
+        return []
+    value = raw.strip()
+    if value.startswith("["):
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError as exc:
+            raise ValueError("GEMINI_API_KEYS must be a JSON list or comma-separated string") from exc
+        if not isinstance(parsed, list) or not all(isinstance(item, str) for item in parsed):
+            raise ValueError("GEMINI_API_KEYS JSON value must be a list of strings")
+        return parsed
+    return [item.strip() for item in value.split(",") if item.strip()]
