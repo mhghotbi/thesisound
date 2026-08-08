@@ -118,7 +118,7 @@
 
 {% if planning_run and planning_run.material_gaps %}
 <section class="section-block" aria-labelledby="remaining-gaps-title">
-  <div class="section-heading"><h2 id="remaining-gaps-title">کاستی‌های پوشش</h2></div>
+  <div class="section-heading"><h2 id="remaining-gaps-title">کاستی‌های کفایت منابع</h2></div>
   <div class="data-panel"><ul>{% for gap in planning_run.material_gaps %}<li>{{ gap }}</li>{% endfor %}</ul></div>
 </section>
 {% endif %}
