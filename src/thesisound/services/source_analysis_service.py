@@ -232,9 +232,10 @@ class SourceAnalysisService:
             transition(project, ProjectState.SOURCES_COLLECTING)
         if project.state == ProjectState.SOURCES_COLLECTING:
             transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
-        if project.state == ProjectState.SOURCE_SELECTION_REQUIRED:
-            transition(project, ProjectState.CORPUS_BUILDING)
-        elif project.state == ProjectState.FAILED_RETRYABLE:
+        if project.state in {
+            ProjectState.SOURCE_SELECTION_REQUIRED,
+            ProjectState.FAILED_RETRYABLE,
+        }:
             transition(project, ProjectState.CORPUS_BUILDING)
         elif project.state != ProjectState.CORPUS_BUILDING:
             raise ValueError(f"Cannot analyze a source from project state {project.state}.")
