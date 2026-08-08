@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import re
-from collections import Counter, defaultdict
+from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from statistics import fmean
@@ -16,7 +15,7 @@ from thesisound.ingestion import (
 from thesisound.ports import DocumentInspection, DocumentParserPort, ParsedBlock
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_inspector import inspect_document
-from thesisound.services.parse_quality import assess_parse_quality
+from thesisound.services.parse_quality import assess_parse_quality, duplicate_content_ratio
 
 _SUPPORTED_EXTENSIONS = {
     ".pdf",
@@ -36,7 +35,6 @@ _SUPPORTED_EXTENSIONS = {
     ".bmp",
     ".webp",
 }
-_SPACE = re.compile(r"\s+")
 
 
 def benchmark_document(
@@ -152,7 +150,7 @@ def _build_metrics(
         if block_count
         else 0
     )
-    duplicate_ratio = _duplicate_ratio(non_empty)
+    duplicate_ratio = duplicate_content_ratio(non_empty)
     page_coverage = _page_coverage(inspection, non_empty)
     score = _score(
         verdict=quality.verdict,
@@ -219,19 +217,6 @@ def _page_coverage(
         end = block.page_end if block.page_end is not None else block.page_start
         pages.update(range(block.page_start, end + 1))
     return min(len(pages) / inspection.page_count, 1)
-
-
-def _duplicate_ratio(blocks: list[ParsedBlock]) -> float:
-    normalized = [
-        _SPACE.sub(" ", block.text.strip()).casefold()
-        for block in blocks
-        if block.text.strip()
-    ]
-    if len(normalized) < 2:
-        return 0
-    counts = Counter(normalized)
-    duplicates = sum(count - 1 for count in counts.values() if count > 1)
-    return duplicates / len(normalized)
 
 
 def _recommendation_key(metric: ParserBenchmarkMetrics) -> tuple[int, float, float]:
