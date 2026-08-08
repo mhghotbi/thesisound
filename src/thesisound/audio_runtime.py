@@ -1,0 +1,63 @@
+from __future__ import annotations
+
+from uuid import UUID
+
+from thesisound.adapters.audio.gemini import GeminiAsrAdapter, GeminiTtsAdapter
+from thesisound.config import Settings
+from thesisound.pipeline import WorkspaceStore
+from thesisound.services.audio_artifact_store import AudioArtifactStore
+from thesisound.services.audio_assembler import AudioAssembler
+from thesisound.services.audio_pipeline_service import AudioPipelineService
+from thesisound.services.audio_qa import AudioQaService
+from thesisound.services.audio_run import AudioBuildRunService, AudioBuildRunStore
+from thesisound.services.audio_validator import AudioValidator
+from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.services.tts_segmenter import TtsSegmenter
+
+
+def create_audio_builder(
+    settings: Settings,
+    workspace: WorkspaceStore,
+) -> AudioBuildRunService:
+    script_store = ScriptArtifactStore(workspace.root)
+    audio_store = AudioArtifactStore(workspace.root)
+
+    def pipeline_factory(project_id: UUID) -> AudioPipelineService:
+        del project_id
+        return AudioPipelineService(
+            workspace_store=workspace,
+            script_store=script_store,
+            audio_store=audio_store,
+            tts=GeminiTtsAdapter(api_key=settings.gemini_api_key),
+            asr=GeminiAsrAdapter(api_key=settings.gemini_api_key),
+            segmenter=TtsSegmenter(
+                max_characters=settings.tts_chunk_max_characters,
+                words_per_minute=settings.tts_words_per_minute,
+            ),
+            validator=AudioValidator(
+                expected_sample_rate_hz=settings.audio_sample_rate_hz
+            ),
+            qa=AudioQaService(
+                pass_threshold=settings.audio_qa_pass_threshold,
+                review_threshold=settings.audio_qa_review_threshold,
+            ),
+            assembler=AudioAssembler(
+                ffmpeg_command=settings.ffmpeg_command,
+                silence_milliseconds=settings.audio_silence_milliseconds,
+            ),
+            tts_model=settings.model_tts,
+            asr_model=settings.model_asr,
+            voices={"A": settings.tts_voice_a, "B": settings.tts_voice_b},
+            style_prompt=settings.tts_style_prompt,
+            max_regeneration_attempts=settings.audio_max_regeneration_attempts,
+        )
+
+    builder = AudioBuildRunService(
+        workspace_store=workspace,
+        run_store=AudioBuildRunStore(workspace.root),
+        script_store=script_store,
+        audio_store=audio_store,
+        pipeline_factory=pipeline_factory,
+    )
+    builder.recover_interrupted_runs()
+    return builder
