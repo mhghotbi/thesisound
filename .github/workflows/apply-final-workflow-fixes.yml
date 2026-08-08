@@ -42,6 +42,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/thesisound/web/source_routes.py")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace("            source = store.remove(source_id)\n", "            store.remove(source_id)\n")
+          path.write_text(text, encoding="utf-8")
+          PY
           files=(
             src/thesisound/services/document_mapper.py
             src/thesisound/web/source_routes.py
