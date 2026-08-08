@@ -14,7 +14,11 @@ from thesisound.domain import (
     TopicType,
 )
 from thesisound.ingestion import IngestionResult, ParserRoute
-from thesisound.modeling import ModelExecution, ModelRunRecord
+from thesisound.modeling import (
+    DeterministicValidationError,
+    ModelExecution,
+    ModelRunRecord,
+)
 from thesisound.pipeline import WorkspaceStore
 from thesisound.ports import DocumentInspection, ParsedBlock, ParsedDocument
 from thesisound.quality import ParseReport
@@ -228,7 +232,7 @@ def test_evidence_validator_rejects_excerpt_not_in_block() -> None:
     )[0][0]
     record.extraction.claims[0].supporting_excerpt = "This sentence is invented."
 
-    with pytest.raises(ValueError, match="not present"):
+    with pytest.raises(DeterministicValidationError, match="not present"):
         validate_evidence_extraction(record.extraction, block)
 
 
