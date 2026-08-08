@@ -2,6 +2,7 @@
 {% from "components.html" import technical_details %}
 {% block title %}هدف و برداشت | Thesisound{% endblock %}
 {% block content %}
+{% set knowledge_labels = {'none': 'بدون آشنایی', 'introductory': 'مقدماتی', 'intermediate': 'متوسط', 'advanced': 'پیشرفته'} %}
 <div class="page-content--narrow">
   <header class="page-heading page-heading--compact">
     <div>
@@ -20,13 +21,13 @@
   {% if brief_locked %}
   <div class="notice notice--info">
     <strong>این برداشت فعلاً فقط خواندنی است.</strong>
-    <p>برای اصلاح، کنترل «بازگشت و اصلاح ورودی‌های قبلی» را در نوار مراحل باز کنید. خروجی‌های وابسته بایگانی می‌شوند و فایل‌های خام باقی می‌مانند.</p>
+    <p>برای اصلاح، کنترل «بازگشت و اصلاح مراحل قبلی» را در نوار مراحل باز کنید. خروجی‌های وابسته بایگانی می‌شوند و فایل‌های خام باقی می‌مانند.</p>
   </div>
   {% endif %}
 
   <section class="coverage-verdict" aria-label="خلاصه برداشت">
     <h2>{{ project.brief.central_question }}</h2>
-    <p>یک اپیزود {{ project.brief.target_duration_minutes | fa_num }} دقیقه‌ای برای {{ project.brief.audience }} با سطح آشنایی {{ project.brief.prior_knowledge }}.</p>
+    <p>یک اپیزود {{ project.brief.target_duration_minutes | fa_num }} دقیقه‌ای برای {{ project.brief.audience }} با سطح آشنایی {{ knowledge_labels.get(project.brief.prior_knowledge, 'نامشخص') }}. <code class="operator-only"><bdi dir="ltr">{{ project.brief.prior_knowledge }}</bdi></code></p>
   </section>
 
   {% if brief_locked %}
