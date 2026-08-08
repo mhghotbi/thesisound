@@ -1,106 +1,122 @@
 {% extends "base.html" %}
-{% block title %}وضعیت پردازش | Thesisound{% endblock %}
+{% from "components.html" import status_label, technical_details %}
+{% block title %}تحلیل منابع | مقال{% endblock %}
 {% block content %}
-<div class="reading-layout">
-  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
-    <span class="step-rail__item is-complete"><b>۱</b> تعریف هدف</span>
-    <span class="step-rail__item is-complete"><b>۲</b> تأیید برداشت</span>
-    <span class="step-rail__item is-complete"><b>۳</b> منابع</span>
-    <span class="step-rail__item is-current"><b>۴</b> پردازش</span>
-  </nav>
-
-  <header class="page-heading page-heading--compact">
-    <div>
-      <p class="eyebrow">وضعیت پروژه</p>
-      <h1>{{ project_title(project) }}</h1>
-      <p>وضعیت از artifact و state واقعی خوانده می‌شود؛ درصد و زمان باقی‌مانده حدس زده نمی‌شود.</p>
-    </div>
-  </header>
-
-  {% if request.query_params.get('error') == 'retry-unavailable' %}
-  <div class="notice notice--danger" role="alert">این اجرا در وضعیت قابل تلاش دوباره نیست.</div>
+<header class="page-heading page-heading--compact">
+  <div>
+    <p class="kicker">تحلیل منابع</p>
+    <h1>{{ project_title(project) }}</h1>
+    <p>فقط مرحلهٔ واقعی ذخیره‌شده نمایش داده می‌شود؛ درصد و زمان باقی‌مانده حدس زده نمی‌شود.</p>
+    <p class="operator-only">Persisted stage only; no synthetic progress.</p>
+  </div>
+  {% if corpus_active or planning_active %}
+    {{ status_label('در حال انجام', 'اقدامی از شما لازم نیست', 'running') }}
+  {% elif project.state.value == 'corpus_ready' %}
+    {{ status_label('تحلیل منابع آماده است', 'منتظر سنجش کفایت منابع', 'attention') }}
+  {% else %}
+    {{ status_label('وضعیت ثبت‌شده', '', 'neutral', project.state.value) }}
   {% endif %}
+</header>
 
+{% if request.query_params.get('error') == 'retry-unavailable' %}
+<div class="notice notice--danger" role="alert">این اجرا در وضعیت قابل تلاش دوباره نیست. خروجی‌های موجود بدون تغییر باقی مانده‌اند.<span class="operator-only"> Existing artifacts are preserved.</span></div>
+{% endif %}
+
+<section class="section-block" aria-labelledby="pipeline-title">
+  <div class="section-heading"><h2 id="pipeline-title">مسیر تحلیل</h2><span>مرحله‌های واقعی گفتار</span></div>
   <ol class="stage-list">
+    {% set ns = namespace(current_marked=false) %}
     {% for label, complete in stages %}
-    <li class="{% if complete %}is-complete{% elif loop.first or not stages[loop.index0 - 1][1] %}is-current{% endif %}">
-      <span aria-hidden="true">{% if complete %}✓{% else %}{{ loop.index }}{% endif %}</span>
-      <strong>{{ label }}</strong>
-      <small>{% if complete %}تکمیل شده{% else %}در انتظار تکمیل مرحله قبلی{% endif %}</small>
-    </li>
+      {% if complete %}{% set row_class = 'is-complete' %}
+      {% elif not ns.current_marked %}{% set row_class = 'is-current' %}{% set ns.current_marked = true %}
+      {% else %}{% set row_class = 'is-pending' %}{% endif %}
+      <li class="stage-row {{ row_class }}" {% if row_class == 'is-current' %}aria-current="step"{% endif %}>
+        <span class="stage-row__mark" aria-hidden="true">{% if complete %}✓{% else %}{{ loop.index | fa_num }}{% endif %}</span>
+        <span class="stage-row__copy">
+          <strong {% if row_class == 'is-current' %}aria-live="polite"{% endif %}>{{ label }}</strong>
+          <small>{% if complete %}تکمیل‌شده{% elif row_class == 'is-current' %}در حال اجرا{% else %}در انتظار مرحلهٔ قبلی{% endif %}</small>
+        </span>
+        {% if complete %}{{ status_label('انجام شد', '', 'success') }}{% elif row_class == 'is-current' %}{{ status_label('در حال انجام', '', 'running') }}{% else %}{{ status_label('در انتظار', '', 'neutral') }}{% endif %}
+      </li>
     {% endfor %}
   </ol>
+</section>
 
-  {% if corpus_run %}
-  <section class="source-list" aria-labelledby="corpus-run-title">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">ساخت مجموعه شواهد</p>
-        <h2 id="corpus-run-title">{{ corpus_run.completed_source_count }} از {{ corpus_run.sources | length }} منبع تکمیل شده</h2>
-      </div>
-      <span><bdi dir="ltr">{{ corpus_run.status }}</bdi></span>
-    </div>
+{% if corpus_run %}
+<section class="section-block" aria-labelledby="corpus-run-title">
+  <div class="section-heading">
+    <div><p class="kicker">تحلیل مجموعه منابع</p><h2 id="corpus-run-title">{{ corpus_run.completed_source_count | fa_num }} از {{ corpus_run.sources | length | fa_num }} منبع تکمیل‌شده است</h2></div>
+    {{ status_label('در حال اجرا' if corpus_run.status in ['queued', 'running'] else ('انجام شد' if corpus_run.status == 'succeeded' else 'متوقف شد'), '', 'running' if corpus_run.status in ['queued', 'running'] else ('success' if corpus_run.status == 'succeeded' else 'danger'), corpus_run.status) }}
+  </div>
+  <div class="source-list">
     {% for source in corpus_run.sources %}
     <article class="source-row">
       <div class="source-row__identity">
         <strong><bdi dir="auto">{{ source.filename }}</bdi></strong>
         <span>{{ corpus_stage_label(source.stage) }}</span>
       </div>
-      <div class="source-status source-status--{% if source.status == 'succeeded' %}ready{% elif source.status == 'failed' %}blocked{% else %}processing{% endif %}">
-        {% if source.status == "succeeded" %}آماده{% elif source.status == "failed" %}متوقف‌شده{% elif source.status == "running" %}در حال اجرا{% else %}در صف{% endif %}
-      </div>
-      {% if source.status == "succeeded" %}<p class="source-row__issue">{{ source.claim_count }} ادعای مستند ثبت شد.</p>{% endif %}
-      {% if source.last_error %}<p class="source-row__issue">{{ source.last_error }}</p>{% endif %}
+      {% if source.status == 'succeeded' %}{{ status_label('آماده', (source.claim_count | fa_num) ~ ' مدعا', 'success', source.status) }}
+      {% elif source.status == 'failed' %}{{ status_label('متوقف شد', 'قابل بررسی', 'danger', source.status) }}
+      {% elif source.status == 'running' %}{{ status_label('در حال اجرا', 'اقدامی لازم نیست', 'running', source.status) }}
+      {% else %}{{ status_label('در صف', '', 'neutral', source.status) }}{% endif %}
+      {% if source.last_error %}
+        {% call technical_details('خطای این منبع') %}<p><bdi dir="ltr">{{ source.last_error }}</bdi></p>{% endcall %}
+      {% endif %}
     </article>
     {% endfor %}
-  </section>
-  {% endif %}
-
-  {% if planning_run %}
-  <section class="source-list" aria-labelledby="planning-run-title">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">ارزیابی پوشش و طرح</p>
-        <h2 id="planning-run-title">
-          {% if planning_run.stage == "queued" %}در صف اجرا
-          {% elif planning_run.stage == "auditing_coverage" %}ارزیابی پوشش منابع
-          {% elif planning_run.stage == "prioritizing_claims" %}اولویت‌بندی ادعاها
-          {% elif planning_run.stage == "estimating_budget" %}محاسبه مدت قابل‌پشتیبانی
-          {% elif planning_run.stage == "building_disagreements" %}بررسی اختلاف دیدگاه‌ها
-          {% elif planning_run.stage == "planning_episode" %}ساخت طرح اپیزود
-          {% elif planning_run.stage == "building_evidence_packs" %}آماده‌سازی شواهد هر بخش
-          {% elif planning_run.stage == "blocked" %}نیازمند تصمیم شما
-          {% elif planning_run.stage == "complete" %}طرح آماده بررسی
-          {% else %}متوقف‌شده{% endif %}
-        </h2>
-      </div>
-      <span><bdi dir="ltr">{{ planning_run.status }}</bdi></span>
-    </div>
-    {% if planning_run.last_error %}<p>{{ planning_run.last_error }}</p>{% endif %}
-  </section>
-  {% endif %}
-
-  {% if corpus_run and corpus_run.status == "failed" %}
-  <div class="notice notice--danger" role="alert"><strong>ساخت مجموعه شواهد متوقف شد.</strong><p>{{ corpus_run.last_error }}</p></div>
-  <form method="post" action="/projects/{{ project.project_id }}/corpus/retry" class="form-actions">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <button class="button button--primary" type="submit">تلاش دوباره در اجرای جدید</button>
-  </form>
-  {% elif planning_run and planning_run.status in ["blocked", "succeeded", "failed"] %}
-  <div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/episode">مشاهده ارزیابی و طرح</a></div>
-  {% elif project.state.value == "corpus_ready" %}
-  <div class="notice notice--info">مجموعه شواهد آماده است. ارزیابی پوشش و ساخت طرح هنوز شروع نشده است.</div>
-  <div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/episode">رفتن به طرح اپیزود</a></div>
-  {% elif corpus_active or planning_active %}
-  <div class="notice notice--info">پردازش در حال اجراست. فقط stage واقعی ذخیره‌شده نمایش داده می‌شود.</div>
-  {% endif %}
-
-  <div class="form-actions">
-    <a class="button button--secondary" href="/projects/{{ project.project_id }}/sources">مشاهده منابع</a>
-    <a class="button button--quiet" href="/projects">بازگشت به پروژه‌ها</a>
   </div>
-</div>
-{% if corpus_active or planning_active %}
-<script>window.setTimeout(() => window.location.reload(), 3000);</script>
+</section>
 {% endif %}
+
+{% if planning_run %}
+<section class="section-block" aria-labelledby="planning-run-title">
+  <div class="section-heading">
+    <div>
+      <p class="kicker">کفایت منابع و طرح گفتار</p>
+      <h2 id="planning-run-title">
+        {% if planning_run.stage == 'queued' %}در صف اجرا
+        {% elif planning_run.stage == 'auditing_coverage' %}سنجش کفایت منابع
+        {% elif planning_run.stage == 'prioritizing_claims' %}اولویت‌بندی مدعاها
+        {% elif planning_run.stage == 'estimating_budget' %}محاسبهٔ مدت قابل‌پشتیبانی
+        {% elif planning_run.stage == 'building_disagreements' %}بررسی اختلاف دیدگاه‌ها
+        {% elif planning_run.stage == 'planning_episode' %}ساخت طرح گفتار
+        {% elif planning_run.stage == 'building_evidence_packs' %}آماده‌سازی شاهدهای هر بخش
+        {% elif planning_run.stage == 'blocked' %}نیازمند تصمیم شما
+        {% elif planning_run.stage == 'complete' %}طرح گفتار آمادهٔ بررسی است
+        {% else %}متوقف‌شده{% endif %}
+      </h2>
+    </div>
+    {{ status_label('در حال انجام' if planning_run.status in ['queued', 'running'] else ('منتظر تصمیم شما' if planning_run.status == 'blocked' else ('انجام شد' if planning_run.status == 'succeeded' else 'متوقف شد')), '', 'running' if planning_run.status in ['queued', 'running'] else ('attention' if planning_run.status == 'blocked' else ('success' if planning_run.status == 'succeeded' else 'danger')), planning_run.status) }}
+  </div>
+  {% if planning_run.last_error %}{% call technical_details('جزئیات اجرای طرح گفتار') %}<p><bdi dir="ltr">{{ planning_run.last_error }}</bdi></p>{% endcall %}{% endif %}
+</section>
+{% endif %}
+
+{% if corpus_run and corpus_run.status == 'failed' %}
+<section class="error-recovery" role="alert">
+  <div class="error-recovery__grid">
+    <div><span class="attention-panel__label">چه شد</span><h2>تحلیل منابع متوقف شد</h2><p class="error-recovery__impact"><strong>اثر:</strong> منابع اصلی و خروجی‌های سالم باقی مانده‌اند؛ مرحلهٔ ناموفق وارد طرح گفتار نشده است.</p></div>
+    <form method="post" action="/projects/{{ project.project_id }}/corpus/retry">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="button button--primary" type="submit">تلاش دوباره در اجرای جدید</button>
+    </form>
+  </div>
+  <div class="error-recovery__options"><a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/sources">بررسی منابع</a><a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a></div>
+  {% if corpus_run.last_error %}{% call technical_details('کد و متن خطا') %}<p><bdi dir="ltr">{{ corpus_run.last_error }}</bdi></p>{% endcall %}{% endif %}
+</section>
+{% elif planning_run and planning_run.status in ['blocked', 'succeeded', 'failed'] %}
+<div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/episode">مشاهدهٔ کفایت منابع و طرح گفتار</a></div>
+{% elif project.state.value == 'corpus_ready' %}
+<div class="notice notice--info">تحلیل منابع آماده است. سنجش کفایت و ساخت طرح گفتار هنوز شروع نشده است.</div>
+<div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/episode">رفتن به طرح گفتار</a></div>
+{% elif corpus_active or planning_active %}
+<div class="notice notice--info">تحلیل منابع در حال اجراست. برای ادامه نیازی به باز نگه‌داشتن این صفحه نیست.</div>
+{% endif %}
+
+<div class="form-actions section-block">
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/sources">مشاهدهٔ منابع</a>
+  <a class="button button--quiet" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
+</div>
+
+{% if corpus_active or planning_active %}<div data-auto-refresh="3000" aria-hidden="true"></div>{% endif %}
 {% endblock %}

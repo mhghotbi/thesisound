@@ -1,1 +1,1 @@
-"""Server-rendered web interface for Thesisound."""
+"""Server-rendered web interface for Maqaal."""

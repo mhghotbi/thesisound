@@ -2,20 +2,41 @@
 {% block title %}تأیید کد | مقال{% endblock %}
 {% block body_class %}auth-page{% endblock %}
 {% block main_class %}auth-shell{% endblock %}
+{% block content_class %}auth-layout{% endblock %}
 {% block content %}
-<section class="auth-card" aria-labelledby="verify-title">
-  <div class="auth-brand">
+<section class="auth-story" aria-labelledby="verify-story-title">
+  <div class="brand brand--auth">
     <img class="auth-brand__logo" src="{{ url_for('static', path='/maghal-logo-full.webp') }}" alt="مقال؛ گفتار مستند شنیدنی" width="497" height="520">
   </div>
-  <p class="eyebrow">تأیید ورود</p>
-  <h1 id="verify-title">کد شش‌رقمی را وارد کنید</h1>
+  <div>
+    <h1 id="verify-story-title">یک گام تا بازگشت به میز مطالعه.</h1>
+    <p>کد ورود فقط برای همین درخواست معتبر است. پس از ورود، گفتارها از آخرین مرحلهٔ معتبر ادامه پیدا می‌کنند.</p>
+  </div>
+  <div class="auth-story__note">
+    <strong>شماره اشتباه است؟</strong>
+    <p>به مرحلهٔ قبل برگردید؛ درخواست قبلی کنار گذاشته می‌شود و کد تازه برای شمارهٔ جدید می‌گیرید.</p>
+  </div>
+</section>
+
+<section class="auth-card" aria-labelledby="verify-title">
+  <p class="kicker">تأیید ورود</p>
+  <h2 id="verify-title">کد شش‌رقمی را وارد کنید</h2>
   <p class="lede">کد برای <bdi dir="ltr">{{ phone }}</bdi> درخواست شده است.</p>
+
   {% if error %}<div class="notice notice--danger" role="alert">{{ error }}</div>{% endif %}
-  <form method="post" action="/login/verify" class="stack">
+
+  <form method="post" action="/login/verify" class="form-sheet" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <label class="field"><span>کد یک‌بارمصرف</span><input name="code" class="otp-input" type="text" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9۰-۹]{6}" placeholder="••••••" required autofocus></label>
-    <button class="button button--primary button--full" type="submit">ورود</button>
+    <label class="field">
+      <span>کد یک‌بارمصرف</span>
+      <input name="code" class="otp-input" type="text" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9۰-۹]{6}" placeholder="••••••" required autofocus aria-describedby="otp-hint">
+      <small class="field-hint" id="otp-hint">شش رقم را پیوسته وارد کنید.</small>
+    </label>
+    <button class="button button--primary button--full" type="submit">ورود به گفتارها</button>
   </form>
-  <a class="text-link" href="/login">اصلاح شماره یا دریافت کد تازه</a>
+
+  <div class="form-actions auth-card__footer">
+    <a class="button button--quiet button--small" href="/login">اصلاح شماره یا دریافت کد تازه</a>
+  </div>
 </section>
 {% endblock %}

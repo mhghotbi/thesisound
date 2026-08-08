@@ -196,7 +196,7 @@ class WebSourceDiscoveryService:
                 status=UiSourceStatus.BLOCKED,
                 issue_summary=(
                     "متن منبع از URL بازیابی نشد؛ این نتیجه فقط یک پیشنهاد جست‌وجو است "
-                    "و نمی‌تواند وارد شواهد شود."
+                    "و نمی‌تواند وارد شاهدها شود."
                 ),
                 origin="gemini_web_search",
                 canonical_url=str(candidate.url),
@@ -237,7 +237,7 @@ class WebSourceDiscoveryService:
             manifest.selected = False
             manifest.issue_summary = (
                 "بخشی از متن بازیابی شد، اما کامل‌بودن محدوده منبع تأیید نشد. "
-                "برای جلوگیری از استناد ناقص، این نتیجه خودکار وارد شواهد نمی‌شود."
+                "برای جلوگیری از استناد ناقص، این نتیجه خودکار وارد شاهدها نمی‌شود."
             )
         elif manifest.status == UiSourceStatus.READY:
             manifest.selected = True

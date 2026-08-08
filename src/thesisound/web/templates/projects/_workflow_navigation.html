@@ -1,53 +1,93 @@
 {% set state = project.state.value %}
 {% set path = request.url.path %}
-<nav class="workflow-switcher" aria-label="جابجایی بین مراحل پروژه">
-  <div class="workflow-switcher__links">
-    <a class="{% if path.endswith('/brief') %}is-current{% endif %}" href="/projects/{{ project.project_id }}/brief">برداشت</a>
-    {% if state != 'brief_ready' %}
-    <a class="{% if path.endswith('/sources') %}is-current{% endif %}" href="/projects/{{ project.project_id }}/sources">منابع</a>
-    <a class="{% if path.endswith('/processing') %}is-current{% endif %}" href="/projects/{{ project.project_id }}/processing">پردازش</a>
-    {% else %}
-    <span aria-disabled="true">منابع</span>
-    <span aria-disabled="true">پردازش</span>
-    {% endif %}
-    {% if state in ['corpus_ready', 'episode_planning', 'episode_planned', 'script_drafting', 'script_ready', 'script_verifying', 'script_verified', 'audio_generating', 'audio_ready', 'audio_verifying', 'complete'] %}
-    <a class="{% if path.endswith('/episode') %}is-current{% endif %}" href="/projects/{{ project.project_id }}/episode">طرح اپیزود</a>
-    {% else %}<span aria-disabled="true">طرح اپیزود</span>{% endif %}
-    {% if state in ['episode_planned', 'script_drafting', 'script_ready', 'script_verifying', 'script_verified', 'audio_generating', 'audio_ready', 'audio_verifying', 'complete'] %}
-    <a class="{% if path.endswith('/script') %}is-current{% endif %}" href="/projects/{{ project.project_id }}/script">سناریو</a>
-    {% else %}<span aria-disabled="true">سناریو</span>{% endif %}
-    {% if state in ['script_verified', 'audio_generating', 'audio_ready', 'audio_verifying', 'complete'] %}
-    <a class="{% if path.endswith('/audio') %}is-current{% endif %}" href="/projects/{{ project.project_id }}/audio">صوت</a>
-    {% else %}<span aria-disabled="true">صوت</span>{% endif %}
-  </div>
+{% if path.endswith('/brief') %}{% set current_step = 1 %}
+{% elif path.endswith('/sources') %}{% set current_step = 2 %}
+{% elif path.endswith('/processing') %}{% set current_step = 3 %}
+{% elif path.endswith('/episode') %}{% set current_step = 4 %}
+{% elif path.endswith('/script') %}{% set current_step = 5 %}
+{% elif path.endswith('/audio') %}{% set current_step = 6 %}
+{% elif state in ['draft', 'brief_ready'] %}{% set current_step = 1 %}
+{% elif state in ['sources_collecting', 'source_selection_required'] %}{% set current_step = 2 %}
+{% elif state in ['corpus_building', 'corpus_ready', 'failed_retryable', 'failed_permanent'] %}{% set current_step = 3 %}
+{% elif state in ['episode_planning', 'episode_planned'] %}{% set current_step = 4 %}
+{% elif state in ['script_drafting', 'script_ready', 'script_verifying', 'script_verified'] %}{% set current_step = 5 %}
+{% else %}{% set current_step = 6 %}{% endif %}
 
-  {% if state not in ['draft', 'brief_ready', 'sources_collecting', 'source_selection_required'] %}
-  <details class="workflow-switcher__revision">
+{% if state in ['draft', 'brief_ready'] %}{% set available_step = 1 %}
+{% elif state in ['sources_collecting', 'source_selection_required'] %}{% set available_step = 2 %}
+{% elif state in ['corpus_building', 'corpus_ready', 'failed_retryable', 'failed_permanent'] %}{% set available_step = 3 %}
+{% elif state in ['episode_planning', 'episode_planned'] %}{% set available_step = 4 %}
+{% elif state in ['script_drafting', 'script_ready', 'script_verifying', 'script_verified'] %}{% set available_step = 5 %}
+{% elif state in ['audio_generating', 'audio_ready', 'audio_verifying', 'complete'] %}{% set available_step = 6 %}
+{% else %}{% set available_step = current_step %}{% endif %}
+
+{% set steps = [
+  ('موضوع و هدف', 'brief'),
+  ('منابع', 'sources'),
+  ('تحلیل منابع', 'processing'),
+  ('طرح گفتار', 'episode'),
+  ('متن گفتار', 'script'),
+  ('شنیدن', 'audio')
+] %}
+<nav class="workflow-rail" aria-label="مراحل ساخت گفتار">
+  <div class="workflow-rail__topline">
+    <a class="workflow-rail__project" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
+    <span aria-hidden="true">·</span>
+    <span class="workflow-rail__project">{{ project_title(project) }}</span>
+  </div>
+  <ol class="workflow-rail__steps">
+    {% for label, suffix in steps %}
+      {% set number = loop.index %}
+      {% if number < current_step %}{% set step_class = 'is-complete' %}
+      {% elif number == current_step %}{% set step_class = 'is-current' %}
+      {% elif number <= available_step %}{% set step_class = 'is-available' %}
+      {% else %}{% set step_class = 'is-locked' %}{% endif %}
+      <li class="workflow-step {{ step_class }}" {% if number == current_step %}aria-current="step"{% endif %}>
+        <span class="workflow-step__mark" aria-hidden="true">{% if number < current_step %}✓{% else %}{{ number | fa_num }}{% endif %}</span>
+        <span>
+          {% if number <= available_step %}
+            <a href="/projects/{{ project.project_id }}/{{ suffix }}"><strong>{{ label }}</strong></a>
+          {% else %}
+            <strong aria-disabled="true">{{ label }}</strong>
+          {% endif %}
+          {% if number < current_step %}<small>انجام‌شده؛ قابل بازبینی</small>
+          {% elif number == current_step %}<small>مرحلهٔ جاری</small>
+          {% elif number <= available_step %}<small>در دسترس</small>
+          {% else %}<small>پس از تکمیل مرحلهٔ قبل</small>{% endif %}
+        </span>
+      </li>
+    {% endfor %}
+  </ol>
+
+  {% if available_step > 2 %}
+  <details class="revision-control">
     <summary>بازگشت و اصلاح مراحل قبلی</summary>
-    <p>خروجی‌های وابسته archive می‌شوند و پس از اصلاح باید دوباره ساخته شوند. فایل‌های خام شما حذف نمی‌شوند.</p>
-    <div class="workflow-switcher__actions">
-      <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <input type="hidden" name="target" value="sources">
-        <button class="button button--secondary" type="submit">بازگشت برای اصلاح منابع</button>
-      </form>
-      <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <input type="hidden" name="target" value="brief">
-        <button class="button button--quiet" type="submit">بازگشت برای اصلاح برداشت</button>
-      </form>
+    <div class="revision-control__body">
+      <p>با بازکردن مرحلهٔ قبلی، خروجی‌های وابسته بایگانی و پس از اصلاح دوباره ساخته می‌شوند. فایل‌های خام حذف نمی‌شوند.</p>
+      <div class="form-actions">
+        <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="target" value="sources">
+          <button class="button button--secondary button--small" type="submit">اصلاح منابع</button>
+        </form>
+        <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="target" value="brief">
+          <button class="button button--quiet button--small" type="submit">اصلاح موضوع و هدف</button>
+        </form>
+      </div>
     </div>
   </details>
-  {% elif state in ['sources_collecting', 'source_selection_required'] %}
-  <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind" class="workflow-switcher__inline-action">
+  {% elif available_step == 2 %}
+  <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind" class="revision-control">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="target" value="brief">
-    <button class="button button--quiet" type="submit">اصلاح برداشت</button>
+    <button class="button button--quiet button--small" type="submit">اصلاح موضوع و هدف</button>
   </form>
   {% endif %}
 </nav>
 {% if request.query_params.get('workflow_error') %}
-<div class="notice notice--danger" role="alert">{{ request.query_params.get('workflow_error') }}</div>
+<div class="page-content page-content--wide"><div class="notice notice--danger" role="alert">امکان بازکردن این مرحله وجود ندارد. جزئیات در حالت پیشرفته: <code class="operator-only"><bdi dir="ltr">{{ request.query_params.get('workflow_error') }}</bdi></code></div></div>
 {% elif request.query_params.get('rewound') %}
-<div class="notice notice--success" role="status">مرحله با موفقیت باز شد. خروجی‌های وابسته قبلی archive شدند.</div>
+<div class="page-content page-content--wide"><div class="notice notice--success" role="status">مرحله باز شد. خروجی‌های وابستهٔ قبلی بایگانی شدند و فایل‌های خام باقی ماندند.</div></div>
 {% endif %}

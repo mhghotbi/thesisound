@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import secrets
 from collections.abc import Callable
+from datetime import date, datetime
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID
@@ -47,6 +48,23 @@ _PREFLIGHT_POST_SCOPES: tuple[tuple[str, PreflightScope], ...] = (
     ("/audio/generate", "audio"),
     ("/audio/retry", "audio"),
 )
+_VALID_UI_THEMES = {"cobalt", "wood", "olive"}
+_VALID_UI_MODES = {"simple", "operator"}
+_PERSIAN_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+_JALALI_MONTHS = (
+    "فروردین",
+    "اردیبهشت",
+    "خرداد",
+    "تیر",
+    "مرداد",
+    "شهریور",
+    "مهر",
+    "آبان",
+    "آذر",
+    "دی",
+    "بهمن",
+    "اسفند",
+)
 
 
 def _ensure_csrf(request: Request) -> str:
@@ -87,13 +105,52 @@ def _project_title(project: Project) -> str:
 def _corpus_stage_label(stage: str) -> str:
     return {
         "queued": "در صف اجرا",
-        "building_blocks": "ساخت بلوک‌های معنایی",
-        "mapping_document": "ساخت نقشه سند",
-        "extracting_evidence": "استخراج شواهد",
-        "building_claims": "ساخت دفتر ادعاها",
+        "building_blocks": "ساخت پاره‌متن‌ها",
+        "mapping_document": "ساخت نقشهٔ منبع",
+        "extracting_evidence": "استخراج شاهدها",
+        "building_claims": "ساخت دفتر مدعاها",
         "complete": "آماده",
         "failed": "متوقف‌شده",
     }.get(stage, stage)
+
+
+def _fa_digits(value: object) -> str:
+    return str(value).translate(_PERSIAN_DIGITS)
+
+
+def _gregorian_to_jalali(gy: int, gm: int, gd: int) -> tuple[int, int, int]:
+    month_offsets = (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
+    adjusted_year = gy + 1 if gm > 2 else gy
+    days = (
+        355666
+        + (365 * gy)
+        + ((adjusted_year + 3) // 4)
+        - ((adjusted_year + 99) // 100)
+        + ((adjusted_year + 399) // 400)
+        + gd
+        + month_offsets[gm - 1]
+    )
+    jy = -1595 + (33 * (days // 12053))
+    days %= 12053
+    jy += 4 * (days // 1461)
+    days %= 1461
+    if days > 365:
+        jy += (days - 1) // 365
+        days = (days - 1) % 365
+    if days < 186:
+        jm = 1 + (days // 31)
+        jd = 1 + (days % 31)
+    else:
+        jm = 7 + ((days - 186) // 30)
+        jd = 1 + ((days - 186) % 30)
+    return jy, jm, jd
+
+
+def _jalali_date(value: date | datetime | None) -> str:
+    if value is None:
+        return "—"
+    jy, jm, jd = _gregorian_to_jalali(value.year, value.month, value.day)
+    return f"{_fa_digits(jd)} {_JALALI_MONTHS[jm - 1]} {_fa_digits(jy)}"
 
 
 def _preflight_scope(request: Request) -> PreflightScope | None:
@@ -126,7 +183,7 @@ def create_app(
     execute_audio = audio_executor or audio_builder.run
 
     docs_url = "/api/docs" if runtime.environment != "production" else None
-    app = FastAPI(title="Thesisound", docs_url=docs_url)
+    app = FastAPI(title="مقال", docs_url=docs_url)
     app.add_middleware(
         SessionMiddleware,
         secret_key=runtime.web_session_secret,
@@ -155,6 +212,8 @@ def create_app(
     templates = Jinja2Templates(directory=_TEMPLATES_ROOT)
     templates.env.globals["project_title"] = _project_title
     templates.env.globals["corpus_stage_label"] = _corpus_stage_label
+    templates.env.filters["fa_num"] = _fa_digits
+    templates.env.filters["jalali_date"] = _jalali_date
 
     otp = OtpService(
         secret=runtime.web_session_secret,
@@ -183,12 +242,20 @@ def create_app(
         *,
         status_code: int = 200,
     ) -> HTMLResponse:
+        theme = request.session.get("ui_theme", "cobalt")
+        mode = request.session.get("ui_mode", "simple")
+        if theme not in _VALID_UI_THEMES:
+            theme = "cobalt"
+        if mode not in _VALID_UI_MODES:
+            mode = "simple"
         payload: dict[str, object] = {
             "request": request,
             "csrf_token": _ensure_csrf(request),
             "current_user": request.session.get("user_phone"),
             "environment": runtime.environment,
             "test_otp_enabled": runtime.allow_test_otp,
+            "ui_theme": theme,
+            "ui_mode": mode,
         }
         if context:
             payload.update(context)
@@ -198,6 +265,23 @@ def create_app(
             context=payload,
             status_code=status_code,
         )
+
+    def failure_action_url(project: Project) -> str | None:
+        if project.state not in {
+            ProjectState.FAILED_RETRYABLE,
+            ProjectState.FAILED_PERMANENT,
+        }:
+            return None
+        audio_run = audio_builder.run_store.load_optional(project.project_id)
+        script_run = script_builder.run_store.load_optional(project.project_id)
+        episode_run = episode_planner.run_store.load_optional(project.project_id)
+        if audio_run is not None and audio_run.status == "failed":
+            return f"/projects/{project.project_id}/audio"
+        if script_run is not None and script_run.status == "failed":
+            return f"/projects/{project.project_id}/script"
+        if episode_run is not None and episode_run.status == "failed":
+            return f"/projects/{project.project_id}/episode"
+        return f"/projects/{project.project_id}/processing"
 
     @app.get("/", include_in_schema=False)
     def root(request: Request) -> RedirectResponse:
@@ -279,6 +363,20 @@ def create_app(
         request.session.clear()
         return RedirectResponse("/login", status_code=HTTP_303_SEE_OTHER)
 
+    @app.post("/ui/preferences", status_code=204)
+    def save_ui_preferences(
+        request: Request,
+        csrf_token: Annotated[str, Form()],
+        theme: Annotated[str | None, Form()] = None,
+        mode: Annotated[str | None, Form()] = None,
+    ) -> Response:
+        _validate_csrf(request, csrf_token)
+        if theme is not None and theme in _VALID_UI_THEMES:
+            request.session["ui_theme"] = theme
+        if mode is not None and mode in _VALID_UI_MODES:
+            request.session["ui_mode"] = mode
+        return Response(status_code=204)
+
     @app.get("/system-check", response_class=HTMLResponse)
     def system_check(request: Request, scope: str = "full") -> Response:
         if redirect := _login_redirect(request):
@@ -302,29 +400,20 @@ def create_app(
     def projects_page(request: Request) -> Response:
         if redirect := _login_redirect(request):
             return redirect
-        projects = workspace.list_projects()
-        models = []
-        for project in projects:
-            failure_action_url = None
-            if project.state in {
-                ProjectState.FAILED_RETRYABLE,
-                ProjectState.FAILED_PERMANENT,
-            }:
-                audio_run = audio_builder.run_store.load_optional(project.project_id)
-                script_run = script_builder.run_store.load_optional(project.project_id)
-                episode_run = episode_planner.run_store.load_optional(project.project_id)
-                if audio_run is not None and audio_run.status == "failed":
-                    failure_action_url = f"/projects/{project.project_id}/audio"
-                elif script_run is not None and script_run.status == "failed":
-                    failure_action_url = f"/projects/{project.project_id}/script"
-                elif episode_run is not None and episode_run.status == "failed":
-                    failure_action_url = f"/projects/{project.project_id}/episode"
-            models.append(
-                build_project_read_model(
-                    project,
-                    failure_action_url=failure_action_url,
-                )
+        models = [
+            build_project_read_model(
+                project,
+                failure_action_url=failure_action_url(project),
             )
+            for project in workspace.list_projects()
+        ]
+        group_order = {"attention": 0, "running": 1, "complete": 2}
+        models.sort(
+            key=lambda item: (
+                group_order.get(item.group_key, 9),
+                -item.project.updated_at.timestamp(),
+            )
+        )
         return render(request, "projects/index.html", {"projects": models})
 
     @app.get("/projects/new", response_class=HTMLResponse)
@@ -384,6 +473,21 @@ def create_app(
             status_code=HTTP_303_SEE_OTHER,
         )
 
+    @app.get("/projects/{project_id}", response_class=HTMLResponse)
+    def project_overview(request: Request, project_id: UUID) -> Response:
+        if redirect := _login_redirect(request):
+            return redirect
+        project = workspace.load_project(project_id)
+        model = build_project_read_model(
+            project,
+            failure_action_url=failure_action_url(project),
+        )
+        return render(
+            request,
+            "projects/overview.html",
+            {"project": project, "model": model},
+        )
+
     @app.get("/projects/{project_id}/brief", response_class=HTMLResponse)
     def brief_page(request: Request, project_id: UUID) -> Response:
         if redirect := _login_redirect(request):
@@ -403,7 +507,7 @@ def create_app(
         request: Request,
         project_id: UUID,
         csrf_token: Annotated[str, Form()],
-        central_question: Annotated[str, Form()],
+        central_question: Annotated[str, Form()] = "",
         must_include: Annotated[str, Form()] = "",
         exclusions: Annotated[str, Form()] = "",
         action: Annotated[str, Form()] = "save",
@@ -411,14 +515,20 @@ def create_app(
         if redirect := _login_redirect(request):
             return redirect
         project = workspace.load_project(project_id)
+        values = {
+            "central_question": central_question,
+            "must_include": must_include,
+            "exclusions": exclusions,
+        }
         try:
             _validate_csrf(request, csrf_token)
             if project.state not in _EDITABLE_BRIEF_STATES:
                 raise ValueError(
-                    "این برداشت وارد پردازش شده است و بدون recovery قابل ویرایش نیست."
+                    "این برداشت اولیه وارد تحلیل منابع شده است و بدون بازگشت "
+                    "به مرحلهٔ قبلی قابل ویرایش نیست."
                 )
             if project.brief is None:
-                raise ValueError("برداشت پژوهش وجود ندارد.")
+                raise ValueError("صورت‌بندی گفتار وجود ندارد.")
             project.brief.central_question = central_question.strip()
             project.brief.scope_inclusions = [
                 item.strip() for item in must_include.splitlines() if item.strip()
@@ -427,7 +537,7 @@ def create_app(
                 item.strip() for item in exclusions.splitlines() if item.strip()
             ]
             if not project.brief.central_question:
-                raise ValueError("سؤال مرکزی نمی‌تواند خالی باشد.")
+                raise ValueError("پرسش مرکزی نمی‌تواند خالی باشد.")
             if action == "confirm" and project.state == ProjectState.BRIEF_READY:
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
@@ -440,6 +550,7 @@ def create_app(
                     "project": current,
                     "brief_locked": current.state not in _EDITABLE_BRIEF_STATES,
                     "error": str(error),
+                    "values": values,
                 },
                 status_code=422,
             )

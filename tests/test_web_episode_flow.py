@@ -78,7 +78,7 @@ def test_web_queues_episode_planning_from_corpus_ready(tmp_path: Path) -> None:
     with TestClient(app) as client:
         _login(client)
         page = client.get(f"/projects/{project.project_id}/episode")
-        assert "ارزیابی پوشش و ساخت طرح" in page.text
+        assert "سنجش کفایت منابع و ساخت طرح" in page.text
         response = client.post(
             f"/projects/{project.project_id}/episode/prepare",
             data={"csrf_token": _csrf(page.text)},

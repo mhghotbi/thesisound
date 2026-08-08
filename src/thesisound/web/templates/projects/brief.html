@@ -1,84 +1,73 @@
 {% extends "base.html" %}
-{% block title %}تأیید برداشت | Thesisound{% endblock %}
+{% from "components.html" import technical_details %}
+{% block title %}موضوع و هدف | مقال{% endblock %}
 {% block content %}
-<div class="reading-layout">
-  <nav class="step-rail" aria-label="مراحل ساخت اپیزود">
-    <span class="step-rail__item is-complete"><b>۱</b> تعریف هدف</span>
-    <span class="step-rail__item is-current"><b>۲</b> تأیید برداشت</span>
-    <span class="step-rail__item"><b>۳</b> منابع</span>
-    <span class="step-rail__item"><b>۴</b> پردازش</span>
-  </nav>
-
+{% set knowledge_labels = {'none': 'بدون آشنایی', 'introductory': 'مقدماتی', 'intermediate': 'متوسط', 'advanced': 'پیشرفته'} %}
+<div class="page-content--narrow">
   <header class="page-heading page-heading--compact">
     <div>
-      <p class="eyebrow">برداشت سیستم</p>
+      <p class="kicker">برداشت اولیه</p>
       <h1>من این‌طور فهمیدم</h1>
-      <p>این مرحله یک تأیید واقعی است؛ ذخیره خودکار جای تأیید شما را نمی‌گیرد.</p>
+      <p>این تأیید واقعی است: تا زمانی که برداشت اولیه را تأیید نکنید، جست‌وجو یا تحلیل منابع شروع نمی‌شود.</p>
     </div>
   </header>
 
   {% if error %}
     <div class="notice notice--danger" role="alert">{{ error }}</div>
   {% elif request.query_params.get('saved') %}
-    <div class="notice notice--success" role="status">ویرایش‌ها ذخیره شد؛ برداشت هنوز تأیید نشده است.</div>
+    <div class="notice notice--success" role="status">ویرایش‌ها ذخیره شد؛ برداشت اولیه هنوز تأیید نشده است.</div>
   {% endif %}
 
   {% if brief_locked %}
   <div class="notice notice--info">
-    این نسخه برداشت وارد مراحل بعدی شده و فعلاً فقط خواندنی است. برای اصلاح، از «بازگشت و اصلاح مراحل قبلی» در بالای صفحه استفاده کنید؛ خروجی‌های وابسته archive می‌شوند و فایل‌های خام باقی می‌مانند.
+    <strong>این برداشت اولیه فعلاً فقط خواندنی است.</strong>
+    <p>برای اصلاح، کنترل «بازگشت و اصلاح مراحل قبلی» را در نوار مراحل باز کنید. خروجی‌های وابسته بایگانی می‌شوند و فایل‌های خام باقی می‌مانند.</p>
   </div>
   {% endif %}
 
-  <section class="interpretation">
-    <p>
-      قرار است یک اپیزود <strong>{{ project.brief.target_duration_minutes }} دقیقه‌ای</strong>
-      برای <strong>{{ project.brief.audience }}</strong> ساخته شود که
-      «{{ project.brief.central_question }}» را با سطح
-      <strong>{{ project.brief.prior_knowledge }}</strong> توضیح دهد.
-    </p>
+  <section class="coverage-verdict" aria-label="خلاصهٔ برداشت اولیه">
+    <h2>{{ project.brief.central_question }}</h2>
+    <p>یک گفتار {{ project.brief.target_duration_minutes | fa_num }} دقیقه‌ای برای {{ project.brief.audience }} با سطح آشنایی {{ knowledge_labels.get(project.brief.prior_knowledge, 'نامشخص') }}. <code class="operator-only"><bdi dir="ltr">{{ project.brief.prior_knowledge }}</bdi></code></p>
   </section>
 
   {% if brief_locked %}
   <section class="form-sheet">
-    <div class="field field--large">
-      <span>سؤال مرکزی</span>
-      <p>{{ project.brief.central_question }}</p>
-    </div>
-    {% if project.brief.scope_inclusions %}
-    <div class="field">
-      <span>حتماً پوشش داده شود</span>
-      <ul>{% for item in project.brief.scope_inclusions %}<li>{{ item }}</li>{% endfor %}</ul>
-    </div>
-    {% endif %}
-    {% if project.brief.scope_exclusions %}
-    <div class="field">
-      <span>خارج از محدوده</span>
-      <ul>{% for item in project.brief.scope_exclusions %}<li>{{ item }}</li>{% endfor %}</ul>
-    </div>
-    {% endif %}
-    <div class="form-actions">
-      {% if project.state.value in ["corpus_ready", "episode_planning", "episode_planned"] %}
-      <a class="button button--primary" href="/projects/{{ project.project_id }}/episode">رفتن به طرح اپیزود</a>
+    <dl class="summary-list">
+      <div class="summary-row"><dt>پرسش مرکزی</dt><dd>{{ project.brief.central_question }}</dd></div>
+      {% if project.brief.scope_inclusions %}<div class="summary-row"><dt>حتماً پوشش داده شود</dt><dd><ul>{% for item in project.brief.scope_inclusions %}<li>{{ item }}</li>{% endfor %}</ul></dd></div>{% endif %}
+      {% if project.brief.scope_exclusions %}<div class="summary-row"><dt>خارج از این گفتار</dt><dd><ul>{% for item in project.brief.scope_exclusions %}<li>{{ item }}</li>{% endfor %}</ul></dd></div>{% endif %}
+    </dl>
+    <div class="form-actions form-actions--end">
+      {% if project.state.value in ['corpus_ready', 'episode_planning', 'episode_planned'] %}
+      <a class="button button--primary" href="/projects/{{ project.project_id }}/episode">رفتن به طرح گفتار</a>
+      {% elif project.state.value in ['sources_collecting', 'source_selection_required'] %}
+      <a class="button button--primary" href="/projects/{{ project.project_id }}/sources">رفتن به منابع</a>
       {% else %}
-      <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">مشاهده پردازش</a>
+      <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">مشاهدهٔ تحلیل منابع</a>
       {% endif %}
     </div>
   </section>
   {% else %}
-  <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/brief">
+  <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/brief" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label class="field field--large">
-      <span>سؤال مرکزی</span>
-      <textarea name="central_question" rows="3" required>{{ project.brief.central_question }}</textarea>
+      <span>پرسش مرکزی</span>
+      <textarea name="central_question" rows="3" required {% if error %}aria-invalid="true" aria-describedby="brief-error"{% endif %}>{{ values.central_question if values else project.brief.central_question }}</textarea>
+      {% if error %}<small class="field-error" id="brief-error">{{ error }}</small>{% else %}<small class="field-hint">این پرسش معیار انتخاب منبع، سنجش کفایت و ساختار گفتار خواهد بود.</small>{% endif %}
     </label>
     <label class="field">
       <span>حتماً پوشش داده شود <small>(هر مورد در یک خط)</small></span>
-      <textarea name="must_include" rows="4" placeholder="مثلاً: زمینه تاریخی مفهوم">{{ project.brief.scope_inclusions | join('\n') }}</textarea>
+      <textarea name="must_include" rows="4" placeholder="مثلاً: زمینهٔ تاریخی مفهوم">{{ values.must_include if values else project.brief.scope_inclusions | join('\n') }}</textarea>
     </label>
     <label class="field">
-      <span>خارج از محدوده <small>(هر مورد در یک خط)</small></span>
-      <textarea name="exclusions" rows="3" placeholder="مثلاً: جزئیات فنی کم‌اهمیت">{{ project.brief.scope_exclusions | join('\n') }}</textarea>
+      <span>خارج از این گفتار <small>(هر مورد در یک خط)</small></span>
+      <textarea name="exclusions" rows="3" placeholder="مثلاً: جزئیات فنی کم‌اهمیت">{{ values.exclusions if values else project.brief.scope_exclusions | join('\n') }}</textarea>
     </label>
+
+    {% call technical_details('صورت‌بندی گفتار', always_visible=false) %}
+      <p>نوع موضوع: <code><bdi dir="ltr">{{ project.brief.topic_type.value }}</bdi></code> · زبان خروجی: <code><bdi dir="ltr">{{ project.brief.output_language }}</bdi></code> · رویکردها: <code><bdi dir="ltr">{{ project.brief.modes | join(', ') }}</bdi></code></p>
+    {% endcall %}
+
     <div class="form-actions form-actions--split">
       <button class="button button--secondary" name="action" value="save" type="submit">فقط ذخیره</button>
       <button class="button button--primary" name="action" value="confirm" type="submit">درست است، ادامه بده</button>
