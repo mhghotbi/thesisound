@@ -13,6 +13,7 @@ from thesisound.config import Settings
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
+from thesisound.services.budget_calibration import BudgetCalibrationRecorder
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
@@ -35,6 +36,7 @@ def register_script_commands(app: typer.Typer) -> None:
     app.command("verify-script")(_verify_script)
     app.command("revise-script")(_revise_script)
     app.command("prepare-script")(_prepare_script)
+    app.command("record-budget-calibration")(_record_budget_calibration)
 
 
 def _build_glossary(
@@ -152,6 +154,33 @@ def _prepare_script(
     except (FileNotFoundError, ModelError, ValueError) as exc:
         _fail(exc)
     _print_json(result.model_dump(mode="json"))
+
+
+def _record_budget_calibration(
+    project_id: Annotated[UUID, typer.Argument()],
+    revised: Annotated[bool, typer.Option("--revised/--draft")] = True,
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    root = _root(settings, workspace_root)
+    workspace = WorkspaceStore(root)
+    episode_store = EpisodeArtifactStore(root)
+    script_store = ScriptArtifactStore(root)
+    try:
+        project = workspace.load_project(project_id)
+        if project.brief is None or project.episode_plan is None:
+            raise ValueError("ResearchBrief and EpisodePlan are required for calibration.")
+        report = BudgetCalibrationRecorder(root).record(
+            project_id=project_id,
+            target_duration_minutes=project.brief.target_duration_minutes,
+            episode_plan=project.episode_plan,
+            evidence_packs=episode_store.load_evidence_packs(project_id),
+            checks=script_store.load_checks(project_id, revised=revised),
+            verification=script_store.load_verification(project_id, revised=revised),
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        _fail(exc)
+    _print_json(report.model_dump(mode="json"))
 
 
 def _service(settings: Settings, root: Path) -> ScriptPipelineService:
