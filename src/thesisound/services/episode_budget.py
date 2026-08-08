@@ -56,6 +56,15 @@ class EpisodeBudgetEstimator:
             float(coverage.max_supported_minutes),
             deterministic_supported,
         )
+        expansion_assumption = (
+            "Claim explanation seconds are expanded by "
+            f"{self.explanation_expansion_factor:.2f} for examples, transitions, "
+            "and dialogue."
+        )
+        evidence_assumption = (
+            f"At least {self.evidence_tokens_per_output_minute:.2f} original evidence "
+            "tokens are required per output minute."
+        )
         return EpisodeBudgetReport(
             project_id=project_id,
             target_duration_minutes=target_duration_minutes,
@@ -68,11 +77,8 @@ class EpisodeBudgetEstimator:
             calibration_status=self.calibration_status,
             assumptions=[
                 f"Persian speech target: {self.words_per_minute} words per minute.",
-                "Claim explanation seconds are expanded by "
-                f"{self.explanation_expansion_factor:.2f} for examples, transitions, and dialogue.",
-                "At least "
-                f"{self.evidence_tokens_per_output_minute:.2f} original evidence tokens are required "
-                "per output minute.",
+                expansion_assumption,
+                evidence_assumption,
                 "The effective limit is the minimum of model and deterministic estimates.",
             ],
         )
