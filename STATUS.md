@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-08
 
-## Implemented end-to-end path
+## Implemented local end-to-end path
 
 ```text
 OTP login
@@ -15,23 +15,33 @@ OTP login
 → explicitly approved Episode Plan
 → grounded Persian script
 → deterministic checks and independent verification
-→ explicitly started audio generation
+→ direct UI transition to audio
+→ runtime preflight before provider work
 → TTS-safe chunks
 → TTS synthesis
 → WAV validation
 → ASR transcription
 → expected-vs-heard QA
-→ targeted regeneration of defective chunks
+→ targeted regeneration
 → FFmpeg normalization and assembly
 → verified final WAV
 → COMPLETE
 ```
 
+## End-to-end readiness additions
+
+- `uv run thesisound doctor` checks live runtime prerequisites.
+- `/system-check` exposes the same checks in the UI.
+- model and audio POST actions are blocked before queueing when required dependencies are missing.
+- the verified-script screen links directly to audio generation.
+- blocked or review-needed sources can be retried or removed before corpus confirmation.
+- README and the local live-run runbook describe the current PDF-to-WAV path.
+
 ## Milestone status
 
 - M0 Scaffold and contracts: implemented
-- M1 Document ingestion: implemented; broader Persian parser benchmark remains empirical work
-- M2 Structured model execution: implemented; live provider smoke tests remain empirical work
+- M1 Document ingestion: implemented; broader Persian benchmark remains empirical work
+- M2 Structured model execution: implemented; live-provider behavior remains empirical work
 - M3 Evidence pipeline: implemented
 - M4 Episode preparation: implemented
 - M5 Verified Persian script: implemented
@@ -44,14 +54,12 @@ OTP login
 
 ## What is not yet claimed
 
-The code path is implemented and covered by deterministic/fake-provider tests. It is not yet empirically calibrated on a real Persian golden corpus.
+The local application is ready for a live happy-path run, but no claim is made yet about real Persian output quality, latency, cost, or reliability. Those require a recorded run with actual providers and a real source corpus.
 
-The next validation work is:
+The next work is empirical rather than another architecture milestone:
 
-1. run live Gemini TTS and ASR on real verified scripts;
-2. compare chunk sizes and voices;
-3. run blind listening and transcript-fidelity evaluation;
-4. benchmark Persian parsing/OCR across the fixed corpus;
-5. update thresholds and defaults only from recorded evidence.
-
-`docs/25-audio-vertical-slice.md` is the authoritative contract for the audio milestone. Older roadmap language that still calls M6 “the next step” should be read as historical until the roadmap document is consolidated.
+1. run `thesisound doctor` and resolve all FAIL items;
+2. execute one real project from login to final WAV;
+3. record provider calls, latency, token usage, TTS chunk count, regeneration count, and failure points;
+4. inspect source trace, script quality, ASR diffs, and final listening quality;
+5. change thresholds and defaults only from recorded evidence.
