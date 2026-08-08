@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import re
 from collections.abc import Callable
+from functools import partial
 from uuid import UUID
 
 from thesisound.domain import (
@@ -58,10 +59,6 @@ class EvidenceExtractorService:
                 ),
                 "working_thesis": document_map.working_thesis,
             }
-
-            def validate(draft: EvidenceExtractionDraft) -> None:
-                _validate_draft(draft, block)
-
             execution = self.model_runner.run(
                 project_id=project_id,
                 stage="evidence_extraction",
@@ -70,7 +67,7 @@ class EvidenceExtractorService:
                 output_type=EvidenceExtractionDraft,
                 model=model,
                 prompt_version=prompt_version,
-                validator=validate,
+                validator=partial(_validate_draft, block=block),
             )
             extraction = _materialize_extraction(execution.output, block)
             validate_evidence_extraction(extraction, block)
@@ -81,7 +78,11 @@ class EvidenceExtractorService:
         return extractions, runs
 
 
-def _validate_draft(draft: EvidenceExtractionDraft, block: SourceDocumentBlock) -> None:
+def _validate_draft(
+    draft: EvidenceExtractionDraft,
+    *,
+    block: SourceDocumentBlock,
+) -> None:
     normalized_source = _normalize(block.text)
     seen_claims: set[str] = set()
     for claim in draft.claims:
