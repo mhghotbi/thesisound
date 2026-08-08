@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Generic, Literal, TypeVar
+from typing import Literal
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
-
-T = TypeVar("T", bound=BaseModel)
 
 
 class PromptContract(BaseModel):
@@ -34,7 +32,7 @@ class ModelUsage(BaseModel):
     thinking_tokens: int | None = Field(default=None, ge=0)
 
 
-class StructuredModelResponse(BaseModel, Generic[T]):
+class StructuredModelResponse[T: BaseModel](BaseModel):
     output: T
     provider: str
     model: str
@@ -74,7 +72,7 @@ class ModelRunRecord(BaseModel):
     error_message: str | None = None
 
 
-class ModelExecution(BaseModel, Generic[T]):
+class ModelExecution[T: BaseModel](BaseModel):
     output: T
     record: ModelRunRecord
 
