@@ -6,6 +6,7 @@ from uuid import UUID, uuid5
 
 from thesisound.domain import (
     AuthorityClass,
+    Project,
     ProjectState,
     SourceAccess,
     SourceCandidate,
@@ -21,7 +22,12 @@ from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_validator import validate_evidence_collection
 from thesisound.services.source_artifact_store import SourceArtifactStore
-from thesisound.source_analysis import ClaimLedger, SourceAnalysisManifest, SourceDocumentBlock
+from thesisound.source_analysis import (
+    BlockEvidenceExtraction,
+    ClaimLedger,
+    SourceAnalysisManifest,
+    SourceDocumentBlock,
+)
 
 
 class SourceAnalysisService:
@@ -51,7 +57,10 @@ class SourceAnalysisService:
     ) -> tuple[UUID, list[SourceDocumentBlock], SourceAnalysisManifest]:
         project = self.workspace_store.load_project(project_id)
         _validate_ingestion(project.brief is not None, ingestion)
-        resolved_source_id = source_id or uuid5(project.project_id, ingestion.inspection.sha256)
+        resolved_source_id = source_id or uuid5(
+            project.project_id,
+            ingestion.inspection.sha256,
+        )
         self._enter_corpus_building(project)
         _register_source(project, resolved_source_id, ingestion)
         self.workspace_store.save_project(project)
@@ -110,15 +119,14 @@ class SourceAnalysisService:
         blocks = self.artifact_store.load_blocks(project_id, source_id)
         document_map = self.artifact_store.load_document_map(project_id, source_id)
 
-        def save_one(extraction, block_id: str) -> None:
+        def save_one(record: BlockEvidenceExtraction) -> None:
             self.artifact_store.save_block_extraction(
                 project_id,
                 source_id,
-                extraction,
-                block_id,
+                record,
             )
 
-        extractions, runs = self.evidence_extractor.extract_source(
+        records, runs = self.evidence_extractor.extract_source(
             project_id=project_id,
             source_id=source_id,
             blocks=blocks,
@@ -127,11 +135,13 @@ class SourceAnalysisService:
             prompt_version=prompt_version,
             on_extraction=save_one,
         )
-        validate_evidence_collection(extractions, blocks)
-        self.artifact_store.save_evidence(project_id, source_id, extractions)
+        validate_evidence_collection(records, blocks)
+        self.artifact_store.save_evidence(project_id, source_id, records)
         manifest = self.artifact_store.load_manifest(project_id, source_id)
         manifest.status = "evidence_ready"
-        manifest.evidence_count = sum(len(item.claims) for item in extractions)
+        manifest.evidence_count = sum(
+            len(record.extraction.claims) for record in records
+        )
         manifest.model_run_ids.extend(run.run_id for run in runs)
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
@@ -217,10 +227,8 @@ class SourceAnalysisService:
             raise
 
     @staticmethod
-    def _enter_corpus_building(project) -> None:
-        if project.state == ProjectState.BRIEF_READY:
-            transition(project, ProjectState.SOURCES_COLLECTING)
-        if project.state == ProjectState.CORPUS_READY:
+    def _enter_corpus_building(project: Project) -> None:
+        if project.state in {ProjectState.BRIEF_READY, ProjectState.CORPUS_READY}:
             transition(project, ProjectState.SOURCES_COLLECTING)
         if project.state == ProjectState.SOURCES_COLLECTING:
             transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
@@ -256,7 +264,11 @@ def _validate_ingestion(has_brief: bool, ingestion: IngestionResult) -> None:
         raise ValueError("Ingestion result does not contain a parsed document.")
 
 
-def _register_source(project, source_id: UUID, ingestion: IngestionResult) -> None:
+def _register_source(
+    project: Project,
+    source_id: UUID,
+    ingestion: IngestionResult,
+) -> None:
     if any(source.source_id == source_id for source in project.sources):
         return
     project.sources.append(
