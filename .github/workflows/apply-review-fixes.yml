@@ -1,0 +1,188 @@
+name: Apply review fixes
+
+on:
+  push:
+    branches: [fix/large-doc-navigation-search]
+    paths: [.github/workflows/apply-review-fixes.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+      - name: Apply review fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          mapper = Path("src/thesisound/services/document_mapper.py")
+          text = mapper.read_text(encoding="utf-8")
+          replacements = [
+              (
+                  "                part_number=part_number,\n            )",
+                  "                part_number=part_number,\n"
+                  "                require_complete_coverage=True,\n"
+                  "            )",
+              ),
+              (
+                  "            content_ids=content_block_ids,\n        )\n"
+                  "        return _materialize_document_map",
+                  "            content_ids=content_block_ids,\n"
+                  "            minimum_coverage=1.0,\n"
+                  "        )\n"
+                  "        return _materialize_document_map",
+              ),
+              (
+                  "        part_number: int | None,\n"
+                  "    ) -> tuple[DocumentMapDraft, ModelRunRecord]:",
+                  "        part_number: int | None,\n"
+                  "        require_complete_coverage: bool = False,\n"
+                  "    ) -> tuple[DocumentMapDraft, ModelRunRecord]:",
+              ),
+              (
+                  "        def validate(draft: DocumentMapDraft) -> None:\n"
+                  "            _validate_map_draft(draft, known_ids=known_ids, content_ids=content_ids)",
+                  "        def validate(draft: DocumentMapDraft) -> None:\n"
+                  "            _validate_map_draft(\n"
+                  "                draft,\n"
+                  "                known_ids=known_ids,\n"
+                  "                content_ids=content_ids,\n"
+                  "                minimum_coverage=1.0 if require_complete_coverage else 0.9,\n"
+                  "            )",
+              ),
+              (
+                  "    content_ids: set[str],\n) -> None:",
+                  "    content_ids: set[str],\n"
+                  "    minimum_coverage: float = 0.9,\n"
+                  ") -> None:",
+              ),
+              (
+                  "    if coverage < 0.9:\n"
+                  "        raise DeterministicValidationError(\n"
+                  "            f\"Document map covered only {coverage:.0%} of non-front-matter blocks.\"\n"
+                  "        )",
+                  "    if coverage < minimum_coverage:\n"
+                  "        raise DeterministicValidationError(\n"
+                  "            \"Document map covered only \"\n"
+                  "            f\"{coverage:.0%} of non-front-matter blocks; \"\n"
+                  "            f\"required coverage is {minimum_coverage:.0%}.\"\n"
+                  "        )",
+              ),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f"document mapper review replacement not found: {old[:80]!r}")
+              text = text.replace(old, new, 1)
+          mapper.write_text(text, encoding="utf-8")
+
+          discovery = Path("src/thesisound/web/source_discovery.py")
+          text = discovery.read_text(encoding="utf-8")
+          old = "canonical_url=str(capture.canonical_url),"
+          if text.count(old) != 1:
+              raise SystemExit("expected one blocked-source canonical URL assignment")
+          text = text.replace(old, "canonical_url=str(candidate.url),")
+          old = "manifest.canonical_url = str(capture.canonical_url)"
+          if text.count(old) != 1:
+              raise SystemExit("expected one captured-source canonical URL assignment")
+          text = text.replace(old, "manifest.canonical_url = str(candidate.url)")
+          discovery.write_text(text, encoding="utf-8")
+
+          tests = Path("tests/test_document_mapper_large_inputs.py")
+          text = tests.read_text(encoding="utf-8")
+          old = "from thesisound.modeling import ModelExecution, ModelRunRecord"
+          new = (
+              "from thesisound.modeling import (\n"
+              "    DeterministicValidationError,\n"
+              "    ModelExecution,\n"
+              "    ModelRunRecord,\n"
+              ")"
+          )
+          if old not in text:
+              raise SystemExit("test import replacement not found")
+          text = text.replace(old, new, 1)
+          marker = "\n\ndef _blocks() -> list[SourceDocumentBlock]:"
+          strict_runner = '''
+
+class OmittingPartitionRunner(HierarchicalRunner):
+    def run(self, **kwargs):
+        output_type = kwargs["output_type"]
+        if output_type is DocumentMapDraft:
+            variables = kwargs["variables"]
+            blocks = variables["blocks"]
+            assert isinstance(blocks, list)
+            output = DocumentMapDraft(
+                sections=[
+                    DocumentMapDraftSection(
+                        section_id="section",
+                        source_block_ids=[str(item["block_id"]) for item in blocks[:-1]],
+                        title="Incomplete partition",
+                        function="argument",
+                    )
+                ]
+            )
+            validator = kwargs.get("validator")
+            if validator is not None:
+                validator(output)
+        return super().run(**kwargs)
+'''
+          if marker not in text:
+              raise SystemExit("test class insertion marker not found")
+          text = text.replace(marker, strict_runner + marker, 1)
+          text += '''
+
+
+def test_large_document_rejects_any_omitted_content_block() -> None:
+    blocks = _blocks()
+    mapper = DocumentMapperService(
+        OmittingPartitionRunner(),
+        maximum_input_characters=500,
+    )
+
+    with pytest.raises(
+        DeterministicValidationError,
+        match="required coverage is 100%",
+    ):
+        mapper.map_document(
+            project_id=uuid4(),
+            source_id=blocks[0].source_id,
+            blocks=blocks,
+            model="fake",
+        )
+'''
+          tests.write_text(text, encoding="utf-8")
+          PY
+          rm .github/workflows/apply-review-fixes.yml
+      - name: Validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv sync --extra dev --extra web-ui --extra gemini
+          uv run ruff format \
+            src/thesisound/services/document_mapper.py \
+            src/thesisound/web/source_discovery.py \
+            tests/test_document_mapper_large_inputs.py
+          uv run ruff check . --output-format=github
+          uv run pytest
+      - name: Commit validated review fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Require complete large-document coverage and stable web-source identity"
+          git push origin HEAD:fix/large-doc-navigation-search
