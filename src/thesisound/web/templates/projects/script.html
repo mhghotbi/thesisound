@@ -33,7 +33,7 @@
   </div>
   <form method="post" action="/projects/{{ project.project_id }}/script/approve">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <button class="button button--primary" type="submit">تأیید طرح و ساخت متن</button>
+    <button class="button button--primary" type="submit">تأیید همین طرح و ساخت سناریو (متن اپیزود)</button>
   </form>
 </section>
 <div class="form-actions"><a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">بازگشت به طرح اپیزود</a></div>
@@ -97,17 +97,18 @@
   <p class="kicker">نتیجه این مرحله</p>
   <h2>{{ script.title }}</h2>
   <p>{{ checks.word_count | fa_num }} واژه · حدود {{ checks.estimated_minutes | round(1) | fa_num }} دقیقه · {{ script.turns | length | fa_num }} نوبت گفتار{% if used_revision %} · یک اصلاح هدفمند انجام شده{% endif %}</p>
+  <code class="operator-only"><bdi dir="ltr">{{ project.state.name }}</bdi></code>
 </section>
 
 <section class="section-block" aria-labelledby="quality-title">
   <div class="section-heading"><h2 id="quality-title">گزارش کیفیت</h2></div>
   <div class="quality-summary">
     <article class="quality-row">
-      <h3>کنترل ساختاری و ارجاع‌ها</h3>
+      <h3>کنترل قطعی ساختار و ارجاع‌ها</h3>
       {% if checks.issues %}<p>{{ checks.issues | length | fa_num }} مسئله ثبت شده که جزئیات آن در حالت پیشرفته دیده می‌شود.</p>{% else %}<p>همه بخش‌های محتوایی ارجاع لازم را دارند و مسئله قطعی باقی نمانده است.</p>{% endif %}
     </article>
     <article class="quality-row">
-      <h3>راستی‌آزمایی مستقل</h3>
+      <h3>Verifier مستقل (راستی‌آزمایی)</h3>
       {% if verification.issues %}<p>Verifier هنوز {{ verification.issues | length | fa_num }} نکته ثبت کرده است؛ این نسخه فقط در صورت عبور نهایی قابل استفاده است.</p>{% else %}<p>Verifier ادعای بدون پشتوانه یا نسبت‌دادن نادرست باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
     </article>
   </div>
