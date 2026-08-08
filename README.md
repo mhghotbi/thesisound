@@ -41,11 +41,14 @@ Thesisound یک ابزار شخصی و کوچک برای تبدیل یک موض�
 - حذف محافظه‌کارانه header و footer؛
 - حفظ heading، locator، source block key و reading order؛
 - Document Map با حداقل ۹۰ درصد block coverage؛
-- evidence extraction مستقل برای هر block؛
+- `AnalysisProfile` وابسته به مدت، سطح مخاطب و mode؛
+- انتخاب output-aware برای breadth و depth استخراج؛
+- evidence extraction مستقل برای blockهای منتخب؛
 - supporting excerpt عینی از متن اصلی؛
 - evidence validation قطعی؛
 - deterministic evidence ID و claim ID؛
 - Claim Ledger و ثبت evidenceهای unresolved؛
+- ثبت blockهای deferred برای خروجی‌های کوتاه‌تر؛
 - artifactهای block-level برای debugging؛
 - CLI مرحله‌ای و فرمان end-to-end `analyze-source`؛
 - transition پروژه تا `corpus_ready`.
@@ -85,6 +88,7 @@ User intent
   -> User-source ingestion
   -> Semantic document blocks
   -> Document map
+  -> Output-aware analysis profile and extraction plan
   -> Block-scoped evidence extraction
   -> Deterministic evidence validation
   -> Claim ledger
@@ -101,6 +105,28 @@ User intent
 ```
 
 خروجی نهایی از خلاصه‌های چندبار خلاصه‌شده ساخته نمی‌شود. خلاصه‌ها فقط نقش index و planning دارند. هنگام نوشتن هر بخش، متن اصلی و locator دقیق دوباره بازیابی می‌شود.
+
+## اصل مدت و عمق تحلیل
+
+Parse، block‌بندی و locator مستقل از مدت خروجی ساخته می‌شوند تا پایدار و قابل استفاده مجدد باشند. اما evidence extraction همیشه کامل اجرا نمی‌شود.
+
+پس از Document Map، سیستم از `target_duration_minutes`، `prior_knowledge` و modeهای Research Brief یک `AnalysisProfile` می‌سازد. این profile تعیین می‌کند:
+
+- چه مقدار از tokenهای منبع تحلیل شود؛
+- از هر block حداکثر چند claim استخراج شود؛
+- چند block همسایه برای context استفاده شود؛
+- example، objection و response در budget قرار بگیرند یا نه.
+
+defaultهای فعلی:
+
+| مدت | tier | هدف پوشش token | claim در block | context همسایه |
+|---|---|---:|---:|---:|
+| ۵ تا ۱۰ دقیقه | `brief` | ۳۵٪ | ۲ | ۰ |
+| ۱۱ تا ۲۵ دقیقه | `standard` | ۶۰٪ | ۳ | ۰ |
+| ۲۶ تا ۴۵ دقیقه | `deep` | ۸۵٪ | ۵ | ۱ |
+| ۴۶ تا ۱۲۰ دقیقه | `extended` | ۱۰۰٪ تا سقف budget | ۷ | ۲ |
+
+بنابراین پادکست ۶۰ دقیقه‌ای صرفاً نسخه کش‌آمده پادکست ۵ دقیقه‌ای نیست. substrate مشترک است، ولی breadth و depth شواهد متفاوت است. طراحی کامل در [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md) آمده است.
 
 ## نصب
 
@@ -146,6 +172,8 @@ uv run thesisound build-brief <project-id> \
   --language fa
 ```
 
+`--duration` فقط مدت سناریو را تعیین نمی‌کند؛ ورودی اصلی بودجه تحلیل evidence نیز هست. تنظیم جداگانه‌ای در `analyze-source` وجود ندارد تا دو مقدار متناقض ایجاد نشود.
+
 ### ۳. Parse منبع
 
 ```bash
@@ -175,7 +203,7 @@ uv run thesisound extract-evidence <project-id> <source-id>
 uv run thesisound build-claims <project-id> <source-id>
 ```
 
-`build-blocks` به API key نیاز ندارد. سه فرمان بعدی structured model را فراخوانی می‌کنند.
+`build-blocks` به API key نیاز ندارد. سه فرمان بعدی structured model را فراخوانی می‌کنند. `extract-evidence` profile را خودکار از Research Brief پروژه می‌سازد.
 
 ## Artifactها
 
@@ -195,12 +223,15 @@ workspaces/<project-id>/
     block-build-report.json
     document-blocks.jsonl
     document-map.json
+    evidence-extraction-plan.json
     evidence/
       extractions/<block-id>.json
     evidence-extractions.jsonl
     evidence-items.jsonl
     claim-ledger.json
 ```
+
+`evidence-extraction-plan.json` شامل profile، token budget، blockهای منتخب، blockهای deferred و coverage واقعی است.
 
 به‌صورت پیش‌فرض متن prompt ذخیره نمی‌شود. برای debugging محلی می‌توان موقتاً این تنظیم را فعال کرد:
 
@@ -247,15 +278,19 @@ uv run pytest
 5. [`docs/10-document-ingestion.md`](docs/10-document-ingestion.md)
 6. [`docs/11-structured-model-execution.md`](docs/11-structured-model-execution.md)
 7. [`docs/12-one-source-evidence-pipeline.md`](docs/12-one-source-evidence-pipeline.md)
-8. [`prompts/README.md`](prompts/README.md)
-9. [`docs/06-development-plan.md`](docs/06-development-plan.md)
-10. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
+8. [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md)
+9. [`prompts/README.md`](prompts/README.md)
+10. [`docs/06-development-plan.md`](docs/06-development-plan.md)
+11. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
 
 ## قواعد غیرقابل‌مذاکره
 
 - metadata یا abstract به‌تنهایی evidence متن کامل محسوب نمی‌شود.
+- parse، block ID و locator نباید به مدت خروجی وابسته باشند.
+- breadth و depth evidence extraction باید به خروجی درخواستی وابسته باشند.
 - مدل source ID، block ID، locator، evidence ID یا claim ID نمی‌سازد.
 - supporting excerpt باید واقعاً در همان source block وجود داشته باشد.
+- neighbor context حق تأمین evidence برای target block را ندارد.
 - هر evidence باید در یک claim مصرف شود یا صریحاً unresolved ثبت شود.
 - هر ادعای محتوایی سناریو باید به evidence ID و locator متصل باشد.
 - اختلاف تفسیرها نباید به اجماع جعلی تبدیل شود.
