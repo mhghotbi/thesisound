@@ -7,10 +7,13 @@ Last updated: 2026-08-08
 ```text
 OTP login
 → project and Research Brief
-→ source upload and real ingestion
+→ source upload OR Gemini Google Search
+→ URL Context capture for selected web sources
 → parse-quality gate
 → confirmed corpus
-→ semantic blocks, evidence, and claims
+→ semantic blocks
+→ hierarchical document map for large sources
+→ evidence and claims
 → coverage audit and supported-duration gate
 → explicitly approved Episode Plan
 → grounded Persian script
@@ -30,12 +33,13 @@ OTP login
 
 ## End-to-end readiness additions
 
-- `uv run thesisound doctor` checks live runtime prerequisites.
-- `/system-check` exposes the same checks in the UI.
-- model and audio POST actions are blocked before queueing when required dependencies are missing.
-- the verified-script screen links directly to audio generation.
-- blocked or review-needed sources can be retried or removed before corpus confirmation.
-- README and the local live-run runbook describe the current PDF-to-WAV path.
+- پروژه می‌تواند فقط با عنوان/موضوع شروع شود و در UI از Gemini Search منبع بگیرد.
+- Search result و snippet candidate هستند؛ URL انتخاب‌شده قبل از evidence با URL Context capture و quality-gate می‌شود.
+- اسناد بزرگ دیگر با hard cap رد نمی‌شوند؛ map در partitionهای کامل semantic انجام و سپس global reduce اجرا می‌شود.
+- navigation بین مراحل روی همه صفحات پروژه نمایش داده می‌شود.
+- rewind به Brief یا Sources خروجی downstream را archive و invalid می‌کند و raw inputs را نگه می‌دارد.
+- پیام quality warning وضعیت، اثر و اقدام لازم را به زبان انسانی توضیح می‌دهد؛ parser/verdict در جزئیات فنی است.
+- `uv run thesisound doctor` و `/system-check` پیش‌نیازهای live runtime را بررسی می‌کنند.
 
 ## Milestone status
 
@@ -46,20 +50,21 @@ OTP login
 - M4 Episode preparation: implemented
 - M5 Verified Persian script: implemented
 - M6 TTS, ASR, and Audio QA vertical slice: implemented in code
-- M6.5 Operator UI: implemented through final audio review for the current source-bound workflow
-- M7 Source discovery: not implemented
+- M6.5 Operator UI: implemented through final audio review with revision navigation
+- M7 Gemini Source Discovery vertical slice: implemented; general crawler, deduplication quality, and authority ranking remain open
 - M8 Full multi-source semantic reconciliation: not implemented
 - M9 End-user product UI: not implemented
 - M10 production persistence, jobs, deployment, and real OTP provider: not implemented
 
 ## What is not yet claimed
 
-The local application is ready for a live happy-path run, but no claim is made yet about real Persian output quality, latency, cost, or reliability. Those require a recorded run with actual providers and a real source corpus.
+The local application is ready for live-path validation, but no claim is made yet about real Persian output quality, URL retrieval completeness, source authority ranking, latency, cost, or reliability. Those require recorded runs with actual providers and real source corpora.
 
-The next work is empirical rather than another architecture milestone:
+Next empirical work:
 
 1. run `thesisound doctor` and resolve all FAIL items;
-2. execute one real project from login to final WAV;
-3. record provider calls, latency, token usage, TTS chunk count, regeneration count, and failure points;
-4. inspect source trace, script quality, ASR diffs, and final listening quality;
-5. change thresholds and defaults only from recorded evidence.
+2. execute one upload-based and one title-only/Search-based project;
+3. include at least one Persian PDF near 900k extracted characters to validate hierarchical mapping cost and continuity;
+4. record provider calls, latency, token usage, capture completeness, chunk count, regeneration count, and failure points;
+5. inspect source trace, script quality, ASR diffs, final listening quality, and rewind/rebuild behavior;
+6. change thresholds and defaults only from recorded evidence.

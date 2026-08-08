@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from uuid import UUID
 
 from thesisound.domain import (
@@ -10,16 +11,29 @@ from thesisound.domain import (
 )
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.services.model_runner import ModelRunner
-from thesisound.source_analysis import DocumentMapDraft, SourceDocumentBlock
+from thesisound.source_analysis import (
+    DocumentMapDraft,
+    DocumentMapMergeDraft,
+    SourceDocumentBlock,
+)
 
 
 class DocumentMapperService:
+    """Build a complete map without sending an unbounded document in one prompt.
+
+    Small documents use one model call. Large documents are partitioned only at
+    semantic-block boundaries, preferably at heading boundaries, then a reduce
+    pass connects the resulting sections. No text is truncated or sampled.
+    """
+
     def __init__(
         self,
         model_runner: ModelRunner,
         *,
         maximum_input_characters: int = 250_000,
     ) -> None:
+        if maximum_input_characters < 1:
+            raise ValueError("maximum_input_characters must be positive.")
         self.model_runner = model_runner
         self.maximum_input_characters = maximum_input_characters
 
@@ -34,28 +48,116 @@ class DocumentMapperService:
     ) -> tuple[DocumentMap, ModelRunRecord]:
         if not blocks:
             raise ValueError("Cannot map a document without semantic blocks.")
-        total_characters = sum(len(block.text) for block in blocks)
-        if total_characters > self.maximum_input_characters:
-            raise ValueError(
-                "Document map input is too large for the one-source vertical slice; "
-                "analyze a chapter or a smaller document scope."
-            )
 
+        partitions = _partition_blocks(blocks, self.maximum_input_characters)
+        if len(partitions) == 1:
+            draft, run = self._map_partition(
+                project_id=project_id,
+                source_id=source_id,
+                blocks=blocks,
+                model=model,
+                prompt_version=prompt_version,
+                part_number=None,
+            )
+            return _materialize_document_map(source_id, blocks, draft), run
+
+        part_drafts: list[DocumentMapDraft] = []
+        for part_number, partition in enumerate(partitions, start=1):
+            draft, _ = self._map_partition(
+                project_id=project_id,
+                source_id=source_id,
+                blocks=partition,
+                model=model,
+                prompt_version=prompt_version,
+                part_number=part_number,
+                require_complete_coverage=True,
+            )
+            part_drafts.append(_namespace_draft(draft, part_number))
+
+        sections = [section for draft in part_drafts for section in draft.sections]
+        known_section_ids = {section.section_id for section in sections}
+        merge_variables = {
+            "source_id": str(source_id),
+            "partition_count": len(partitions),
+            "partitions": [
+                {
+                    "part_number": index,
+                    "scope": _scope_locator(partition).model_dump(mode="json"),
+                    "working_thesis": draft.working_thesis,
+                    "sections": [section.model_dump(mode="json") for section in draft.sections],
+                    "cross_section_threads": [
+                        thread.model_dump(mode="json") for thread in draft.cross_section_threads
+                    ],
+                    "warnings": draft.warnings,
+                }
+                for index, (partition, draft) in enumerate(
+                    zip(partitions, part_drafts, strict=True),
+                    start=1,
+                )
+            ],
+        }
+
+        def validate_merge(draft: DocumentMapMergeDraft) -> None:
+            _validate_merge_draft(draft, known_section_ids)
+
+        merge_execution = self.model_runner.run(
+            project_id=project_id,
+            stage="document_map_merge",
+            prompt_name="document_map_merge",
+            variables=merge_variables,
+            output_type=DocumentMapMergeDraft,
+            model=model,
+            prompt_version=prompt_version,
+            validator=validate_merge,
+        )
+        merged = _merge_part_drafts(part_drafts, merge_execution.output)
+        merged.warnings.append(
+            "Document was mapped hierarchically across "
+            f"{len(partitions)} complete semantic partitions; no blocks were omitted."
+        )
+        known_block_ids = {block.block_id for block in blocks}
+        content_block_ids = {
+            block.block_id for block in blocks if block.block_type != "front_matter"
+        }
+        _validate_map_draft(
+            merged,
+            known_ids=known_block_ids,
+            content_ids=content_block_ids,
+            minimum_coverage=1.0,
+        )
+        return _materialize_document_map(source_id, blocks, merged), merge_execution.record
+
+    def _map_partition(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        blocks: list[SourceDocumentBlock],
+        model: str,
+        prompt_version: str | None,
+        part_number: int | None,
+        require_complete_coverage: bool = False,
+    ) -> tuple[DocumentMapDraft, ModelRunRecord]:
         variables = {
             "source_id": str(source_id),
+            "part_number": part_number,
+            "scope": _scope_locator(blocks).model_dump(mode="json"),
             "blocks": [block.model_dump(mode="json") for block in blocks],
         }
         known_ids = {block.block_id for block in blocks}
-        content_ids = {
-            block.block_id for block in blocks if block.block_type != "front_matter"
-        }
+        content_ids = {block.block_id for block in blocks if block.block_type != "front_matter"}
 
         def validate(draft: DocumentMapDraft) -> None:
-            _validate_map_draft(draft, known_ids=known_ids, content_ids=content_ids)
+            _validate_map_draft(
+                draft,
+                known_ids=known_ids,
+                content_ids=content_ids,
+                minimum_coverage=1.0 if require_complete_coverage else 0.9,
+            )
 
         execution = self.model_runner.run(
             project_id=project_id,
-            stage="document_map",
+            stage="document_map" if part_number is None else "document_map_part",
             prompt_name="document_map",
             variables=variables,
             output_type=DocumentMapDraft,
@@ -63,36 +165,195 @@ class DocumentMapperService:
             prompt_version=prompt_version,
             validator=validate,
         )
-        document_map = DocumentMap(
-            source_id=source_id,
-            scope_locator=_scope_locator(blocks),
-            working_thesis=execution.output.working_thesis,
-            sections=[
-                DocumentMapSection(
-                    section_id=section.section_id,
-                    source_block_ids=section.source_block_ids,
-                    title=section.title,
-                    function=section.function,
-                    key_concepts=section.key_concepts,
-                    depends_on_section_ids=section.depends_on_section_ids,
-                    required_for_global_understanding=(
-                        section.required_for_global_understanding
-                    ),
-                    unresolved_context=section.unresolved_context,
+        return execution.output, execution.record
+
+
+def _partition_blocks(
+    blocks: list[SourceDocumentBlock],
+    maximum_characters: int,
+) -> list[list[SourceDocumentBlock]]:
+    total = sum(len(block.text) for block in blocks)
+    if total <= maximum_characters:
+        return [blocks]
+
+    atomic_groups = _semantic_groups(blocks, maximum_characters, heading_depth=0)
+    partitions: list[list[SourceDocumentBlock]] = []
+    current: list[SourceDocumentBlock] = []
+    current_size = 0
+    for group in atomic_groups:
+        group_size = sum(len(block.text) for block in group)
+        if current and current_size + group_size > maximum_characters:
+            partitions.append(current)
+            current = []
+            current_size = 0
+        current.extend(group)
+        current_size += group_size
+    if current:
+        partitions.append(current)
+
+    flattened_ids = [block.block_id for part in partitions for block in part]
+    expected_ids = [block.block_id for block in blocks]
+    if flattened_ids != expected_ids:
+        raise AssertionError("Document partitioning changed block order or coverage.")
+    return partitions
+
+
+def _semantic_groups(
+    blocks: list[SourceDocumentBlock],
+    maximum_characters: int,
+    *,
+    heading_depth: int,
+) -> list[list[SourceDocumentBlock]]:
+    groups = _contiguous_heading_groups(blocks, heading_depth)
+    result: list[list[SourceDocumentBlock]] = []
+    for group in groups:
+        size = sum(len(block.text) for block in group)
+        if size <= maximum_characters:
+            result.append(group)
+            continue
+        has_deeper_heading = any(len(block.heading_path) > heading_depth + 1 for block in group)
+        if has_deeper_heading:
+            result.extend(
+                _semantic_groups(
+                    group,
+                    maximum_characters,
+                    heading_depth=heading_depth + 1,
                 )
-                for section in execution.output.sections
-            ],
-            cross_section_threads=[
-                CrossSectionThread(
-                    label=thread.label,
-                    section_ids=thread.section_ids,
-                    description=thread.description,
-                )
-                for thread in execution.output.cross_section_threads
-            ],
-            warnings=execution.output.warnings,
+            )
+            continue
+        result.extend(_split_at_block_boundaries(group, maximum_characters))
+    return result
+
+
+def _contiguous_heading_groups(
+    blocks: list[SourceDocumentBlock],
+    heading_depth: int,
+) -> list[list[SourceDocumentBlock]]:
+    groups: list[list[SourceDocumentBlock]] = []
+    current: list[SourceDocumentBlock] = []
+    current_key: str | None = None
+    for block in blocks:
+        key = block.heading_path[heading_depth] if len(block.heading_path) > heading_depth else None
+        if current and key != current_key:
+            groups.append(current)
+            current = []
+        current.append(block)
+        current_key = key
+    if current:
+        groups.append(current)
+    return groups
+
+
+def _split_at_block_boundaries(
+    blocks: list[SourceDocumentBlock],
+    maximum_characters: int,
+) -> list[list[SourceDocumentBlock]]:
+    result: list[list[SourceDocumentBlock]] = []
+    current: list[SourceDocumentBlock] = []
+    current_size = 0
+    for block in blocks:
+        block_size = len(block.text)
+        if block_size > maximum_characters:
+            raise ValueError(
+                "A semantic block is larger than the document-map input budget. "
+                f"Block {block.block_id} has {block_size:,} characters; split it in "
+                "BlockBuilder before mapping so locators and evidence remain intact."
+            )
+        if current and current_size + block_size > maximum_characters:
+            result.append(current)
+            current = []
+            current_size = 0
+        current.append(block)
+        current_size += block_size
+    if current:
+        result.append(current)
+    return result
+
+
+def _namespace_draft(draft: DocumentMapDraft, part_number: int) -> DocumentMapDraft:
+    prefix = f"part-{part_number:04d}:"
+    id_map = {section.section_id: prefix + section.section_id for section in draft.sections}
+    return DocumentMapDraft(
+        working_thesis=draft.working_thesis,
+        sections=[
+            section.model_copy(
+                update={
+                    "section_id": id_map[section.section_id],
+                    "depends_on_section_ids": [
+                        id_map[dependency] for dependency in section.depends_on_section_ids
+                    ],
+                }
+            )
+            for section in draft.sections
+        ],
+        cross_section_threads=[
+            thread.model_copy(
+                update={"section_ids": [id_map[section_id] for section_id in thread.section_ids]}
+            )
+            for thread in draft.cross_section_threads
+        ],
+        warnings=draft.warnings.copy(),
+    )
+
+
+def _merge_part_drafts(
+    part_drafts: list[DocumentMapDraft],
+    merge: DocumentMapMergeDraft,
+) -> DocumentMapDraft:
+    sections = [
+        section.model_copy(deep=True) for draft in part_drafts for section in draft.sections
+    ]
+    by_id = {section.section_id: section for section in sections}
+    for update in merge.section_updates:
+        section = by_id[update.section_id]
+        section.depends_on_section_ids = _unique(
+            [*section.depends_on_section_ids, *update.depends_on_section_ids]
         )
-        return document_map, execution.record
+        section.unresolved_context = _unique(
+            [*section.unresolved_context, *update.unresolved_context]
+        )
+    for section_id in merge.globally_required_section_ids:
+        by_id[section_id].required_for_global_understanding = True
+
+    local_threads = [thread for draft in part_drafts for thread in draft.cross_section_threads]
+    threads = _deduplicate_threads([*local_threads, *merge.cross_section_threads])
+    warnings = _unique(
+        [
+            *(warning for draft in part_drafts for warning in draft.warnings),
+            *merge.warnings,
+        ]
+    )
+    return DocumentMapDraft(
+        working_thesis=merge.working_thesis
+        or next((draft.working_thesis for draft in part_drafts if draft.working_thesis), None),
+        sections=sections,
+        cross_section_threads=threads,
+        warnings=warnings,
+    )
+
+
+def _validate_merge_draft(
+    draft: DocumentMapMergeDraft,
+    known_section_ids: set[str],
+) -> None:
+    updated_ids = [update.section_id for update in draft.section_updates]
+    if len(updated_ids) != len(set(updated_ids)):
+        raise DeterministicValidationError("Document-map merge contains duplicate section updates.")
+    referenced = set(updated_ids) | set(draft.globally_required_section_ids)
+    for update in draft.section_updates:
+        referenced.update(update.depends_on_section_ids)
+    for thread in draft.cross_section_threads:
+        referenced.update(thread.section_ids)
+    unknown = referenced - known_section_ids
+    if unknown:
+        raise DeterministicValidationError(
+            f"Document-map merge referenced unknown section IDs: {', '.join(sorted(unknown))}."
+        )
+    for update in draft.section_updates:
+        if update.section_id in update.depends_on_section_ids:
+            raise DeterministicValidationError(
+                f"Section {update.section_id} cannot depend on itself."
+            )
 
 
 def _validate_map_draft(
@@ -100,6 +361,7 @@ def _validate_map_draft(
     *,
     known_ids: set[str],
     content_ids: set[str],
+    minimum_coverage: float = 0.9,
 ) -> None:
     section_ids = [section.section_id for section in draft.sections]
     if len(section_ids) != len(set(section_ids)):
@@ -110,8 +372,7 @@ def _validate_map_draft(
         unknown_blocks = set(section.source_block_ids) - known_ids
         if unknown_blocks:
             raise DeterministicValidationError(
-                "Document map referenced unknown blocks: "
-                f"{', '.join(sorted(unknown_blocks))}."
+                f"Document map referenced unknown blocks: {', '.join(sorted(unknown_blocks))}."
             )
         unknown_dependencies = set(section.depends_on_section_ids) - known_sections
         if unknown_dependencies:
@@ -124,35 +385,77 @@ def _validate_map_draft(
     duplicates = {block_id for block_id in mapped if mapped.count(block_id) > 1}
     if duplicates:
         raise DeterministicValidationError(
-            "Blocks may belong to only one map section: "
-            f"{', '.join(sorted(duplicates))}."
+            f"Blocks may belong to only one map section: {', '.join(sorted(duplicates))}."
         )
     mapped_content = set(mapped) & content_ids
     coverage = len(mapped_content) / len(content_ids) if content_ids else 1
-    if coverage < 0.9:
+    if coverage < minimum_coverage:
         raise DeterministicValidationError(
-            f"Document map covered only {coverage:.0%} of non-front-matter blocks."
+            "Document map covered only "
+            f"{coverage:.0%} of non-front-matter blocks; "
+            f"required coverage is {minimum_coverage:.0%}."
         )
     for thread in draft.cross_section_threads:
         unknown = set(thread.section_ids) - known_sections
         if unknown:
             raise DeterministicValidationError(
-                "Cross-section thread referenced unknown sections: "
-                f"{', '.join(sorted(unknown))}."
+                f"Cross-section thread referenced unknown sections: {', '.join(sorted(unknown))}."
             )
 
 
+def _materialize_document_map(
+    source_id: UUID,
+    blocks: list[SourceDocumentBlock],
+    draft: DocumentMapDraft,
+) -> DocumentMap:
+    return DocumentMap(
+        source_id=source_id,
+        scope_locator=_scope_locator(blocks),
+        working_thesis=draft.working_thesis,
+        sections=[
+            DocumentMapSection(
+                section_id=section.section_id,
+                source_block_ids=section.source_block_ids,
+                title=section.title,
+                function=section.function,
+                key_concepts=section.key_concepts,
+                depends_on_section_ids=section.depends_on_section_ids,
+                required_for_global_understanding=(section.required_for_global_understanding),
+                unresolved_context=section.unresolved_context,
+            )
+            for section in draft.sections
+        ],
+        cross_section_threads=[
+            CrossSectionThread(
+                label=thread.label,
+                section_ids=thread.section_ids,
+                description=thread.description,
+            )
+            for thread in draft.cross_section_threads
+        ],
+        warnings=draft.warnings,
+    )
+
+
+def _deduplicate_threads(threads: Iterable) -> list:
+    result = []
+    seen: set[tuple[str, tuple[str, ...]]] = set()
+    for thread in threads:
+        key = (thread.label.casefold(), tuple(thread.section_ids))
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(thread)
+    return result
+
+
+def _unique(values: Iterable[str]) -> list[str]:
+    return list(dict.fromkeys(value for value in values if value))
+
+
 def _scope_locator(blocks: list[SourceDocumentBlock]) -> Locator:
-    starts = [
-        block.locator.page_start
-        for block in blocks
-        if block.locator.page_start is not None
-    ]
-    ends = [
-        block.locator.page_end
-        for block in blocks
-        if block.locator.page_end is not None
-    ]
+    starts = [block.locator.page_start for block in blocks if block.locator.page_start is not None]
+    ends = [block.locator.page_end for block in blocks if block.locator.page_end is not None]
     first_heading = next((block.heading_path for block in blocks if block.heading_path), [])
     return Locator(
         page_start=min(starts) if starts else None,
