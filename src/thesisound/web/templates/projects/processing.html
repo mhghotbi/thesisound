@@ -6,7 +6,8 @@
   <div>
     <p class="kicker">پردازش منابع</p>
     <h1>{{ project_title(project) }}</h1>
-    <p>فقط stage واقعی ذخیره‌شده نمایش داده می‌شود؛ درصد و زمان باقی‌مانده حدس زده نمی‌شود.</p>
+    <p>فقط مرحله واقعی ذخیره‌شده نمایش داده می‌شود؛ درصد و زمان باقی‌مانده حدس زده نمی‌شود.</p>
+    <p class="operator-only">Persisted stage only; no synthetic progress.</p>
   </div>
   {% if corpus_active or planning_active %}
     {{ status_label('در حال انجام', 'اقدامی از شما لازم نیست', 'running') }}
@@ -18,7 +19,7 @@
 </header>
 
 {% if request.query_params.get('error') == 'retry-unavailable' %}
-<div class="notice notice--danger" role="alert">این اجرا در وضعیت قابل تلاش دوباره نیست. artifactهای موجود بدون تغییر باقی مانده‌اند.</div>
+<div class="notice notice--danger" role="alert">این اجرا در وضعیت قابل تلاش دوباره نیست. خروجی‌های موجود بدون تغییر باقی مانده‌اند.<span class="operator-only"> Existing artifacts are preserved.</span></div>
 {% endif %}
 
 <section class="section-block" aria-labelledby="pipeline-title">
@@ -94,7 +95,7 @@
 {% if corpus_run and corpus_run.status == 'failed' %}
 <section class="error-recovery" role="alert">
   <div class="error-recovery__grid">
-    <div><span class="attention-panel__label">چه شد</span><h2>ساخت مجموعه شواهد متوقف شد</h2><p class="error-recovery__impact"><strong>اثر:</strong> منابع اصلی و artifactهای سالم باقی مانده‌اند؛ مرحله ناموفق وارد طرح اپیزود نشده است.</p></div>
+    <div><span class="attention-panel__label">چه شد</span><h2>ساخت مجموعه شواهد متوقف شد</h2><p class="error-recovery__impact"><strong>اثر:</strong> منابع اصلی و خروجی‌های سالم باقی مانده‌اند؛ مرحله ناموفق وارد طرح اپیزود نشده است.</p></div>
     <form method="post" action="/projects/{{ project.project_id }}/corpus/retry">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button class="button button--primary" type="submit">تلاش دوباره در اجرای جدید</button>
