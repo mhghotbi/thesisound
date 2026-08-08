@@ -15,7 +15,7 @@
 </header>
 
 {% if error %}
-<div class="notice notice--danger" role="alert">ساخت یا بازیابی طرح کامل نشد. artifactهای قبلی بدون تغییر باقی مانده‌اند.<p class="operator-only"><bdi dir="ltr">{{ error }}</bdi></p></div>
+<div class="notice notice--danger" role="alert">ساخت یا بازیابی طرح کامل نشد. خروجی‌های قبلی بدون تغییر باقی مانده‌اند.<p class="operator-only">Artifacts preserved · <bdi dir="ltr">{{ error }}</bdi></p></div>
 {% endif %}
 
 {% if can_start and not planning_active and not episode_plan %}
@@ -45,7 +45,8 @@
     </h2></div>
     {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', planning_run.stage) }}
   </div>
-  <p class="lede">درصد یا ETA نمایش داده نمی‌شود؛ فقط مرحله‌ای که واقعاً ذخیره شده است.</p>
+  <p class="lede">درصد یا زمان باقی‌مانده حدسی نمایش داده نمی‌شود؛ فقط مرحله‌ای که واقعاً ذخیره شده است.</p>
+  <p class="operator-only">No synthetic ETA; persisted stage only.</p>
 </section>
 {% endif %}
 
@@ -74,7 +75,8 @@
       منابع برای ساخت اپیزود در مدت هدف کافی نیستند
     {% endif %}
   </h2>
-  <p>برای حفظ دقت، ادامه‌دادن با corpus ناکافی مجاز نیست. ابتدا کم‌هزینه‌ترین اصلاح را انتخاب کنید.</p>
+  <p>برای حفظ دقت، ادامه با مجموعه منابع ناکافی مجاز نیست. ابتدا کم‌هزینه‌ترین اصلاح را انتخاب کنید.</p>
+  <p class="operator-only">ادامه‌دادن با corpus ناکافی مجاز نیست.</p>
 </section>
 
 {% if planning_run.material_gaps %}
