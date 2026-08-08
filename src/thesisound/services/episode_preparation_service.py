@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, EvidenceItem, Project, ProjectState
+from thesisound.domain import ClaimRecord, EpisodePlan, EvidenceItem, Project, ProjectState
 from thesisound.episode import (
     ClaimPriorityReport,
     CoverageReport,
@@ -112,7 +112,7 @@ class EpisodePreparationService:
         *,
         model: str,
         prompt_version: str | None = None,
-    ):
+    ) -> EpisodePlan:
         project = self.workspace_store.load_project(project_id)
         self._require_planning_state(project)
         if project.brief is None:
@@ -171,7 +171,12 @@ class EpisodePreparationService:
         coverage_model: str,
         planning_model: str,
         prompt_version: str | None = None,
-    ):
+    ) -> tuple[
+        CoverageReport,
+        ClaimPriorityReport,
+        EpisodePlan,
+        list[SegmentEvidencePack],
+    ]:
         try:
             coverage = self.audit_coverage(
                 project_id,
@@ -231,11 +236,11 @@ class EpisodePreparationService:
     def _enter_episode_planning(project: Project) -> None:
         if project.brief is None:
             raise ValueError("ResearchBrief is required before episode planning.")
-        if project.state == ProjectState.CORPUS_READY:
-            transition(project, ProjectState.EPISODE_PLANNING)
-        elif project.state == ProjectState.EPISODE_PLANNED:
-            transition(project, ProjectState.EPISODE_PLANNING)
-        elif project.state == ProjectState.FAILED_RETRYABLE:
+        if project.state in {
+            ProjectState.CORPUS_READY,
+            ProjectState.EPISODE_PLANNED,
+            ProjectState.FAILED_RETRYABLE,
+        }:
             transition(project, ProjectState.EPISODE_PLANNING)
         elif project.state != ProjectState.EPISODE_PLANNING:
             raise ValueError(f"Cannot prepare an episode from project state {project.state}.")
