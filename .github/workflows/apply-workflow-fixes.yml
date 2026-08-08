@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/apply-workflow-fixes.yml
+      - .github/workflow-fixes/chunk-00.txt
 
 permissions:
   contents: write
