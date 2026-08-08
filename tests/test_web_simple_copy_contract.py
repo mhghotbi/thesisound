@@ -1,9 +1,9 @@
 from pathlib import Path
 
 
-TEMPLATES_ROOT = (
-    Path(__file__).parents[1] / "src" / "thesisound" / "web" / "templates"
-)
+ROOT = Path(__file__).parents[1]
+TEMPLATES_ROOT = ROOT / "src" / "thesisound" / "web" / "templates"
+STATIC_ROOT = ROOT / "src" / "thesisound" / "web" / "static"
 
 
 def _lines(path: str) -> list[str]:
@@ -59,3 +59,17 @@ def test_prior_knowledge_has_persian_simple_labels() -> None:
             assert label in source
         assert "project.brief.prior_knowledge }}</bdi>" in source
         assert "operator-only" in source
+
+
+def test_theme_brand_colors_do_not_leak_into_component_rules() -> None:
+    css = (STATIC_ROOT / "app.css").read_text(encoding="utf-8")
+    component_lines = [
+        line
+        for line in css.splitlines()
+        if not line.startswith("  --")
+        and ".theme-option[data-theme-value" not in line
+    ]
+    component_css = "\n".join(component_lines).lower()
+
+    for brand_color in ("#1d4268", "#7d4a26", "#5a6140"):
+        assert brand_color not in component_css
