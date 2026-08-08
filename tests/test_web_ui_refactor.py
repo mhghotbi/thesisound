@@ -1,6 +1,5 @@
 import re
 from pathlib import Path
-from uuid import UUID
 
 from fastapi.testclient import TestClient
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -154,7 +153,7 @@ def test_default_theme_mode_preferences_and_overview_route(tmp_path: Path) -> No
             },
             follow_redirects=False,
         )
-        project_id = UUID(created.headers["location"].split("/")[2])
+        project_id = created.headers["location"].split("/")[2]
         overview = client.get(f"/projects/{project_id}")
 
     assert overview.status_code == 200
