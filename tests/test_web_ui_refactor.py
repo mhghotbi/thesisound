@@ -7,7 +7,6 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from thesisound.config import Settings
 from thesisound.web.app import create_app
 
-
 ROOT = Path(__file__).parents[1]
 WEB_ROOT = ROOT / "src" / "thesisound" / "web"
 TEMPLATES_ROOT = WEB_ROOT / "templates"
