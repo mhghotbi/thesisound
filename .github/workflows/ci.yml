@@ -29,9 +29,6 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev --extra web-ui
 
-      - name: Print Ruff import fix
-        run: uv run ruff check tests/test_web_ui_refactor.py --fix --diff || true
-
       - name: Lint
         run: uv run ruff check . --output-format=github
 
