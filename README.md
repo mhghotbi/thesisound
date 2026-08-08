@@ -10,7 +10,17 @@ Thesisound یک ابزار شخصی و کوچک برای تبدیل یک موض�
 
 ## وضعیت فعلی
 
-این ریپو در مرحله طراحی و scaffold اولیه است. هنوز محصول قابل‌استفاده‌ای وجود ندارد. مستندات، قراردادهای prompt و اسکلت کد عمداً قبل از UI ساخته شده‌اند تا کیفیت محتوا و صوت ابتدا روی یک vertical slice واقعی ثابت شود.
+ریپو در مرحله vertical-slice است. Milestone صفر کامل شده و مسیر اولیه document ingestion اکنون قابل اجراست:
+
+- inspection مستقل از parser؛
+- تشخیص hash، MIME، اندازه، encryption و نمونه پوشش متن PDF؛
+- adapter اختیاری Docling؛
+- normalization به blockهای داخلی با heading path و page provenance؛
+- quality gate قطعی برای متن گم‌شده، تکرار، OCR خراب، locator و پوشش صفحات؛
+- فرمان‌های CLI برای `inspect` و `parse`؛
+- تست‌های مستقل از نصب سنگین Docling.
+
+هنوز MinerU adapter، corpus benchmark واقعی، Gemini، source discovery، سناریو و TTS پیاده نشده‌اند.
 
 ## محدوده MVP
 
@@ -92,22 +102,56 @@ User intent
 .
 ├── docs/                   تصمیم‌ها، معماری، workflow و برنامه توسعه
 ├── prompts/                قراردادهای prompt مرحله‌به‌مرحله
-├── src/thesisound/         اسکلت core مستقل از UI و provider
-├── tests/                  تست state machine و قراردادها
+├── src/thesisound/
+│   ├── adapters/parsers/   adapterهای parser با import اختیاری
+│   └── services/           inspection، normalization و quality gates
+├── tests/                  unit tests و fixtureهای قانونی
 ├── .env.example            تنظیمات providerها و مدل‌ها
 └── pyproject.toml          پکیج و ابزارهای توسعه
 ```
 
-## شروع توسعه
+## نصب و اجرای ingestion
+
+نصب پایه و ابزارهای توسعه:
 
 ```bash
-uv sync --all-extras
+uv sync --extra dev
+```
+
+نصب parserها برای اجرای واقعی Docling و بررسی PDF با pypdf:
+
+```bash
+uv sync --extra dev --extra parsers
+```
+
+بازرسی بدون اجرای parser:
+
+```bash
+uv run thesisound inspect path/to/file.pdf
+```
+
+Parse، normalization و quality gate:
+
+```bash
+uv run thesisound parse path/to/file.pdf --parser docling --output parse-result.json
+```
+
+اگر parse برای claim extraction امن نباشد، فرمان `parse` پس از نوشتن report با exit code برابر ۲ متوقف می‌شود.
+
+فرمان‌های scaffold پروژه:
+
+```bash
 uv run thesisound init "آرنت و مفهوم کنش"
+uv run thesisound status <project-id>
+uv run thesisound dump <project-id>
+```
+
+کنترل کیفیت کد:
+
+```bash
 uv run pytest
 uv run ruff check .
 ```
-
-در scaffold فعلی فرمان `init` فقط یک project محلی و state اولیه می‌سازد. اتصال واقعی به parser، search، Gemini و TTS در milestoneهای بعدی پیاده می‌شود.
 
 ## ترتیب مطالعه برای توسعه‌دهنده
 
