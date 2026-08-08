@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><meta name="theme-color" content="#1d4268"><link rel="preconnect" href="https://fonts.bunny.net"><link rel="preconnect" href="https://fonts.bunny.net" crossorigin><link href="https://fonts.bunny.net/css?family=vazirmatn:300,400,500,600,700,800&display=swap" rel="stylesheet"><style>
+:root{--brand:#1d4268;--brand-strong:#14304c;--brand-soft:#a8c1d8;--brand-line:#9db2c6;--pop:#1b3fd0}
+[data-theme="wood"]{--brand:#7d4a26;--brand-strong:#5e3619;--brand-soft:#dcbc9b;--brand-line:#c2a184;--pop:#1b3fd0}
+[data-theme="olive"]{--brand:#5a6140;--brand-strong:#434829;--brand-soft:#c3c7a8;--brand-line:#adb192;--pop:#b07d3c}
+[data-theme] [data-tbtn]{outline:0}
+[data-theme="cobalt"] [data-tbtn="cobalt"],[data-theme="wood"] [data-tbtn="wood"],[data-theme="olive"] [data-tbtn="olive"]{outline:2px solid #221f1c;outline-offset:2px}
+*{box-sizing:border-box}
+body{margin:0;background:#e3d9cc;font-family:"Vazirmatn",Tahoma,sans-serif;font-variant-numeric:tabular-nums}
+a{color:#221f1c}a:hover{color:#000}
+:focus-visible{outline:2px solid #221f1c;outline-offset:3px}
+::selection{background:var(--brand);color:#f6efe6}
+.v2{scroll-margin-top:16px}
+@keyframes v2pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style><script>document.addEventListener("click",function(e){var b=e.target.closest("[data-tbtn]");if(!b)return;var r=document.querySelector("[data-theme]");if(r)r.setAttribute("data-theme",b.getAttribute("data-tbtn"))});</script></helmet>
+
+<div dir="rtl" data-theme="cobalt" style="padding:40px 44px 90px;display:flex;flex-direction:column;gap:16px">
+
+<div style="max-width:74ch;display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+<h1 style="margin:0;font:800 18px/1.35 Vazirmatn,sans-serif;letter-spacing:-.04em;color:#221f1c;text-wrap:balance">رابط بازطراحی‌شده بر اساس ممیزی</h1>
+<p style="margin:0;font:400 13px/1.8 Vazirmatn,sans-serif;color:#6d6157;text-wrap:pretty">پیاده‌سازی یافته‌های <a href="docs/29-ui-ux-audit.md">۲۹ — ممیزی</a> و قرارداد <a href="docs/30-ui-redesign-spec.md">۳۰ — spec بازطراحی</a>: نوار مراحل واحد شش‌گانه، خانه پروژه، برچسب وضعیت دوجزئی، تأیید اثر پیش از حذف، پنل بازیابی خطا، جداسازی حالت ساده و پیشرفته، اصلاح ارقام و تاریخ فارسی، و رفتار موبایل. هر صفحه با ارجاع به شماره یافته.</p>
+<div role="group" aria-label="تم رنگی" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px">
+<span style="font:600 12px Vazirmatn,sans-serif;color:#221f1c">تم</span>
+<button type="button" data-tbtn="cobalt" style="min-height:32px;padding:0 13px;border:0;background:#1d4268;color:#f6efe6;font:600 12px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px;display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:9px;height:9px;border-radius:50%;background:#1b3fd0"></span>آبی کبالتی</button>
+<button type="button" data-tbtn="wood" style="min-height:32px;padding:0 13px;border:0;background:#7d4a26;color:#f6efe6;font:600 12px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px;display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:9px;height:9px;border-radius:50%;background:#dcbc9b"></span>چوب سوخته</button>
+<button type="button" data-tbtn="olive" style="min-height:32px;padding:0 13px;border:0;background:#5a6140;color:#f6efe6;font:600 12px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px;display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:9px;height:9px;border-radius:50%;background:#b07d3c"></span>زیتونی</button>
+<span style="font:400 12px Vazirmatn,sans-serif;color:#6d6157">همه‌ی صفحه‌ها هم‌زمان عوض می‌شوند.</span>
+</div>
+</div>
+
+<!-- 01 خانه پروژه -->
+<div class="v2" id="v1" data-screen-label="01 خانه پروژه" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">01</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">خانه پروژه — صفحه‌ای که اصلاً وجود نداشت</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-05 · F-02 · F-09</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">پروژه‌ها</a></nav>
+<div role="group" aria-label="حالت نمایش" style="margin-inline-start:auto;display:flex;border:1px solid rgba(246,239,230,.4);border-radius:999px;overflow:hidden">
+<button type="button" aria-pressed="true" style="min-height:28px;padding:0 12px;border:0;background:#f6efe6;color:var(--brand);font:600 12px Vazirmatn,sans-serif;cursor:pointer">ساده</button>
+<button type="button" aria-pressed="false" style="min-height:28px;padding:0 12px;border:0;background:none;color:var(--brand-soft);font:500 12px Vazirmatn,sans-serif;cursor:pointer" style-hover="color:#f6efe6">پیشرفته</button>
+</div>
+<a href="#v1" style="font:500 13px Vazirmatn,sans-serif;color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">خروج</a>
+</header>
+
+<nav aria-label="مراحل ساخت اپیزود" style="padding:14px 28px;border-bottom:1px solid #e9dfd0;background:#f0e7db;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+<span style="display:inline-flex;align-items:center;gap:7px;font:600 12px Vazirmatn,sans-serif;color:var(--brand-strong)"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:var(--brand);display:grid;place-items:center"><svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#f6efe6" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg></span>هدف و برداشت</span>
+<span aria-hidden="true" style="width:22px;height:2px;background:var(--brand-line)"></span>
+<span style="display:inline-flex;align-items:center;gap:7px;font:600 12px Vazirmatn,sans-serif;color:var(--brand-strong)"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:var(--brand);display:grid;place-items:center"><svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#f6efe6" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg></span>منابع</span>
+<span aria-hidden="true" style="width:22px;height:2px;background:var(--brand-line)"></span>
+<span aria-current="step" style="display:inline-flex;align-items:center;gap:7px;font:700 12px Vazirmatn,sans-serif;color:#221f1c"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:#221f1c;display:grid;place-items:center;color:#f6efe6;font:700 9px ui-monospace,monospace">۳</span>پردازش</span>
+<span aria-hidden="true" style="width:22px;height:2px;background:var(--brand-line)"></span>
+<span aria-disabled="true" aria-describedby="v1-lock" style="display:inline-flex;align-items:center;gap:7px;font:400 12px Vazirmatn,sans-serif;color:#9d9083"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="#9d9083" stroke-width="1.5" aria-hidden="true"><rect x="4" y="8" width="10" height="7" rx="1"/><path d="M6.5 8V6a2.5 2.5 0 015 0v2"/></svg>طرح اپیزود</span>
+<span aria-hidden="true" style="width:22px;height:1px;background:#e9dfd0"></span>
+<span aria-disabled="true" aria-describedby="v1-lock" style="display:inline-flex;align-items:center;gap:7px;font:400 12px Vazirmatn,sans-serif;color:#9d9083">متن اپیزود</span>
+<span aria-hidden="true" style="width:22px;height:1px;background:#e9dfd0"></span>
+<span aria-disabled="true" aria-describedby="v1-lock" style="display:inline-flex;align-items:center;gap:7px;font:400 12px Vazirmatn,sans-serif;color:#9d9083">شنیدن</span>
+<p id="v1-lock" style="margin:0;width:100%;font:400 12px Vazirmatn,sans-serif;color:#877a6c">مرحله‌های بعد پس از پایان پردازش باز می‌شوند.</p>
+</nav>
+
+<div style="padding:24px 28px 30px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:9px">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;max-width:32ch;text-wrap:balance">چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟</h2>
+<p style="margin:0;font:400 13px Vazirmatn,sans-serif;color:#6d6157">۲۰ دقیقه · یک منبع انتخاب‌شده · ساخته‌شده در <time datetime="2026-07-29">۷ مرداد ۱۴۰۵</time></p>
+</div>
+
+<section aria-labelledby="v1-att" style="border-top:1px solid #221f1c;padding-top:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+<h3 id="v1-att" style="margin:0;font:700 12px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em">وضعیت</h3>
+<span style="display:inline-flex;align-items:center;gap:6px;font:600 12px Vazirmatn,sans-serif;color:#221f1c"><span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:var(--pop);animation:v2pulse 1.8s ease-in-out infinite"></span>در حال استخراج شواهد</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span>
+<span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">اقدامی از شما لازم نیست</span>
+</div>
+<p style="margin:0;font:400 14px/1.8 Vazirmatn,sans-serif;color:#443c34;max-width:62ch;text-wrap:pretty">از سه مرحله‌ی خواندن، دو مرحله تمام شده و تا اینجا ۳۸ ادعای مستند ثبت شده است. وقتی خواندن تمام شود، ساختار اپیزود را برای تأیید شما می‌آوریم.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+<a href="#v5" style="min-height:34px;padding:0 16px;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;border-radius:6px">دیدن پردازش</a>
+<a href="#v3" style="min-height:34px;padding:0 14px;border:1px solid #cdbfad;color:#443c34;font:500 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;border-radius:6px">منابع</a>
+</div>
+</section>
+
+<section aria-labelledby="v1-log" style="display:flex;flex-direction:column;gap:0">
+<h3 id="v1-log" style="margin:0 0 11px;font:700 12px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:11px;border-bottom:1px solid #e5dacc">تا اینجا چه شد</h3>
+<div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px 14px;align-items:baseline;font:400 13px/1.8 Vazirmatn,sans-serif;color:#443c34">
+<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="margin-top:6px;color:var(--brand)"><path d="M2.5 7.5l3 3 6-7"/></svg><span>پرسش و برداشت تأیید شد</span><time datetime="2026-07-29T10:12" style="font:400 12px Vazirmatn,sans-serif;color:#877a6c">۷ مرداد، ۱۰:۱۲</time>
+<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="margin-top:6px;color:var(--brand)"><path d="M2.5 7.5l3 3 6-7"/></svg><span>یک منبع خوانده و تأیید شد — <bdi dir="auto">مقدمه، فصل سوم</bdi></span><time datetime="2026-07-29T10:31" style="font:400 12px Vazirmatn,sans-serif;color:#877a6c">۷ مرداد، ۱۰:۳۱</time>
+<span aria-hidden="true" style="width:13px;height:13px;border-radius:50%;border:2px solid var(--pop);margin-top:5px"></span><span style="color:#221f1c;font-weight:500">استخراج شواهد در جریان است</span><span style="font:400 12px Vazirmatn,sans-serif;color:#877a6c">از ۱۰:۳۴</span>
+</div>
+</section>
+
+<details style="font:400 12px Vazirmatn,sans-serif;color:#6d6157;border-top:1px solid #e9dfd0;padding-top:12px">
+<summary style="cursor:pointer;min-height:30px;display:inline-flex;align-items:center;color:#221f1c;font-weight:500">جزئیات فنی این پروژه</summary>
+<dl style="margin:10px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font:400 12px/1.7 Vazirmatn,sans-serif">
+<dt style="color:#877a6c">شناسه پروژه</dt><dd style="margin:0"><bdi dir="ltr" translate="no">p-1296f949</bdi></dd>
+<dt style="color:#877a6c">اجرای جاری</dt><dd style="margin:0"><bdi dir="ltr" translate="no">corpus_build · running · attempt 1</bdi></dd>
+<dt style="color:#877a6c">مرحله</dt><dd style="margin:0"><bdi dir="ltr" translate="no">extracting_evidence</bdi></dd>
+</dl>
+</details>
+
+</div>
+</div>
+</div>
+
+<!-- 02 پروژه‌ها -->
+<div class="v2" id="v2" data-screen-label="02 پروژه‌ها" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">02</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">پروژه‌ها — گروه‌بندی بر اساس نیاز به اقدام، برچسب وضعیت دوجزئی</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-09 · F-10</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:#f6efe6;text-decoration:none;border-bottom:2px solid #f6efe6;padding-bottom:2px">پروژه‌ها</a></nav>
+<div role="group" aria-label="حالت نمایش" style="margin-inline-start:auto;display:flex;border:1px solid rgba(246,239,230,.4);border-radius:999px;overflow:hidden">
+<button type="button" aria-pressed="true" style="min-height:28px;padding:0 12px;border:0;background:#f6efe6;color:var(--brand);font:600 12px Vazirmatn,sans-serif;cursor:pointer">ساده</button>
+<button type="button" aria-pressed="false" style="min-height:28px;padding:0 12px;border:0;background:none;color:var(--brand-soft);font:500 12px Vazirmatn,sans-serif;cursor:pointer" style-hover="color:#f6efe6">پیشرفته</button>
+</div>
+<a href="#v1" style="font:500 13px Vazirmatn,sans-serif;color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">خروج</a>
+</header>
+<div style="padding:24px 28px 30px;display:flex;flex-direction:column;gap:22px">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:18px">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c">پروژه‌های من</h2>
+<a href="#v11" style="min-height:34px;padding:0 14px;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;flex:none;border-radius:6px">اپیزود تازه</a>
+</div>
+
+<section aria-labelledby="v2-g1" style="display:flex;flex-direction:column">
+<h3 id="v2-g1" style="margin:0 0 11px;font:700 12px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:11px;border-bottom:1px solid #221f1c">منتظر شما</h3>
+<article style="padding:14px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center">
+<div style="min-width:0;display:flex;flex-direction:column;gap:6px">
+<h4 style="margin:0;font:700 16px/1.45 Vazirmatn,sans-serif;color:#221f1c;letter-spacing:-.02em;text-wrap:pretty">بوروکراسی نزد وبر چه چیزی را ممکن می‌کند؟</h4>
+<p style="margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font:400 12px Vazirmatn,sans-serif;color:#6d6157">
+<span style="display:inline-flex;align-items:center;gap:6px;color:#8a5a12;font-weight:600"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#8a5a12" stroke-width="1.8" aria-hidden="true"><path d="M7 2l5.5 10h-11z"/><path d="M7 6v3M7 10.6v.1"/></svg>ساختار آماده بازبینی</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span><span style="font-weight:500;color:#221f1c">تصمیم شما لازم است</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span><time datetime="2026-08-07">۱۶ مرداد</time></p>
+</div>
+<a href="#v7" style="min-height:34px;padding:0 14px;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;flex:none;border-radius:6px">بازبینی ساختار</a>
+</article>
+<article style="padding:14px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center">
+<div style="min-width:0;display:flex;flex-direction:column;gap:6px">
+<h4 style="margin:0;font:700 16px/1.45 Vazirmatn,sans-serif;color:#221f1c;letter-spacing:-.02em;text-wrap:pretty">کنش نزد آرنت یعنی چه؟</h4>
+<p style="margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font:400 12px Vazirmatn,sans-serif;color:#6d6157">
+<span style="display:inline-flex;align-items:center;gap:6px;color:#7d2f1d;font-weight:600"><svg width="11" height="11" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" fill="#a8402b"/></svg>نوشتن متن متوقف شد</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span><span style="font-weight:500;color:#221f1c">قابل ادامه از کار انجام‌شده</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span><time datetime="2026-08-06">۱۵ مرداد</time></p>
+</div>
+<a href="#v6" style="min-height:34px;padding:0 14px;border:1px solid #a8402b;color:#7d2f1d;font:600 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;flex:none;border-radius:6px">دیدن مشکل</a>
+</article>
+</section>
+
+<section aria-labelledby="v2-g2" style="display:flex;flex-direction:column">
+<h3 id="v2-g2" style="margin:0 0 11px;font:700 12px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:11px;border-bottom:1px solid #e5dacc">در حال انجام</h3>
+<article style="padding:14px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center">
+<div style="min-width:0;display:flex;flex-direction:column;gap:6px">
+<h4 style="margin:0;font:700 16px/1.45 Vazirmatn,sans-serif;color:#221f1c;letter-spacing:-.02em;text-wrap:pretty">چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟</h4>
+<p style="margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font:400 12px Vazirmatn,sans-serif;color:#6d6157">
+<span style="display:inline-flex;align-items:center;gap:6px;color:#221f1c;font-weight:600"><span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:var(--brand)"></span>در حال استخراج شواهد</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span><span>اقدامی لازم نیست</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span><time datetime="2026-08-08">۱۷ مرداد</time></p>
+</div>
+<a href="#v1" style="min-height:34px;padding:0 14px;border:1px solid #cdbfad;color:#443c34;font:500 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap;flex:none;border-radius:6px">دیدن</a>
+</article>
+</section>
+
+<section aria-labelledby="v2-g3" style="display:flex;flex-direction:column">
+<h3 id="v2-g3" style="margin:0 0 11px;font:700 12px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:11px;border-bottom:1px solid #e5dacc">آماده شنیدن</h3>
+<article style="padding:14px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center">
+<div style="min-width:0;display:flex;flex-direction:column;gap:6px">
+<h4 style="margin:0;font:700 16px/1.45 Vazirmatn,sans-serif;color:#221f1c;letter-spacing:-.02em;text-wrap:pretty">عصبیت چه نسبتی با دوام قدرت دارد؟</h4>
+<p style="margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font:400 12px Vazirmatn,sans-serif;color:#6d6157">
+<span style="display:inline-flex;align-items:center;gap:6px;color:var(--brand);font-weight:600"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>آماده</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span><span>۱۱ دقیقه</span>
+<span aria-hidden="true" style="color:#c4b6a4">·</span><time datetime="2026-07-24">۲ مرداد</time></p>
+</div>
+<a href="#v9" style="min-height:34px;padding:0 14px;border:1px solid var(--brand);color:#221f1c;font:600 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;flex:none;border-radius:6px"><svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.5 4l10 6-10 6z"/></svg>پخش</a>
+</article>
+</section>
+
+</div>
+</div>
+</div>
+
+<!-- 03 منابع -->
+<div class="v2" id="v3" data-screen-label="03 منابع" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">03</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">منابع — سلسله‌مراتب action، دلیل غیرفعال‌بودن، جزئیات فنی در disclosure</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-01 · F-06 · F-12</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">پروژه‌ها</a></nav>
+<div role="group" aria-label="حالت نمایش" style="margin-inline-start:auto;display:flex;border:1px solid rgba(246,239,230,.4);border-radius:999px;overflow:hidden">
+<button type="button" aria-pressed="true" style="min-height:28px;padding:0 12px;border:0;background:#f6efe6;color:var(--brand);font:600 12px Vazirmatn,sans-serif;cursor:pointer">ساده</button>
+<button type="button" aria-pressed="false" style="min-height:28px;padding:0 12px;border:0;background:none;color:var(--brand-soft);font:500 12px Vazirmatn,sans-serif;cursor:pointer" style-hover="color:#f6efe6">پیشرفته</button>
+</div>
+</header>
+
+<nav aria-label="مراحل ساخت اپیزود" style="padding:14px 28px;border-bottom:1px solid #e9dfd0;background:#f0e7db;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+<span style="display:inline-flex;align-items:center;gap:7px;font:600 12px Vazirmatn,sans-serif;color:var(--brand-strong)"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:var(--brand);display:grid;place-items:center"><svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#f6efe6" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg></span>هدف و برداشت</span>
+<span aria-hidden="true" style="width:22px;height:2px;background:var(--brand-line)"></span>
+<span aria-current="step" style="display:inline-flex;align-items:center;gap:7px;font:700 12px Vazirmatn,sans-serif;color:#221f1c"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:#221f1c;display:grid;place-items:center;color:#f6efe6;font:700 9px ui-monospace,monospace">۲</span>منابع</span>
+<span aria-hidden="true" style="width:22px;height:1px;background:#e9dfd0"></span>
+<span aria-disabled="true" aria-describedby="v3-lock" style="font:400 12px Vazirmatn,sans-serif;color:#9d9083">پردازش</span>
+<span aria-hidden="true" style="width:22px;height:1px;background:#e9dfd0"></span>
+<span aria-disabled="true" aria-describedby="v3-lock" style="font:400 12px Vazirmatn,sans-serif;color:#9d9083">طرح اپیزود</span>
+<span aria-hidden="true" style="width:22px;height:1px;background:#e9dfd0"></span>
+<span aria-disabled="true" aria-describedby="v3-lock" style="font:400 12px Vazirmatn,sans-serif;color:#9d9083">متن اپیزود</span>
+<span aria-hidden="true" style="width:22px;height:1px;background:#e9dfd0"></span>
+<span aria-disabled="true" aria-describedby="v3-lock" style="font:400 12px Vazirmatn,sans-serif;color:#9d9083">شنیدن</span>
+<p id="v3-lock" style="margin:0;width:100%;font:400 12px Vazirmatn,sans-serif;color:#877a6c">پس از تأیید منابع باز می‌شوند.</p>
+</nav>
+
+<div style="padding:24px 28px 30px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:9px">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;text-wrap:balance">اپیزود از چه چیزی ساخته شود؟</h2>
+<p style="margin:0;font:400 14px/1.8 Vazirmatn,sans-serif;color:#443c34;max-width:60ch;text-wrap:pretty">هر فایل را باز می‌کنیم و می‌خوانیم. اگر متنی قابل خواندن نباشد همان‌جا می‌گوییم — نه بعد از نیم ساعت.</p>
+</div>
+
+<div style="border:1px dashed #c4b6a4;border-radius:10px;background:#f0e7db;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px">
+<div style="display:flex;align-items:center;gap:16px">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" style="flex:none"><path d="M12 16V4"/><path d="M7.5 8.5L12 4l4.5 4.5"/><path d="M4 16v3.5h16V16"/></svg>
+<div><p style="margin:0;font:700 14px Vazirmatn,sans-serif;color:#221f1c">فایل‌ها را اینجا رها کنید</p><p style="margin:2px 0 0;font:400 12px Vazirmatn,sans-serif;color:#6d6157">PDF، EPUB، DOCX، TXT یا Markdown — تا <bdi dir="ltr">۵۰&nbsp;MB</bdi></p></div>
+</div>
+<button type="button" style="min-height:34px;padding:0 14px;border:1px solid var(--brand);background:#f6efe6;color:#221f1c;font:600 13px Vazirmatn,sans-serif;cursor:pointer;white-space:nowrap;flex:none;border-radius:6px">انتخاب از دستگاه</button>
+</div>
+
+<section style="display:flex;flex-direction:column">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-bottom:11px;border-bottom:1px solid #221f1c">
+<h3 style="margin:0;font:700 12px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em">فایل‌های شما</h3>
+<span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157">۱ فایل آماده‌ی استفاده از ۲</span>
+</div>
+
+<article style="padding:14px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:auto 1fr auto;gap:14px 16px;align-items:start">
+<input id="v3-s1" type="checkbox" checked style="width:15px;height:15px;accent-color:#221f1c;margin:5px 0 0;flex:none">
+<div style="min-width:0;display:flex;flex-direction:column;gap:6px">
+<label for="v3-s1" style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;cursor:pointer"><span style="font:700 14px Vazirmatn,sans-serif;color:#221f1c">ابن‌خلدون، مقدمه — فصل سوم</span><span style="display:inline-flex;align-items:center;gap:5px;font:600 11px Vazirmatn,sans-serif;color:var(--brand);background:color-mix(in srgb, var(--brand) 12%, #f6efe6);border-radius:999px;padding:3px 9px"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>آماده استفاده</span></label>
+<p style="margin:0;font:400 13px Vazirmatn,sans-serif;color:#6d6157">۳۸۶ صفحه خوانده شد · <bdi dir="ltr" translate="no">muqaddimah-ch3.pdf</bdi> · <bdi dir="ltr">۴٫۲&nbsp;MB</bdi></p>
+<details style="font:400 12px Vazirmatn,sans-serif;color:#6d6157">
+<summary style="cursor:pointer;min-height:28px;display:inline-flex;align-items:center;color:#221f1c;font-weight:500">جزئیات فنی استخراج</summary>
+<p style="margin:8px 0 0;font:400 12px/1.7 Vazirmatn,sans-serif;color:#6d6157"><bdi dir="ltr" translate="no">docling</bdi> · پوشش متن ۹۴٪ · ۱٬۲۴۸ بلوک · <bdi dir="ltr" translate="no">sha256:8f31c2…</bdi></p>
+</details>
+</div>
+<button type="button" style="min-height:32px;padding:0 10px;border:0;background:none;color:#7d2f1d;font:500 12px Vazirmatn,sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:4px;flex:none;border-radius:6px">حذف فایل…</button>
+</article>
+
+<article style="padding:14px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:auto 1fr auto;gap:14px 16px;align-items:start;background:#faeae2">
+<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#a8402b" stroke-width="1.6" aria-hidden="true" style="flex:none;margin-top:4px"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+<div style="min-width:0;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font:700 14px Vazirmatn,sans-serif;color:#221f1c">تاریخ اندیشه — نسخه‌ی اسکن‌شده</span><span style="display:inline-flex;align-items:center;gap:5px;font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;border-radius:999px;padding:3px 9px"><svg width="10" height="10" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" fill="#a8402b"/></svg>قابل استفاده نیست</span></div>
+<p style="margin:0;font:400 13px/1.75 Vazirmatn,sans-serif;color:#7d2f1d;max-width:58ch;text-wrap:pretty">این فایل عکسِ صفحه‌هاست، نه متن. از روی عکس نمی‌توانیم بخوانیم؛ اگر نسخه‌ی متنی دارید همان را بگذارید. تلاش دوباره با همین فایل نتیجه‌ی متفاوتی نمی‌دهد.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+<button type="button" style="min-height:34px;padding:0 12px;border:1px solid #a8402b;background:#f6efe6;color:#7d2f1d;font:600 12px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">جایگزینی با نسخه‌ی متنی</button>
+<button type="button" style="min-height:32px;padding:0 10px;border:0;background:none;color:#7d2f1d;font:500 12px Vazirmatn,sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:4px;border-radius:6px">حذف فایل…</button>
+</div>
+</div>
+<span></span>
+</article>
+</section>
+
+<div style="display:flex;align-items:center;justify-content:space-between;gap:18px;border-top:1px solid #221f1c;padding-top:14px">
+<div style="max-width:52ch;display:flex;flex-direction:column;gap:5px">
+<p style="margin:0;font:600 14px Vazirmatn,sans-serif;color:#221f1c">اپیزود فقط بر اساس ۱ فایل تیک‌خورده ساخته می‌شود</p>
+<p id="v3-why" style="margin:0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#6d6157;text-wrap:pretty">پس از تأیید، افزودن یا حذف منبع نیاز به بازگشت و ساخت دوباره‌ی خروجی‌ها دارد.</p>
+</div>
+<button type="submit" aria-describedby="v3-why" style="min-height:34px;padding:0 16px;border:0;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;cursor:pointer;white-space:nowrap;flex:none;border-radius:6px">تأیید منابع و شروع پردازش</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- 04 تأیید حذف -->
+<div class="v2" id="v4" data-screen-label="04 تأیید حذف منبع" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:#a8402b;color:#f6efe6">04</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">تأیید حذف — خلاصه‌ی اثر پیش از هر عمل بازگشت‌ناپذیر</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-01 (P0)</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3);padding:28px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;gap:14px;align-items:flex-start;max-width:64ch">
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#a8402b" stroke-width="1.6" aria-hidden="true" style="flex:none;margin-top:5px"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+<div style="display:flex;flex-direction:column;gap:9px">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;text-wrap:balance">فایل «ابن‌خلدون، مقدمه — فصل سوم» حذف شود؟</h2>
+<p style="margin:0;font:400 14px/1.8 Vazirmatn,sans-serif;color:#443c34;text-wrap:pretty">این کار خودِ فایل بارگذاری‌شده را از سرور پاک می‌کند. اگر نسخه‌ی دیگری ندارید، بازگشتی در کار نیست.</p>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #e5dacc;border-radius:8px;overflow:hidden">
+<div style="padding:16px 18px;border-inline-end:1px solid #e5dacc;display:flex;flex-direction:column;gap:10px">
+<h3 style="margin:0;font:700 12px Vazirmatn,sans-serif;color:#7d2f1d;letter-spacing:.05em">از بین می‌رود</h3>
+<ul style="margin:0;padding-inline-start:18px;display:flex;flex-direction:column;gap:7px;font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34">
+<li>فایل اصلی <bdi dir="ltr" translate="no">muqaddimah-ch3.pdf</bdi></li>
+<li>متن استخراج‌شده و ۱٬۲۴۸ بلوک آن</li>
+<li>۳۸ ادعای مستند ثبت‌شده از این منبع</li>
+</ul>
+</div>
+<div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;background:#f0e7db">
+<h3 style="margin:0;font:700 12px Vazirmatn,sans-serif;color:var(--brand);letter-spacing:.05em">باقی می‌ماند</h3>
+<ul style="margin:0;padding-inline-start:18px;display:flex;flex-direction:column;gap:7px;font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34">
+<li>پرسش و برداشت تأییدشده‌ی پروژه</li>
+<li>منابع دیگر و ادعاهای آن‌ها</li>
+</ul>
+</div>
+</div>
+
+<div style="border:1px solid #ecd0c2;background:#faeae2;padding:14px 16px;display:flex;flex-direction:column;gap:6px">
+<p style="margin:0;font:600 13px Vazirmatn,sans-serif;color:#7d2f1d">پس از حذف، این خروجی‌ها باید دوباره ساخته شوند</p>
+<p style="margin:0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#7d2f1d">ساختار اپیزود · متن اپیزود · فایل صوتی — چون تنها منبع پشتیبان بخش‌های دوم و سوم همین فایل بود.</p>
+</div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid #e9dfd0;padding-top:16px">
+<button type="submit" style="min-height:34px;padding:0 16px;border:0;background:#a8402b;color:#f6efe6;font:600 13px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">بله، این فایل را حذف کن</button>
+<a href="#v3" style="min-height:34px;padding:0 14px;border:1px solid #cdbfad;color:#443c34;font:500 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;border-radius:6px">انصراف</a>
+<p style="margin:0;font:400 13px Vazirmatn,sans-serif;color:#6d6157;margin-inline-start:auto">فقط می‌خواهید از این اپیزود کنار برود؟ <a href="#v3" style="color:#221f1c">تیکش را بردارید</a>.</p>
+</div>
+</div>
+</div>
+
+<!-- 05 پردازش -->
+<div class="v2" id="v5" data-screen-label="05 پردازش" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">05</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">پردازش — دقیقاً یک مرحله‌ی جاری، به‌روزرسانی بخشی بدون بارگذاری دوباره</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-03 · F-04</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">پروژه‌ها</a></nav>
+<div role="group" aria-label="حالت نمایش" style="margin-inline-start:auto;display:flex;border:1px solid rgba(246,239,230,.4);border-radius:999px;overflow:hidden">
+<button type="button" aria-pressed="true" style="min-height:28px;padding:0 12px;border:0;background:#f6efe6;color:var(--brand);font:600 12px Vazirmatn,sans-serif;cursor:pointer">ساده</button>
+<button type="button" aria-pressed="false" style="min-height:28px;padding:0 12px;border:0;background:none;color:var(--brand-soft);font:500 12px Vazirmatn,sans-serif;cursor:pointer" style-hover="color:#f6efe6">پیشرفته</button>
+</div>
+</header>
+<div style="padding:24px 28px 30px;display:flex;flex-direction:column;gap:18px">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;max-width:28ch;text-wrap:balance">چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟</h2>
+
+<section aria-live="polite" style="border:1px solid #e5dacc;border-radius:8px;overflow:hidden">
+<ol style="margin:0;padding:0;list-style:none">
+<li style="display:grid;grid-template-columns:22px 1fr auto;gap:14px;align-items:center;padding:12px 18px;border-bottom:1px solid #e9dfd0">
+<span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:var(--brand);display:grid;place-items:center"><svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#f6efe6" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg></span>
+<span style="font:500 14px Vazirmatn,sans-serif;color:#443c34">آماده‌سازی متن فایل‌ها</span>
+<span style="font:400 12px Vazirmatn,sans-serif;color:#877a6c">انجام شد</span>
+</li>
+<li style="display:grid;grid-template-columns:22px 1fr auto;gap:14px;align-items:center;padding:12px 18px;border-bottom:1px solid #e9dfd0">
+<span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:var(--brand);display:grid;place-items:center"><svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#f6efe6" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg></span>
+<span style="font:500 14px Vazirmatn,sans-serif;color:#443c34">ساخت نقشه‌ی کتاب</span>
+<span style="font:400 12px Vazirmatn,sans-serif;color:#877a6c">انجام شد</span>
+</li>
+<li aria-current="step" style="display:grid;grid-template-columns:22px 1fr auto;gap:14px;align-items:center;padding:14px 18px;border-bottom:1px solid #e9dfd0;background:#efe4d6;border-inline-start:3px solid var(--brand)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:50%;background:var(--pop);margin-inline-start:2px;animation:v2pulse 1.8s ease-in-out infinite"></span>
+<span style="display:flex;flex-direction:column;gap:3px"><span style="font:700 14px Vazirmatn,sans-serif;color:#221f1c">در حال خواندن و یادداشت‌برداری</span><span style="font:400 13px Vazirmatn,sans-serif;color:#6d6157">تا اینجا ۳۸ ادعای مستند ثبت شده است</span></span>
+<span style="font:600 12px Vazirmatn,sans-serif;color:var(--brand);white-space:nowrap">در جریان</span>
+</li>
+<li style="display:grid;grid-template-columns:22px 1fr auto;gap:14px;align-items:center;padding:12px 18px">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:50%;border:1.5px solid #cdbfad;margin-inline-start:2px"></span>
+<span style="font:400 14px Vazirmatn,sans-serif;color:#9d9083">مرتب‌کردن ادعاها برای ساخت ساختار</span>
+<span style="font:400 12px Vazirmatn,sans-serif;color:#9d9083">در نوبت</span>
+</li>
+</ol>
+</section>
+
+<div style="display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font:400 13px Vazirmatn,sans-serif;color:#6d6157">
+<span style="display:inline-flex;align-items:center;gap:7px"><svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="#9d9083" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 5.5v4l2.5 1.5"/></svg>این صفحه خودش تازه می‌شود؛ جای شما در متن حفظ می‌ماند.</span>
+<a href="#v2" style="color:#221f1c;font-weight:500">می‌توانید ببندید و بعد برگردید</a>
+</div>
+
+<details style="font:400 12px Vazirmatn,sans-serif;color:#6d6157;border-top:1px solid #e9dfd0;padding-top:12px">
+<summary style="cursor:pointer;min-height:30px;display:inline-flex;align-items:center;color:#221f1c;font-weight:500">جزئیات فنی این اجرا</summary>
+<p style="margin:8px 0 0;font:400 12px/1.8 Vazirmatn,sans-serif"><bdi dir="ltr" translate="no">run r-9 · corpus_build · running · attempt 1 · extracting_evidence</bdi><br><bdi dir="ltr" translate="no">input_hash=8f31c2… · started 10:34:02</bdi></p>
+</details>
+
+</div>
+</div>
+</div>
+
+<!-- 06 خطا -->
+<div class="v2" id="v6" data-screen-label="06 خطا و بازیابی" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:#a8402b;color:#f6efe6">06</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">خطا و بازیابی — چه شد، اثرش چیست، چه چیزی سالم مانده، بعد چه کنیم</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-07 (P0)</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">پروژه‌ها</a></nav>
+</header>
+<div style="padding:24px 28px 30px;display:flex;flex-direction:column;gap:16px">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;max-width:28ch;text-wrap:balance">کنش نزد آرنت یعنی چه؟</h2>
+
+<section role="alert" style="border:1.5px solid #a8402b;display:flex;flex-direction:column">
+<div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:12px;align-items:flex-start">
+<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#a8402b" stroke-width="1.6" aria-hidden="true" style="flex:none;margin-top:4px"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+<div style="display:flex;flex-direction:column;gap:7px">
+<h3 style="margin:0;font:700 17px/1.45 Vazirmatn,sans-serif;color:#221f1c;letter-spacing:-.02em">نوشتن متن نیمه‌کاره ماند</h3>
+<p style="margin:0;font:400 14px/1.8 Vazirmatn,sans-serif;color:#443c34;max-width:60ch;text-wrap:pretty">سرویس نوشتن در زمان مجاز پاسخ نداد. این یک قطعی موقت است، نه ایرادی در منابع شما.</p>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-inline-start:30px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<h4 style="margin:0;font:700 12px Vazirmatn,sans-serif;color:var(--brand);letter-spacing:.04em">سالم مانده</h4>
+<p style="margin:0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34">منابع، ادعاهای مستند، ساختار تأییدشده و دو بخش نوشته‌شده از چهار بخش.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<h4 style="margin:0;font:700 12px Vazirmatn,sans-serif;color:#7d2f1d;letter-spacing:.04em">ناتمام</h4>
+<p style="margin:0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34">دو بخش پایانی و راستی‌آزمایی. هیچ متن ناقصی به‌عنوان نتیجه ثبت نشده است.</p>
+</div>
+</div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-inline-start:30px">
+<button type="button" style="min-height:34px;padding:0 16px;border:0;background:#a8402b;color:#f6efe6;font:600 13px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">ادامه از همان دو بخش</button>
+<a href="#v7" style="min-height:34px;padding:0 14px;border:1px solid #cdbfad;color:#443c34;font:500 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;border-radius:6px">بازبینی ساختار</a>
+<span style="font:400 12px Vazirmatn,sans-serif;color:#877a6c">تلاش ۲ از ۳</span>
+</div>
+</div>
+<details style="border-top:1px solid #ecd0c2;background:#faeae2;padding:12px 20px;font:400 12px Vazirmatn,sans-serif;color:#7d2f1d">
+<summary style="cursor:pointer;min-height:30px;display:inline-flex;align-items:center;font-weight:600;color:#7d2f1d">جزئیات فنی</summary>
+<p style="margin:8px 0 0;font:400 12px/1.8 ui-monospace,Menlo,monospace" dir="ltr"><bdi>error=PROVIDER_DEADLINE_EXCEEDED · stage=writing_segments · run=r-14 · attempt=2 · elapsed=90s · input_hash=4c81ab…</bdi></p>
+</details>
+</section>
+
+<p style="margin:0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#6d6157;max-width:60ch;text-wrap:pretty">اگر دوباره همین اتفاق افتاد، به‌جای تلاش سوم سراغ تغییر تنظیمات سرویس می‌رویم؛ تکرار همان درخواست معمولاً نتیجه‌ی متفاوتی ندارد.</p>
+
+</div>
+</div>
+</div>
+
+<!-- 07 ساختار -->
+<div class="v2" id="v7" data-screen-label="07 ساختار اپیزود" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">07</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">ساختار اپیزود — حکم پوشش پیش از ساختار، بدون «ادامه به هر قیمت»</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">پروژه‌ها</a></nav>
+</header>
+<nav aria-label="مراحل ساخت اپیزود" style="padding:14px 28px;border-bottom:1px solid #e9dfd0;background:#f0e7db;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+<span style="display:inline-flex;align-items:center;gap:7px;font:600 12px Vazirmatn,sans-serif;color:var(--brand-strong)"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:var(--brand);display:grid;place-items:center"><svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#f6efe6" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg></span>هدف و برداشت</span>
+<span aria-hidden="true" style="width:22px;height:2px;background:var(--brand-line)"></span>
+<span style="display:inline-flex;align-items:center;gap:7px;font:600 12px Vazirmatn,sans-serif;color:var(--brand-strong)"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:var(--brand);display:grid;place-items:center"><svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#f6efe6" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg></span>منابع</span>
+<span aria-hidden="true" style="width:22px;height:2px;background:var(--brand-line)"></span>
+<span style="display:inline-flex;align-items:center;gap:7px;font:600 12px Vazirmatn,sans-serif;color:var(--brand-strong)"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:var(--brand);display:grid;place-items:center"><svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#f6efe6" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg></span>پردازش</span>
+<span aria-hidden="true" style="width:22px;height:2px;background:var(--brand-line)"></span>
+<span aria-current="step" style="display:inline-flex;align-items:center;gap:7px;font:700 12px Vazirmatn,sans-serif;color:#221f1c"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:#221f1c;display:grid;place-items:center;color:#f6efe6;font:700 9px ui-monospace,monospace">۴</span>طرح اپیزود</span>
+<span aria-hidden="true" style="width:22px;height:1px;background:#e9dfd0"></span>
+<span aria-disabled="true" aria-describedby="v7-lock" style="font:400 12px Vazirmatn,sans-serif;color:#9d9083">متن اپیزود</span>
+<span aria-hidden="true" style="width:22px;height:1px;background:#e9dfd0"></span>
+<span aria-disabled="true" aria-describedby="v7-lock" style="font:400 12px Vazirmatn,sans-serif;color:#9d9083">شنیدن</span>
+<p id="v7-lock" style="margin:0;width:100%;font:400 12px Vazirmatn,sans-serif;color:#877a6c">پس از تأیید همین ساختار باز می‌شوند.</p>
+</nav>
+<div style="padding:24px 28px 30px;display:flex;flex-direction:column;gap:18px">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;max-width:30ch;text-wrap:balance">کتاب برای ۲۰ دقیقه حرف کافی ندارد</h2>
+<p style="margin:0;font:400 15px/1.85 Vazirmatn,sans-serif;color:#443c34;max-width:60ch;text-wrap:pretty">از این یک منبع حدود <strong style="font-weight:700;color:#221f1c">۱۱ دقیقه</strong> حرفِ مستند در می‌آید. برای رسیدن به ۲۰ دقیقه باید چیزهایی بگوییم که پشتوانه‌ای در متن ندارند، و این کار را نمی‌کنیم.</p>
+</div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+<button type="button" style="min-height:34px;padding:0 16px;border:0;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">همین ۱۱ دقیقه خوب است</button>
+<a href="#v3" style="min-height:34px;padding:0 14px;border:1px solid #cdbfad;color:#443c34;font:500 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;border-radius:6px">منبع دیگری اضافه می‌کنم</a>
+<a href="#v11" style="min-height:34px;padding:0 10px;color:#6d6157;font:500 13px Vazirmatn,sans-serif;text-decoration:underline;text-underline-offset:4px;display:inline-flex;align-items:center">تغییر پرسش</a>
+</div>
+
+<section style="display:flex;flex-direction:column">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-bottom:11px;border-bottom:1px solid #221f1c">
+<h3 style="margin:0;font:700 12px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em">اپیزود ۱۱ دقیقه‌ای این‌طور پیش می‌رود</h3>
+<span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157">چهار بخش</span>
+</div>
+<article style="padding:13px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start">
+<div style="min-width:0"><h4 style="margin:0;font:700 16px/1.5 Vazirmatn,sans-serif;color:#221f1c">مسئله از کجا شروع شد</h4><p style="margin:5px 0 0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34;max-width:56ch;text-wrap:pretty">ابن‌خلدون که بود و چرا سراغ این پرسش رفت که دولت‌ها چگونه می‌میرند.</p></div>
+<span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157;white-space:nowrap;padding-top:4px">۲ دقیقه</span>
+</article>
+<article style="padding:13px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start">
+<div style="min-width:0"><h4 style="margin:0;font:700 16px/1.5 Vazirmatn,sans-serif;color:#221f1c">همبستگی گروهی چطور ساخته می‌شود</h4><p style="margin:5px 0 0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34;max-width:56ch;text-wrap:pretty">عصبیت نه یک احساس، بلکه سازوکاری اجتماعی است که گروه را در سختی کنار هم نگه می‌دارد.</p></div>
+<span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157;white-space:nowrap;padding-top:4px">۴ دقیقه</span>
+</article>
+<article style="padding:13px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start">
+<div style="min-width:0"><h4 style="margin:0;font:700 16px/1.5 Vazirmatn,sans-serif;color:#221f1c">چرا دولت‌ها فرو می‌پاشند</h4><p style="margin:5px 0 0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34;max-width:56ch;text-wrap:pretty">وقتی همبستگی ضعیف می‌شود، دولت پایه‌ی اجتماعی‌اش را از دست می‌دهد — چرخه‌ی سه‌نسلی.</p></div>
+<span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157;white-space:nowrap;padding-top:4px">۳ دقیقه</span>
+</article>
+<article style="padding:13px 0;border-bottom:1px solid #e9dfd0;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start">
+<div style="min-width:0"><h4 style="margin:0;font:700 16px/1.5 Vazirmatn,sans-serif;color:#221f1c">امروز به چه کار می‌آید</h4><p style="margin:5px 0 0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34;max-width:56ch;text-wrap:pretty">چه چیزی از این تحلیل هنوز کار می‌کند و کجا باید با احتیاط استفاده شود.</p></div>
+<span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157;white-space:nowrap;padding-top:4px">۲ دقیقه</span>
+</article>
+</section>
+
+<div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid #e9dfd0;padding-top:14px">
+<p style="margin:0;font:400 13px/1.7 Vazirmatn,sans-serif;color:#6d6157;max-width:60ch;text-wrap:pretty">نوشتن متن بر اساس همین نسخه از ساختار انجام می‌شود. اگر بعداً ساختار را عوض کنید، متن باید دوباره نوشته شود.</p>
+<button type="submit" style="min-height:34px;padding:0 16px;border:0;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;cursor:pointer;align-self:flex-start;border-radius:6px">تأیید ساختار و نوشتن متن</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- 08 متن -->
+<div class="v2" id="v8" data-screen-label="08 متن اپیزود" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">08</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">متن اپیزود — چیدمان خواندنی، شناسه‌ها از سطح اول حذف شده‌اند</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-06 · F-17</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">پروژه‌ها</a></nav>
+<div role="group" aria-label="حالت نمایش" style="margin-inline-start:auto;display:flex;border:1px solid rgba(246,239,230,.4);border-radius:999px;overflow:hidden">
+<button type="button" aria-pressed="true" style="min-height:28px;padding:0 12px;border:0;background:#f6efe6;color:var(--brand);font:600 12px Vazirmatn,sans-serif;cursor:pointer">ساده</button>
+<button type="button" aria-pressed="false" style="min-height:28px;padding:0 12px;border:0;background:none;color:var(--brand-soft);font:500 12px Vazirmatn,sans-serif;cursor:pointer" style-hover="color:#f6efe6">پیشرفته</button>
+</div>
+</header>
+<div style="padding:24px 28px 34px;display:flex;flex-direction:column;gap:18px">
+
+<div style="display:flex;flex-direction:column;gap:9px;max-width:56ch">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;text-wrap:balance">متن اپیزود آماده است</h2>
+<p style="margin:0;font:400 14px/1.8 Vazirmatn,sans-serif;color:#443c34;text-wrap:pretty">هر جمله‌ای که ادعایی درباره‌ی کتاب می‌کند به صفحه‌اش وصل است. بررسی کردیم و جمله‌ی بی‌پشتوانه‌ای نماند.</p>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center;padding:11px 16px;background:#f0e7db;border-top:1px solid #221f1c;font:500 13px Vazirmatn,sans-serif;color:#443c34">
+<span>۱۱ دقیقه</span><span>۴ بخش</span><span>۳۶ جمله‌ی مستند</span>
+<span style="display:inline-flex;align-items:center;gap:7px;color:var(--brand);font-weight:600;margin-inline-start:auto"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>همه‌ی جمله‌ها پشتوانه دارند</span>
+</div>
+
+<section style="display:flex;flex-direction:column;gap:16px;max-width:68ch">
+<h3 style="margin:0;font:700 15px/1.5 Vazirmatn,sans-serif;color:#221f1c;padding-bottom:9px;border-bottom:1px solid #e5dacc">بخش دوم — همبستگی گروهی چطور ساخته می‌شود</h3>
+
+<div style="display:grid;grid-template-columns:52px 1fr;gap:6px 16px;align-items:baseline">
+<span style="font:600 12px Vazirmatn,sans-serif;color:#9d9083">راوی</span>
+<p style="margin:0;font:400 15px/1.9 Vazirmatn,sans-serif;color:#221f1c;text-wrap:pretty">ابن‌خلدون عصبیت را نه یک احساس، بلکه سازوکاری اجتماعی می‌داند که انسجام گروه را در شرایط سخت ممکن می‌کند.</p>
+<span></span>
+<details style="font:400 12px Vazirmatn,sans-serif;color:#6d6157;margin-bottom:8px">
+<summary style="cursor:pointer;min-height:30px;display:inline-flex;align-items:center;gap:7px;color:var(--brand);font-weight:500">این جمله از کجا آمد؟</summary>
+<blockquote style="margin:8px 0 0;padding-inline-start:16px;border-inline-start:2px solid #cdbfad;font:400 14px/1.85 Vazirmatn,sans-serif;color:#443c34;text-wrap:pretty">«عصبیت جز از راه خویشاوندی یا آنچه به جای آن نشیند پدید نمی‌آید و تنها بدان است که مدافعت و مطالبت میسر می‌شود.»<cite style="display:block;margin-top:8px;font:500 13px Vazirmatn,sans-serif;color:#6d6157;font-style:normal">مقدمه، فصل سوم — صفحه‌ی ۱۴۲</cite></blockquote>
+</details>
+
+<span style="font:600 12px Vazirmatn,sans-serif;color:#9d9083">همراه</span>
+<p style="margin:0;font:400 15px/1.9 Vazirmatn,sans-serif;color:#221f1c;text-wrap:pretty">پس اگر این همبستگی ضعیف شود، دولت هم پایه‌ی اجتماعی‌اش را از دست می‌دهد؟</p>
+<span></span>
+<p style="margin:0 0 8px;font:400 12px Vazirmatn,sans-serif;color:#9d9083">پرسش گذار — ادعایی درباره‌ی متن ندارد</p>
+
+<span style="font:600 12px Vazirmatn,sans-serif;color:#9d9083">راوی</span>
+<p style="margin:0;font:400 15px/1.9 Vazirmatn,sans-serif;color:#221f1c;text-wrap:pretty">دقیقاً. و ابن‌خلدون این فرسایش را در بازه‌ای سه‌نسلی می‌بیند: نسلی که می‌سازد، نسلی که نگه می‌دارد، و نسلی که فقط مصرف می‌کند.</p>
+<span></span>
+<details style="font:400 12px Vazirmatn,sans-serif;color:#6d6157">
+<summary style="cursor:pointer;min-height:30px;display:inline-flex;align-items:center;gap:7px;color:var(--brand);font-weight:500">این جمله از کجا آمد؟</summary>
+<blockquote style="margin:8px 0 0;padding-inline-start:16px;border-inline-start:2px solid #cdbfad;font:400 14px/1.85 Vazirmatn,sans-serif;color:#443c34;text-wrap:pretty">«دولت در نسل چهارم به نهایت خود می‌رسد و عصبیت آن از میان می‌رود.»<cite style="display:block;margin-top:8px;font:500 13px Vazirmatn,sans-serif;color:#6d6157;font-style:normal">مقدمه، فصل سوم — صفحه‌ی ۱۷۸</cite></blockquote>
+</details>
+</div>
+</section>
+
+<div style="display:flex;align-items:center;justify-content:space-between;gap:15px;padding-top:14px;border-top:1px solid #e9dfd0">
+<button type="button" style="min-height:34px;padding:0 14px;border:1px solid #cdbfad;background:none;color:#443c34;font:500 13px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">خواندن کل متن</button>
+<button type="submit" style="min-height:34px;padding:0 16px;border:0;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;cursor:pointer;white-space:nowrap;flex:none;border-radius:6px">ضبط این متن</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- 09 شنیدن -->
+<div class="v2" id="v9" data-screen-label="09 شنیدن" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">09</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">شنیدن — کنترل کیفیت قطعه‌ها به حالت پیشرفته منتقل شد</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">پروژه‌ها</a></nav>
+<div role="group" aria-label="حالت نمایش" style="margin-inline-start:auto;display:flex;border:1px solid rgba(246,239,230,.4);border-radius:999px;overflow:hidden">
+<button type="button" aria-pressed="true" style="min-height:28px;padding:0 12px;border:0;background:#f6efe6;color:var(--brand);font:600 12px Vazirmatn,sans-serif;cursor:pointer">ساده</button>
+<button type="button" aria-pressed="false" style="min-height:28px;padding:0 12px;border:0;background:none;color:var(--brand-soft);font:500 12px Vazirmatn,sans-serif;cursor:pointer" style-hover="color:#f6efe6">پیشرفته</button>
+</div>
+</header>
+<div style="padding:26px 28px 30px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:10px;max-width:34ch">
+<h2 style="margin:0;font:800 24px/1.28 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;text-wrap:balance">عصبیت چه نسبتی با دوام قدرت دارد؟</h2>
+<p style="margin:0;font:400 13px Vazirmatn,sans-serif;color:#6d6157">۱۱ دقیقه · از مقدمه، فصل سوم · <time datetime="2026-07-24">۲ مرداد</time></p>
+</div>
+
+<div style="border:1px solid var(--brand);padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:14px">
+<button type="button" aria-label="پخش اپیزود" style="width:38px;height:38px;flex:none;border:0;background:var(--brand);display:grid;place-items:center;cursor:pointer;border-radius:6px"><svg width="16" height="16" viewBox="0 0 20 20" fill="#f6efe6" aria-hidden="true"><path d="M6.5 4l10 6-10 6z"/></svg></button>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+<div aria-hidden="true" style="height:4px;background:#e5dacc"><span style="display:block;height:4px;width:22%;background:var(--brand)"></span></div>
+<div style="display:flex;justify-content:space-between;font:500 12px Vazirmatn,sans-serif;color:#6d6157"><span>۲:۲۴</span><span>۱۱:۰۶</span></div>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;padding-top:10px;border-top:1px solid #e9dfd0">
+<a href="#v9" download style="min-height:34px;padding:0 14px;border:1px solid var(--brand);color:#221f1c;font:600 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:9px;border-radius:6px"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 2.5v9"/><path d="M5.5 8L9 11.5 12.5 8"/><path d="M3.5 13v2.5h11V13"/></svg>دریافت فایل صوتی</a>
+<a href="#v8" style="min-height:34px;padding:0 14px;border:1px solid #cdbfad;color:#443c34;font:500 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;border-radius:6px">خواندن متن با منابع</a>
+</div>
+</div>
+
+<section style="display:flex;flex-direction:column;gap:0">
+<h3 style="margin:0 0 4px;font:700 12px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:11px;border-bottom:1px solid #221f1c">بخش‌ها</h3>
+<ol style="margin:0;padding:0;list-style:none">
+<li style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #e9dfd0"><a href="#v9" style="font:500 14px Vazirmatn,sans-serif;color:#221f1c;text-decoration:none">مسئله از کجا شروع شد</a><span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157">۰:۰۰</span></li>
+<li style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #e9dfd0"><a href="#v9" style="font:500 14px Vazirmatn,sans-serif;color:#221f1c;text-decoration:none">همبستگی گروهی چطور ساخته می‌شود</a><span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157">۲:۰۵</span></li>
+<li style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #e9dfd0"><a href="#v9" style="font:500 14px Vazirmatn,sans-serif;color:#221f1c;text-decoration:none">چرا دولت‌ها فرو می‌پاشند</a><span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157">۶:۱۲</span></li>
+<li style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid #e9dfd0"><a href="#v9" style="font:500 14px Vazirmatn,sans-serif;color:#221f1c;text-decoration:none">امروز به چه کار می‌آید</a><span style="font:500 13px Vazirmatn,sans-serif;color:#6d6157">۹:۱۸</span></li>
+</ol>
+</section>
+
+<details style="font:400 12px Vazirmatn,sans-serif;color:#6d6157;border-top:1px solid #e9dfd0;padding-top:12px">
+<summary style="cursor:pointer;min-height:30px;display:inline-flex;align-items:center;color:#221f1c;font-weight:500">کنترل کیفیت قطعه‌ها</summary>
+<p style="margin:8px 0 0;font:400 13px/1.8 Vazirmatn,sans-serif;color:#443c34;max-width:62ch;text-wrap:pretty">۲۴ قطعه ساخته شد؛ یک قطعه به‌دلیل افتادگی یک جمله دوباره ضبط شد. مقایسه‌ی متن و صدا برای هر قطعه در حالت پیشرفته در دسترس است.</p>
+</details>
+
+</div>
+</div>
+</div>
+
+<!-- 10 حالت پیشرفته -->
+<div class="v2" id="v10" data-screen-label="10 حالت پیشرفته" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:#221f1c;color:#f6efe6">10</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">حالت پیشرفته — همان state، چگالی و کنترل بیشتر</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-06 (P0)</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:11px 28px;border-bottom:1px solid #221f1c;background:#221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<span style="font:600 11px Vazirmatn,sans-serif;color:#cdbfad;border:1px solid #45403a;padding:2px 8px;border-radius:999px">حالت پیشرفته</span>
+<div role="group" aria-label="حالت نمایش" style="margin-inline-start:auto;display:flex;border:1px solid #45403a;border-radius:999px;overflow:hidden">
+<button type="button" aria-pressed="false" style="min-height:28px;padding:0 12px;border:0;background:none;color:#cdbfad;font:500 12px Vazirmatn,sans-serif;cursor:pointer">ساده</button>
+<button type="button" aria-pressed="true" style="min-height:28px;padding:0 12px;border:0;background:#f6efe6;color:#221f1c;font:600 12px Vazirmatn,sans-serif;cursor:pointer">پیشرفته</button>
+</div>
+</header>
+<div style="padding:20px 28px 26px;display:flex;flex-direction:column;gap:16px">
+
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap">
+<h2 style="margin:0;font:700 17px/1.4 Vazirmatn,sans-serif;color:#221f1c;letter-spacing:-.02em">اجراهای پروژه</h2>
+<span style="font:400 12px ui-monospace,Menlo,monospace;color:#6d6157" dir="ltr"><bdi>p-1296f949 · state=CORPUS_BUILDING</bdi></span>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font:400 13px Vazirmatn,sans-serif">
+<caption style="text-align:start;font:400 12px Vazirmatn,sans-serif;color:#877a6c;padding-bottom:9px">همان read model حالت ساده، بدون ترجمه‌ی واژگان</caption>
+<thead><tr style="border-bottom:1px solid #221f1c;text-align:start">
+<th scope="col" style="text-align:start;padding:0 0 9px;font:700 12px Vazirmatn,sans-serif;color:#221f1c">مرحله</th>
+<th scope="col" style="text-align:start;padding:0 0 9px;font:700 12px Vazirmatn,sans-serif;color:#221f1c">وضعیت اجرا</th>
+<th scope="col" style="text-align:start;padding:0 0 9px;font:700 12px Vazirmatn,sans-serif;color:#221f1c">تلاش</th>
+<th scope="col" style="text-align:start;padding:0 0 9px;font:700 12px Vazirmatn,sans-serif;color:#221f1c">ورودی</th>
+<th scope="col" style="text-align:start;padding:0 0 9px;font:700 12px Vazirmatn,sans-serif;color:#221f1c"></th>
+</tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid #e9dfd0">
+<td style="padding:11px 0"><bdi dir="ltr" translate="no">document_parse</bdi></td>
+<td style="padding:11px 0"><span style="display:inline-flex;align-items:center;gap:6px;color:var(--brand);font-weight:600"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg><bdi dir="ltr">passed</bdi></span></td>
+<td style="padding:11px 0"><bdi dir="ltr">1/3</bdi></td>
+<td style="padding:11px 0;color:#6d6157"><bdi dir="ltr" translate="no">8f31c2…</bdi></td>
+<td style="padding:11px 0;text-align:end"><a href="#v10" style="font:500 12px Vazirmatn,sans-serif;color:var(--brand)">artifact</a></td>
+</tr>
+<tr style="border-bottom:1px solid #e9dfd0">
+<td style="padding:11px 0"><bdi dir="ltr" translate="no">document_map</bdi></td>
+<td style="padding:11px 0"><span style="display:inline-flex;align-items:center;gap:6px;color:#8a5a12;font-weight:600"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="#8a5a12" stroke-width="1.8" aria-hidden="true"><path d="M7 2l5.5 10h-11z"/></svg><bdi dir="ltr">passed_with_warnings</bdi></span></td>
+<td style="padding:11px 0"><bdi dir="ltr">1/3</bdi></td>
+<td style="padding:11px 0;color:#6d6157"><bdi dir="ltr" translate="no">8f31c2…</bdi></td>
+<td style="padding:11px 0;text-align:end"><a href="#v10" style="font:500 12px Vazirmatn,sans-serif;color:var(--brand)">۲ هشدار</a></td>
+</tr>
+<tr style="border-bottom:1px solid #e9dfd0;background:#efe4d6">
+<td style="padding:11px 0"><bdi dir="ltr" translate="no">evidence_extraction</bdi></td>
+<td style="padding:11px 0"><span style="display:inline-flex;align-items:center;gap:6px;color:#221f1c;font-weight:600"><span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:var(--brand)"></span><bdi dir="ltr">running</bdi></span></td>
+<td style="padding:11px 0"><bdi dir="ltr">1/3</bdi></td>
+<td style="padding:11px 0;color:#6d6157"><bdi dir="ltr" translate="no">4c81ab…</bdi></td>
+<td style="padding:11px 0;text-align:end"><button type="button" style="min-height:28px;padding:0 10px;border:1px solid #cdbfad;background:#f6efe6;color:#443c34;font:500 12px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">لغو</button></td>
+</tr>
+<tr>
+<td style="padding:11px 0;color:#9d9083"><bdi dir="ltr" translate="no">claim_ledger</bdi></td>
+<td style="padding:11px 0;color:#9d9083"><bdi dir="ltr">not_started</bdi></td>
+<td style="padding:11px 0;color:#9d9083">—</td>
+<td style="padding:11px 0;color:#9d9083">—</td>
+<td style="padding:11px 0"></td>
+</tr>
+</tbody>
+</table>
+
+<p style="margin:0;font:400 12px/1.8 Vazirmatn,sans-serif;color:#6d6157;max-width:66ch;text-wrap:pretty">هیچ gate یا precondition ای در این حالت دور زده نمی‌شود؛ actionهای مجاز همان‌هایی هستند که server بر اساس وضعیت واقعی می‌دهد. تفاوت فقط در واژگان، چگالی و کنترل‌های در دسترس است.</p>
+
+</div>
+</div>
+</div>
+
+<!-- 11 خطای فرم -->
+<div class="v2" id="v11" data-screen-label="11 خطای فرم" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">11</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">فرم پرسش — خطا کنار همان field و حفظ همه‌ی انتخاب‌ها</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-08</span></div>
+<div style="width:900px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3)">
+<header style="display:flex;align-items:center;gap:15px;padding:12px 28px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 12px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<nav aria-label="اصلی" style="display:flex;gap:16px;font:500 13px Vazirmatn,sans-serif"><a href="#v2" style="color:var(--brand-soft);text-decoration:none" style-hover="color:#f6efe6">پروژه‌ها</a></nav>
+</header>
+<div style="padding:24px 28px 30px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:10px;max-width:44ch">
+<h2 style="margin:0;font:800 22px/1.3 Vazirmatn,sans-serif;letter-spacing:-.045em;color:#221f1c;text-wrap:balance">می‌خواهید چه چیزی را بفهمید؟</h2>
+<p style="margin:0;font:400 14px/1.8 Vazirmatn,sans-serif;color:#443c34;text-wrap:pretty">یک پرسش مشخص بنویسید. هرچه دقیق‌تر، اپیزود منسجم‌تر.</p>
+</div>
+<form style="display:flex;flex-direction:column;gap:16px;max-width:62ch">
+<div style="display:flex;flex-direction:column;gap:8px">
+<label for="v11-q" style="font:600 12px Vazirmatn,sans-serif;color:#221f1c">پرسش اپیزود</label>
+<textarea id="v11-q" rows="2" aria-invalid="true" aria-describedby="v11-err v11-hint" style="border:1.5px solid #a8402b;padding:10px 12px;font:400 15px/1.7 Vazirmatn,sans-serif;color:#221f1c;background:#f6efe6;resize:vertical;border-radius:6px">ابن‌خلدون</textarea>
+<p id="v11-err" style="margin:0;display:flex;align-items:flex-start;gap:7px;font:500 13px/1.7 Vazirmatn,sans-serif;color:#a8402b"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#a8402b" stroke-width="1.8" aria-hidden="true" style="flex:none;margin-top:4px"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>این یک نام است، نه پرسش. بنویسید می‌خواهید درباره‌ی او چه چیزی بفهمید.</p>
+<p id="v11-hint" style="margin:0;font:400 13px Vazirmatn,sans-serif;color:#6d6157">مثال: چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<span style="font:600 12px Vazirmatn,sans-serif;color:#221f1c">شنونده کیست؟</span>
+<div style="display:flex;flex-wrap:wrap;gap:7px">
+<label style="display:inline-flex;align-items:center;gap:7px;border:1px solid #d3c5b3;color:#443c34;padding:0 11px;height:32px;cursor:pointer;font:400 13px Vazirmatn,sans-serif;border-radius:6px"><input type="radio" name="v11a" style="accent-color:#221f1c;margin:0;width:12px;height:12px">آشنا نیست</label>
+<label style="display:inline-flex;align-items:center;gap:7px;border:1px solid var(--brand);background:var(--brand);color:#f6efe6;padding:0 11px;height:32px;cursor:pointer;font:500 13px Vazirmatn,sans-serif;border-radius:6px"><input type="radio" name="v11a" checked style="accent-color:#f6efe6;margin:0;width:12px;height:12px">کمی خوانده</label>
+<label style="display:inline-flex;align-items:center;gap:7px;border:1px solid #d3c5b3;color:#443c34;padding:0 11px;height:32px;cursor:pointer;font:400 13px Vazirmatn,sans-serif;border-radius:6px"><input type="radio" name="v11a" style="accent-color:#221f1c;margin:0;width:12px;height:12px">اهل رشته است</label>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<span style="font:600 12px Vazirmatn,sans-serif;color:#221f1c">مدت اپیزود</span>
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:7px">
+<label style="display:inline-flex;align-items:center;gap:7px;border:1px solid #d3c5b3;color:#443c34;padding:0 11px;height:32px;cursor:pointer;font:400 13px Vazirmatn,sans-serif;border-radius:6px"><input type="radio" name="v11d" style="accent-color:#221f1c;margin:0;width:12px;height:12px">۱۰ دقیقه</label>
+<label style="display:inline-flex;align-items:center;gap:7px;border:1px solid #d3c5b3;color:#443c34;padding:0 11px;height:32px;cursor:pointer;font:400 13px Vazirmatn,sans-serif;border-radius:6px"><input type="radio" name="v11d" style="accent-color:#221f1c;margin:0;width:12px;height:12px">۲۰ دقیقه</label>
+<label style="display:inline-flex;align-items:center;gap:7px;border:1px solid var(--brand);background:var(--brand);color:#f6efe6;padding:0 11px;height:32px;cursor:pointer;font:500 13px Vazirmatn,sans-serif;border-radius:6px"><input type="radio" name="v11d" checked style="accent-color:#f6efe6;margin:0;width:12px;height:12px">۳۰ دقیقه</label>
+<label style="display:inline-flex;align-items:center;gap:7px;border:1px solid #d3c5b3;color:#443c34;padding:0 11px;height:32px;cursor:pointer;font:400 13px Vazirmatn,sans-serif;border-radius:6px"><input type="radio" name="v11d" style="accent-color:#221f1c;margin:0;width:12px;height:12px">۴۵ دقیقه</label>
+<span style="font:400 12px Vazirmatn,sans-serif;color:#6d6157;margin-inline-start:5px">انتخاب‌های شما پس از خطا دست‌نخورده ماند.</span>
+</div>
+</div>
+<button type="submit" style="min-height:34px;padding:0 16px;border:0;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;cursor:pointer;align-self:flex-start;border-radius:6px">ادامه به منابع</button>
+</form>
+</div>
+</div>
+</div>
+
+<!-- 12 موبایل -->
+<div class="v2" id="v12" data-screen-label="12 موبایل" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap"><span style="font:600 12px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--brand);color:#f6efe6">12</span><span style="font:400 12px Vazirmatn,sans-serif;color:rgba(0,0,0,.55)">موبایل — ناوبری حذف نمی‌شود، نوار مراحل فشرده می‌شود</span><span style="font:600 11px Vazirmatn,sans-serif;color:#7d2f1d;background:#f7e3da;padding:2px 8px;border-radius:999px">F-11</span></div>
+<div style="display:flex;gap:18px;flex-wrap:wrap">
+
+<div style="width:390px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3);display:flex;flex-direction:column;min-height:620px">
+<header style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 11px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<div role="group" aria-label="حالت نمایش" style="margin-inline-start:auto;display:flex;border:1px solid rgba(246,239,230,.4);border-radius:999px;overflow:hidden">
+<button type="button" aria-pressed="true" style="min-height:26px;padding:0 10px;border:0;background:#f6efe6;color:var(--brand);font:600 11px Vazirmatn,sans-serif;cursor:pointer">ساده</button>
+<button type="button" aria-pressed="false" style="min-height:26px;padding:0 10px;border:0;background:none;color:var(--brand-soft);font:500 11px Vazirmatn,sans-serif;cursor:pointer" style-hover="color:#f6efe6">پیشرفته</button>
+</div>
+</header>
+<nav aria-label="مراحل ساخت اپیزود" style="padding:10px 16px;border-bottom:1px solid #e9dfd0;background:#f0e7db;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:8px">
+<span style="font:700 12px Vazirmatn,sans-serif;color:#221f1c">مرحله ۳ از ۶ — پردازش</span>
+<span style="font:400 12px Vazirmatn,sans-serif;color:#877a6c;margin-inline-start:auto">۲ مرحله انجام شد</span>
+</div>
+<div aria-hidden="true" style="display:flex;gap:4px"><span style="height:4px;flex:1;background:var(--brand)"></span><span style="height:4px;flex:1;background:var(--brand)"></span><span style="height:4px;flex:1;background:#221f1c"></span><span style="height:4px;flex:1;background:#ded1bf"></span><span style="height:4px;flex:1;background:#ded1bf"></span><span style="height:4px;flex:1;background:#ded1bf"></span></div>
+</nav>
+<div style="padding:18px 16px;display:flex;flex-direction:column;gap:16px;flex:1">
+<h2 style="margin:0;font:800 19px/1.35 Vazirmatn,sans-serif;letter-spacing:-.04em;color:#221f1c;text-wrap:balance">چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟</h2>
+<div aria-live="polite" style="border-inline-start:3px solid var(--brand);padding-inline-start:12px;display:flex;flex-direction:column;gap:6px">
+<span style="display:inline-flex;align-items:center;gap:7px;font:700 14px Vazirmatn,sans-serif;color:#221f1c"><span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:var(--pop);animation:v2pulse 1.8s ease-in-out infinite"></span>در حال خواندن و یادداشت‌برداری</span>
+<p style="margin:0;font:400 13px/1.8 Vazirmatn,sans-serif;color:#443c34">تا اینجا ۳۸ ادعای مستند ثبت شده است. اقدامی از شما لازم نیست.</p>
+</div>
+<p style="margin:0;font:400 13px/1.8 Vazirmatn,sans-serif;color:#6d6157">می‌توانید ببندید؛ کار ادامه دارد و از همین‌جا برمی‌گردید.</p>
+</div>
+<nav aria-label="اصلی" style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #e5dacc;background:#f0e7db">
+<a href="#v2" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#221f1c;text-decoration:none"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#221f1c" stroke-width="1.6" aria-hidden="true"><path d="M3.5 7.5h13M3.5 12.5h13"/></svg>پروژه‌ها</a>
+<a href="#v11" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none;border-inline:1px solid #e5dacc"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#6d6157" stroke-width="1.6" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>اپیزود تازه</a>
+<a href="#v1" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#6d6157" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="7.5" r="3"/><path d="M4.5 16c.8-2.6 2.9-4 5.5-4s4.7 1.4 5.5 4"/></svg>حساب من</a>
+</nav>
+</div>
+
+<div style="width:390px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3);display:flex;flex-direction:column;min-height:620px">
+<header style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 11px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+</header>
+<div style="padding:18px 16px;display:flex;flex-direction:column;gap:14px;flex:1">
+<h2 style="margin:0;font:800 19px/1.35 Vazirmatn,sans-serif;letter-spacing:-.04em;color:#221f1c">پروژه‌های من</h2>
+<section style="display:flex;flex-direction:column">
+<h3 style="margin:0 0 9px;font:700 11px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:9px;border-bottom:1px solid #221f1c">منتظر شما</h3>
+<article style="padding:12px 0;border-bottom:1px solid #e9dfd0;display:flex;flex-direction:column;gap:8px">
+<h4 style="margin:0;font:700 14px/1.5 Vazirmatn,sans-serif;color:#221f1c;text-wrap:pretty">بوروکراسی نزد وبر چه چیزی را ممکن می‌کند؟</h4>
+<p style="margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;font:400 12px Vazirmatn,sans-serif;color:#6d6157"><span style="display:inline-flex;align-items:center;gap:5px;color:#8a5a12;font-weight:600"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="#8a5a12" stroke-width="1.8" aria-hidden="true"><path d="M7 2l5.5 10h-11z"/></svg>ساختار آماده بازبینی</span><span aria-hidden="true" style="color:#c4b6a4">·</span><span>تصمیم شما لازم است</span></p>
+<a href="#v7" style="min-height:38px;padding:0 14px;background:var(--brand);color:#f6efe6;font:600 13px Vazirmatn,sans-serif;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;border-radius:6px">بازبینی ساختار</a>
+</article>
+</section>
+<section style="display:flex;flex-direction:column">
+<h3 style="margin:0 0 9px;font:700 11px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:9px;border-bottom:1px solid #e5dacc">در حال انجام</h3>
+<article style="padding:12px 0;border-bottom:1px solid #e9dfd0;display:flex;flex-direction:column;gap:6px">
+<h4 style="margin:0;font:700 14px/1.5 Vazirmatn,sans-serif;color:#221f1c;text-wrap:pretty">چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟</h4>
+<p style="margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;font:400 12px Vazirmatn,sans-serif;color:#6d6157"><span style="display:inline-flex;align-items:center;gap:5px;color:#221f1c;font-weight:600"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:var(--brand)"></span>در حال استخراج شواهد</span><span aria-hidden="true" style="color:#c4b6a4">·</span><span>اقدامی لازم نیست</span></p>
+</article>
+</section>
+</div>
+<nav aria-label="اصلی" style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #e5dacc;background:#f0e7db">
+<a href="#v2" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:600 11px Vazirmatn,sans-serif;color:#221f1c;text-decoration:none;border-bottom:2px solid var(--brand)"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#221f1c" stroke-width="1.6" aria-hidden="true"><path d="M3.5 7.5h13M3.5 12.5h13"/></svg>پروژه‌ها</a>
+<a href="#v11" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none;border-inline:1px solid #e5dacc"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#6d6157" stroke-width="1.6" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>اپیزود تازه</a>
+<a href="#v1" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#6d6157" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="7.5" r="3"/><path d="M4.5 16c.8-2.6 2.9-4 5.5-4s4.7 1.4 5.5 4"/></svg>حساب من</a>
+</nav>
+</div>
+
+<div style="width:390px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3);display:flex;flex-direction:column;min-height:620px">
+<header style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 11px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<span style="font:600 12px Vazirmatn,sans-serif;color:#f6efe6;margin-inline-start:auto">منابع</span>
+</header>
+<nav aria-label="مراحل ساخت اپیزود" style="padding:10px 16px;border-bottom:1px solid #e9dfd0;background:#f0e7db;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px Vazirmatn,sans-serif;color:#221f1c">مرحله ۲ از ۶ — منابع</span><span style="font:400 12px Vazirmatn,sans-serif;color:#877a6c;margin-inline-start:auto">۱ مرحله انجام شد</span></div>
+<div aria-hidden="true" style="display:flex;gap:4px"><span style="height:4px;flex:1;background:var(--brand)"></span><span style="height:4px;flex:1;background:#221f1c"></span><span style="height:4px;flex:1;background:#ded1bf"></span><span style="height:4px;flex:1;background:#ded1bf"></span><span style="height:4px;flex:1;background:#ded1bf"></span><span style="height:4px;flex:1;background:#ded1bf"></span></div>
+</nav>
+<div style="padding:18px 16px;display:flex;flex-direction:column;gap:14px;flex:1">
+<h2 style="margin:0;font:800 19px/1.35 Vazirmatn,sans-serif;letter-spacing:-.04em;color:#221f1c;text-wrap:balance">اپیزود از چه چیزی ساخته شود؟</h2>
+<button type="button" style="min-height:44px;border:1px dashed #c4b6a4;background:#f0e7db;color:#221f1c;font:600 13px Vazirmatn,sans-serif;cursor:pointer;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:9px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 16V4"/><path d="M7.5 8.5L12 4l4.5 4.5"/><path d="M4 16v3.5h16V16"/></svg>افزودن فایل</button>
+<section style="display:flex;flex-direction:column">
+<h3 style="margin:0 0 9px;font:700 11px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:9px;border-bottom:1px solid #221f1c">فایل‌های شما</h3>
+<article style="padding:12px 0;border-bottom:1px solid #e9dfd0;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:flex-start;gap:10px">
+<input id="m3-s1" type="checkbox" checked style="width:16px;height:16px;accent-color:#221f1c;margin:3px 0 0;flex:none">
+<label for="m3-s1" style="font:700 14px/1.5 Vazirmatn,sans-serif;color:#221f1c;cursor:pointer">ابن‌خلدون، مقدمه — فصل سوم</label>
+</div>
+<p style="margin:0 0 0 26px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;font:400 12px Vazirmatn,sans-serif;color:#6d6157"><span style="display:inline-flex;align-items:center;gap:5px;color:var(--brand);font-weight:600"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>آماده استفاده</span><span aria-hidden="true" style="color:#c4b6a4">·</span><span>۳۸۶ صفحه</span></p>
+</article>
+<article style="padding:12px 0;border-bottom:1px solid #e9dfd0;display:flex;flex-direction:column;gap:8px;background:#faeae2">
+<div style="display:flex;align-items:flex-start;gap:10px">
+<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#a8402b" stroke-width="1.6" aria-hidden="true" style="flex:none;margin-top:3px"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+<span style="font:700 14px/1.5 Vazirmatn,sans-serif;color:#221f1c">تاریخ اندیشه — نسخه‌ی اسکن‌شده</span>
+</div>
+<p style="margin:0;font:400 13px/1.75 Vazirmatn,sans-serif;color:#7d2f1d;text-wrap:pretty">این فایل عکسِ صفحه‌هاست، نه متن. اگر نسخه‌ی متنی دارید همان را بگذارید.</p>
+<button type="button" style="min-height:38px;padding:0 12px;border:1px solid #a8402b;background:#f6efe6;color:#7d2f1d;font:600 12px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">جایگزینی با نسخه‌ی متنی</button>
+</article>
+</section>
+</div>
+<div style="padding:12px 16px;border-top:1px solid #e5dacc;background:#f0e7db;display:flex;flex-direction:column;gap:8px">
+<p style="margin:0;font:400 12px Vazirmatn,sans-serif;color:#6d6157">اپیزود فقط بر اساس ۱ فایل تیک‌خورده ساخته می‌شود.</p>
+<button type="submit" style="min-height:44px;border:0;background:var(--brand);color:#f6efe6;font:600 14px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">تأیید منابع و شروع پردازش</button>
+</div>
+</div>
+
+<div style="width:390px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3);display:flex;flex-direction:column;min-height:620px">
+<header style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 11px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<span style="font:600 12px Vazirmatn,sans-serif;color:#f6efe6;margin-inline-start:auto">طرح اپیزود</span>
+</header>
+<div style="padding:18px 16px;display:flex;flex-direction:column;gap:14px;flex:1">
+<h2 style="margin:0;font:800 19px/1.35 Vazirmatn,sans-serif;letter-spacing:-.04em;color:#221f1c;text-wrap:balance">کتاب برای ۲۰ دقیقه حرف کافی ندارد</h2>
+<p style="margin:0;font:400 13px/1.8 Vazirmatn,sans-serif;color:#443c34;text-wrap:pretty">از این یک منبع حدود <strong style="font-weight:700;color:#221f1c">۱۱ دقیقه</strong> حرفِ مستند در می‌آید. برای رسیدن به ۲۰ دقیقه باید چیزی بگوییم که پشتوانه ندارد.</p>
+<div style="display:flex;flex-direction:column;gap:8px">
+<button type="button" style="min-height:44px;border:0;background:var(--brand);color:#f6efe6;font:600 14px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">همین ۱۱ دقیقه خوب است</button>
+<button type="button" style="min-height:44px;border:1px solid #cdbfad;background:none;color:#443c34;font:500 14px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">منبع دیگری اضافه می‌کنم</button>
+</div>
+<section style="display:flex;flex-direction:column">
+<h3 style="margin:0 0 9px;font:700 11px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:9px;border-bottom:1px solid #221f1c">چهار بخش</h3>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #e9dfd0"><span style="font:600 13px Vazirmatn,sans-serif;color:#221f1c">مسئله از کجا شروع شد</span><span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">۲ دقیقه</span></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #e9dfd0"><span style="font:600 13px Vazirmatn,sans-serif;color:#221f1c">همبستگی گروهی چطور ساخته می‌شود</span><span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">۴ دقیقه</span></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #e9dfd0"><span style="font:600 13px Vazirmatn,sans-serif;color:#221f1c">چرا دولت‌ها فرو می‌پاشند</span><span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">۳ دقیقه</span></div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #e9dfd0"><span style="font:600 13px Vazirmatn,sans-serif;color:#221f1c">امروز به چه کار می‌آید</span><span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">۲ دقیقه</span></div>
+</section>
+</div>
+</div>
+
+<div style="width:390px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3);display:flex;flex-direction:column;min-height:620px">
+<header style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 11px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<span style="font:600 12px Vazirmatn,sans-serif;color:#f6efe6;margin-inline-start:auto">شنیدن</span>
+</header>
+<div style="padding:18px 16px;display:flex;flex-direction:column;gap:16px;flex:1">
+<div style="display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font:800 19px/1.35 Vazirmatn,sans-serif;letter-spacing:-.04em;color:#221f1c;text-wrap:balance">عصبیت چه نسبتی با دوام قدرت دارد؟</h2>
+<p style="margin:0;font:400 12px Vazirmatn,sans-serif;color:#6d6157">۱۱ دقیقه · از مقدمه، فصل سوم</p>
+</div>
+<div style="border:1px solid var(--brand);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px">
+<button type="button" aria-label="پخش اپیزود" style="width:46px;height:46px;flex:none;border:0;background:var(--brand);display:grid;place-items:center;cursor:pointer;border-radius:8px"><svg width="17" height="17" viewBox="0 0 20 20" fill="#f6efe6" aria-hidden="true"><path d="M6.5 4l10 6-10 6z"/></svg></button>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+<div aria-hidden="true" style="height:4px;background:#e5dacc"><span style="display:block;height:4px;width:22%;background:var(--brand)"></span></div>
+<div style="display:flex;justify-content:space-between;font:500 12px Vazirmatn,sans-serif;color:#6d6157"><span>۲:۲۴</span><span>۱۱:۰۶</span></div>
+</div>
+</div>
+<div style="display:flex;gap:8px">
+<button type="button" style="flex:1;min-height:40px;border:1px solid #cdbfad;background:none;color:#443c34;font:500 13px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">دریافت فایل</button>
+<button type="button" style="flex:1;min-height:40px;border:1px solid #cdbfad;background:none;color:#443c34;font:500 13px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">خواندن متن</button>
+</div>
+</div>
+<section style="display:flex;flex-direction:column">
+<h3 style="margin:0 0 9px;font:700 11px Vazirmatn,sans-serif;color:#221f1c;letter-spacing:.05em;padding-bottom:9px;border-bottom:1px solid #221f1c">بخش‌ها</h3>
+<a href="#v9" style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #e9dfd0;text-decoration:none"><span style="font:500 13px Vazirmatn,sans-serif;color:#221f1c">مسئله از کجا شروع شد</span><span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">۰:۰۰</span></a>
+<a href="#v9" style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #e9dfd0;text-decoration:none"><span style="font:500 13px Vazirmatn,sans-serif;color:#221f1c">همبستگی گروهی چطور ساخته می‌شود</span><span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">۲:۰۵</span></a>
+<a href="#v9" style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #e9dfd0;text-decoration:none"><span style="font:500 13px Vazirmatn,sans-serif;color:#221f1c">چرا دولت‌ها فرو می‌پاشند</span><span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">۶:۱۲</span></a>
+<a href="#v9" style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #e9dfd0;text-decoration:none"><span style="font:500 13px Vazirmatn,sans-serif;color:#221f1c">امروز به چه کار می‌آید</span><span style="font:500 12px Vazirmatn,sans-serif;color:#6d6157">۹:۱۸</span></a>
+</section>
+</div>
+<nav aria-label="اصلی" style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #e5dacc;background:#f0e7db">
+<a href="#v2" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 7.5h13M3.5 12.5h13"/></svg>پروژه‌ها</a>
+<a href="#v11" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none;border-inline:1px solid #e5dacc"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>اپیزود تازه</a>
+<a href="#v1" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="7.5" r="3"/><path d="M4.5 16c.8-2.6 2.9-4 5.5-4s4.7 1.4 5.5 4"/></svg>حساب من</a>
+</nav>
+</div>
+
+<div style="width:390px;background:#f6efe6;border:1px solid #d8ccbc;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(34,31,28,.05),0 14px 34px -18px rgba(34,31,28,.3);display:flex;flex-direction:column;min-height:620px">
+<header style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--brand);border-bottom:3px solid #221f1c">
+<span style="font:800 11px Vazirmatn,sans-serif;color:#f6efe6;letter-spacing:.14em" translate="no">THESISOUND</span>
+<span style="font:600 12px Vazirmatn,sans-serif;color:#f6efe6;margin-inline-start:auto">خطا و بازیابی</span>
+</header>
+<div style="padding:18px 16px;display:flex;flex-direction:column;gap:14px;flex:1">
+<h2 style="margin:0;font:800 19px/1.35 Vazirmatn,sans-serif;letter-spacing:-.04em;color:#221f1c;text-wrap:balance">کنش نزد آرنت یعنی چه؟</h2>
+<section role="alert" style="border:1.5px solid #a8402b;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:10px;align-items:flex-start">
+<svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#a8402b" stroke-width="1.6" aria-hidden="true" style="flex:none;margin-top:3px"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+<div style="display:flex;flex-direction:column;gap:6px">
+<h3 style="margin:0;font:700 15px/1.45 Vazirmatn,sans-serif;color:#221f1c">نوشتن متن نیمه‌کاره ماند</h3>
+<p style="margin:0;font:400 13px/1.75 Vazirmatn,sans-serif;color:#443c34;text-wrap:pretty">سرویس نوشتن در زمان مجاز پاسخ نداد. قطعی موقت است، نه ایرادی در منابع شما.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:9px;padding-inline-start:27px">
+<div style="display:flex;flex-direction:column;gap:3px"><span style="font:700 11px Vazirmatn,sans-serif;color:var(--brand);letter-spacing:.04em">سالم مانده</span><span style="font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34">منابع، ادعاها، ساختار و دو بخش نوشته‌شده از چهار بخش.</span></div>
+<div style="display:flex;flex-direction:column;gap:3px"><span style="font:700 11px Vazirmatn,sans-serif;color:#7d2f1d;letter-spacing:.04em">ناتمام</span><span style="font:400 13px/1.7 Vazirmatn,sans-serif;color:#443c34">دو بخش پایانی و راستی‌آزمایی.</span></div>
+</div>
+</section>
+<div style="display:flex;flex-direction:column;gap:8px">
+<button type="button" style="min-height:44px;border:0;background:#a8402b;color:#f6efe6;font:600 14px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">ادامه از همان دو بخش</button>
+<button type="button" style="min-height:44px;border:1px solid #cdbfad;background:none;color:#443c34;font:500 14px Vazirmatn,sans-serif;cursor:pointer;border-radius:6px">بازبینی ساختار</button>
+<span style="font:400 12px Vazirmatn,sans-serif;color:#877a6c;text-align:center">تلاش ۲ از ۳</span>
+</div>
+</div>
+<nav aria-label="اصلی" style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #e5dacc;background:#f0e7db">
+<a href="#v2" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 7.5h13M3.5 12.5h13"/></svg>پروژه‌ها</a>
+<a href="#v11" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none;border-inline:1px solid #e5dacc"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>اپیزود تازه</a>
+<a href="#v1" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 11px Vazirmatn,sans-serif;color:#6d6157;text-decoration:none"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="7.5" r="3"/><path d="M4.5 16c.8-2.6 2.9-4 5.5-4s4.7 1.4 5.5 4"/></svg>حساب من</a>
+</nav>
+</div>
+
+</div>
+</div>
+
+</div>
+
+</x-dc>
+</body>
+</html>
