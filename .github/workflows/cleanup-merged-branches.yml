@@ -1,0 +1,41 @@
+name: Cleanup merged branches
+
+on:
+  push:
+    paths:
+      - .github/workflows/cleanup-merged-branches.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Delete completed branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          branches=(
+            'agent/approve-and-review-script'
+            'agent/real-web-ingestion'
+            'agent/review-and-corpus-building'
+            'agent/review-and-episode-planning'
+            'agent/tts-audio-vertical-slice'
+            'agent/ui-vertical-slice'
+            'fix/local-live-e2e-readiness'
+          )
+
+          for branch in "${branches[@]}"; do
+            if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+              git push origin --delete "$branch"
+            else
+              echo "Already absent: $branch"
+            fi
+          done
