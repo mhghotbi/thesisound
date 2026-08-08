@@ -1,0 +1,37 @@
+name: Apply EPUB support
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/epub-support.patch.gz.b64
+      - .github/workflows/apply-epub-support.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply reviewed patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode .github/epub-support.patch.gz.b64 | gzip --decompress > /tmp/epub-support.patch
+          patch -p1 --forward < /tmp/epub-support.patch
+          rm .github/epub-support.patch.gz.b64
+          rm .github/workflows/apply-epub-support.yml
+      - name: Commit EPUB support
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add EPUB ingestion support"
+          git push origin HEAD:main
