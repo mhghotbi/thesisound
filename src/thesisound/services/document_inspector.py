@@ -24,8 +24,7 @@ def inspect_document(path: Path) -> DocumentInspection:
     """Inspect a local document without invoking a parser or model.
 
     Unknown values remain unknown and are reported as warnings instead of
-    being guessed. PDF page sampling is enabled when the optional ``pypdf``
-    dependency is installed through the ``parsers`` extra.
+    being guessed. PDF page sampling uses the lightweight ``pypdf`` dependency.
     """
 
     resolved = path.expanduser().resolve()
@@ -95,7 +94,7 @@ def _inspect_pdf(path: Path) -> dict[str, Any]:
             "image_only_ratio": None,
             "likely_complex_layout": False,
             "warnings": [
-                "Install the 'parsers' extra to inspect PDF pages, encryption, and text coverage."
+                "Install pypdf to inspect PDF pages, encryption, and text coverage."
             ],
         }
 
@@ -143,7 +142,7 @@ def _inspect_pdf(path: Path) -> dict[str, Any]:
         if not stripped:
             empty_pages += 1
 
-    combined = "\n".join(extracted_samples)
+    combined = "\n".join(extracted_samples).strip()
     ratio = empty_pages / len(sample_indices) if sample_indices else None
     return {
         "page_count": page_count,
