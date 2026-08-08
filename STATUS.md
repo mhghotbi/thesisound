@@ -31,6 +31,8 @@ OTP login
 → COMPLETE
 ```
 
+All Gemini text, Google Search, URL Context, TTS, and ASR calls now pass through the unified model-call observability contract. Queryable metadata is written to `workspaces/_observability/ledger.sqlite3`, while redacted request, response, and parsed-output artifacts are stored under `workspaces/_observability/artifacts/`.
+
 ## End-to-end readiness additions
 
 - پروژه می‌تواند فقط با عنوان/موضوع شروع شود و در UI از Gemini Search منبع بگیرد.
@@ -40,12 +42,16 @@ OTP login
 - rewind به Brief یا Sources خروجی downstream را archive و invalid می‌کند و raw inputs را نگه می‌دارد.
 - پیام quality warning وضعیت، اثر و اقدام لازم را به زبان انسانی توضیح می‌دهد؛ parser/verdict در جزئیات فنی است.
 - `uv run thesisound doctor` و `/system-check` پیش‌نیازهای live runtime را بررسی می‌کنند.
+- هر فراخوانی مدل دارای `call_id`، stage، model، timeout، token usage، provider attempt، retry/backoff، error و مسیر artifactهای redacted است.
+- API key خام ثبت نمی‌شود؛ فقط slot و fingerprint غیرقابل‌بازگشت برای بررسی rotation و ADC fallback ذخیره می‌شود.
+- مشاهده‌ی پروژه و یک call با `uv run thesisound observability <project-id>` و `uv run thesisound model-call <call-id>` ممکن است.
 
 ## Milestone status
 
 - M0 Scaffold and contracts: implemented
 - M1 Document ingestion: implemented; broader Persian benchmark remains empirical work
 - M2 Structured model execution: implemented; live-provider behavior remains empirical work
+- M2.5 Unified model-call observability: implemented for text, Search, URL Context, TTS, and ASR
 - M3 Evidence pipeline: implemented
 - M4 Episode preparation: implemented
 - M5 Verified Persian script: implemented
@@ -58,13 +64,13 @@ OTP login
 
 ## What is not yet claimed
 
-The local application is ready for live-path validation, but no claim is made yet about real Persian output quality, URL retrieval completeness, source authority ranking, latency, cost, or reliability. Those require recorded runs with actual providers and real source corpora.
+The local application is ready for live-path validation, but no claim is made yet about real Persian output quality, URL retrieval completeness, source authority ranking, latency, cost, or reliability. Those require recorded runs with actual providers and real source corpora. Pricing-versioned cost calculation is not implemented yet; the ledger records provider token usage needed to add it later.
 
 Next empirical work:
 
 1. run `thesisound doctor` and resolve all FAIL items;
 2. execute one upload-based and one title-only/Search-based project;
 3. include at least one Persian PDF near 900k extracted characters to validate hierarchical mapping cost and continuity;
-4. record provider calls, latency, token usage, capture completeness, chunk count, regeneration count, and failure points;
+4. inspect the observability ledger for model selection, latency, timeout, token usage, key rotation, retry/backoff, capture completeness, chunk count, regeneration count, and failure points;
 5. inspect source trace, script quality, ASR diffs, final listening quality, and rewind/rebuild behavior;
 6. change thresholds and defaults only from recorded evidence.

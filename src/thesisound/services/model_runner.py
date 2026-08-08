@@ -114,6 +114,7 @@ class ModelRunner:
         )
 
         user_prompt = bundle.user_prompt
+        ledger = getattr(self.model_port, "observability", None)
         for attempt_number in range(1, bundle.contract.max_attempts + 1):
             started = perf_counter()
             metadata = RunMetadata(
@@ -124,7 +125,15 @@ class ModelRunner:
                 input_artifact_hashes=[input_hash],
                 grounding_mode=resolved_mode,
                 grounding_urls=resolved_urls,
+                trace_id=record.run_id,
+                project_id=project_id,
+                operation=_operation_for_grounding(resolved_mode),
+                prompt_id=bundle.contract.id,
+                subject_type="model_stage",
+                subject_id=stage,
+                max_provider_attempts=1,
             )
+            response = None
             try:
                 response = self.model_port.generate_structured(
                     system_prompt=bundle.system_prompt,
@@ -152,6 +161,7 @@ class ModelRunner:
                         finish_reason=response.finish_reason,
                         grounding_source_count=len(response.grounding.sources),
                         web_search_queries=response.grounding.web_search_queries,
+                        call_id=response.call_id,
                     )
                 )
                 record.status = "succeeded"
@@ -169,6 +179,15 @@ class ModelRunner:
                     retry_schema_errors=bundle.contract.retry_schema_errors,
                     base_delay_seconds=self.base_retry_delay_seconds,
                 )
+                call_id = response.call_id if response is not None else metadata.call_id
+                if response is not None and ledger is not None:
+                    ledger.reject(call_id, exc)
+                if decision.should_retry and ledger is not None:
+                    ledger.record_retry(
+                        call_id,
+                        reason=type(exc).__name__,
+                        backoff_ms=round(decision.delay_seconds * 1000),
+                    )
                 record.attempts.append(
                     ModelAttemptRecord(
                         attempt=attempt_number,
@@ -176,6 +195,8 @@ class ModelRunner:
                         error_type=type(exc).__name__,
                         error_message=str(exc),
                         retryable=decision.should_retry,
+                        retry_delay_ms=round(decision.delay_seconds * 1000),
+                        call_id=call_id,
                     )
                 )
                 self.run_store.save_record(record)
@@ -196,6 +217,8 @@ class ModelRunner:
                     )
             except Exception as exc:
                 wrapped = ModelProviderError(str(exc), retryable=False)
+                if ledger is not None:
+                    ledger.fail(metadata.call_id, wrapped)
                 record.attempts.append(
                     ModelAttemptRecord(
                         attempt=attempt_number,
@@ -203,6 +226,7 @@ class ModelRunner:
                         error_type=type(exc).__name__,
                         error_message=str(exc),
                         retryable=False,
+                        call_id=metadata.call_id,
                     )
                 )
                 record.status = "failed"
@@ -262,3 +286,11 @@ def _append_repair_instruction(user_prompt: str, instruction: str) -> str:
         "Return only a corrected response matching the supplied schema.\n"
         "</REPAIR_INSTRUCTION>"
     )
+
+
+def _operation_for_grounding(mode: GroundingMode) -> str:
+    if mode in {"google_search", "google_search_and_url_context"}:
+        return "google_search"
+    if mode == "url_context":
+        return "url_context"
+    return "structured_text"

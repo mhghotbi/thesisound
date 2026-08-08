@@ -28,9 +28,19 @@ class Settings(BaseSettings):
     model_tts: str = "gemini-3.1-flash-tts-preview"
     model_asr: str = "gemini-3.6-flash"
     model_retry_base_seconds: float = Field(default=1, ge=0, le=60)
+    model_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
+    search_timeout_seconds: int = Field(default=120, ge=5, le=3_600)
+    tts_timeout_seconds: int = Field(default=240, ge=5, le=3_600)
+    asr_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
+    provider_max_attempts: int = Field(default=2, ge=1, le=5)
+    provider_retry_base_seconds: float = Field(default=1, ge=0, le=60)
     keep_rendered_prompts: bool = False
     gemini_google_search_enabled: bool = True
     gemini_url_context_enabled: bool = True
+
+    observability_store_payloads: bool = True
+    observability_database_path: Path | None = None
+    observability_artifact_root: Path | None = None
 
     tts_voice_a: str = "Kore"
     tts_voice_b: str = "Puck"
@@ -80,6 +90,16 @@ class Settings(BaseSettings):
         if self.gemini_api_key:
             values.append(self.gemini_api_key)
         return tuple(dict.fromkeys(value.strip() for value in values if value.strip()))
+
+    @property
+    def resolved_observability_database_path(self) -> Path:
+        configured = self.observability_database_path
+        return configured or self.workspace_root / "_observability" / "ledger.sqlite3"
+
+    @property
+    def resolved_observability_artifact_root(self) -> Path:
+        configured = self.observability_artifact_root
+        return configured or self.workspace_root / "_observability" / "artifacts"
 
     @model_validator(mode="after")
     def validate_runtime(self) -> Settings:

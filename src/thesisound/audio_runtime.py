@@ -24,14 +24,21 @@ def create_audio_builder(
     audio_store = AudioArtifactStore(workspace.root)
 
     def pipeline_factory(project_id: UUID) -> AudioPipelineService:
-        del project_id
         gemini_pool = shared_gemini_key_pool(settings.gemini_api_keys)
         return AudioPipelineService(
             workspace_store=workspace,
             script_store=script_store,
             audio_store=audio_store,
-            tts=GeminiTtsAdapter(pool=gemini_pool),
-            asr=GeminiAsrAdapter(pool=gemini_pool),
+            tts=GeminiTtsAdapter(
+                pool=gemini_pool,
+                project_id=project_id,
+                settings=settings,
+            ),
+            asr=GeminiAsrAdapter(
+                pool=gemini_pool,
+                project_id=project_id,
+                settings=settings,
+            ),
             segmenter=TtsSegmenter(
                 max_characters=settings.tts_chunk_max_characters,
                 words_per_minute=settings.tts_words_per_minute,

@@ -5,7 +5,11 @@ from dataclasses import dataclass
 import pytest
 
 from thesisound.config import Settings
-from thesisound.gemini_key_pool import GeminiKeyPool, GeminiKeyPoolExhausted
+from thesisound.gemini_key_pool import (
+    GeminiAuthenticationError,
+    GeminiKeyPool,
+    GeminiKeyPoolExhausted,
+)
 
 
 class QuotaError(RuntimeError):
@@ -13,6 +17,10 @@ class QuotaError(RuntimeError):
 
 
 class AuthError(RuntimeError):
+    status_code = 401
+
+
+class UnsupportedAuthError(RuntimeError):
     status_code = 401
 
 
@@ -61,6 +69,49 @@ def test_pool_does_not_hide_auth_or_input_errors() -> None:
     with pytest.raises(AuthError, match="invalid API key"):
         pool.call(operation)
     assert attempted == ["bad-key"]
+
+
+def test_pool_falls_back_to_adc_for_unsupported_auth_keys() -> None:
+    attempted: list[str] = []
+    pool = GeminiKeyPool(
+        ["AQ.key-a", "AQ.key-b"],
+        client_factory=lambda key: FakeClient(key_name=key),
+        adc_client_factory=lambda: FakeClient(key_name="adc"),
+    )
+
+    def operation(client: FakeClient) -> str:
+        attempted.append(client.key_name)
+        if client.key_name.startswith("AQ."):
+            raise UnsupportedAuthError(
+                "401 UNAUTHENTICATED: ACCESS_TOKEN_TYPE_UNSUPPORTED; "
+                "Expected OAuth 2 access token"
+            )
+        return client.key_name
+
+    assert pool.call(operation) == "adc"
+    assert pool.call(operation) == "adc"
+    assert attempted == ["AQ.key-a", "AQ.key-b", "adc", "adc"]
+
+
+def test_pool_reports_actionable_error_when_adc_is_unavailable() -> None:
+    def missing_adc() -> FakeClient:
+        raise RuntimeError("ADC missing")
+
+    pool = GeminiKeyPool(
+        ["AQ.bad"],
+        client_factory=lambda key: FakeClient(key_name=key),
+        adc_client_factory=missing_adc,
+    )
+
+    with pytest.raises(
+        GeminiAuthenticationError,
+        match="ACCESS_TOKEN_TYPE_UNSUPPORTED",
+    ):
+        pool.call(
+            lambda _: (_ for _ in ()).throw(
+                UnsupportedAuthError("401 ACCESS_TOKEN_TYPE_UNSUPPORTED")
+            )
+        )
 
 
 def test_pool_reports_when_all_keys_are_temporarily_blocked() -> None:

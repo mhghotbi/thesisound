@@ -110,10 +110,17 @@ class WebSourceDiscoveryService:
         if project.brief is None:
             raise ValueError("برای جست‌وجوی وب ابتدا برداشت پژوهش را تأیید کنید.")
         normalized = query.strip() or project.brief.central_question
-        model_port = GeminiStructuredModel(api_keys=self.settings.gemini_api_keys)
+        model_port = GeminiStructuredModel(
+            api_keys=self.settings.gemini_api_keys,
+            settings=self.settings,
+        )
         search_port = GeminiWebSearchPort(
             model_port,
             model=self.settings.model_fast,
+            project_id=project.project_id,
+            timeout_ms=self.settings.search_timeout_seconds * 1000,
+            max_provider_attempts=self.settings.provider_max_attempts,
+            provider_retry_base_seconds=self.settings.provider_retry_base_seconds,
         )
         results = search_port.search(
             SearchQuery(
@@ -152,7 +159,10 @@ class WebSourceDiscoveryService:
     ) -> UiSourceManifest:
         source_id = uuid4()
         runner = ModelRunner(
-            GeminiStructuredModel(api_keys=self.settings.gemini_api_keys),
+            GeminiStructuredModel(
+                api_keys=self.settings.gemini_api_keys,
+                settings=self.settings,
+            ),
             PromptLoader(),
             WorkspaceModelRunStore(
                 self.workspace.root,
