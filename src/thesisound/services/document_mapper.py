@@ -14,7 +14,12 @@ from thesisound.source_analysis import DocumentMapDraft, SourceDocumentBlock
 
 
 class DocumentMapperService:
-    def __init__(self, model_runner: ModelRunner, *, maximum_input_characters: int = 250_000) -> None:
+    def __init__(
+        self,
+        model_runner: ModelRunner,
+        *,
+        maximum_input_characters: int = 250_000,
+    ) -> None:
         self.model_runner = model_runner
         self.maximum_input_characters = maximum_input_characters
 
@@ -58,10 +63,9 @@ class DocumentMapperService:
             prompt_version=prompt_version,
             validator=validate,
         )
-        scope = _scope_locator(blocks)
         document_map = DocumentMap(
             source_id=source_id,
-            scope_locator=scope,
+            scope_locator=_scope_locator(blocks),
             working_thesis=execution.output.working_thesis,
             sections=[
                 DocumentMapSection(
@@ -106,7 +110,8 @@ def _validate_map_draft(
         unknown_blocks = set(section.source_block_ids) - known_ids
         if unknown_blocks:
             raise DeterministicValidationError(
-                f"Document map referenced unknown blocks: {', '.join(sorted(unknown_blocks))}."
+                "Document map referenced unknown blocks: "
+                f"{', '.join(sorted(unknown_blocks))}."
             )
         unknown_dependencies = set(section.depends_on_section_ids) - known_sections
         if unknown_dependencies:
@@ -119,7 +124,8 @@ def _validate_map_draft(
     duplicates = {block_id for block_id in mapped if mapped.count(block_id) > 1}
     if duplicates:
         raise DeterministicValidationError(
-            f"Blocks may belong to only one map section: {', '.join(sorted(duplicates))}."
+            "Blocks may belong to only one map section: "
+            f"{', '.join(sorted(duplicates))}."
         )
     mapped_content = set(mapped) & content_ids
     coverage = len(mapped_content) / len(content_ids) if content_ids else 1
@@ -131,13 +137,22 @@ def _validate_map_draft(
         unknown = set(thread.section_ids) - known_sections
         if unknown:
             raise DeterministicValidationError(
-                f"Cross-section thread referenced unknown sections: {', '.join(sorted(unknown))}."
+                "Cross-section thread referenced unknown sections: "
+                f"{', '.join(sorted(unknown))}."
             )
 
 
 def _scope_locator(blocks: list[SourceDocumentBlock]) -> Locator:
-    starts = [block.locator.page_start for block in blocks if block.locator.page_start is not None]
-    ends = [block.locator.page_end for block in blocks if block.locator.page_end is not None]
+    starts = [
+        block.locator.page_start
+        for block in blocks
+        if block.locator.page_start is not None
+    ]
+    ends = [
+        block.locator.page_end
+        for block in blocks
+        if block.locator.page_end is not None
+    ]
     first_heading = next((block.heading_path for block in blocks if block.heading_path), [])
     return Locator(
         page_start=min(starts) if starts else None,
