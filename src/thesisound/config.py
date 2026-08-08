@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     model_fast: str = "gemini-3.5-flash-lite"
     model_strong: str = "gemini-3.6-flash"
     model_tts: str = "gemini-3.1-flash-tts-preview"
+    model_retry_base_seconds: float = Field(default=1, ge=0, le=60)
+    keep_rendered_prompts: bool = False
 
     gemini_api_key: str | None = Field(default=None, validation_alias="GEMINI_API_KEY")
     firecrawl_api_key: str | None = Field(default=None, validation_alias="FIRECRAWL_API_KEY")
