@@ -62,12 +62,6 @@ class RuntimePreflight:
                 self.settings.gemini_url_context_enabled,
                 "برای URL عمومیِ صریح در prompt فعال است.",
             ),
-            RuntimeCheck(
-                code="parser-epub",
-                label="EPUB",
-                status="pass",
-                detail="Parser داخلی EPUB 2/3 با خواندن manifest و spine در دسترس است.",
-            ),
         ]
         if scope in {"audio", "full"}:
             checks.append(self._ffmpeg())

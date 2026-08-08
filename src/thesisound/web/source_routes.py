@@ -38,7 +38,7 @@ Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
 ValidateCsrf = Callable[[Request, str], None]
 
-_SUPPORTED_UPLOAD_SUFFIXES = {".pdf", ".docx", ".txt", ".md"}
+_SUPPORTED_UPLOAD_SUFFIXES = {".pdf", ".epub", ".docx", ".txt", ".md"}
 _EDITABLE_SOURCE_STATES = {
     ProjectState.SOURCES_COLLECTING,
     ProjectState.SOURCE_SELECTION_REQUIRED,

@@ -11,7 +11,9 @@ from rich.table import Table
 
 from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.adapters.parsers.docling_adapter import DoclingParser
+from thesisound.adapters.parsers.epub_adapter import EpubDocumentParser
 from thesisound.adapters.parsers.mineru_adapter import MineruParser
+from thesisound.adapters.parsers.native_adapter import NativeDocumentParser
 from thesisound.config import Settings
 from thesisound.domain import Project
 from thesisound.episode_cli import register_episode_commands
@@ -71,6 +73,8 @@ def _parsers(
     writer: IngestionArtifactWriter,
 ) -> dict[str, DocumentParserPort]:
     return {
+        "native": NativeDocumentParser(),
+        "epub": EpubDocumentParser(),
         "docling": DoclingParser(),
         "mineru": MineruParser(
             command=settings.mineru_command,
@@ -193,7 +197,7 @@ def build_brief(
     root = (workspace_root or settings.workspace_root).expanduser().resolve()
     workspace_store = WorkspaceStore(root)
     try:
-        model_port = GeminiStructuredModel(api_key=settings.gemini_api_key)
+        model_port = GeminiStructuredModel(api_keys=settings.gemini_api_keys)
         runner = ModelRunner(
             model_port,
             PromptLoader(),
@@ -228,7 +232,7 @@ def inspect_source(
     path: DocumentPathArgument,
     output: OutputOption = None,
 ) -> None:
-    """Inspect file identity, PDF text coverage, encryption, and layout signals."""
+    """Inspect file identity, text coverage, encryption, and layout signals."""
 
     inspection = inspect_document(path)
     _emit_json(inspection.model_dump(mode="json"), output)
@@ -239,16 +243,17 @@ def parse_source(
     path: DocumentPathArgument,
     parser: Annotated[
         str,
-        typer.Option(help="Parser to use: auto, docling, or mineru"),
+        typer.Option(help="Parser: auto, native, epub, docling, or mineru"),
     ] = "auto",
     artifact_root: ArtifactRootOption = None,
     output: OutputOption = None,
 ) -> None:
     """Inspect, route, parse, fall back when needed, and run quality gates."""
 
-    if parser not in {"auto", "docling", "mineru"}:
+    allowed_parsers = {"auto", "native", "epub", "docling", "mineru"}
+    if parser not in allowed_parsers:
         raise typer.BadParameter(
-            "Expected one of: auto, docling, mineru.",
+            f"Expected one of: {', '.join(sorted(allowed_parsers))}.",
             param_hint="--parser",
         )
     settings = Settings()

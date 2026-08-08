@@ -23,6 +23,12 @@ def route_parser(
         raise ParserRoutingError("No document parsers are configured.")
 
     reasons: list[str] = []
+    if inspection.extension == ".epub":
+        if "epub" not in available:
+            raise ParserRoutingError("The EPUB parser is not configured.")
+        reasons.append("EPUB requires package-manifest and spine-aware parsing.")
+        return ParserRoute(primary="epub", reasons=reasons)
+
     is_pdf_or_image = inspection.mime_type == "application/pdf" or inspection.extension in {
         ".png",
         ".jpg",

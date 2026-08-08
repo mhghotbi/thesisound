@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import UUID
 
 from thesisound.adapters.parsers.docling_adapter import DoclingParser
+from thesisound.adapters.parsers.epub_adapter import EpubDocumentParser
 from thesisound.adapters.parsers.mineru_adapter import MineruParser
 from thesisound.adapters.parsers.native_adapter import NativeDocumentParser
 from thesisound.config import Settings
@@ -80,9 +81,12 @@ def build_web_parsers(
     settings: Settings,
     writer: IngestionArtifactWriter,
 ) -> dict[str, DocumentParserPort]:
-    """Configure the best locally available parsers with a native baseline."""
+    """Configure locally available parsers with safe native and EPUB baselines."""
 
-    parsers: dict[str, DocumentParserPort] = {"native": NativeDocumentParser()}
+    parsers: dict[str, DocumentParserPort] = {
+        "native": NativeDocumentParser(),
+        "epub": EpubDocumentParser(),
+    }
     if find_spec("docling") is not None:
         parsers["docling"] = DoclingParser()
     if _command_available(settings.mineru_command):
