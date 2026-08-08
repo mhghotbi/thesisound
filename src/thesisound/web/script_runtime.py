@@ -32,7 +32,7 @@ def create_script_builder(
 
     def pipeline_factory(project_id: UUID) -> ScriptPipelineService:
         del project_id
-        model_port = GeminiStructuredModel(api_key=settings.gemini_api_key)
+        model_port = GeminiStructuredModel(api_keys=settings.gemini_api_keys)
         runner = ModelRunner(
             model_port,
             PromptLoader(),
