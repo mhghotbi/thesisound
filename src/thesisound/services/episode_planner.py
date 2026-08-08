@@ -66,6 +66,7 @@ class EpisodePlannerService:
                 purpose=segment.purpose,
                 estimated_minutes=segment.target_minutes,
                 claim_ids=segment.claim_ids,
+                prerequisite_claim_ids=segment.prerequisite_claim_ids,
                 key_question=segment.key_question,
                 speaker_dynamic=segment.speaker_dynamic,
             )
