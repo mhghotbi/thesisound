@@ -2,342 +2,225 @@
 
 [![CI](https://github.com/mhghotbi/thesisound/actions/workflows/ci.yml/badge.svg)](https://github.com/mhghotbi/thesisound/actions/workflows/ci.yml)
 
-Thesisound یک ابزار کوچک و شخصی برای تبدیل موضوع یا مجموعه‌ای از منابع به پادکست فارسی منبع‌محور است.
+Thesisound یک ابزار محلی برای تبدیل موضوع و منابع کاربر به پادکست فارسی منبع‌محور، قابل‌ردیابی و قابل‌ممیزی است.
 
-> کاربر موضوع، سؤال، نام نویسنده یا کتاب را وارد می‌کند؛ منابع خودش را اضافه می‌کند؛ سیستم منابع معتبر مکمل را پیشنهاد می‌دهد؛ کاربر corpus نهایی را انتخاب می‌کند؛ سپس اپیزودی فارسی، قابل‌ممیزی و متناسب با مدت خروجی ساخته می‌شود.
-
-هدف پروژه ساختن رقیب عمومی NotebookLM نیست. اولویت با یک vertical slice دقیق، قابل تست و قابل اجرا برای استفاده شخصی است.
-
-## وضعیت فعلی
-
-پنج subsystem اصلی اکنون پیاده‌سازی شده‌اند.
-
-### ۱. Document Ingestion
-
-- inspection واقعی PDF و فایل؛
-- SHA-256، MIME، اندازه، encryption و نمونه پوشش متن؛
-- Docling adapter و MinerU CLI adapter؛
-- parser routing و fallback خودکار؛
-- quality gate قطعی؛
-- artifact persistence؛
-- benchmark یک سند یا corpus محلی.
-
-### ۲. Structured Model Execution
-
-- Gemini adapter با Pydantic Structured Output؛
-- model port مستقل از provider؛
-- prompt contract نسخه‌دار؛
-- retry محدود برای timeout، rate limit و schema repair؛
-- ثبت prompt version، hash، token usage، latency و finish reason؛
-- عدم ذخیره rendered prompt به‌صورت پیش‌فرض؛
-- smoke test زنده اختیاری برای Gemini.
-
-### ۳. One-source Evidence Analysis
-
-- semantic block building؛
-- حفظ heading، locator، source block key و reading order؛
-- Document Map؛
-- `AnalysisProfile` وابسته به duration، سطح مخاطب و mode؛
-- output-aware evidence extraction؛
-- supporting excerpt عینی از متن اصلی؛
-- evidence validation قطعی؛
-- deterministic evidence ID و claim ID؛
-- Claim Ledger؛
-- ثبت blockهای selected و deferred؛
-- transition پروژه تا `corpus_ready`.
-
-### ۴. Episode Preparation
-
-- Coverage Audit برای سؤال مرکزی و learning objectiveها؛
-- deterministic budget report در کنار برآورد مدل؛
-- اولویت‌بندی deterministic claimها؛
-- disagreement graph صریح برای stanceهای sourceها؛
-- Episode Plan متناسب با duration؛
-- حفظ prerequisite claimها در domain نهایی؛
-- بازیابی مستقیم EvidenceItem و original block؛
-- retrieval مکمل با SQLite FTS5؛
-- Evidence Pack دارای token budget، neighbor context و retrieval trace؛
-- transition پروژه تا `episode_planned`.
-
-### ۵. Verified Persian Script
-
-- واژه‌نامه دوزبانه و pronunciation contract؛
-- سناریونویسی مستقیم فارسی، segment-by-segment؛
-- الزام claim ID و evidence ID برای هر turn محتوایی؛
-- deterministic checks برای grounding، مدت، تکرار، glossary و prompt leakage؛
-- adversarial verifier مستقل از writer؛
-- targeted revision فقط برای turnهای مسئله‌دار؛
-- حداکثر یک دور revision خودکار؛
-- ثبت calibration point از word count، evidence tokens و verifier result؛
-- transition پروژه تا `script_verified` فقط پس از عبور همه gateها.
-
-هنوز Source Discovery، cross-source semantic reconciliation کامل، TTS، ASR و Audio QA پیاده نشده‌اند.
-
-## معماری در یک نگاه
+## مسیر فعلی محصول
 
 ```text
-User intent
-  → Research Brief
-  → Source ingestion
-  → Semantic blocks and locators
-  → Document Map
-  → Output-aware AnalysisProfile
-  → Evidence extraction and validation
-  → Claim Ledger
-  → Coverage Audit
-  → Claim Priorities + Budget Report + Disagreement Graph
-  → Episode Plan with prerequisites
-  → Direct evidence mapping + SQLite FTS retrieval
-  → Segment Evidence Packs
-  → Bilingual Glossary
-  → Persian segment scripts
-  → Deterministic script checks
-  → Adversarial verifier
-  → Targeted revision
-  → Verified Persian Script
-  → TTS and Audio QA
+OTP login
+→ create project and confirm Research Brief
+→ upload and inspect sources
+→ parse-quality gate
+→ explicitly confirm corpus
+→ semantic blocks, evidence, and claims
+→ coverage audit and supported-duration gate
+→ review and approve Episode Plan
+→ grounded Persian script
+→ deterministic checks and independent verification
+→ explicitly start audio generation
+→ TTS-safe chunking
+→ Gemini TTS
+→ WAV validation
+→ Gemini ASR
+→ expected-vs-heard QA
+→ targeted regeneration
+→ FFmpeg normalization and assembly
+→ verified final WAV
+→ COMPLETE
 ```
 
-خروجی نهایی از خلاصه‌های چندبار خلاصه‌شده ساخته نمی‌شود. هر segment دوباره به EvidenceItem، supporting excerpt و block اصلی برمی‌گردد.
+Source Discovery و production deployment هنوز جزو مسیر فعلی نیستند. کاربر منابع را خودش بارگذاری می‌کند.
 
-## مدت خروجی چگونه روی تحلیل اثر می‌گذارد؟
+## نصب برای اجرای کامل محلی
 
-Parse، block ID و locator مستقل از مدت ساخته می‌شوند تا artifactها پایدار و reusable باشند. اما breadth و depth استخراج evidence، تعداد claimهای انتخابی، تعداد segmentها و مقدار context به خروجی درخواستی وابسته‌اند.
+نیازمندی‌های پایه:
 
-| مدت | tier | پوشش هدف tokenهای منبع | حداکثر claim در block | context همسایه |
-|---|---|---:|---:|---:|
-| ۵ تا ۱۰ دقیقه | `brief` | ۳۵٪ | ۲ | ۰ |
-| ۱۱ تا ۲۵ دقیقه | `standard` | ۶۰٪ | ۳ | ۰ |
-| ۲۶ تا ۴۵ دقیقه | `deep` | ۸۵٪ | ۵ | ۱ |
-| ۴۶ تا ۱۲۰ دقیقه | `extended` | ۱۰۰٪ تا سقف budget | ۷ | ۲ |
+- Python 3.12 یا جدیدتر؛
+- `uv`؛
+- FFmpeg روی `PATH`؛
+- کلید Gemini برای مرحله‌های مدل، TTS و ASR.
 
-نسخه ۶۰ دقیقه‌ای صرفاً نسخه کش‌آمده نسخه ۵ دقیقه‌ای نیست. باید claimها، qualificationها، اعتراض‌ها و evidenceهای واقعاً بیشتری وارد pipeline شوند.
-
-جزئیات:
-
-- [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md)
-- [`docs/14-episode-preparation.md`](docs/14-episode-preparation.md)
-- [`docs/15-persian-script-pipeline.md`](docs/15-persian-script-pipeline.md)
-
-## نصب
-
-نصب پایه و ابزار توسعه:
+نصب UI، Gemini و ابزار توسعه:
 
 ```bash
-uv sync --extra dev
-```
-
-برای Docling:
-
-```bash
-uv sync --extra dev --extra parsers
-```
-
-برای Gemini API:
-
-```bash
-uv sync --extra dev --extra gemini
+uv sync --extra dev --extra web-ui --extra gemini
 cp .env.example .env
 ```
 
-سپس `GEMINI_API_KEY` را در `.env` قرار دهید. MinerU یک runtime مستقل است و فرمان `mineru` باید روی `PATH` باشد.
-
-## اجرای vertical slice فعلی
-
-### ۱. ساخت پروژه و Research Brief
+برای PDFهای پیچیده‌تر، Docling را هم نصب کنید:
 
 ```bash
+uv sync --extra dev --extra web-ui --extra gemini --extra parsers
+```
+
+MinerU runtime مستقلی است؛ اگر استفاده می‌شود، فرمان `mineru` باید روی `PATH` باشد.
+
+در `.env` حداقل این مقدار را تنظیم کنید:
+
+```dotenv
+GEMINI_API_KEY=...
+```
+
+## بررسی محیط پیش از هزینه API
+
+```bash
+uv run thesisound doctor
+```
+
+این فرمان موارد زیر را بررسی می‌کند:
+
+- تنظیم بودن `GEMINI_API_KEY`؛
+- نصب `google-genai`؛
+- وجود FFmpeg؛
+- writable بودن workspace و ingestion artifact roots؛
+- parserهای واقعاً در دسترس.
+
+همین preflight داخل UI نیز روی actionهای هزینه‌دار enforce می‌شود. اگر پیش‌نیازی ناقص باشد، run قبل از queue شدن متوقف و کاربر به `/system-check` هدایت می‌شود.
+
+## اجرای وب
+
+```bash
+uv run thesisound-web
+```
+
+سپس باز کنید:
+
+```text
+http://127.0.0.1:8000
+```
+
+ورود توسعه‌ای پیش‌فرض:
+
+```text
+phone: 0912000000
+otp:   999999
+```
+
+OTP تستی فقط در development مجاز است. startup در production با OTP تستی، demo mode، cookie ناامن یا secret پیش‌فرض رد می‌شود.
+
+## تست دستی از ابتدا تا انتها
+
+1. وارد شوید.
+2. پروژه جدید بسازید و موضوع، مخاطب، مدت و mode را مشخص کنید.
+3. Research Brief را بررسی و صریحاً تأیید کنید.
+4. یک PDF، DOCX، TXT یا Markdown اضافه کنید.
+5. وضعیت parser و quality gate را ببینید.
+6. منبع آماده را انتخاب و corpus را تأیید کنید.
+7. منتظر ساخت semantic blocks، evidence و claims بمانید.
+8. Coverage Audit و مدت قابل‌پشتیبانی را بررسی کنید.
+9. Episode Plan را صریحاً تأیید کنید.
+10. سناریو، verifier result و source trace را بررسی کنید.
+11. از همان صفحه روی «ادامه به ساخت صوت» بزنید.
+12. preflight صوت را بررسی و تولید را شروع کنید.
+13. chunkها، ASR diff، regeneration و فایل نهایی را بررسی کنید.
+14. WAV نهایی را پخش یا دانلود کنید.
+
+اگر یک منبع `review` یا `blocked` شد، در همان صفحه می‌توان extraction را دوباره اجرا یا منبع را حذف کرد. نصب parser جدید و سپس retry باعث می‌شود مسیر auto با ابزارهای تازه در دسترس دوباره اجرا شود.
+
+## فرمان‌های CLI اصلی
+
+```bash
+uv run thesisound doctor
 uv run thesisound init "آرنت و مفهوم کنش"
-
-uv run thesisound build-brief <project-id> \
-  --audience "social-science graduate student" \
-  --prior-knowledge intermediate \
-  --duration 25 \
-  --modes explanatory,critical \
-  --language fa
-```
-
-`--duration` منبع حقیقت برای evidence budget، Episode Plan و target script length است.
-
-### ۲. Parse و تحلیل منبع
-
-```bash
-uv run thesisound parse chapter.pdf \
-  --parser auto \
-  --output parse-result.json
-
-uv run thesisound analyze-source \
-  <project-id> \
-  parse-result.json
-```
-
-اجرای مرحله‌ای:
-
-```bash
-uv run thesisound build-blocks <project-id> parse-result.json
-uv run thesisound map-document <project-id> <source-id>
-uv run thesisound extract-evidence <project-id> <source-id>
-uv run thesisound build-claims <project-id> <source-id>
-```
-
-### ۳. آماده‌سازی اپیزود
-
-اجرای کامل:
-
-```bash
+uv run thesisound status <project-id>
+uv run thesisound parse source.pdf --parser auto --output parse-result.json
+uv run thesisound analyze-source <project-id> parse-result.json
 uv run thesisound prepare-episode <project-id>
-```
-
-اجرای مرحله‌ای:
-
-```bash
-uv run thesisound audit-coverage <project-id>
-uv run thesisound prioritize-claims <project-id>
-uv run thesisound estimate-episode-budget <project-id>
-uv run thesisound build-disagreement-graph <project-id>
-uv run thesisound plan-episode <project-id>
-uv run thesisound build-evidence-packs <project-id>
-```
-
-`prioritize-claims`، `estimate-episode-budget`، `build-disagreement-graph` و `build-evidence-packs` deterministic هستند.
-
-### ۴. ساخت و راستی‌آزمایی سناریوی فارسی
-
-اجرای کامل:
-
-```bash
 uv run thesisound prepare-script <project-id>
+uv run thesisound prepare-audio <project-id>
+uv run thesisound audio-status <project-id>
 ```
 
-اجرای مرحله‌ای:
+## قواعد اصلی pipeline
 
-```bash
-uv run thesisound build-glossary <project-id>
-uv run thesisound write-script <project-id>
-uv run thesisound check-script <project-id>
-uv run thesisound verify-script <project-id>
-uv run thesisound revise-script <project-id>       # فقط در صورت نیاز
-uv run thesisound check-script <project-id> --revised
-uv run thesisound verify-script <project-id> --revised
-```
+- metadata یا abstract به‌تنهایی evidence متن کامل نیست.
+- parse، block ID و locator به مدت خروجی وابسته نیستند.
+- breadth و depth تحلیل به مدت، مخاطب و mode وابسته‌اند.
+- مدل حق ساختن source ID، locator، evidence ID، claim ID، segment ID یا turn ID را ندارد.
+- supporting excerpt باید واقعاً در source block موجود باشد.
+- corpus ناکافی با padding به مدت هدف نمی‌رسد.
+- ادامه با corpus ناکافی مجاز نیست؛ باید مدت، منبع یا تمرکز تغییر کند.
+- هر turn محتوایی باید claim و evidence معتبر داشته باشد.
+- writer تنها verifier خروجی خودش نیست.
+- script و audio به hash نسخه بالادستی متصل‌اند.
+- retry artifactهای سالم را دوباره تولید نمی‌کند.
+- final audio فقط وقتی serve می‌شود که checksum و binding آن معتبر باشد.
 
-پس از یک اجرای verified، یک calibration point ثبت کن:
-
-```bash
-uv run thesisound record-budget-calibration <project-id>
-```
-
-پس از حداقل سه نمونه pass‌شده، گزارش calibration به وضعیت `ready_for_review` می‌رسد. defaultها خودکار تغییر نمی‌کنند؛ تغییر آن‌ها باید بر اساس corpus واقعی و بازبینی انسانی باشد.
-
-## Artifactها
+## artifactها
 
 ```text
 workspaces/<project-id>/
   project.json
-  model-runs/<run-id>/
-    request.json
-    record.json
-    validated-output.json
-    error.json
+  ui-source-manifest.json
+  corpus-build-run.json
+  episode-planning-run.json
+  script-build-run.json
+  audio-build-run.json
 
   sources/<source-id>/
-    manifest.json
     parsed-document.json
     document-blocks.jsonl
     document-map.json
-    evidence-extraction-plan.json
     evidence-items.jsonl
     claim-ledger.json
 
   episode/
-    manifest.json
     coverage-report.json
-    claim-priorities.json
     budget-report.json
-    disagreement-graph.json
-    retrieval.sqlite3
-    episode-plan-draft.json
     episode-plan.json
     evidence-packs.jsonl
-    evidence-packs/<segment-id>.json
 
   script/
-    manifest.json
     glossary.json
-    segments/<segment-id>.json
     script-draft.json
     checks.json
     verification.json
     script-revised.json
-    checks-revised.json
-    verification-revised.json
 
-workspaces/evaluations/
-  budget-calibration.jsonl
+  audio/
+    chunks.json
+    segments/*.wav
+    transcripts/*.json
+    qa/*.json
+    final.wav
+    manifest.json
 ```
 
-به‌صورت پیش‌فرض rendered prompt ذخیره نمی‌شود. برای debugging محلی:
+## وضعیت milestoneها
 
-```text
-THESISOUND_KEEP_RENDERED_PROMPTS=true
-```
+- M0 Scaffold and contracts: implemented
+- M1 Document ingestion: implemented
+- M2 Structured model execution: implemented
+- M3 Evidence pipeline: implemented
+- M4 Episode preparation: implemented
+- M5 Verified Persian script: implemented
+- M6 TTS, ASR, and Audio QA: implemented in code
+- M6.5 Local Operator UI: implemented for the current source-bound flow
+- M7 Source Discovery: not implemented
+- M8 Full cross-source semantic reconciliation: not implemented
+- M9 General end-user product UI: not implemented
+- M10 Production persistence, jobs, deployment, and real OTP: not implemented
 
-این تنظیم برای منابع خصوصی یا copyrighted مناسب نیست.
+## چیزی که هنوز اثبات نشده است
 
-## تست‌ها
+کد مسیر کامل وجود دارد، اما کیفیت واقعی هنوز باید با اجرای زنده سنجیده شود:
 
-تست‌های عادی هیچ API خارجی را صدا نمی‌زنند:
+- کیفیت استخراج PDF فارسی و OCR؛
+- رفتار مدل‌های تنظیم‌شده در API واقعی؛
+- تلفظ، prosody و تفکیک voiceهای فارسی؛
+- دقت ASR و thresholdهای QA؛
+- latency، هزینه و regeneration rate؛
+- تجربه شنیداری blind review.
 
-```bash
-uv run ruff check .
-uv run pytest
-```
+## اسناد مهم
 
-Smoke test واقعی Gemini فقط با opt-in اجرا می‌شود:
-
-```bash
-THESISOUND_RUN_LIVE_MODEL_TESTS=true \
-GEMINI_API_KEY=<key> \
-uv run pytest -m live tests/test_live_gemini.py
-```
-
-این تست تا زمانی که API key اضافه نشود، skip می‌شود.
-
-## Benchmark parserها
-
-```bash
-uv run thesisound compare-parsers path/to/file.pdf --output benchmark.json
-uv run thesisound benchmark-parsers ./benchmark-corpus --recursive
-```
-
-## ترتیب مطالعه برای توسعه‌دهنده
-
-1. [`docs/00-product-scope.md`](docs/00-product-scope.md)
-2. [`docs/02-architecture.md`](docs/02-architecture.md)
-3. [`docs/03-agent-workflow.md`](docs/03-agent-workflow.md)
-4. [`docs/10-document-ingestion.md`](docs/10-document-ingestion.md)
-5. [`docs/11-structured-model-execution.md`](docs/11-structured-model-execution.md)
-6. [`docs/12-one-source-evidence-pipeline.md`](docs/12-one-source-evidence-pipeline.md)
-7. [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md)
-8. [`docs/14-episode-preparation.md`](docs/14-episode-preparation.md)
-9. [`docs/15-persian-script-pipeline.md`](docs/15-persian-script-pipeline.md)
-10. [`prompts/README.md`](prompts/README.md)
-11. [`docs/06-development-plan.md`](docs/06-development-plan.md)
-12. [`docs/07-junior-guide.md`](docs/07-junior-guide.md)
-
-## قواعد غیرقابل‌مذاکره
-
-- metadata یا abstract به‌تنهایی evidence متن کامل نیست.
-- parse، block ID و locator به duration وابسته نیستند.
-- breadth و depth evidence extraction به خروجی درخواستی وابسته‌اند.
-- مدل source ID، block ID، locator، evidence ID، claim ID، segment ID یا turn ID نمی‌سازد.
-- supporting excerpt باید واقعاً در همان source block وجود داشته باشد.
-- FTS context حق ایجاد evidence جدید ندارد.
-- corpus ناکافی با padding به مدت هدف نمی‌رسد.
-- prerequisiteها باید پیش از claim وابسته مطرح شوند و در artifact نهایی باقی بمانند.
-- اختلاف sourceها نباید به اجماع جعلی تبدیل شود.
-- هر turn محتوایی باید claim ID و evidence ID معتبر داشته باشد.
-- سناریوی فارسی مستقیم از Evidence Pack نوشته می‌شود، نه از ترجمه لفظ‌به‌لفظ یا knowledge آزاد مدل.
-- writer تنها verifier خروجی خودش نیست.
-- targeted revision حق افزودن claim یا evidence جدید ندارد.
-- اگر parse، evidence، coverage، script یا audio از gate عبور نکند، pipeline متوقف می‌شود.
+- [`STATUS.md`](STATUS.md)
+- [`docs/02-architecture.md`](docs/02-architecture.md)
+- [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md)
+- [`docs/14-episode-preparation.md`](docs/14-episode-preparation.md)
+- [`docs/15-persian-script-pipeline.md`](docs/15-persian-script-pipeline.md)
+- [`docs/16-operator-user-workflow.md`](docs/16-operator-user-workflow.md)
+- [`docs/17-interface-state-model.md`](docs/17-interface-state-model.md)
+- [`docs/19-error-and-recovery-ux.md`](docs/19-error-and-recovery-ux.md)
+- [`docs/25-audio-vertical-slice.md`](docs/25-audio-vertical-slice.md)
+- [`docs/26-local-live-e2e-runbook.md`](docs/26-local-live-e2e-runbook.md)
