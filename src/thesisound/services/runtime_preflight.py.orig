@@ -35,38 +35,32 @@ class RuntimePreflight:
         checks = [
             self._writable_directory(
                 "workspace",
-                "Project workspace",
+                "مسیر پروژه‌ها",
                 self.settings.workspace_root,
             ),
             self._writable_directory(
                 "ingestion-artifacts",
-                "Ingestion artifact path",
+                "مسیر artifactهای ingestion",
                 self.settings.ingestion_artifact_root,
             ),
             self._gemini_key(),
             self._python_module(
                 "google-genai",
-                "Gemini model SDK",
+                "SDK مدل Gemini",
                 "google.genai",
-                "Install with `uv sync --extra gemini`.",
+                "با `uv sync --extra gemini` نصب شود.",
             ),
             self._grounding_tool(
                 "gemini-google-search",
                 "Gemini Google Search",
                 self.settings.gemini_google_search_enabled,
-                "Enabled for brief, discovery, and terminology.",
+                "برای brief، discovery و اصطلاح‌شناسی فعال است.",
             ),
             self._grounding_tool(
                 "gemini-url-context",
                 "Gemini URL Context",
                 self.settings.gemini_url_context_enabled,
-                "Enabled for explicit public URLs in the prompt.",
-            ),
-            RuntimeCheck(
-                code="parser-epub",
-                label="EPUB",
-                status="pass",
-                detail="Parser داخلی EPUB 2/3 با خواندن manifest و spine در دسترس است.",
+                "برای URL عمومیِ صریح در prompt فعال است.",
             ),
         ]
         if scope in {"audio", "full"}:
@@ -79,10 +73,10 @@ class RuntimePreflight:
         failures = [check for check in self.run(scope) if check.blocking]
         if not failures:
             return
-        detail = "; ".join(f"{check.label}: {check.detail}" for check in failures)
+        detail = "؛ ".join(f"{check.label}: {check.detail}" for check in failures)
         raise RuntimeError(
-            "Live-run prerequisites are incomplete. "
-            f"{detail} See `/system-check` or `uv run thesisound doctor` for details."
+            "پیش‌نیازهای اجرای واقعی کامل نیست. "
+            f"{detail} برای جزئیات `/system-check` یا `uv run thesisound doctor` را ببینید."
         )
 
     def ready(self, scope: PreflightScope) -> bool:
@@ -93,17 +87,17 @@ class RuntimePreflight:
         if key_count:
             return RuntimeCheck(
                 code="gemini-api-key",
-                label="Gemini API key",
+                label="کلید Gemini",
                 status="pass",
-                detail=f"{key_count} key(s) configured in the pool.",
+                detail=f"{key_count} کلید در pool تنظیم شده است.",
             )
         return RuntimeCheck(
             code="gemini-api-key",
-            label="Gemini API key",
+            label="کلید Gemini",
             status="fail",
             detail=(
-                "`GEMINI_API_KEYS` or `GEMINI_API_KEY` is not set in the environment "
-                "or `.env` file."
+                "`GEMINI_API_KEYS` یا `GEMINI_API_KEY` در محیط یا فایل `.env` "
+                "تنظیم نشده است."
             ),
         )
 
@@ -125,7 +119,7 @@ class RuntimePreflight:
             code=code,
             label=label,
             status="warning",
-            detail="Disabled in settings.",
+            detail="در تنظیمات غیرفعال شده است.",
         )
 
     def _ffmpeg(self) -> RuntimeCheck:
@@ -135,15 +129,15 @@ class RuntimePreflight:
                 code="ffmpeg",
                 label="FFmpeg",
                 status="pass",
-                detail=f"Found at `{command}`.",
+                detail=f"در `{command}` پیدا شد.",
             )
         return RuntimeCheck(
             code="ffmpeg",
             label="FFmpeg",
             status="fail",
             detail=(
-                f"`{self.settings.ffmpeg_command}` is not on PATH; "
-                "final assembly and loudness normalization require it."
+                f"فرمان `{self.settings.ffmpeg_command}` روی PATH نیست؛ "
+                "بدون آن assembly و loudness normalization نهایی انجام نمی‌شود."
             ),
         )
 
@@ -151,9 +145,9 @@ class RuntimePreflight:
         checks = [
             RuntimeCheck(
                 code="parser-native",
-                label="Base parser",
+                label="Parser پایه",
                 status="pass",
-                detail="Native parser is available for text PDFs, TXT, Markdown, and DOCX.",
+                detail="Native parser برای PDF متنی، TXT، Markdown و DOCX در دسترس است.",
             )
         ]
         if _module_available("docling"):
@@ -162,7 +156,7 @@ class RuntimePreflight:
                     code="parser-docling",
                     label="Docling",
                     status="pass",
-                    detail="Installed in the Python environment.",
+                    detail="در محیط Python نصب است.",
                 )
             )
         else:
@@ -171,7 +165,7 @@ class RuntimePreflight:
                     code="parser-docling",
                     label="Docling",
                     status="warning",
-                    detail="Not installed; add `--extra parsers` for complex PDFs.",
+                    detail="نصب نیست؛ برای PDFهای پیچیده `--extra parsers` را اضافه کنید.",
                 )
             )
 
@@ -182,7 +176,7 @@ class RuntimePreflight:
                     code="parser-mineru",
                     label="MinerU",
                     status="pass",
-                    detail=f"Found at `{mineru}`.",
+                    detail=f"در `{mineru}` پیدا شد.",
                 )
             )
         else:
@@ -191,7 +185,7 @@ class RuntimePreflight:
                     code="parser-mineru",
                     label="MinerU",
                     status="warning",
-                    detail="Not on PATH; local MinerU fallback is disabled.",
+                    detail="روی PATH نیست؛ fallback محلی MinerU غیرفعال است.",
                 )
             )
         return checks
@@ -204,7 +198,7 @@ class RuntimePreflight:
         missing_detail: str,
     ) -> RuntimeCheck:
         if _module_available(module):
-            return RuntimeCheck(code=code, label=label, status="pass", detail="Installed.")
+            return RuntimeCheck(code=code, label=label, status="pass", detail="نصب است.")
         return RuntimeCheck(
             code=code,
             label=label,
@@ -224,13 +218,13 @@ class RuntimePreflight:
                 code=code,
                 label=label,
                 status="fail",
-                detail=f"Not writable: {exc}",
+                detail=f"قابل نوشتن نیست: {exc}",
             )
         return RuntimeCheck(
             code=code,
             label=label,
             status="pass",
-            detail=f"`{resolved}` is writable.",
+            detail=f"`{resolved}` قابل نوشتن است.",
         )
 
 
