@@ -317,6 +317,7 @@ class EpisodeSegment(BaseModel):
     purpose: str
     estimated_minutes: float = Field(gt=0)
     claim_ids: list[str]
+    prerequisite_claim_ids: list[str] = Field(default_factory=list)
     key_question: str
     speaker_dynamic: Literal[
         "explanation",
@@ -352,12 +353,15 @@ class ScriptTurn(BaseModel):
     speaker: Literal["A", "B"]
     spoken_text_fa: str
     claim_ids: list[str] = Field(default_factory=list)
+    evidence_ids: list[str] = Field(default_factory=list)
     editorial_only: bool = False
 
     @model_validator(mode="after")
     def enforce_grounding(self) -> ScriptTurn:
         if not self.editorial_only and not self.claim_ids:
             raise ValueError("Substantive turns require claim_ids")
+        if not self.editorial_only and not self.evidence_ids:
+            raise ValueError("Substantive turns require evidence_ids")
         return self
 
 
@@ -379,6 +383,8 @@ class VerificationIssue(BaseModel):
         "invented_example",
         "terminology_error",
         "translation_shift",
+        "duration_or_pacing",
+        "prompt_leakage",
         "other",
     ]
     explanation: str
