@@ -165,6 +165,7 @@ class SourceAnalysisService:
         *,
         model: str,
         prompt_version: str | None = None,
+        finalize_project: bool = True,
     ) -> tuple[ClaimLedger, SourceAnalysisManifest]:
         extractions = self.artifact_store.load_extractions(project_id, source_id)
         ledger, run = self.claim_reconciler.reconcile(
@@ -184,7 +185,7 @@ class SourceAnalysisService:
         self.artifact_store.save_manifest(manifest)
 
         project = self.workspace_store.load_project(project_id)
-        if project.state == ProjectState.CORPUS_BUILDING:
+        if finalize_project and project.state == ProjectState.CORPUS_BUILDING:
             transition(project, ProjectState.CORPUS_READY)
             self.workspace_store.save_project(project)
         return ledger, manifest
@@ -198,6 +199,7 @@ class SourceAnalysisService:
         strong_model: str,
         source_id: UUID | None = None,
         prompt_version: str | None = None,
+        finalize_project: bool = True,
     ) -> tuple[ClaimLedger, SourceAnalysisManifest]:
         ingestion = self.artifact_store.load_ingestion(ingestion_path)
         resolved_source_id: UUID | None = None
@@ -224,6 +226,7 @@ class SourceAnalysisService:
                 resolved_source_id,
                 model=strong_model,
                 prompt_version=prompt_version,
+                finalize_project=finalize_project,
             )
         except (ModelError, ValueError, FileNotFoundError) as exc:
             project = self.workspace_store.load_project(project_id)

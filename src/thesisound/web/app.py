@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import secrets
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
 from typing import Annotated
 from uuid import UUID, uuid4
 
 import uvicorn
-from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
@@ -27,6 +28,7 @@ from thesisound.domain import (
 )
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.web.auth import NullOtpSender, OtpError, OtpService
+from thesisound.web.corpus_runtime import corpus_source_inputs, create_corpus_builder
 from thesisound.web.read_models import build_project_read_model
 from thesisound.web.source_ingestion import ingest_uploaded_source
 from thesisound.web.source_manifest import (
@@ -39,6 +41,10 @@ _WEB_ROOT = Path(__file__).parent
 _TEMPLATES_ROOT = _WEB_ROOT / "templates"
 _STATIC_ROOT = _WEB_ROOT / "static"
 _SUPPORTED_UPLOAD_SUFFIXES = {".pdf", ".docx", ".txt", ".md"}
+_EDITABLE_SOURCE_STATES = {
+    ProjectState.SOURCES_COLLECTING,
+    ProjectState.SOURCE_SELECTION_REQUIRED,
+}
 
 
 def _safe_filename(value: str) -> str:
@@ -83,9 +89,27 @@ def _project_title(project: Project) -> str:
     return project.raw_input
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def _corpus_stage_label(stage: str) -> str:
+    return {
+        "queued": "در صف اجرا",
+        "building_blocks": "ساخت بلوک‌های معنایی",
+        "mapping_document": "ساخت نقشه سند",
+        "extracting_evidence": "استخراج شواهد",
+        "building_claims": "ساخت دفتر ادعاها",
+        "complete": "آماده",
+        "failed": "متوقف‌شده",
+    }.get(stage, stage)
+
+
+def create_app(
+    settings: Settings | None = None,
+    *,
+    corpus_executor: Callable[[UUID], None] | None = None,
+) -> FastAPI:
     runtime = settings or Settings()
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
+    corpus_builder = create_corpus_builder(runtime, workspace)
+    execute_corpus = corpus_executor or corpus_builder.run
 
     docs_url = "/api/docs" if runtime.environment != "production" else None
     app = FastAPI(title="Thesisound", docs_url=docs_url)
@@ -102,6 +126,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     templates = Jinja2Templates(directory=_TEMPLATES_ROOT)
     templates.env.globals["project_title"] = _project_title
+    templates.env.globals["corpus_stage_label"] = _corpus_stage_label
 
     otp = OtpService(
         secret=runtime.web_session_secret,
@@ -117,6 +142,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = runtime
     app.state.workspace = workspace
     app.state.otp = otp
+    app.state.corpus_builder = corpus_builder
 
     def render(
         request: Request,
@@ -355,6 +381,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "project": project,
                 "sources": sources,
                 "selected_count": sum(source.selected for source in sources),
+                "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
             },
         )
 
@@ -374,7 +401,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             transition(project, ProjectState.SOURCES_COLLECTING)
         if project.state != ProjectState.SOURCES_COLLECTING:
             return RedirectResponse(
-                f"/projects/{project_id}/sources",
+                f"/projects/{project_id}/sources?error=selection-locked",
                 status_code=HTTP_303_SEE_OTHER,
             )
 
@@ -448,6 +475,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if redirect := _login_redirect(request):
             return redirect
         _validate_csrf(request, csrf_token)
+        project = workspace.load_project(project_id)
+        if project.state not in _EDITABLE_SOURCE_STATES:
+            return RedirectResponse(
+                f"/projects/{project_id}/sources?error=selection-locked",
+                status_code=HTTP_303_SEE_OTHER,
+            )
         manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
         manifest_store.toggle(source_id)
         return RedirectResponse(
@@ -458,6 +491,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/projects/{project_id}/corpus/confirm", response_class=HTMLResponse)
     def confirm_corpus(
         request: Request,
+        background_tasks: BackgroundTasks,
         project_id: UUID,
         csrf_token: Annotated[str, Form()],
     ) -> Response:
@@ -468,6 +502,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         sources = manifest_store.load()
         try:
             _validate_csrf(request, csrf_token)
+            if project.state not in _EDITABLE_SOURCE_STATES:
+                raise ValueError("انتخاب منابع برای این پروژه قفل شده است.")
             selected = [
                 source
                 for source in sources
@@ -475,6 +511,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ]
             if not selected:
                 raise ValueError("حداقل یک منبع آماده را انتخاب کنید.")
+            if any(not source.safe_for_claim_extraction for source in selected):
+                raise ValueError("همه منابع انتخاب‌شده باید از quality gate عبور کرده باشند.")
+            inputs = corpus_source_inputs(runtime, project_id, selected)
 
             project.sources = [
                 SourceCandidate(
@@ -496,10 +535,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ]
             if project.state == ProjectState.SOURCES_COLLECTING:
                 transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
-            if project.state != ProjectState.SOURCE_SELECTION_REQUIRED:
-                raise ValueError("پروژه در وضعیت تأیید منابع نیست.")
             transition(project, ProjectState.CORPUS_BUILDING)
             workspace.save_project(project)
+            corpus_builder.queue(project_id, inputs)
+            background_tasks.add_task(execute_corpus, project_id)
         except ValueError as error:
             return render(
                 request,
@@ -508,10 +547,28 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     "project": project,
                     "sources": sources,
                     "selected_count": sum(source.selected for source in sources),
+                    "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
                     "error": str(error),
                 },
                 status_code=422,
             )
+        return RedirectResponse(
+            f"/projects/{project_id}/processing",
+            status_code=HTTP_303_SEE_OTHER,
+        )
+
+    @app.post("/projects/{project_id}/corpus/retry")
+    def retry_corpus(
+        request: Request,
+        background_tasks: BackgroundTasks,
+        project_id: UUID,
+        csrf_token: Annotated[str, Form()],
+    ) -> RedirectResponse:
+        if redirect := _login_redirect(request):
+            return redirect
+        _validate_csrf(request, csrf_token)
+        corpus_builder.retry(project_id)
+        background_tasks.add_task(execute_corpus, project_id)
         return RedirectResponse(
             f"/projects/{project_id}/processing",
             status_code=HTTP_303_SEE_OTHER,
@@ -522,6 +579,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if redirect := _login_redirect(request):
             return redirect
         project = workspace.load_project(project_id)
+        run = corpus_builder.run_store.load_optional(project_id)
         stages = [
             ("برداشت هدف", True),
             (
@@ -570,7 +628,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return render(
             request,
             "projects/processing.html",
-            {"project": project, "stages": stages},
+            {
+                "project": project,
+                "stages": stages,
+                "corpus_run": run,
+                "corpus_active": bool(run and run.status in {"queued", "running"}),
+            },
         )
 
     return app

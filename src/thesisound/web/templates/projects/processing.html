@@ -13,7 +13,7 @@
     <div>
       <p class="eyebrow">وضعیت پروژه</p>
       <h1>{{ project_title(project) }}</h1>
-      <p>مرحله‌ها از state واقعی پروژه خوانده می‌شوند؛ زمان باقی‌مانده حدس زده نمی‌شود.</p>
+      <p>وضعیت از artifact و state واقعی پروژه خوانده می‌شود؛ درصد و زمان باقی‌مانده حدس زده نمی‌شود.</p>
     </div>
   </header>
 
@@ -22,16 +22,73 @@
     <li class="{% if complete %}is-complete{% elif loop.first or not stages[loop.index0 - 1][1] %}is-current{% endif %}">
       <span aria-hidden="true">{% if complete %}✓{% else %}{{ loop.index }}{% endif %}</span>
       <strong>{{ label }}</strong>
-      <small>{% if complete %}تکمیل شده{% else %}در انتظار اجرای application service{% endif %}</small>
+      <small>{% if complete %}تکمیل شده{% else %}در انتظار تکمیل مرحله قبلی{% endif %}</small>
     </li>
     {% endfor %}
   </ol>
 
-  <div class="notice notice--info">
-    این commit رابط و قرارداد state را آماده می‌کند. اتصال اجرای evidence pipeline در slice بعدی انجام می‌شود.
+  {% if corpus_run %}
+  <section class="source-list" aria-labelledby="corpus-run-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">ساخت مجموعه شواهد</p>
+        <h2 id="corpus-run-title">
+          {{ corpus_run.completed_source_count }} از {{ corpus_run.sources | length }} منبع تکمیل شده
+        </h2>
+      </div>
+      <span><bdi dir="ltr">{{ corpus_run.status }}</bdi></span>
+    </div>
+
+    {% for source in corpus_run.sources %}
+    <article class="source-row">
+      <div class="source-row__identity">
+        <strong><bdi dir="auto">{{ source.filename }}</bdi></strong>
+        <span>{{ corpus_stage_label(source.stage) }}</span>
+      </div>
+      <div class="source-status source-status--{% if source.status == 'succeeded' %}ready{% elif source.status == 'failed' %}blocked{% else %}processing{% endif %}">
+        {% if source.status == "succeeded" %}آماده
+        {% elif source.status == "failed" %}متوقف‌شده
+        {% elif source.status == "running" %}در حال اجرا
+        {% else %}در صف{% endif %}
+      </div>
+      {% if source.status == "succeeded" %}
+      <p class="source-row__issue">{{ source.claim_count }} ادعای مستند ثبت شد.</p>
+      {% endif %}
+      {% if source.last_error %}
+      <p class="source-row__issue">{{ source.last_error }}</p>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if corpus_run and corpus_run.status == "failed" %}
+  <div class="notice notice--danger" role="alert">
+    <strong>ساخت مجموعه شواهد متوقف شد.</strong>
+    <p>{{ corpus_run.last_error }}</p>
   </div>
+  <form method="post" action="/projects/{{ project.project_id }}/corpus/retry" class="form-actions">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit">تلاش دوباره از منبع ناموفق</button>
+  </form>
+  {% elif corpus_run and corpus_run.status == "succeeded" %}
+  <div class="notice notice--info">
+    مجموعه شواهد همه منابع انتخاب‌شده آماده است. گام بعدی، ارزیابی پوشش و طرح اپیزود است.
+  </div>
+  {% elif corpus_active %}
+  <div class="notice notice--info">
+    پردازش در حال اجراست. این صفحه فقط stageهای واقعی ذخیره‌شده را نمایش می‌دهد.
+  </div>
+  {% endif %}
+
   <div class="form-actions">
-    <a class="button button--secondary" href="/projects">بازگشت به پروژه‌ها</a>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/sources">مشاهده منابع</a>
+    <a class="button button--quiet" href="/projects">بازگشت به پروژه‌ها</a>
   </div>
 </div>
+{% if corpus_active %}
+<script>
+  window.setTimeout(() => window.location.reload(), 3000);
+</script>
+{% endif %}
 {% endblock %}
