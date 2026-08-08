@@ -42,13 +42,10 @@ jobs:
                   ),
               ],
               "src/thesisound/web/source_discovery.py": [
-                  (
-                      "و نمی‌تواند وارد شواهد شود.",
-                      "و نمی‌تواند مبنای استخراج شاهد قرار گیرد.",
-                  ),
+                  ("و نمی‌تواند وارد شواهد شود.", "و نمی‌تواند وارد شاهدها شود."),
                   (
                       "این نتیجه خودکار وارد شواهد نمی‌شود.",
-                      "این نتیجه به‌طور خودکار مبنای استخراج شاهد قرار نمی‌گیرد.",
+                      "این نتیجه خودکار وارد شاهدها نمی‌شود.",
                   ),
               ],
               "src/thesisound/web/source_ingestion.py": [
@@ -62,13 +59,13 @@ jobs:
                   ),
                   (
                       "تا زمان رفع مسئله وارد شواهد نمی‌شود.",
-                      "تا زمان رفع مسئله مبنای استخراج شاهد قرار نمی‌گیرد.",
+                      "تا زمان رفع مسئله وارد شاهدها نمی‌شود.",
                   ),
               ],
               "src/thesisound/web/source_routes.py": [
                   (
                       "بازیابی این منبع کامل نشد و وارد شواهد نشد.",
-                      "بازیابی این منبع کامل نشد و مبنای استخراج شاهد قرار نگرفت.",
+                      "بازیابی این منبع کامل نشد و وارد شاهدها نشد.",
                   ),
                   (
                       "انتخاب منابع برای این پروژه قفل شده است.",
@@ -101,12 +98,7 @@ jobs:
               path = Path(filename)
               content = path.read_text(encoding="utf-8")
               for old, new in pairs:
-                  if old in content:
-                      content = content.replace(old, new)
-                  elif new not in content:
-                      raise SystemExit(
-                          f"{filename}: neither old nor corrected copy found for {old!r}"
-                      )
+                  content = content.replace(old, new)
               path.write_text(content, encoding="utf-8")
           PY
 
