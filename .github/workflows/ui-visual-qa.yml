@@ -1,0 +1,59 @@
+name: UI Visual QA
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  visual-qa:
+    if: github.head_ref == 'agent/ui-refactor-v2'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Install application and visual QA tools
+        run: |
+          uv sync --extra dev --extra web-ui
+          uv pip install playwright pillow
+          uv run playwright install --with-deps chromium
+
+      - name: Render real application pages
+        run: uv run python scripts/ui_visual_qa.py prepare --output /tmp/ui-visual-qa
+
+      - name: Start static QA server
+        run: |
+          uv run python -m http.server 8765 --directory /tmp/ui-visual-qa >/tmp/ui-visual-qa-server.log 2>&1 &
+          for attempt in {1..30}; do
+            curl -fsS http://127.0.0.1:8765/pages.json >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/ui-visual-qa-server.log
+          exit 1
+
+      - name: Capture themes modes states and mobile
+        run: >-
+          uv run python scripts/ui_visual_qa.py capture
+          --output /tmp/ui-visual-qa
+          --base-url http://127.0.0.1:8765
+
+      - name: Upload visual evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: thesisound-ui-visual-qa
+          path: /tmp/ui-visual-qa/output
+          if-no-files-found: error
+          retention-days: 7
