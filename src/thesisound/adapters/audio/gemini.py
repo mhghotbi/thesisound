@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import base64
 import json
+from collections.abc import Sequence
 from typing import Any, Literal
 
 from pydantic import BaseModel
 
 from thesisound.audio import AsrTranscript
 from thesisound.audio_ports import TtsRequest, TtsResponse
-from thesisound.modeling import ModelConfigurationError, ModelProviderError
+from thesisound.gemini_key_pool import GeminiKeyPool, shared_gemini_key_pool
+from thesisound.modeling import ModelConfigurationError, ModelProviderError, ModelRateLimitError
 
 
 class _AsrOutput(BaseModel):
@@ -20,19 +22,15 @@ class _AsrOutput(BaseModel):
 class GeminiTtsAdapter:
     provider = "gemini"
 
-    def __init__(self, *, api_key: str | None = None, client: Any | None = None) -> None:
-        if client is not None:
-            self._client = client
-            return
-        if not api_key:
-            raise ModelConfigurationError("GEMINI_API_KEY is required for live TTS calls.")
-        try:
-            from google import genai
-        except ImportError as exc:
-            raise ModelConfigurationError(
-                "Install the Gemini extra with: uv sync --extra gemini"
-            ) from exc
-        self._client = genai.Client(api_key=api_key)
+    def __init__(
+        self,
+        *,
+        api_key: str | None = None,
+        api_keys: Sequence[str] | None = None,
+        pool: GeminiKeyPool | None = None,
+        client: Any | None = None,
+    ) -> None:
+        self._client, self._pool = _resolve_client(api_key, api_keys, pool, client)
 
     def synthesize(self, request: TtsRequest) -> TtsResponse:
         try:
@@ -46,24 +44,25 @@ class GeminiTtsAdapter:
             f"{request.style_prompt.strip()}\n\n"
             f"متن را دقیقاً و بدون افزودن توضیح بخوان:\n{request.text}"
         )
-        try:
-            response = self._client.models.generate_content(
-                model=request.model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_modalities=["AUDIO"],
-                    speech_config=types.SpeechConfig(
-                        voice_config=types.VoiceConfig(
-                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                voice_name=request.voice_name
-                            )
+        operation = lambda client: client.models.generate_content(
+            model=request.model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_modalities=["AUDIO"],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name=request.voice_name
                         )
-                    ),
+                    )
                 ),
-            )
+            ),
+        )
+        try:
+            response = self._pool.call(operation) if self._pool else operation(self._client)
             data = _audio_data(response)
         except Exception as exc:
-            raise ModelProviderError(str(exc) or type(exc).__name__, retryable=True) from exc
+            raise _audio_provider_error(exc) from exc
         return TtsResponse(
             pcm_bytes=data,
             provider=self.provider,
@@ -74,19 +73,15 @@ class GeminiTtsAdapter:
 class GeminiAsrAdapter:
     provider = "gemini"
 
-    def __init__(self, *, api_key: str | None = None, client: Any | None = None) -> None:
-        if client is not None:
-            self._client = client
-            return
-        if not api_key:
-            raise ModelConfigurationError("GEMINI_API_KEY is required for live ASR calls.")
-        try:
-            from google import genai
-        except ImportError as exc:
-            raise ModelConfigurationError(
-                "Install the Gemini extra with: uv sync --extra gemini"
-            ) from exc
-        self._client = genai.Client(api_key=api_key)
+    def __init__(
+        self,
+        *,
+        api_key: str | None = None,
+        api_keys: Sequence[str] | None = None,
+        pool: GeminiKeyPool | None = None,
+        client: Any | None = None,
+    ) -> None:
+        self._client, self._pool = _resolve_client(api_key, api_keys, pool, client)
 
     def transcribe(
         self,
@@ -109,21 +104,22 @@ class GeminiAsrAdapter:
             "گفتار این فایل را بدون خلاصه‌سازی و بدون اصلاح محتوایی رونویسی کن. "
             f"زبان مورد انتظار {language} و گوینده مورد انتظار {expected_speaker} است."
         )
+        operation = lambda client: client.models.generate_content(
+            model=model,
+            contents=[
+                prompt,
+                types.Part.from_bytes(data=wav_bytes, mime_type="audio/wav"),
+            ],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=_AsrOutput,
+            ),
+        )
         try:
-            response = self._client.models.generate_content(
-                model=model,
-                contents=[
-                    prompt,
-                    types.Part.from_bytes(data=wav_bytes, mime_type="audio/wav"),
-                ],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=_AsrOutput,
-                ),
-            )
+            response = self._pool.call(operation) if self._pool else operation(self._client)
             output = _coerce_asr(response)
         except Exception as exc:
-            raise ModelProviderError(str(exc) or type(exc).__name__, retryable=True) from exc
+            raise _audio_provider_error(exc) from exc
         return AsrTranscript(
             chunk_id=chunk_id,
             chunk_hash=chunk_hash,
@@ -134,6 +130,31 @@ class GeminiAsrAdapter:
             provider=self.provider,
             model=model,
         )
+
+
+def _resolve_client(
+    api_key: str | None,
+    api_keys: Sequence[str] | None,
+    pool: GeminiKeyPool | None,
+    client: Any | None,
+) -> tuple[Any | None, GeminiKeyPool | None]:
+    if client is not None:
+        return client, None
+    keys = list(api_keys or [])
+    if api_key:
+        keys.append(api_key)
+    if pool is None and not keys:
+        raise ModelConfigurationError(
+            "GEMINI_API_KEY or GEMINI_API_KEYS is required for live Gemini calls."
+        )
+    return None, pool or shared_gemini_key_pool(keys)
+
+
+def _audio_provider_error(exc: Exception) -> Exception:
+    status = getattr(exc, "status_code", None)
+    if status == 429:
+        return ModelRateLimitError(str(exc) or type(exc).__name__)
+    return ModelProviderError(str(exc) or type(exc).__name__, retryable=True)
 
 
 def _audio_data(response: Any) -> bytes:
