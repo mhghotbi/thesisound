@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import json
-import re
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
 from thesisound.ports import ParsedBlock, ParsedDocument
 
-_SAFE_KEY = re.compile(r"[^a-zA-Z0-9_.:/-]+")
 _AUXILIARY_TYPES = {
     "header",
     "footer",
@@ -18,6 +16,24 @@ _AUXILIARY_TYPES = {
     "aside_text",
     "page_aside_text",
     "page_footnote",
+}
+_METADATA_KEYS = {
+    "type",
+    "sub_type",
+    "bbox",
+    "score",
+    "angle",
+    "page_idx",
+    "text_level",
+    "text_format",
+    "format",
+    "anchor",
+    "img_path",
+    "image_path",
+    "path",
+    "url",
+    "index",
+    "cls_id",
 }
 
 
@@ -31,12 +47,7 @@ def normalize_mineru_output(
     source_path: Path,
     parser_version: str,
 ) -> ParsedDocument:
-    """Normalize the most stable MinerU structured output available.
-
-    MinerU currently emits content-list files specifically intended for
-    downstream processing. V2 is preferred when present, then the legacy flat
-    content list, and finally middle.json as a compatibility fallback.
-    """
+    """Normalize the most stable MinerU structured output available."""
 
     root = output_root.expanduser().resolve()
     if not root.exists():
@@ -57,7 +68,7 @@ def normalize_mineru_output(
         blocks = _normalize_content_list(payload)
     elif selected.name.endswith("_middle.json"):
         blocks = _normalize_middle(payload)
-    else:  # defensive guard if selection rules are extended later
+    else:
         raise MineruOutputError(f"Unsupported MinerU output file: {selected.name}")
 
     warnings: list[str] = []
@@ -78,12 +89,11 @@ def normalize_mineru_output(
 
 
 def _select_output_file(root: Path, source_stem: str) -> Path | None:
-    patterns = (
+    for pattern in (
         "*_content_list_v2.json",
         "*_content_list.json",
         "*_middle.json",
-    )
-    for pattern in patterns:
+    ):
         candidates = sorted(path for path in root.rglob(pattern) if path.is_file())
         exact = [path for path in candidates if path.name.startswith(source_stem)]
         if exact:
@@ -244,7 +254,7 @@ def _collect_text(value: Any) -> str:
 
 def _collect_text_parts(value: Any, parts: list[str], key: str | None) -> None:
     if isinstance(value, str):
-        if key not in {"img_path", "image_path", "path", "url"} and value.strip():
+        if key not in _METADATA_KEYS and value.strip():
             parts.append(value)
         return
     if isinstance(value, list):
@@ -253,7 +263,7 @@ def _collect_text_parts(value: Any, parts: list[str], key: str | None) -> None:
         return
     if isinstance(value, dict):
         for child_key, child in value.items():
-            if child_key in {"bbox", "score", "angle", "page_idx", "text_level"}:
+            if child_key in _METADATA_KEYS:
                 continue
             _collect_text_parts(child, parts, key=child_key)
 
@@ -310,11 +320,6 @@ def _non_negative_int(value: Any) -> int | None:
     if isinstance(value, int) and value >= 0:
         return value
     return None
-
-
-def _safe_key(value: str) -> str:
-    cleaned = _SAFE_KEY.sub("-", value).strip("-")
-    return cleaned or "item"
 
 
 def iter_supported_outputs(root: Path) -> Iterable[Path]:
