@@ -1,0 +1,41 @@
+name: Fix app line once
+
+on:
+  push:
+    branches: [agent/ui-refactor-v2]
+    paths: [.github/workflows/fix-app-line-once.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/ui-refactor-v2
+      - name: Split long validation message and remove this workflow
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/thesisound/web/app.py")
+          text = path.read_text(encoding="utf-8")
+          old = '''                raise ValueError(
+                    "این برداشت اولیه وارد تحلیل منابع شده است و بدون بازگشت به مرحلهٔ قبلی قابل ویرایش نیست."
+                )'''
+          new = '''                raise ValueError(
+                    "این برداشت اولیه وارد تحلیل منابع شده است و بدون بازگشت "
+                    "به مرحلهٔ قبلی قابل ویرایش نیست."
+                )'''
+          if old not in text:
+              raise SystemExit("target validation message not found")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+          git rm .github/workflows/fix-app-line-once.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/thesisound/web/app.py
+          git commit -m "Fix app validation line length"
+          git push origin HEAD:agent/ui-refactor-v2
