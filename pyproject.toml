@@ -29,6 +29,7 @@ web = [
 ]
 parsers = [
   "docling>=2.0,<4",
+  "pypdf>=5,<7",
 ]
 
 [project.scripts]
