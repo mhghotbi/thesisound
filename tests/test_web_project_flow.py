@@ -8,6 +8,7 @@ from thesisound.config import Settings
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore
 from thesisound.web.app import create_app
+from thesisound.web.source_manifest import UiSourceManifestStore, UiSourceStatus
 
 
 def _settings(tmp_path: Path) -> Settings:
@@ -20,7 +21,7 @@ def _settings(tmp_path: Path) -> Settings:
         test_otp_phone="0912000000",
         test_otp_code="999999",
         otp_resend_cooldown_seconds=5,
-        ui_demo_mode=True,
+        ui_demo_mode=False,
     )
 
 
@@ -44,6 +45,37 @@ def _login(client: TestClient) -> None:
     client.post(
         "/login/verify",
         data={"code": "999999", "csrf_token": _csrf(page.text)},
+    )
+
+
+def _create_project(client: TestClient) -> UUID:
+    page = client.get("/projects/new")
+    created = client.post(
+        "/projects",
+        data={
+            "csrf_token": _csrf(page.text),
+            "topic": "اخلاق کانت",
+            "audience": "دانشجوی علوم انسانی",
+            "prior_knowledge": "introductory",
+            "duration": "20",
+            "mode": "explanatory",
+        },
+        follow_redirects=False,
+    )
+    return UUID(created.headers["location"].split("/")[2])
+
+
+def _confirm_brief(client: TestClient, project_id: UUID) -> None:
+    page = client.get(f"/projects/{project_id}/brief")
+    client.post(
+        f"/projects/{project_id}/brief",
+        data={
+            "csrf_token": _csrf(page.text),
+            "central_question": "اخلاق کانت چگونه کار می‌کند؟",
+            "must_include": "",
+            "exclusions": "",
+            "action": "confirm",
+        },
     )
 
 
@@ -89,44 +121,41 @@ def test_create_and_confirm_brief(tmp_path: Path) -> None:
     assert project.brief.scope_inclusions == ["زمینه تاریخی"]
 
 
-def test_upload_select_and_confirm_demo_corpus(tmp_path: Path) -> None:
+def test_upload_select_and_confirm_real_corpus(tmp_path: Path) -> None:
     settings = _settings(tmp_path)
     with TestClient(create_app(settings)) as client:
         _login(client)
-        page = client.get("/projects/new")
-        created = client.post(
-            "/projects",
-            data={
-                "csrf_token": _csrf(page.text),
-                "topic": "اخلاق کانت",
-                "audience": "دانشجوی علوم انسانی",
-                "prior_knowledge": "introductory",
-                "duration": "20",
-                "mode": "explanatory",
-            },
-            follow_redirects=False,
-        )
-        project_id = UUID(created.headers["location"].split("/")[2])
-        brief = client.get(created.headers["location"])
-        client.post(
-            f"/projects/{project_id}/brief",
-            data={
-                "csrf_token": _csrf(brief.text),
-                "central_question": "اخلاق کانت چگونه کار می‌کند؟",
-                "must_include": "",
-                "exclusions": "",
-                "action": "confirm",
-            },
-        )
+        project_id = _create_project(client)
+        _confirm_brief(client, project_id)
 
         page = client.get(f"/projects/{project_id}/sources")
+        source_text = ("این یک منبع واقعی برای آزمون استخراج و کنترل کیفیت است. " * 12).encode()
         client.post(
             f"/projects/{project_id}/sources/upload",
             data={"csrf_token": _csrf(page.text)},
-            files={"source_file": ("kant.txt", b"sample source", "text/plain")},
+            files={"source_file": ("kant.txt", source_text, "text/plain")},
         )
 
+        manifest_store = UiSourceManifestStore(
+            WorkspaceStore(settings.workspace_root).project_dir(project_id)
+        )
+        source = manifest_store.load()[0]
+        assert source.status == UiSourceStatus.READY
+        assert source.parser_name == "native"
+        assert source.quality_verdict == "pass"
+        assert source.safe_for_claim_extraction
+        assert source.block_count == 1
+        assert source.text_characters > 200
+        assert source.artifact_ref is not None
+        assert (
+            settings.ingestion_artifact_root
+            / str(project_id)
+            / str(source.source_id)
+            / source.artifact_ref
+        ).exists()
+
         page = client.get(f"/projects/{project_id}/sources")
+        assert "native" in page.text
         match = re.search(r'data-source-id="([0-9a-f-]{36})"', page.text)
         assert match is not None
         source_id = UUID(match.group(1))
@@ -147,3 +176,4 @@ def test_upload_select_and_confirm_demo_corpus(tmp_path: Path) -> None:
     assert project.state == ProjectState.CORPUS_BUILDING
     assert len(project.sources) == 1
     assert project.sources[0].title == "kant.txt"
+    assert "real parse-quality gate" in project.sources[0].relevance_reasons[0]

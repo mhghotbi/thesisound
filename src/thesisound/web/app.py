@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import secrets
+from functools import partial
 from pathlib import Path
 from typing import Annotated
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import uvicorn
 from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 
@@ -26,6 +28,7 @@ from thesisound.domain import (
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.web.auth import NullOtpSender, OtpError, OtpService
 from thesisound.web.read_models import build_project_read_model
+from thesisound.web.source_ingestion import ingest_uploaded_source
 from thesisound.web.source_manifest import (
     UiSourceManifest,
     UiSourceManifestStore,
@@ -352,7 +355,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "project": project,
                 "sources": sources,
                 "selected_count": sum(source.selected for source in sources),
-                "demo_mode": runtime.ui_demo_mode,
             },
         )
 
@@ -377,8 +379,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
 
         filename = _safe_filename(source_file.filename or "source")
+        source_id = uuid4()
         suffix = Path(filename).suffix.lower()
-        upload_root = workspace.project_dir(project_id) / "uploads"
+        upload_root = workspace.project_dir(project_id) / "uploads" / str(source_id)
         upload_root.mkdir(parents=True, exist_ok=True)
         destination = upload_root / filename
 
@@ -396,27 +399,38 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 output.write(chunk)
 
         if suffix not in _SUPPORTED_UPLOAD_SUFFIXES:
-            status = UiSourceStatus.BLOCKED
-            issue = "نوع فایل در این نسخه پشتیبانی نمی‌شود."
-        elif runtime.ui_demo_mode:
-            status = UiSourceStatus.READY
-            issue = None
-        else:
-            status = UiSourceStatus.PROCESSING
-            issue = None
-
-        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
-        manifest_store.add(
-            UiSourceManifest(
+            manifest = UiSourceManifest(
+                source_id=source_id,
                 filename=filename,
                 content_type=source_file.content_type,
                 size_bytes=size,
-                status=status,
-                issue_summary=issue,
-                is_demo_result=runtime.ui_demo_mode and status == UiSourceStatus.READY,
+                status=UiSourceStatus.BLOCKED,
+                issue_summary="نوع فایل در این نسخه پشتیبانی نمی‌شود.",
             )
-        )
-        if status == UiSourceStatus.READY:
+        else:
+            artifact_root = (
+                runtime.ensure_ingestion_artifact_root() / str(project_id) / str(source_id)
+            )
+            manifest = await run_in_threadpool(
+                partial(
+                    ingest_uploaded_source,
+                    destination,
+                    source_id=source_id,
+                    filename=filename,
+                    content_type=source_file.content_type,
+                    size_bytes=size,
+                    settings=runtime,
+                    artifact_root=artifact_root,
+                )
+            )
+
+        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
+        manifest_store.add(manifest)
+        sources = manifest_store.load()
+        if (
+            project.state == ProjectState.SOURCES_COLLECTING
+            and any(source.status == UiSourceStatus.READY for source in sources)
+        ):
             transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
         workspace.save_project(project)
         return RedirectResponse(
@@ -461,8 +475,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ]
             if not selected:
                 raise ValueError("حداقل یک منبع آماده را انتخاب کنید.")
-            if not runtime.ui_demo_mode:
-                raise ValueError("اتصال ingestion واقعی هنوز برای این صفحه فعال نشده است.")
 
             project.sources = [
                 SourceCandidate(
@@ -471,11 +483,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     role=SourceRole.USER_CONTEXT,
                     source_type=Path(source.filename).suffix.lstrip(".") or "file",
                     origin="local_upload",
-                    language="fa",
+                    language=None,
                     access=SourceAccess.FULL_TEXT,
                     user_decision=SourceDecision.INCLUDE,
-                    relevance_reasons=["Selected by the user in UI demo mode"],
-                    limitations=["Parse quality is simulated in UI demo mode"],
+                    relevance_reasons=[
+                        "Selected by the user after the real parse-quality gate "
+                        f"using {source.parser_name or 'an available parser'}"
+                    ],
+                    limitations=[source.issue_summary] if source.issue_summary else [],
                 )
                 for source in selected
             ]
@@ -493,7 +508,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     "project": project,
                     "sources": sources,
                     "selected_count": sum(source.selected for source in sources),
-                    "demo_mode": runtime.ui_demo_mode,
                     "error": str(error),
                 },
                 status_code=422,

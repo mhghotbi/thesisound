@@ -55,17 +55,31 @@ OtpSenderPort
 
 Challenge store فعلی in-memory است و برای یک process محلی مناسب است. پیش از deployment چند-worker باید به storage مشترک با rate limiting منتقل شود.
 
-## Source UI demo mode
+## Source ingestion واقعی
 
-در اولین slice، upload واقعی است اما نتیجه parse quality در `THESISOUND_UI_DEMO_MODE=true` شبیه‌سازی می‌شود تا interaction source selection قابل تست باشد.
+Upload وب به همان ingestion pipeline اصلی متصل است:
+
+```text
+upload
+→ inspect_document
+→ route_parser
+→ parse attempts and fallback
+→ assess_parse_quality
+→ persist ingestion artifacts
+→ ready / review / blocked
+```
 
 قواعد:
 
-- manifest UI جای artifact ingestion را نمی‌گیرد؛
-- هر source شبیه‌سازی‌شده با `is_demo_result` علامت می‌خورد؛
-- محدودیت در domain source ثبت می‌شود؛
-- production اجازه فعال‌کردن demo mode را ندارد؛
-- اتصال `DocumentIngestionService` کار بعدی است.
+- UI manifest فقط read model وضعیت source است و artifact اصلی را جایگزین نمی‌کند؛
+- source فقط در صورت `safe_for_claim_extraction=true` قابل انتخاب است؛
+- parser، verdict، تعداد block، حجم متن و parserهای آزموده‌شده در manifest ثبت می‌شوند؛
+- artifactهای هر source زیر namespace مستقل project/source ذخیره می‌شوند؛
+- Docling و MinerU در صورت نصب استفاده می‌شوند؛
+- parser داخلی dependency-light برای PDF متنی، DOCX، TXT و Markdown fallback پایه است؛
+- PDF اسکن‌شده بدون OCR به‌اشتباه ready نمی‌شود.
+
+`THESISOUND_UI_DEMO_MODE` دیگر در workflow منبع استفاده نمی‌شود و صرفاً برای سازگاری تنظیمات قدیمی باقی مانده است. production همچنان فعال‌بودن آن را رد می‌کند.
 
 ## RTL و bidi
 
@@ -74,8 +88,8 @@ Challenge store فعلی in-memory است و برای یک process محلی من
 - شماره موبایل و OTP؛
 - filename؛
 - timestamp؛
-- model ID؛
-- run/project ID؛
+- model ID و parser ID؛
+- run/project/source ID؛
 - URL و hash؛
 - cost و token count.
 
@@ -100,6 +114,7 @@ Challenge store فعلی in-memory است و برای یک process محلی من
 - کاربر ناشناس به login هدایت شود؛
 - project روی `WorkspaceStore` ذخیره شود؛
 - save و confirm Brief یکی نباشند؛
+- upload واقعاً inspect، parse و quality-check شود؛
 - source انتخاب‌نشده وارد corpus نشود؛
 - source غیرآماده قابل انتخاب نباشد؛
 - corpus بدون حداقل یک source تأیید نشود؛

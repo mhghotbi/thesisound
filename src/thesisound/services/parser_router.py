@@ -42,7 +42,7 @@ def route_parser(
         reasons.append("Sampled pages contain little or no extractable text; OCR is required.")
         return ParserRoute(
             primary="mineru",
-            fallbacks=[name for name in ("docling",) if name in available],
+            fallbacks=_available_in_order(available, "docling", "native"),
             reasons=reasons,
         )
 
@@ -50,7 +50,7 @@ def route_parser(
         reasons.append("Inspection detected layout signals that benefit from MinerU parsing.")
         return ParserRoute(
             primary="mineru",
-            fallbacks=[name for name in ("docling",) if name in available],
+            fallbacks=_available_in_order(available, "docling", "native"),
             reasons=reasons,
         )
 
@@ -58,7 +58,15 @@ def route_parser(
         reasons.append("Docling is the default local parser for text-bearing documents.")
         return ParserRoute(
             primary="docling",
-            fallbacks=[name for name in ("mineru",) if name in available],
+            fallbacks=_available_in_order(available, "native", "mineru"),
+            reasons=reasons,
+        )
+
+    if "native" in available:
+        reasons.append("The dependency-light native parser is available for this document.")
+        return ParserRoute(
+            primary="native",
+            fallbacks=_available_in_order(available, "mineru"),
             reasons=reasons,
         )
 
@@ -69,3 +77,7 @@ def route_parser(
     fallback = sorted(available)[0]
     reasons.append("No preferred parser is available; using the first configured parser.")
     return ParserRoute(primary=fallback, reasons=reasons)
+
+
+def _available_in_order(available: set[str], *names: str) -> list[str]:
+    return [name for name in names if name in available]

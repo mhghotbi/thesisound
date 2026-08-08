@@ -25,14 +25,18 @@ class UiSourceManifest(BaseModel):
     selected: bool = False
     issue_summary: str | None = None
     is_demo_result: bool = False
+    parser_name: str | None = None
+    quality_verdict: str | None = None
+    safe_for_claim_extraction: bool = False
+    block_count: int = Field(default=0, ge=0)
+    text_characters: int = Field(default=0, ge=0)
+    attempted_parsers: list[str] = Field(default_factory=list)
+    artifact_ref: str | None = None
+    inspection_sha256: str | None = None
 
 
 class UiSourceManifestStore:
-    """UI-side upload manifest.
-
-    It does not replace ingestion artifacts. It records pre-ingestion status until
-    the real ingestion service promotes a source into the project domain model.
-    """
+    """UI-side source manifest backed by real ingestion artifacts."""
 
     def __init__(self, project_directory: Path) -> None:
         self._path = project_directory / "ui-source-manifest.json"
