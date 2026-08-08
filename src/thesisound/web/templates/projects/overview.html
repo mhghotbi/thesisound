@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% from "components.html" import status_label, attention_panel, technical_details %}
+{% block title %}خانه پروژه | Thesisound{% endblock %}
+{% block content %}
+<header class="page-heading page-heading--compact">
+  <div>
+    <p class="kicker">خانه پروژه</p>
+    <h1>{{ project_title(project) }}</h1>
+    <div class="page-heading__meta">
+      {% if project.brief %}<span>{{ project.brief.target_duration_minutes | fa_num }} دقیقه</span><span>{{ project.brief.audience }}</span>{% endif %}
+      <time datetime="{{ project.updated_at.isoformat() }}">آخرین تغییر {{ project.updated_at | jalali_date }}</time>
+    </div>
+  </div>
+  {{ status_label(model.state_label, 'مرحله ' ~ (model.current_step | fa_num) ~ ' از ۶', model.tone, model.operator_state_label) }}
+</header>
+
+{{ attention_panel(
+  'اقدام لازم' if model.requires_action else 'وضعیت فعلی',
+  model.attention_label,
+  model.overview_summary,
+  model.primary_action_url,
+  model.primary_action_label,
+  'danger' if model.tone == 'danger' else ('success' if model.tone == 'success' else 'attention')
+) }}
+
+<div class="overview-grid">
+  <div class="overview-main">
+    <section class="section-block" aria-labelledby="overview-question">
+      <div class="section-heading"><h2 id="overview-question">پرسش و محدوده</h2></div>
+      {% if project.brief %}
+      <dl class="summary-list">
+        <div class="summary-row"><dt>سؤال مرکزی</dt><dd>{{ project.brief.central_question }}</dd></div>
+        <div class="summary-row"><dt>مخاطب</dt><dd>{{ project.brief.audience }}</dd></div>
+        <div class="summary-row"><dt>آشنایی قبلی</dt><dd>{{ project.brief.prior_knowledge }}</dd></div>
+        <div class="summary-row"><dt>مدت هدف</dt><dd>{{ project.brief.target_duration_minutes | fa_num }} دقیقه</dd></div>
+        {% if project.brief.scope_inclusions %}<div class="summary-row"><dt>حتماً پوشش داده شود</dt><dd>{{ project.brief.scope_inclusions | join('، ') }}</dd></div>{% endif %}
+        {% if project.brief.scope_exclusions %}<div class="summary-row"><dt>خارج از محدوده</dt><dd>{{ project.brief.scope_exclusions | join('، ') }}</dd></div>{% endif %}
+      </dl>
+      {% else %}
+      <div class="empty-inline"><strong>برداشت هنوز ساخته نشده است.</strong><span>برای تعریف سؤال مرکزی وارد مرحله هدف و برداشت شوید.</span></div>
+      {% endif %}
+    </section>
+
+    <section class="section-block" aria-labelledby="overview-history">
+      <div class="section-heading"><h2 id="overview-history">آخرین اتفاق‌ها</h2></div>
+      <ol class="timeline">
+        <li>
+          <time datetime="{{ project.updated_at.isoformat() }}">{{ project.updated_at | jalali_date }}</time>
+          <p>{{ model.overview_summary }}</p>
+        </li>
+        <li>
+          <time datetime="{{ project.created_at.isoformat() }}">{{ project.created_at | jalali_date }}</time>
+          <p>پروژه با موضوع «{{ project.raw_input }}» ساخته شد.</p>
+        </li>
+      </ol>
+    </section>
+
+    {% if model.technical_detail %}
+      {% call technical_details('جزئیات خطای آخر') %}
+        <p><bdi dir="ltr">{{ model.technical_detail }}</bdi></p>
+      {% endcall %}
+    {% endif %}
+  </div>
+
+  <aside class="overview-side" aria-label="خلاصه پروژه">
+    <section class="data-panel">
+      <div class="section-heading"><h2>دسترسی سریع</h2></div>
+      <div class="form-actions">
+        <a class="button button--primary button--full" href="{{ model.primary_action_url }}">{{ model.primary_action_label }}</a>
+        <a class="button button--secondary button--full" href="/projects/{{ project.project_id }}/brief">هدف و برداشت</a>
+        {% if model.current_step >= 2 %}<a class="button button--secondary button--full" href="/projects/{{ project.project_id }}/sources">منابع</a>{% endif %}
+        {% if model.current_step >= 3 %}<a class="button button--secondary button--full" href="/projects/{{ project.project_id }}/processing">پردازش</a>{% endif %}
+      </div>
+    </section>
+
+    <section class="data-panel operator-only">
+      <div class="section-heading"><h2>اطلاعات عملیاتی</h2></div>
+      <dl class="summary-list">
+        <div class="summary-row"><dt>Project ID</dt><dd><code><bdi dir="ltr">{{ project.project_id }}</bdi></code></dd></div>
+        <div class="summary-row"><dt>State</dt><dd><code><bdi dir="ltr">{{ project.state.value }}</bdi></code></dd></div>
+        <div class="summary-row"><dt>Created</dt><dd><code><bdi dir="ltr">{{ project.created_at.isoformat() }}</bdi></code></dd></div>
+        <div class="summary-row"><dt>Updated</dt><dd><code><bdi dir="ltr">{{ project.updated_at.isoformat() }}</bdi></code></dd></div>
+        <div class="summary-row"><dt>Sources in domain</dt><dd>{{ project.sources | length | fa_num }}</dd></div>
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}
