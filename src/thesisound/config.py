@@ -88,6 +88,9 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_runtime(self) -> "Settings":
+        pooled_keys = _parse_gemini_api_keys(self.gemini_api_keys_value)
+        if not self.gemini_api_key and pooled_keys:
+            self.gemini_api_key = pooled_keys[0]
         if self.audio_qa_review_threshold >= self.audio_qa_pass_threshold:
             raise ValueError("Audio QA review threshold must be below the pass threshold")
         if self.tts_voice_a == self.tts_voice_b:
