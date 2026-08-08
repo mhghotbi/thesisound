@@ -78,7 +78,8 @@ class PromptLoader:
             )
         if contract.version != version_dir.name:
             raise PromptContractError(
-                f"Contract version {contract.version!r} does not match directory {version_dir.name!r}."
+                f"Contract version {contract.version!r} does not match "
+                f"directory {version_dir.name!r}."
             )
 
         system_template = self._read_required(version_dir / contract.system_file)
