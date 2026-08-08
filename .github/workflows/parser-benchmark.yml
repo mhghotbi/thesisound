@@ -19,7 +19,6 @@ jobs:
       THESISOUND_MINERU_TIMEOUT_SECONDS: "5400"
       MINERU_MODEL_SOURCE: huggingface
       HF_HOME: ${{ github.workspace }}/.cache/huggingface
-      DOCLING_ARTIFACTS_PATH: ${{ github.workspace }}/.cache/docling
 
     steps:
       - name: Check out repository
@@ -38,9 +37,7 @@ jobs:
       - name: Cache parser models
         uses: actions/cache@v5
         with:
-          path: |
-            .cache/huggingface
-            .cache/docling
+          path: .cache/huggingface
           key: parser-models-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
 
       - name: Install Thesisound and Docling
