@@ -7,34 +7,34 @@
   <div>
     <p class="kicker">شنیدن و دریافت</p>
     <h1>{{ project_title(project) }}</h1>
-    <p>نسخهٔ شنیداری فقط پس از وارسی ساختار صوت، رونویسی و مقایسه با متن تأییدشده آماده می‌شود.</p>
+    <p>نسخهٔ شنیداری فقط پس از وارسی ساختار صوت، رونویسی و مقایسه با متن گفتار آماده می‌شود.</p>
   </div>
   {% if audio_active %}
-    {{ status_label('در حال تولید و وارسی صوت', 'اقدامی از شما لازم نیست', 'running', audio_run.stage if audio_run else '') }}
+    {{ status_label('در حال ساخت و وارسی نسخهٔ شنیداری', 'اقدامی از شما لازم نیست', 'running', audio_run.stage if audio_run else '') }}
   {% elif audio_run and audio_run.status == 'failed' %}
-    {{ status_label('تولید صوت متوقف شد', 'قابل بررسی و ادامه', 'danger', audio_run.status) }}
+    {{ status_label('ساخت نسخهٔ شنیداری متوقف شد', 'قابل بررسی و ادامه', 'danger', audio_run.status) }}
   {% elif project.state.value == 'complete' %}
-    {{ status_label('آمادهٔ شنیدن', 'نسخهٔ نهایی وارسی شده است', 'success', project.state.value) }}
+    {{ status_label('آمادهٔ شنیدن', 'وارسی شنیداری انجام شده است', 'success', project.state.value) }}
   {% else %}
-    {{ status_label('آمادهٔ ساخت صوت', 'شروع تولید به تأیید شما نیاز دارد', 'attention', project.state.value) }}
+    {{ status_label('آمادهٔ ساخت نسخهٔ شنیداری', 'شروع ساخت به تأیید شما نیاز دارد', 'attention', project.state.value) }}
   {% endif %}
 </header>
 
 {% if error %}
-<div class="notice notice--danger" role="alert">تولید یا بازیابی صوت کامل نشد. متن تأییدشده و قطعه‌های سالم باقی مانده‌اند.<p class="operator-only"><bdi dir="ltr">{{ error }}</bdi></p></div>
+<div class="notice notice--danger" role="alert">ساخت یا بازیابی نسخهٔ شنیداری کامل نشد. متن گفتار و قطعه‌های سالم باقی مانده‌اند.<p class="operator-only"><bdi dir="ltr">{{ error }}</bdi></p></div>
 {% endif %}
 
 {% if can_generate and not audio_active %}
 <section class="attention-panel" aria-labelledby="audio-start-title">
   <div>
     <span class="attention-panel__label">اقدام لازم</span>
-    <h2 id="audio-start-title">متن گفتار آمادهٔ تبدیل به صوت است</h2>
-    <p class="simple-only">هر قطعه جدا ساخته و با متن مقایسه می‌شود؛ فقط قطعه‌های نامعتبر دوباره تولید خواهند شد.</p>
-    <p class="operator-only">Run به hash نسخه فعلی Script متصل است. پیش از queue، کلید Gemini، SDK، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
+    <h2 id="audio-start-title">متن گفتار آمادهٔ ساخت نسخهٔ شنیداری است</h2>
+    <p class="simple-only">هر قطعه جدا ساخته و با متن گفتار مقایسه می‌شود؛ فقط قطعه‌های نامعتبر دوباره تولید خواهند شد.</p>
+    <p class="operator-only">Run به hash نسخهٔ فعلی Script متصل است. پیش از queue، کلید Gemini، SDK، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
   </div>
   <form method="post" action="/projects/{{ project.project_id }}/audio/generate">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <button class="button button--primary" type="submit">ساخت و وارسی صوت</button>
+    <button class="button button--primary" type="submit">ساخت و وارسی نسخهٔ شنیداری</button>
   </form>
 </section>
 <div class="form-actions operator-only"><a class="button button--secondary" href="/system-check?scope=audio">بررسی پیش‌نیازهای صوت</a></div>
@@ -47,12 +47,12 @@
       <p class="kicker">اجرای جاری</p>
       <h2 id="audio-progress-title" aria-live="polite">
         {% if audio_run.stage == 'queued' %}در صف اجرا
-        {% elif audio_run.stage == 'segmenting' %}تقسیم متن به قطعه‌های گفتاری
-        {% elif audio_run.stage == 'synthesizing' %}تولید قطعه‌های صوتی
-        {% elif audio_run.stage == 'transcribing' %}رونویسی و مقایسه با متن
-        {% elif audio_run.stage == 'regenerating' %}بازتولید قطعه معیوب
-        {% elif audio_run.stage == 'assembling' %}نرمال‌سازی و اتصال صوت
-        {% else %}در حال پردازش{% endif %}
+        {% elif audio_run.stage == 'segmenting' %}تقسیم متن گفتار به قطعه‌های گفتاری
+        {% elif audio_run.stage == 'synthesizing' %}ساخت قطعه‌های صوتی
+        {% elif audio_run.stage == 'transcribing' %}رونویسی و مقایسه با متن گفتار
+        {% elif audio_run.stage == 'regenerating' %}بازتولید قطعهٔ معیوب
+        {% elif audio_run.stage == 'assembling' %}نرمال‌سازی و اتصال قطعه‌ها
+        {% else %}در حال ساخت{% endif %}
       </h2>
     </div>
     {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', audio_run.status) }}
@@ -67,7 +67,7 @@
   <div class="error-recovery__grid">
     <div>
       <span class="attention-panel__label">چه شد</span>
-      <h2>تولید یا وارسی صوت متوقف شد</h2>
+      <h2>ساخت یا وارسی شنیداری متوقف شد</h2>
       <p class="error-recovery__impact"><strong>اثر:</strong> متن گفتار و قطعه‌های سالم باقی مانده‌اند؛ نسخهٔ شنیداری ناقص منتشر نشده است.</p>
     </div>
     {% if can_retry %}
@@ -100,32 +100,32 @@
     مرورگر شما پخش صوت را پشتیبانی نمی‌کند.
   </audio>
   <div class="form-actions">
-    <a class="button button--primary" href="/projects/{{ project.project_id }}/audio/final.wav" download>دریافت فایل صوتی</a>
-    <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">خواندن متن و شواهد</a>
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/audio/final.wav" download>دریافت نسخهٔ شنیداری</a>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">خواندن متن گفتار و شاهدها</a>
   </div>
 </section>
 
 {% if segment_views %}
 <section class="section-block reading-column" aria-labelledby="audio-transcript-title">
-  <div class="section-heading"><h2 id="audio-transcript-title">متن گفتار</h2><span>همراه نسخهٔ شنیداری</span></div>
+  <div class="section-heading"><h2 id="audio-transcript-title">متن همگام</h2><span>همراه نسخهٔ شنیداری</span></div>
   <div class="transcript-list">
     {% for item in segment_views %}
     <article class="transcript-turn" id="chunk-{{ item.chunk.chunk_id }}">
       <div class="transcript-turn__meta">
-        <span class="transcript-turn__speaker">گوینده {{ speaker_labels.get(item.chunk.speaker, item.chunk.speaker) }}</span>
+        <span class="transcript-turn__speaker">گویندهٔ {{ speaker_labels.get(item.chunk.speaker, item.chunk.speaker) }}</span>
         <span class="transcript-turn__number">{{ loop.index | fa_num }}</span>
         <code class="operator-only">speaker <bdi dir="ltr">{{ item.chunk.speaker }}</bdi> · chunk <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></code>
       </div>
       <p class="transcript-turn__text">{{ item.chunk.text }}</p>
       {% if item.record or item.transcript or item.qa %}
       <details class="evidence-drawer operator-only">
-        <summary>جزئیات قطعه و وارسی صوت</summary>
+        <summary>جزئیات قطعه و وارسی شنیداری</summary>
         <div class="evidence-card">
           {% if item.record %}
           <audio controls preload="none"><source src="/projects/{{ project.project_id }}/audio/segments/{{ item.chunk.chunk_id }}.wav" type="audio/wav"></audio>
           <p>Duration: <code><bdi dir="ltr">{{ item.record.validation.duration_seconds | round(2) }}s</bdi></code> · attempts: <code><bdi dir="ltr">{{ item.record.generation_attempts }}</bdi></code></p>
           {% endif %}
-          {% if item.transcript %}<p class="operator-only"><strong>ASR:</strong> {{ item.transcript.text }}</p>{% endif %}
+          {% if item.transcript %}<p class="operator-only"><strong>رونویسی خودکار · ASR:</strong> {{ item.transcript.text }}</p>{% endif %}
           {% if item.qa %}
           <p class="operator-only">Verdict: <code><bdi dir="ltr">{{ item.qa.verdict }}</bdi></code> · similarity: <code><bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></code></p>
           {% if item.qa.missing_sentences %}<ul>{% for value in item.qa.missing_sentences %}<li>افتادگی احتمالی: {{ value }}</li>{% endfor %}</ul>{% endif %}
@@ -140,14 +140,14 @@
 {% endif %}
 {% elif segment_views %}
 <section class="section-block operator-only" aria-labelledby="chunk-control-title">
-  <div class="section-heading"><h2 id="chunk-control-title">وارسی قطعه‌ها</h2><span>{{ segment_views | length | fa_num }} قطعه</span></div>
+  <div class="section-heading"><h2 id="chunk-control-title">وارسی شنیداری قطعه‌ها</h2><span>{{ segment_views | length | fa_num }} قطعه</span></div>
   <div class="chunk-list">
     {% for item in segment_views %}
     <article class="chunk-row">
-      <div class="source-row__identity"><strong>گوینده {{ item.chunk.speaker }} · <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></strong><span>{% if item.qa %}<bdi dir="ltr">{{ item.qa.verdict }}</bdi>{% else %}در انتظار QA{% endif %}</span></div>
+      <div class="source-row__identity"><strong>گویندهٔ {{ item.chunk.speaker }} · <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></strong><span>{% if item.qa %}<bdi dir="ltr">{{ item.qa.verdict }}</bdi>{% else %}در انتظار QA{% endif %}</span></div>
       <p class="source-row__summary">{{ item.chunk.text }}</p>
       {% if item.record %}<audio controls preload="none"><source src="/projects/{{ project.project_id }}/audio/segments/{{ item.chunk.chunk_id }}.wav" type="audio/wav"></audio>{% endif %}
-      {% if item.transcript %}{% call technical_details('رونویسی و اختلاف با متن', always_visible=true) %}<p>{{ item.transcript.text }}</p>{% if item.qa %}<p class="operator-only">Similarity: <code><bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></code></p>{% endif %}{% endcall %}{% endif %}
+      {% if item.transcript %}{% call technical_details('رونویسی خودکار و اختلاف با متن', always_visible=true) %}<p>{{ item.transcript.text }}</p>{% if item.qa %}<p class="operator-only">Similarity: <code><bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></code></p>{% endif %}{% endcall %}{% endif %}
     </article>
     {% endfor %}
   </div>
