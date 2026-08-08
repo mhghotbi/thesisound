@@ -1,43 +1,62 @@
 {% extends "base.html" %}
+{% from "components.html" import status_label %}
 {% block title %}پروژه‌ها | Thesisound{% endblock %}
 {% block content %}
 <header class="page-heading">
   <div>
-    <p class="eyebrow">فضای مطالعه</p>
+    <p class="kicker">میز مطالعه</p>
     <h1>پروژه‌های شما</h1>
-    <p>هر پروژه از آخرین مرحله معتبر ادامه پیدا می‌کند.</p>
+    <p>هر پروژه از آخرین artifact معتبر ادامه پیدا می‌کند. مواردی که به تصمیم شما نیاز دارند بالاتر آمده‌اند.</p>
   </div>
   <a class="button button--primary" href="/projects/new">پروژه جدید</a>
 </header>
 
 {% if projects %}
-<section class="project-list" aria-label="فهرست پروژه‌ها">
-  {% for item in projects %}
-  <article class="project-row">
-    <div class="project-row__main">
-      <h2>{{ project_title(item.project) }}</h2>
-      <p class="project-meta">
-        <span>{{ item.state_label }}</span>
-        {% if item.project.brief %}
-        <span>{{ item.project.brief.target_duration_minutes }} دقیقه</span>
-        {% endif %}
-        <time datetime="{{ item.project.updated_at.isoformat() }}">
-          آخرین تغییر {{ item.project.updated_at.strftime("%Y-%m-%d %H:%M") }}
-        </time>
-      </p>
-    </div>
-    <div class="project-row__attention project-row__attention--{{ item.tone }}">
-      <span>{{ item.attention_label }}</span>
-      <a href="{{ item.primary_action_url }}">{{ item.primary_action_label }}</a>
-    </div>
-  </article>
-  {% endfor %}
-</section>
+  {% if projects | length > 7 %}
+  <label class="field project-search">
+    <span>پیدا کردن پروژه</span>
+    <input type="search" data-project-search placeholder="جست‌وجو در عنوان و وضعیت" autocomplete="off">
+  </label>
+  {% endif %}
+
+  <div class="project-groups">
+    {% for group_key, group_label in [('attention', 'منتظر شما'), ('running', 'در حال انجام'), ('complete', 'آماده و بایگانی‌شده')] %}
+      {% set ns = namespace(has_items=false) %}
+      {% for item in projects %}{% if item.group_key == group_key %}{% set ns.has_items = true %}{% endif %}{% endfor %}
+      {% if ns.has_items %}
+      <section class="project-group" data-project-group aria-labelledby="group-{{ group_key }}">
+        <h2 class="project-group__title" id="group-{{ group_key }}">{{ group_label }}</h2>
+        <div class="project-list">
+          {% for item in projects %}
+            {% if item.group_key == group_key %}
+            <article class="project-row" data-project-row>
+              <div class="project-row__main">
+                <h3><a href="/projects/{{ item.project.project_id }}">{{ project_title(item.project) }}</a></h3>
+                <p class="project-meta">
+                  {% if item.project.brief %}<span>{{ item.project.brief.target_duration_minutes | fa_num }} دقیقه</span>{% endif %}
+                  <time datetime="{{ item.project.updated_at.isoformat() }}">آخرین تغییر {{ item.project.updated_at | jalali_date }}</time>
+                  <code class="operator-only"><bdi dir="ltr">{{ item.project.project_id }}</bdi></code>
+                </p>
+              </div>
+              <div class="project-row__status">
+                {{ status_label(item.state_label, item.attention_label, item.tone, item.operator_state_label) }}
+                <p>{{ item.overview_summary }}</p>
+                {% if item.technical_detail %}<p class="operator-only"><bdi dir="ltr">{{ item.technical_detail }}</bdi></p>{% endif %}
+              </div>
+              <a class="button button--secondary button--small" href="/projects/{{ item.project.project_id }}">باز کردن پروژه</a>
+            </article>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    {% endfor %}
+  </div>
 {% else %}
 <section class="empty-state">
-  <p class="eyebrow">هنوز پروژه‌ای ندارید</p>
+  <p class="kicker">هنوز پروژه‌ای ندارید</p>
   <h2>از یک سؤال واقعی شروع کنید</h2>
-  <p>موضوع، سطح و مدت را مشخص کنید؛ سپس منابعی را که باید مبنای اپیزود باشند اضافه کنید.</p>
+  <p>موضوع، مخاطب و مدت را مشخص کنید. بعد می‌توانید فایل‌های خودتان را بدهید یا جست‌وجوی منبع را به Thesisound بسپارید.</p>
   <a class="button button--primary" href="/projects/new">ساخت اولین پروژه</a>
 </section>
 {% endif %}
