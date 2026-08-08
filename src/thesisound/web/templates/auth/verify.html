@@ -5,9 +5,8 @@
 {% block content_class %}auth-layout{% endblock %}
 {% block content %}
 <section class="auth-story" aria-labelledby="verify-story-title">
-  <div class="brand">
-    <span class="brand__mark" aria-hidden="true">م</span>
-    <span><strong>مقال</strong><small>مطالعه‌ای که شنیده می‌شود</small></span>
+  <div class="brand brand--auth">
+    <img class="auth-brand__logo" src="{{ url_for('static', path='/maghal-logo-full.webp') }}" alt="مقال؛ گفتار مستند شنیدنی" width="497" height="520">
   </div>
   <div>
     <h1 id="verify-story-title">یک گام تا بازگشت به میز مطالعه.</h1>
