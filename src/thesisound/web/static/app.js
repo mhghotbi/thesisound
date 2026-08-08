@@ -33,7 +33,8 @@
       const theme = button.dataset.themeValue;
       if (!validThemes.has(theme)) return;
       root.dataset.theme = theme;
-      localStorage.setItem("maqal-theme", theme);
+      localStorage.setItem("maqaal-theme", theme);
+      localStorage.removeItem("maqal-theme");
       localStorage.removeItem("thesisound-theme");
       syncPressedStates();
       persistPreference("theme", theme);
@@ -46,7 +47,8 @@
       const mode = button.dataset.modeValue;
       if (!validModes.has(mode)) return;
       root.dataset.mode = mode;
-      localStorage.setItem("maqal-mode", mode);
+      localStorage.setItem("maqaal-mode", mode);
+      localStorage.removeItem("maqal-mode");
       localStorage.removeItem("thesisound-mode");
       syncPressedStates();
       persistPreference("mode", mode);
