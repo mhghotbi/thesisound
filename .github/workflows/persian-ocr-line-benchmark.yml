@@ -40,6 +40,9 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Prepare artifact directory
+        run: mkdir -p benchmarks/persian_ocr/runtime
+
       - name: Cache public OCR models
         uses: actions/cache@v5
         with:
@@ -57,14 +60,15 @@ jobs:
         run: |
           uv venv --python 3.12 .venv-ocr
           uv pip install --python .venv-ocr/bin/python \
-            datasets huggingface-hub pillow pyarrow requests \
-            torch torchvision --index-url https://download.pytorch.org/whl/cpu
+            datasets huggingface-hub pillow pyarrow requests
+          uv pip install --python .venv-ocr/bin/python \
+            --index-url https://download.pytorch.org/whl/cpu \
+            torch torchvision
           uv pip install --python .venv-ocr/bin/python \
             paddlepaddle paddleocr opencv-python-headless
 
       - name: Run real Persian line benchmark
         run: |
-          mkdir -p benchmarks/persian_ocr/runtime
           .venv-ocr/bin/python benchmarks/persian_ocr/run_line_benchmark.py \
             --limit "${{ github.event.inputs.limit || '50' }}" \
             --offset "${{ github.event.inputs.offset || '0' }}" \
