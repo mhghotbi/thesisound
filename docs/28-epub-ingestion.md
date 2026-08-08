@@ -63,6 +63,17 @@ uv run thesisound parse book.epub --parser auto --output parse-result.json
 uv run thesisound parse book.epub --parser epub --output parse-result.json
 ```
 
+## پوشش خودکار
+
+تست‌های regression شامل این حالت‌ها هستند:
+
+- حفظ ترتیب دو فصل مطابق spine؛
+- حفظ heading hierarchy فارسی؛
+- حذف محتوای `script` و navigation؛
+- عبور EPUB معتبر از ingestion و parse-quality gate؛
+- ردکردن resource path مطلق و ناامن؛
+- بارگذاری EPUB از UI و ثبت آن با parser نوع `epub`.
+
 ## خارج از scope فعلی
 
 - EPUB دارای DRM یا entry رمزگذاری‌شده؛
