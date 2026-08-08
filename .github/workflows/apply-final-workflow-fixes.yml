@@ -38,6 +38,18 @@ jobs:
           rm -f .github/workflows/apply-final-workflow-fixes.yml
       - name: Install dependencies
         run: uv sync --extra dev --extra web-ui --extra gemini
+      - name: Normalize touched Python files
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            src/thesisound/services/document_mapper.py
+            src/thesisound/web/source_routes.py
+            tests/test_document_mapper_large_inputs.py
+            tests/test_web_source_discovery.py
+          )
+          uv run ruff format "${files[@]}"
+          uv run ruff check --fix "${files[@]}"
       - name: Lint
         run: uv run ruff check . --output-format=github
       - name: Test
