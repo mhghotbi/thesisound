@@ -10,9 +10,12 @@ input fidelity
 → episode sufficiency
 → script fidelity
 → audio fidelity
+→ operator control and observability
 → discovery and multi-source breadth
-→ UI and deployment
+→ end-user UI and deployment
 ```
+
+Operator UI و End-user UI دو milestone متفاوت‌اند. اولی ابزار محلی برای اجرای pipeline، مشاهده artifact و recovery است؛ دومی تجربه ساده‌شده و polished برای کاربر غیرمتخصص.
 
 قواعد سراسری:
 
@@ -22,7 +25,8 @@ input fidelity
 - متن اصلی source of truth است؛
 - corpus ناکافی با padding جبران نمی‌شود؛
 - writer تنها verifier خروجی خودش نیست؛
-- هر stage artifact، gate و failure state مستقل دارد.
+- هر stage artifact، gate و failure state مستقل دارد؛
+- UI منطق orchestration یا state machine دوم نمی‌سازد.
 
 ---
 
@@ -209,9 +213,91 @@ Definition of Done:
 
 ---
 
+## Milestone 6.5 — Local Operator UI
+
+**وضعیت: پس از اثبات TTS vertical slice و پیش از گسترش scope پژوهش**
+
+هدف: pipeline موجود را بدون بازنویسی domain یا orchestration، از طریق یک رابط محلی قابل اجرا، مشاهده، بازبینی و recovery کن.
+
+### stack پیشنهادی
+
+- FastAPI؛
+- Jinja2؛
+- HTMX؛
+- CSS محدود یا Tailwind؛
+- server-rendered read model؛
+- polling برای runهای فعال؛
+- بدون SPA و state store سمت browser.
+
+### scope v0.1
+
+- project list و create project؛
+- Research Brief review/confirmation؛
+- upload، inspection، parse report و parser retry؛
+- corpus confirmation؛
+- اجرای stage بعدی یا full available slice تا human gate؛
+- project/stage/run status؛
+- artifact inspection؛
+- error recovery و retry؛
+- coverage و Episode Plan review؛
+- Script، verifier issue و source trace؛
+- settings/diagnostics محلی.
+
+### scope v0.2 پس از TTS
+
+- audio segment status؛
+- player؛
+- ASR diff؛
+- targeted regeneration؛
+- Audio QA؛
+- final package export.
+
+### non-goals
+
+- authentication و account؛
+- multi-tenancy؛
+- billing؛
+- collaboration؛
+- public sharing؛
+- mobile app؛
+- end-user onboarding؛
+- design system کامل؛
+- منطق state مستقل از domain.
+
+### قواعد معماری
+
+- UI فقط application command اجرا می‌کند؛
+- browser state را حدس نمی‌زند؛
+- actionهای مجاز از server می‌آیند؛
+- هر POST idempotency دارد؛
+- project در هر لحظه حداکثر یک run mutating فعال دارد؛
+- تغییر upstream impact summary و stale marking دارد؛
+- retry attempt جدید می‌سازد و history را overwrite نمی‌کند؛
+- human gate با `run all` دور زده نمی‌شود.
+
+### Definition of Done
+
+- operator بدون مراجعه به CLI یک پروژه one-source را تا خروجی صوت verified اجرا کند؛
+- در هر لحظه stage، failure و action بعدی روشن باشد؛
+- service restart باعث گم‌شدن run و state نشود؛
+- source parse با parser جایگزین از UI retry شود؛
+- corpus insufficiency راه‌حل مشخص داشته باشد؛
+- trace از script turn تا source locator حداکثر سه interaction بخواهد؛
+- هیچ artifact ناقص project state را جلو نبرد؛
+- integration test برای state/action matrix وجود داشته باشد.
+
+اسناد UX:
+
+- [`16-operator-user-workflow.md`](16-operator-user-workflow.md)
+- [`17-interface-state-model.md`](17-interface-state-model.md)
+- [`18-operator-screen-inventory.md`](18-operator-screen-inventory.md)
+- [`19-error-and-recovery-ux.md`](19-error-and-recovery-ux.md)
+
+---
+
 ## Milestone 7 — Source Discovery
 
-**وضعیت: پس از TTS vertical slice**
+**وضعیت: پس از TTS vertical slice و Operator UI پایه**
 
 - query planner؛
 - OpenAlex و Crossref؛
@@ -223,7 +309,7 @@ Definition of Done:
 - انتخاب صریح کاربر؛
 - search round و budget محدود.
 
-Source discovery نباید قبل از اثبات کیفیت end-to-end صوت، scope پروژه را گسترش دهد.
+Source discovery نباید قبل از اثبات کیفیت end-to-end صوت، scope پروژه را گسترش دهد. Operator UI پایه نیز باید آماده باشد تا candidateها، selection gate و خطاهای retrieval بدون اضافه‌کردن workflow موازی مدیریت شوند.
 
 ---
 
@@ -242,40 +328,20 @@ Disagreement Graph فعلی stanceهای صریح را نگه می‌دارد؛ 
 
 ---
 
-## Milestone 9 — Local Web UI
+## Milestone 9 — End-user Product UI و Deployment
 
-فقط بعد از استفاده موفق CLI:
+فقط پس از تثبیت workflow در Operator UI و اجرای موفق چند پروژه واقعی:
 
-- FastAPI؛
-- Jinja2/HTMX؛
-- create project؛
-- upload و parse report؛
-- source selection؛
-- duration/mode settings؛
-- progress و artifact inspection؛
-- episode/script review؛
-- player و transcript؛
-- source/locator trace.
+- تجربه ساده‌شده ساخت پروژه؛
+- upload و source selection کاربرپسند؛
+- نمایش اثر duration بر هزینه، پوشش و omission پیش از اجرا؛
+- progress بدون جزئیات مهندسی اضافی؛
+- episode/script review متناسب با کاربر غیرمتخصص؛
+- player، transcript و source/locator trace؛
+- privacy و data lifecycle controls؛
+- authentication و hosted private deployment در صورت نیاز؛
+- onboarding و empty states محصولی؛
+- accessibility و responsive design؛
+- telemetry محصول با حفظ privacy.
 
-UI باید اثر duration بر هزینه، پوشش و omission را پیش از اجرا نشان دهد.
-
----
-
-## Milestone 10 — Persistence، Jobs و Deployment
-
-فقط وقتی usage واقعی نیاز را اثبات کرد:
-
-- SQLite repository و job table؛
-- resumable stage runner؛
-- block/model/audio cache؛
-- cleanup و delete project؛
-- private deployment؛
-- object storage؛
-- access control؛
-- PostgreSQL/Redis فقط با نیاز concurrency واقعی.
-
----
-
-## کار بعدی دقیق
-
-گام بعدی توسعه **TTS + ASR + Audio QA vertical slice** است. Source Discovery و UI تا زمانی که یک source واقعی به صوت فارسی verified تبدیل نشده، اولویت ندارند.
+End-user UI نباید APIهای داخلی Operator UI را بدون boundary عمومی expose کند. ابتدا use caseها و permission model مستقل تعریف شوند.
