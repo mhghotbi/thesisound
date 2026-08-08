@@ -74,7 +74,7 @@ class PaddleRuntime:
             import fitz
             from pypdf import PdfReader
         except ImportError as exc:
-            raise OcrRuntimeError(_"all_required_pdf_ocr_dependencies") from exc
+            raise OcrRuntimeError("PyMuPDF and pypdf are required for PDF OCR.") from exc
         reader = PdfReader(source, strict=False)
         document = fitz.open(source)
         scale = self.request.render_dpi / 72
