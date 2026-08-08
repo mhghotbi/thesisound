@@ -111,9 +111,17 @@ class BlockBuilder:
         if estimate_tokens(block.text) <= self.maximum_tokens:
             return [block]
 
-        paragraphs = [part.strip() for part in re.split(r"\n\s*\n", block.text) if part.strip()]
+        paragraphs = [
+            part.strip()
+            for part in re.split(r"\n\s*\n", block.text)
+            if part.strip()
+        ]
         if len(paragraphs) == 1:
-            paragraphs = [part.strip() for part in _SENTENCE_BOUNDARY.split(block.text) if part.strip()]
+            paragraphs = [
+                part.strip()
+                for part in _SENTENCE_BOUNDARY.split(block.text)
+                if part.strip()
+            ]
         if len(paragraphs) == 1:
             return _split_by_characters(block, self.maximum_tokens)
 
@@ -131,13 +139,21 @@ class BlockBuilder:
                     pieces.append("\n\n".join(current))
                     current = []
                     current_tokens = 0
-                pieces.extend(piece.text for piece in _split_by_characters(block, self.maximum_tokens, paragraph))
+                oversized = _split_by_characters(
+                    block,
+                    self.maximum_tokens,
+                    paragraph,
+                )
+                pieces.extend(piece.text for piece in oversized)
                 continue
             current.append(paragraph)
             current_tokens += paragraph_tokens
         if current:
             pieces.append("\n\n".join(current))
-        return [_copy_piece(block, text, index) for index, text in enumerate(pieces, start=1)]
+        return [
+            _copy_piece(block, text, index)
+            for index, text in enumerate(pieces, start=1)
+        ]
 
     @staticmethod
     def _add(accumulator: _Accumulator, block: ParsedBlock, kind: BlockType) -> None:
@@ -170,7 +186,9 @@ class BlockBuilder:
                     block_type=accumulator.block_type,
                     text=text,
                     estimated_token_count=estimate_tokens(text),
-                    source_block_keys=[block.source_block_key for block in accumulator.blocks],
+                    source_block_keys=[
+                        block.source_block_key for block in accumulator.blocks
+                    ],
                 )
             )
         accumulator.clear()
@@ -225,8 +243,15 @@ def _split_by_characters(
 ) -> list[ParsedBlock]:
     value = text or block.text
     maximum_characters = max(200, int(maximum_tokens * 3.5))
-    pieces = [value[index : index + maximum_characters].strip() for index in range(0, len(value), maximum_characters)]
-    return [_copy_piece(block, piece, index) for index, piece in enumerate(pieces, start=1) if piece]
+    pieces = [
+        value[index : index + maximum_characters].strip()
+        for index in range(0, len(value), maximum_characters)
+    ]
+    return [
+        _copy_piece(block, piece, index)
+        for index, piece in enumerate(pieces, start=1)
+        if piece
+    ]
 
 
 def _copy_piece(block: ParsedBlock, text: str, index: int) -> ParsedBlock:
@@ -247,8 +272,12 @@ def _block_type(kind: str) -> BlockType:
     normalized = kind.casefold()
     if normalized in {"front_matter", "footnote", "reference"}:
         return "front_matter"
-    if normalized in {"table", "formula", "code"}:
-        return normalized  # type: ignore[return-value]
+    if normalized == "table":
+        return "table"
+    if normalized == "formula":
+        return "formula"
+    if normalized == "code":
+        return "code"
     return "other"
 
 
@@ -264,8 +293,12 @@ def _locator(blocks: list[ParsedBlock], heading_path: list[str]) -> Locator:
 
 
 def _merge_locators(first: Locator, second: Locator) -> Locator:
-    starts = [page for page in (first.page_start, second.page_start) if page is not None]
-    ends = [page for page in (first.page_end, second.page_end) if page is not None]
+    starts = [
+        page for page in (first.page_start, second.page_start) if page is not None
+    ]
+    ends = [
+        page for page in (first.page_end, second.page_end) if page is not None
+    ]
     return Locator(
         page_start=min(starts) if starts else None,
         page_end=max(ends) if ends else None,
@@ -277,4 +310,6 @@ def _merge_locators(first: Locator, second: Locator) -> Locator:
 def _link_neighbors(blocks: list[SourceDocumentBlock]) -> None:
     for index, block in enumerate(blocks):
         block.previous_block_id = blocks[index - 1].block_id if index > 0 else None
-        block.next_block_id = blocks[index + 1].block_id if index + 1 < len(blocks) else None
+        block.next_block_id = (
+            blocks[index + 1].block_id if index + 1 < len(blocks) else None
+        )
