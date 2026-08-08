@@ -23,6 +23,12 @@
     <div class="notice notice--success" role="status">ویرایش‌ها ذخیره شد؛ برداشت هنوز تأیید نشده است.</div>
   {% endif %}
 
+  {% if brief_locked %}
+  <div class="notice notice--info">
+    این برداشت وارد پردازش شده و فعلاً فقط خواندنی است. برای تغییر تمرکز باید از مسیر recovery در ارزیابی پوشش استفاده کنید تا خروجی‌های وابسته stale علامت بخورند.
+  </div>
+  {% endif %}
+
   <section class="interpretation">
     <p>
       قرار است یک اپیزود <strong>{{ project.brief.target_duration_minutes }} دقیقه‌ای</strong>
@@ -32,6 +38,33 @@
     </p>
   </section>
 
+  {% if brief_locked %}
+  <section class="form-sheet">
+    <div class="field field--large">
+      <span>سؤال مرکزی</span>
+      <p>{{ project.brief.central_question }}</p>
+    </div>
+    {% if project.brief.scope_inclusions %}
+    <div class="field">
+      <span>حتماً پوشش داده شود</span>
+      <ul>{% for item in project.brief.scope_inclusions %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    {% if project.brief.scope_exclusions %}
+    <div class="field">
+      <span>خارج از محدوده</span>
+      <ul>{% for item in project.brief.scope_exclusions %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    <div class="form-actions">
+      {% if project.state.value in ["corpus_ready", "episode_planning", "episode_planned"] %}
+      <a class="button button--primary" href="/projects/{{ project.project_id }}/episode">رفتن به طرح اپیزود</a>
+      {% else %}
+      <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">مشاهده پردازش</a>
+      {% endif %}
+    </div>
+  </section>
+  {% else %}
   <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/brief">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label class="field field--large">
@@ -51,5 +84,6 @@
       <button class="button button--primary" name="action" value="confirm" type="submit">درست است، ادامه بده</button>
     </div>
   </form>
+  {% endif %}
 </div>
 {% endblock %}

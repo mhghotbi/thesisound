@@ -4,12 +4,13 @@ import json
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import Lock
 from typing import Literal
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-from thesisound.domain import ProjectState
+from thesisound.domain import Project, ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.source_analysis_service import SourceAnalysisService
 from thesisound.services.source_artifact_store import SourceArtifactStore
@@ -42,6 +43,7 @@ class CorpusSourceRun(CorpusSourceInput):
 
 class CorpusBuildRun(BaseModel):
     run_id: UUID = Field(default_factory=uuid4)
+    previous_run_id: UUID | None = None
     project_id: UUID
     status: CorpusRunStatus = "queued"
     sources: list[CorpusSourceRun] = Field(min_length=1)
@@ -56,13 +58,21 @@ class CorpusBuildRun(BaseModel):
 
 
 class CorpusBuildRunStore:
-    """Persist the latest corpus-building run inside a project workspace."""
+    """Persist the latest corpus run and every retry attempt."""
 
     def __init__(self, workspace_root: Path) -> None:
         self.workspace_root = workspace_root.expanduser().resolve()
 
     def path(self, project_id: UUID) -> Path:
+        """Compatibility pointer to the latest attempt."""
+
         return self.workspace_root / str(project_id) / "corpus-build-run.json"
+
+    def history_dir(self, project_id: UUID) -> Path:
+        return self.workspace_root / str(project_id) / "runs" / "corpus"
+
+    def attempt_path(self, project_id: UUID, run_id: UUID) -> Path:
+        return self.history_dir(project_id) / f"{run_id}.json"
 
     def load(self, project_id: UUID) -> CorpusBuildRun:
         path = self.path(project_id)
@@ -76,7 +86,21 @@ class CorpusBuildRunStore:
         except FileNotFoundError:
             return None
 
+    def load_history(self, project_id: UUID) -> list[CorpusBuildRun]:
+        directory = self.history_dir(project_id)
+        if not directory.exists():
+            return []
+        runs: list[CorpusBuildRun] = []
+        for path in directory.glob("*.json"):
+            try:
+                runs.append(CorpusBuildRun.model_validate_json(path.read_text(encoding="utf-8")))
+            except (OSError, ValueError):
+                continue
+        return sorted(runs, key=lambda run: run.updated_at)
+
     def list_runs(self) -> list[CorpusBuildRun]:
+        """Return one latest run per project for startup recovery."""
+
         runs: list[CorpusBuildRun] = []
         for path in self.workspace_root.glob("*/corpus-build-run.json"):
             try:
@@ -86,16 +110,13 @@ class CorpusBuildRunStore:
         return runs
 
     def save(self, run: CorpusBuildRun) -> Path:
-        path = self.path(run.project_id)
-        path.parent.mkdir(parents=True, exist_ok=True)
         run.updated_at = datetime.now(UTC)
-        temporary = path.with_suffix(".json.tmp")
-        temporary.write_text(
-            json.dumps(run.model_dump(mode="json"), ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        temporary.replace(path)
-        return path
+        payload = json.dumps(run.model_dump(mode="json"), ensure_ascii=False, indent=2) + "\n"
+        attempt = self.attempt_path(run.project_id, run.run_id)
+        latest = self.path(run.project_id)
+        _atomic_write(attempt, payload)
+        _atomic_write(latest, payload)
+        return latest
 
 
 class CorpusBuildingService:
@@ -117,6 +138,7 @@ class CorpusBuildingService:
         self.analysis_service_factory = analysis_service_factory
         self.fast_model = fast_model
         self.strong_model = strong_model
+        self._mutation_lock = Lock()
 
     def recover_interrupted_runs(self) -> list[UUID]:
         """Turn orphaned queued/running work into an explicit retryable failure."""
@@ -147,6 +169,30 @@ class CorpusBuildingService:
             recovered.append(run.project_id)
         return recovered
 
+    def confirm_project(
+        self,
+        original_project: Project,
+        confirmed_project: Project,
+        sources: list[CorpusSourceInput],
+    ) -> CorpusBuildRun:
+        """Persist the confirmed project and queued run as one compensated mutation."""
+
+        if original_project.project_id != confirmed_project.project_id:
+            raise ValueError("Original and confirmed projects do not match.")
+        if confirmed_project.state != ProjectState.CORPUS_BUILDING:
+            raise ValueError("Confirmed project must be in CORPUS_BUILDING.")
+
+        with self._mutation_lock:
+            current = self.workspace_store.load_project(original_project.project_id)
+            if current != original_project:
+                raise ValueError("Project changed while corpus confirmation was in progress.")
+            self.workspace_store.save_project(confirmed_project)
+            try:
+                return self.queue(confirmed_project.project_id, sources)
+            except Exception:
+                self.workspace_store.save_project(original_project)
+                raise
+
     def queue(
         self,
         project_id: UUID,
@@ -165,6 +211,7 @@ class CorpusBuildingService:
             raise ValueError("Corpus source IDs must be unique.")
         run = CorpusBuildRun(
             project_id=project_id,
+            previous_run_id=existing.run_id if existing else None,
             sources=[CorpusSourceRun(**source.model_dump()) for source in sources],
         )
         self.run_store.save(run)
@@ -174,17 +221,27 @@ class CorpusBuildingService:
         project = self.workspace_store.load_project(project_id)
         if project.state != ProjectState.FAILED_RETRYABLE:
             raise ValueError("Only a retryable failed project can restart corpus building.")
-        run = self.run_store.load(project_id)
-        if run.status != "failed":
+        previous = self.run_store.load(project_id)
+        if previous.status != "failed":
             raise ValueError("The latest corpus run is not failed.")
-        for source in run.sources:
-            if source.status == "failed":
-                source.status = "queued"
-                source.stage = "queued"
-                source.last_error = None
-        run.status = "queued"
-        run.last_error = None
-        run.finished_at = None
+
+        sources: list[CorpusSourceRun] = []
+        for source in previous.sources:
+            if source.status == "succeeded":
+                sources.append(source.model_copy(deep=True))
+            else:
+                sources.append(
+                    CorpusSourceRun(
+                        source_id=source.source_id,
+                        filename=source.filename,
+                        ingestion_path=source.ingestion_path,
+                    )
+                )
+        run = CorpusBuildRun(
+            project_id=project_id,
+            previous_run_id=previous.run_id,
+            sources=sources,
+        )
         self.run_store.save(run)
         return run
 
@@ -192,7 +249,7 @@ class CorpusBuildingService:
         run = self.run_store.load(project_id)
         if run.status == "succeeded":
             return run
-        if run.status not in {"queued", "failed"}:
+        if run.status != "queued":
             raise ValueError(f"Cannot start corpus run with status {run.status}.")
 
         project = self.workspace_store.load_project(project_id)
@@ -203,7 +260,7 @@ class CorpusBuildingService:
             raise ValueError(f"Cannot build corpus from project state {project.state}.")
 
         run.status = "running"
-        run.started_at = run.started_at or datetime.now(UTC)
+        run.started_at = datetime.now(UTC)
         run.finished_at = None
         run.last_error = None
         self.run_store.save(run)
@@ -300,3 +357,10 @@ class CorpusBuildingService:
     ) -> None:
         source.stage = stage
         self.run_store.save(run)
+
+
+def _atomic_write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(content, encoding="utf-8")
+    temporary.replace(path)

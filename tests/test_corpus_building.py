@@ -1,10 +1,13 @@
 from pathlib import Path
 from uuid import UUID, uuid4
 
+import pytest
+
 from thesisound.domain import Project, ProjectState
-from thesisound.pipeline import WorkspaceStore
+from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.services.corpus_building import (
     CorpusBuildingService,
+    CorpusBuildRun,
     CorpusBuildRunStore,
     CorpusSourceInput,
 )
@@ -15,6 +18,12 @@ class FakeSourceStore:
     @staticmethod
     def load_ingestion(path: Path):
         return path
+
+
+class FailingRunStore(CorpusBuildRunStore):
+    def save(self, run: CorpusBuildRun) -> Path:
+        del run
+        raise RuntimeError("simulated persistence failure")
 
 
 class FakeAnalysisService:
@@ -87,12 +96,14 @@ def _service(
     tmp_path: Path,
     project: Project,
     fake: FakeAnalysisService,
+    *,
+    run_store: CorpusBuildRunStore | None = None,
 ) -> CorpusBuildingService:
     workspace = fake.workspace
     workspace.save_project(project)
     return CorpusBuildingService(
         workspace_store=workspace,
-        run_store=CorpusBuildRunStore(workspace.root),
+        run_store=run_store or CorpusBuildRunStore(workspace.root),
         source_store=FakeSourceStore(),  # type: ignore[arg-type]
         analysis_service_factory=lambda: fake,  # type: ignore[return-value]
         fast_model="fake-fast",
@@ -126,9 +137,14 @@ def test_multi_source_run_promotes_only_after_every_source(tmp_path: Path) -> No
     assert workspace.load_project(project.project_id).state == ProjectState.CORPUS_READY
     assert fake.states_seen
     assert set(fake.states_seen) == {ProjectState.CORPUS_BUILDING}
+    assert [item.run_id for item in service.run_store.load_history(project.project_id)] == [
+        run.run_id
+    ]
 
 
-def test_failed_source_keeps_completed_source_and_is_retryable(tmp_path: Path) -> None:
+def test_failed_source_keeps_completed_source_and_creates_new_retry_attempt(
+    tmp_path: Path,
+) -> None:
     workspace = WorkspaceStore(tmp_path / "workspaces")
     project = Project(raw_input="topic", state=ProjectState.CORPUS_BUILDING)
     failed_source = uuid4()
@@ -151,17 +167,21 @@ def test_failed_source_keeps_completed_source_and_is_retryable(tmp_path: Path) -
             ),
         ],
     )
-    run = service.run(project.project_id)
+    failed = service.run(project.project_id)
 
-    assert run.status == "failed"
-    assert run.sources[0].status == "succeeded"
-    assert run.sources[1].status == "failed"
+    assert failed.status == "failed"
+    assert failed.sources[0].status == "succeeded"
+    assert failed.sources[1].status == "failed"
     assert workspace.load_project(project.project_id).state == ProjectState.FAILED_RETRYABLE
 
     retried = service.retry(project.project_id)
+    assert retried.run_id != failed.run_id
+    assert retried.previous_run_id == failed.run_id
     assert retried.status == "queued"
     assert retried.sources[0].status == "succeeded"
     assert retried.sources[1].status == "queued"
+    history = service.run_store.load_history(project.project_id)
+    assert [item.run_id for item in history] == [failed.run_id, retried.run_id]
 
 
 def test_restart_recovery_turns_running_work_into_retryable_failure(
@@ -199,5 +219,39 @@ def test_restart_recovery_turns_running_work_into_retryable_failure(
     assert failed_project.state == ProjectState.FAILED_RETRYABLE
 
     retried = service.retry(project.project_id)
+    assert retried.run_id != restored.run_id
+    assert retried.previous_run_id == restored.run_id
     assert retried.status == "queued"
     assert retried.sources[0].status == "queued"
+
+
+def test_confirmation_rolls_project_back_when_run_persistence_fails(
+    tmp_path: Path,
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    original = Project(raw_input="topic", state=ProjectState.SOURCE_SELECTION_REQUIRED)
+    fake = FakeAnalysisService(workspace)
+    service = _service(
+        tmp_path,
+        original,
+        fake,
+        run_store=FailingRunStore(workspace.root),
+    )
+    confirmed = original.model_copy(deep=True)
+    transition(confirmed, ProjectState.CORPUS_BUILDING)
+
+    with pytest.raises(RuntimeError, match="persistence failure"):
+        service.confirm_project(
+            original,
+            confirmed,
+            [
+                CorpusSourceInput(
+                    source_id=uuid4(),
+                    filename="source.txt",
+                    ingestion_path=tmp_path / "source.json",
+                )
+            ],
+        )
+
+    assert workspace.load_project(original.project_id) == original
+    assert service.run_store.load_optional(original.project_id) is None
