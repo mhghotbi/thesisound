@@ -18,6 +18,10 @@ from PIL import Image
 
 from scoring import normalize_persian, score_text
 
+_PERSIAN_EXCLUSIVE = set("پچژگ")
+_PERSIAN_FORMS = set("کیکیگچپژ")
+_ARABIC_FORMS = set("كيى")
+
 
 def _load_module(name: str, path: str):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -82,12 +86,17 @@ def build_bina02() -> Callable[[Path], str]:
     return predict
 
 
-def _persian_ratio(text: str) -> float:
+def _is_identifiably_persian(text: str) -> bool:
     letters = [char for char in text if char.isalpha()]
     if not letters:
-        return 0
-    persian = sum("\u0600" <= char <= "\u06ff" for char in letters)
-    return persian / len(letters)
+        return False
+    script_ratio = sum("\u0600" <= char <= "\u06ff" for char in letters) / len(letters)
+    if script_ratio < 0.8:
+        return False
+    has_exclusive_letter = any(char in _PERSIAN_EXCLUSIVE for char in text)
+    uses_persian_forms = any(char in _PERSIAN_FORMS for char in text)
+    uses_arabic_forms = any(char in _ARABIC_FORMS for char in text)
+    return has_exclusive_letter or (uses_persian_forms and not uses_arabic_forms)
 
 
 def load_samples(limit: int, offset: int) -> list[dict[str, object]]:
@@ -100,7 +109,7 @@ def load_samples(limit: int, offset: int) -> list[dict[str, object]]:
     accepted = 0
     for row in dataset:
         text = str(row["Text"])
-        if _persian_ratio(text) < 0.8:
+        if not _is_identifiably_persian(text):
             continue
         if accepted < offset:
             accepted += 1
@@ -109,7 +118,7 @@ def load_samples(limit: int, offset: int) -> list[dict[str, object]]:
         if len(selected) >= limit:
             break
     if len(selected) != limit:
-        raise RuntimeError(f"Requested {limit} Persian samples; found {len(selected)}")
+        raise RuntimeError(f"Requested {limit} identifiable Persian samples; found {len(selected)}")
     return selected
 
 
@@ -128,25 +137,23 @@ def run_system(name: str, predictor: Callable[[Path], str], samples: list[dict[s
             error = None
             try:
                 prediction = predictor(path)
-            except Exception as exc:  # benchmark must retain failures
+            except Exception as exc:
                 prediction = ""
                 error = f"{type(exc).__name__}: {exc}"[:500]
             duration = time.perf_counter() - started
             metrics = score_text(reference, prediction)
-            rows.append(
-                {
-                    "index": index,
-                    "reference": reference,
-                    "prediction": prediction,
-                    "reference_normalized": normalize_persian(reference),
-                    "prediction_normalized": normalize_persian(prediction),
-                    "cer": metrics.cer,
-                    "wer": metrics.wer,
-                    "exact": metrics.exact,
-                    "duration_seconds": duration,
-                    "error": error,
-                }
-            )
+            rows.append({
+                "index": index,
+                "reference": reference,
+                "prediction": prediction,
+                "reference_normalized": normalize_persian(reference),
+                "prediction_normalized": normalize_persian(prediction),
+                "cer": metrics.cer,
+                "wer": metrics.wer,
+                "exact": metrics.exact,
+                "duration_seconds": duration,
+                "error": error,
+            })
     successes = [row for row in rows if row["error"] is None]
     return {
         "system": name,
@@ -164,16 +171,12 @@ def run_system(name: str, predictor: Callable[[Path], str], samples: list[dict[s
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--systems", default="tesseract,weightedai,bina02")
-    parser.add_argument("--limit", type=int, default=50)
+    parser.add_argument("--limit", type=int, default=30)
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
-    builders = {
-        "tesseract": build_tesseract,
-        "weightedai": build_weightedai,
-        "bina02": build_bina02,
-    }
+    builders = {"tesseract": build_tesseract, "weightedai": build_weightedai, "bina02": build_bina02}
     samples = load_samples(args.limit, args.offset)
     payload = {
         "dataset": "mohajesmaeili/Persian_Arabic_TextLine_Image_Ocr_Small",
@@ -181,7 +184,8 @@ def main() -> None:
         "selection": {
             "limit": args.limit,
             "offset": args.offset,
-            "persian_letter_ratio_minimum": 0.8,
+            "policy": "Arabic-script ratio >= 0.8 and either Persian-exclusive letters or Persian glyph forms without Arabic glyph forms",
+            "known_bias": "This raises Persian precision but favors lines containing identifiable Persian orthography; use a Persian-only corpus for the final benchmark.",
         },
         "normalization": "NFKC, Arabic-to-Persian glyph mapping, digit unification, diacritic removal, whitespace normalization; ZWNJ preserved",
         "systems": [],
@@ -195,11 +199,7 @@ def main() -> None:
             result = run_system(name, predictor, samples)
             result["initialization_seconds"] = time.perf_counter() - started - result["total_duration_seconds"]
         except Exception as exc:
-            result = {
-                "system": name,
-                "status": "initialization_error",
-                "error": f"{type(exc).__name__}: {exc}"[:1000],
-            }
+            result = {"system": name, "status": "initialization_error", "error": f"{type(exc).__name__}: {exc}"[:1000]}
         payload["systems"].append(result)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
