@@ -136,8 +136,7 @@ class ScriptPipelineService:
 
     def run_checks(self, project_id: UUID, *, revised: bool = False) -> ScriptCheckReport:
         project = self.workspace_store.load_project(project_id)
-        expected = ProjectState.SCRIPT_READY
-        self._require_state(project.state, expected)
+        self._require_state(project.state, ProjectState.SCRIPT_READY)
         if project.episode_plan is None:
             raise ValueError("EpisodePlan is required for script checks.")
         script = self.script_store.load_script(project_id, revised=revised)
@@ -249,13 +248,7 @@ class ScriptPipelineService:
             )
             checks = self.run_checks(project_id)
             if checks.verdict == "reject":
-                transition(
-                    self.workspace_store.load_project(project_id),
-                    ProjectState.SCRIPT_VERIFYING,
-                )
-                project = self.workspace_store.load_project(project_id)
-                project.state = ProjectState.SCRIPT_VERIFYING
-                self.workspace_store.save_project(project)
+                self._enter_script_verifying(project_id)
                 verification = VerificationDraft(
                     verdict="revise",
                     issues=[],
@@ -308,6 +301,12 @@ class ScriptPipelineService:
         for source_id in self.source_store.list_claim_ready_source_ids(project_id):
             claims.extend(self.source_store.load_claim_ledger(project_id, source_id).claims)
         return claims
+
+    def _enter_script_verifying(self, project_id: UUID) -> None:
+        project = self.workspace_store.load_project(project_id)
+        self._require_state(project.state, ProjectState.SCRIPT_READY)
+        transition(project, ProjectState.SCRIPT_VERIFYING)
+        self.workspace_store.save_project(project)
 
     @staticmethod
     def _require_state(actual: ProjectState, expected: ProjectState) -> None:
