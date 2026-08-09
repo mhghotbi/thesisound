@@ -1,5 +1,6 @@
 {% from "components.html" import status_label %}
 {# Contents of the polled live region on the plan page; see projects/processing.html. #}
+{% set current_span = observability_current_span(project.project_id) if ui_mode == 'operator' else none %}
 {% if planning_run and planning_active %}
 <section class="data-panel section-block" aria-labelledby="planning-status-title">
   <div class="section-heading">
@@ -17,7 +18,10 @@
   </div>
   <p class="lede">درصد یا زمان باقی‌ماندهٔ حدسی نمایش داده نمی‌شود؛ فقط مرحله‌ای که واقعاً ذخیره‌شده است.</p>
   <p class="operator-only">No synthetic ETA; persisted stage only.</p>
-  <p class="live-note">
+  {% if current_span %}
+<p class="operator-only live-note">عملیات جاری: <bdi dir="ltr">{{ current_span.name }}</bdi>{% if current_span.subject_id %} · <bdi dir="ltr">{{ current_span.subject_type }}:{{ current_span.subject_id }}</bdi>{% endif %} · {{ current_span.elapsed_ms | fa_num }} ms</p>
+{% endif %}
+<p class="live-note">
     <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 5.5v4l2.5 1.5"/></svg>
     این صفحه خودش تازه می‌شود؛ جای شما در متن حفظ می‌ماند.
   </p>

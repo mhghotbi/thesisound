@@ -129,7 +129,7 @@ class Settings(BaseSettings):
     web_secure_cookies: bool = False
     web_upload_limit_bytes: int = Field(default=50 * 1024 * 1024, ge=1024)
     allow_test_otp: bool = True
-    test_otp_phone: str = "0912" + "000000"
+    test_otp_phone: str = "0912" + "0000000"
     test_otp_code: str = "999" + "999"
     otp_ttl_seconds: int = Field(default=300, ge=60, le=900)
     otp_resend_cooldown_seconds: int = Field(default=30, ge=5, le=300)
