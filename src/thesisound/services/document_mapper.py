@@ -119,6 +119,7 @@ class DocumentMapperService:
         content_block_ids = {
             block.block_id for block in blocks if block.block_type != "front_matter"
         }
+        _normalize_map_draft(merged, known_ids=known_block_ids)
         _validate_map_draft(
             merged,
             known_ids=known_block_ids,
@@ -148,6 +149,7 @@ class DocumentMapperService:
         content_ids = {block.block_id for block in blocks if block.block_type != "front_matter"}
 
         def validate(draft: DocumentMapDraft) -> None:
+            _normalize_map_draft(draft, known_ids=known_ids)
             _validate_map_draft(
                 draft,
                 known_ids=known_ids,
@@ -330,6 +332,74 @@ def _merge_part_drafts(
         cross_section_threads=threads,
         warnings=warnings,
     )
+
+
+def _normalize_map_draft(draft: DocumentMapDraft, *, known_ids: set[str]) -> None:
+    """Repair exclusive block ownership before the quality gate.
+
+    Models sometimes invent out-of-partition IDs or put the same block in two
+    adjacent sections. Drop unknown IDs and keep the first section claim so
+    coverage validation still rejects genuine omissions.
+    """
+
+    claimed: set[str] = set()
+    dropped_unknown: list[str] = []
+    dropped_duplicates: list[str] = []
+    kept_sections: list = []
+    for section in draft.sections:
+        cleaned: list[str] = []
+        for block_id in section.source_block_ids:
+            if block_id not in known_ids:
+                dropped_unknown.append(block_id)
+                continue
+            if block_id in claimed:
+                dropped_duplicates.append(block_id)
+                continue
+            claimed.add(block_id)
+            cleaned.append(block_id)
+        if not cleaned:
+            continue
+        section.source_block_ids = cleaned
+        kept_sections.append(section)
+
+    if not kept_sections:
+        raise DeterministicValidationError(
+            "Document map has no sections left after removing unknown or duplicate blocks."
+        )
+
+    removed_section_ids = {section.section_id for section in draft.sections} - {
+        section.section_id for section in kept_sections
+    }
+    draft.sections = kept_sections
+    for section in draft.sections:
+        section.depends_on_section_ids = [
+            dependency
+            for dependency in section.depends_on_section_ids
+            if dependency not in removed_section_ids and dependency != section.section_id
+        ]
+    cleaned_threads = []
+    for thread in draft.cross_section_threads:
+        section_ids = [
+            section_id
+            for section_id in thread.section_ids
+            if section_id not in removed_section_ids
+        ]
+        if not section_ids:
+            continue
+        thread.section_ids = _unique(section_ids)
+        cleaned_threads.append(thread)
+    draft.cross_section_threads = cleaned_threads
+
+    if dropped_unknown:
+        draft.warnings.append(
+            "Removed unknown block IDs from document map: "
+            f"{', '.join(sorted(set(dropped_unknown)))}."
+        )
+    if dropped_duplicates:
+        draft.warnings.append(
+            "Assigned overlapping blocks to their first map section only: "
+            f"{', '.join(sorted(set(dropped_duplicates)))}."
+        )
 
 
 def _validate_merge_draft(

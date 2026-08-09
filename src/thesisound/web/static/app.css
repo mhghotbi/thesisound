@@ -735,9 +735,14 @@ html[data-mode="operator"] .simple-only { display: none !important; }
 .overview-main,
 .overview-side { display: grid; align-content: start; gap: 18px; }
 .summary-list { display: grid; border-block-start: 1px solid var(--ink); }
-.summary-row { padding: 13px 0; display: grid; grid-template-columns: 145px 1fr; gap: 18px; border-block-end: 1px solid var(--border); }
-.summary-row dt { color: var(--muted); font-size: 11px; }
-.summary-row dd { margin: 0; color: var(--ink-soft); }
+.summary-row { padding: 13px 0; display: grid; grid-template-columns: minmax(0, 145px) minmax(0, 1fr); gap: 18px; border-block-end: 1px solid var(--border); }
+.summary-row dt { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.summary-row dd { margin: 0; min-width: 0; color: var(--ink-soft); }
+/* Narrow side rail cannot keep a 145px label column without mangling LTR ids/timestamps. */
+.overview-side .summary-row {
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
 
 .timeline { margin: 0; padding: 0; list-style: none; }
 .timeline li { position: relative; padding: 0 23px 17px 0; }
@@ -883,7 +888,20 @@ html[data-mode="operator"] .simple-only { display: none !important; }
 .data-panel h3 { margin: 0; font-size: 15px; }
 .data-panel pre { max-width: 100%; overflow: auto; padding: 12px; border-radius: 6px; background: var(--ink); color: var(--paper); direction: ltr; text-align: left; }
 .code-value,
-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .92em;
+}
+/* Keep technical LTR values intact inside the RTL document (ids, ISO timestamps, states). */
+.summary-row .code-value,
+.code-value[dir="ltr"] {
+  display: inline-block;
+  max-width: 100%;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
 
 .check-list { display: grid; gap: 7px; }
 .check-row { padding: 14px 15px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; border: 1px solid var(--border); border-radius: 7px; background: var(--paper-raised); }

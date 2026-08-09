@@ -160,6 +160,76 @@ def test_large_document_is_mapped_without_omitting_or_duplicating_blocks() -> No
     assert any("no blocks were omitted" in warning for warning in document_map.warnings)
 
 
+class OverlappingPartitionRunner(HierarchicalRunner):
+    def run(self, **kwargs):
+        output_type = kwargs["output_type"]
+        if output_type is DocumentMapDraft:
+            variables = kwargs["variables"]
+            blocks = variables["blocks"]
+            assert isinstance(blocks, list)
+            block_ids = [str(item["block_id"]) for item in blocks]
+            mid = max(1, len(block_ids) // 2)
+            output = DocumentMapDraft(
+                sections=[
+                    DocumentMapDraftSection(
+                        section_id="sec-a",
+                        source_block_ids=block_ids[: mid + 1],
+                        title="First half with overlap",
+                        function="argument",
+                    ),
+                    DocumentMapDraftSection(
+                        section_id="sec-b",
+                        source_block_ids=[
+                            "blk-outside-partition",
+                            *block_ids[mid:],
+                        ],
+                        title="Second half with invented ID",
+                        function="argument",
+                    ),
+                ]
+            )
+            validator = kwargs.get("validator")
+            if validator is not None:
+                validator(output)
+            record = ModelRunRecord(
+                project_id=kwargs["project_id"],
+                stage=kwargs["stage"],
+                prompt_id=kwargs["stage"],
+                prompt_version="test",
+                prompt_hash="test",
+                input_hash="test",
+                provider="fake",
+                model=kwargs["model"],
+                output_model=output_type.__name__,
+                status="succeeded",
+            )
+            return ModelExecution(output=output, record=record)
+        return super().run(**kwargs)
+
+
+def test_map_draft_normalizes_unknown_and_overlapping_blocks() -> None:
+    blocks = _blocks()
+    mapper = DocumentMapperService(
+        OverlappingPartitionRunner(),
+        maximum_input_characters=100_000,
+    )
+
+    document_map, _ = mapper.map_document(
+        project_id=uuid4(),
+        source_id=blocks[0].source_id,
+        blocks=blocks,
+        model="fake",
+    )
+
+    mapped = [
+        block_id for section in document_map.sections for block_id in section.source_block_ids
+    ]
+    assert mapped == [block.block_id for block in blocks]
+    assert len(mapped) == len(set(mapped))
+    assert any("overlapping blocks" in warning for warning in document_map.warnings)
+    assert any("unknown block IDs" in warning for warning in document_map.warnings)
+
+
 def test_oversized_single_semantic_block_requests_blockbuilder_split() -> None:
     block = _blocks()[0].model_copy(update={"text": "x" * 501})
     mapper = DocumentMapperService(HierarchicalRunner(), maximum_input_characters=500)

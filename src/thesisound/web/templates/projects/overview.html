@@ -78,10 +78,10 @@
     <section class="data-panel operator-only">
       <div class="section-heading"><h2>اطلاعات عملیاتی</h2></div>
       <dl class="summary-list">
-        <div class="summary-row"><dt>Project ID</dt><dd><code><bdi dir="ltr">{{ project.project_id }}</bdi></code></dd></div>
-        <div class="summary-row"><dt>State</dt><dd><code><bdi dir="ltr">{{ project.state.value }}</bdi></code></dd></div>
-        <div class="summary-row"><dt>Created</dt><dd><code><bdi dir="ltr">{{ project.created_at.isoformat() }}</bdi></code></dd></div>
-        <div class="summary-row"><dt>Updated</dt><dd><code><bdi dir="ltr">{{ project.updated_at.isoformat() }}</bdi></code></dd></div>
+        <div class="summary-row"><dt>Project ID</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.project_id }}</code></dd></div>
+        <div class="summary-row"><dt>State</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.state.value }}</code></dd></div>
+        <div class="summary-row"><dt>Created</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.created_at.isoformat() }}</code></dd></div>
+        <div class="summary-row"><dt>Updated</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.updated_at.isoformat() }}</code></dd></div>
         <div class="summary-row"><dt>Sources in domain</dt><dd>{{ project.sources | length | fa_num }}</dd></div>
       </dl>
     </section>
