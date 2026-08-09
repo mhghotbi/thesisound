@@ -1,0 +1,25 @@
+name: Golden evaluation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v9.0.0
+      - run: uv sync --extra dev --extra web-ui
+      - run: uv run thesisound eval
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OKIAN_API_KEY: ${{ secrets.OKIAN_API_KEY }}
+          OKIAN_BASE_URL: ${{ vars.OKIAN_BASE_URL }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: golden-eval-reports
+          path: benchmarks/eval/reports/
