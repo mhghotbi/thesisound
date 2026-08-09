@@ -129,6 +129,21 @@ class VerificationDraft(BaseModel):
     quality: ScriptQualityScore | None = None
 
 
+class RevisionDecision(BaseModel):
+    project_id: UUID
+    accepted: bool
+    reason: str
+    original_verdict: str
+    revised_verdict: str | None
+    original_overall: float | None
+    revised_overall: float | None
+    delta: float | None
+    original_issue_count: int
+    revised_issue_count: int | None
+    changed_turn_count: int
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
 class RevisedTurnDraft(BaseModel):
     turn_id: str = Field(min_length=1)
     speaker: Literal["A", "B"]

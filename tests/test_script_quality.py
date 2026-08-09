@@ -7,9 +7,12 @@ from thesisound.modeling import DeterministicValidationError
 from thesisound.prompt_loader import PromptLoader
 from thesisound.script import (
     _QUALITY_WEIGHTS,
+    ScriptCheckIssue,
+    ScriptCheckReport,
     ScriptQualityScore,
     VerificationDraft,
 )
+from thesisound.services.script_quality import comparison_key, is_better
 from thesisound.services.script_verifier import _validate_verification
 
 
@@ -130,3 +133,92 @@ def test_latest_script_verifier_contract_is_1_1_0() -> None:
 
     assert contract.version == "1.1.0"
     assert contract.output_model == "VerificationDraft"
+
+
+def _checks(
+    verdict: str = "pass",
+    *,
+    blocking: int = 0,
+    other: int = 0,
+) -> ScriptCheckReport:
+    issues = [
+        ScriptCheckIssue(
+            severity="blocking", issue_type="other", explanation="blocking"
+        )
+        for _ in range(blocking)
+    ] + [
+        ScriptCheckIssue(severity="high", issue_type="other", explanation="other")
+        for _ in range(other)
+    ]
+    return ScriptCheckReport(
+        project_id=__import__("uuid").uuid4(),
+        verdict=verdict,
+        issues=issues,
+        word_count=1,
+        estimated_minutes=1,
+        substantive_turn_count=1,
+    )
+
+
+def _verification(
+    verdict: str = "pass",
+    *,
+    ratio: float = 0,
+    score: float = 0.8,
+    blocking: int = 0,
+    other: int = 0,
+) -> VerificationDraft:
+    issues = [
+        VerificationIssue(
+            turn_id="turn-1",
+            severity="blocking",
+            issue_type="other",
+            explanation="blocking",
+            required_revision="fix",
+        )
+        for _ in range(blocking)
+    ] + [
+        VerificationIssue(
+            turn_id="turn-1",
+            severity="high",
+            issue_type="other",
+            explanation="other",
+            required_revision="fix",
+        )
+        for _ in range(other)
+    ]
+    return VerificationDraft(
+        verdict=verdict,
+        issues=issues,
+        unsupported_claim_ratio=ratio,
+        quality=_quality(
+            evidence_fidelity=score,
+            qualification_preservation=score,
+            stance_and_disagreement=score,
+            terminology_consistency=score,
+            listenability=score,
+        ),
+    )
+
+
+def test_comparison_key_orders_each_boundary() -> None:
+    assert comparison_key(_checks(), _verification("pass")) > comparison_key(
+        _checks(), _verification("revise")
+    )
+    assert comparison_key(_checks(), _verification(ratio=0.1)) > comparison_key(
+        _checks(), _verification(ratio=0.2)
+    )
+    assert comparison_key(_checks(), _verification(score=0.9)) > comparison_key(
+        _checks(), _verification(score=0.8)
+    )
+    assert comparison_key(
+        _checks(), _verification(blocking=0, other=1)
+    ) > comparison_key(_checks(), _verification(blocking=1))
+    assert comparison_key(_checks(), _verification(other=1)) > comparison_key(
+        _checks(), _verification(other=2)
+    )
+
+
+def test_is_better_is_strict_and_ties_keep_incumbent() -> None:
+    candidate = (_checks(), _verification())
+    assert is_better(candidate, candidate) is False

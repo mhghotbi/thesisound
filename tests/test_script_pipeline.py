@@ -56,9 +56,18 @@ from thesisound.source_analysis import (
 
 
 class FakeScriptRunner:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        revision_verdict: str = "pass",
+        revision_quality: ScriptQualityScore | None = None,
+        revision_text_prefix: str = "اصلاح",
+    ) -> None:
         self.verification_calls = 0
         self.segment_calls = 0
+        self.revision_verdict = revision_verdict
+        self.revision_quality = revision_quality
+        self.revision_text_prefix = revision_text_prefix
 
     def run(
         self,
@@ -135,18 +144,35 @@ class FakeScriptRunner:
                     ),
                 )
             else:
-                output = VerificationDraft(
-                    verdict="pass",
-                    issues=[],
-                    unsupported_claim_ratio=0,
-                    quality=ScriptQualityScore(
-                        evidence_fidelity=0.95,
-                        qualification_preservation=0.90,
-                        stance_and_disagreement=0.90,
-                        terminology_consistency=0.90,
-                        listenability=0.90,
-                        actionable_feedback="",
+                quality = self.revision_quality or ScriptQualityScore(
+                    evidence_fidelity=0.95,
+                    qualification_preservation=0.90,
+                    stance_and_disagreement=0.90,
+                    terminology_consistency=0.90,
+                    listenability=0.90,
+                    actionable_feedback=(
+                        ""
+                        if self.revision_verdict == "pass"
+                        else "The revision still needs work."
                     ),
+                )
+                output = VerificationDraft(
+                    verdict=self.revision_verdict,
+                    issues=(
+                        []
+                        if self.revision_verdict == "pass"
+                        else [
+                            VerificationIssue(
+                                turn_id=turn_id,
+                                severity="high",
+                                issue_type="lost_qualification",
+                                explanation="The revision still drops a qualification.",
+                                required_revision="Restore the qualification.",
+                            )
+                        ]
+                    ),
+                    unsupported_claim_ratio=0,
+                    quality=quality,
                 )
         elif output_type is TargetedRevisionDraft:
             targets = variables["target_turns"]
@@ -157,7 +183,7 @@ class FakeScriptRunner:
                     RevisedTurnDraft(
                         turn_id=target["turn_id"],
                         speaker=target["speaker"],
-                        spoken_text_fa=_spoken("اصلاح", 50),
+                        spoken_text_fa=_spoken(self.revision_text_prefix, 50),
                         claim_ids=target["claim_ids"],
                         evidence_ids=target["evidence_ids"],
                         editorial_only=target["editorial_only"],
@@ -359,6 +385,10 @@ def test_script_pipeline_revises_only_flagged_turn_and_verifies(tmp_path: Path) 
     assert (script_dir / "script-revised.json").exists()
     assert (script_dir / "checks-revised.json").exists()
     assert (script_dir / "verification-revised.json").exists()
+    decision = ScriptArtifactStore(root).load_revision_decision_optional(project_id)
+    assert decision is not None
+    assert decision.accepted is True
+    assert decision.delta is not None and decision.delta > 0
 
 
 def test_full_run_produces_a_span_per_stage_and_a_revision_cycle(
@@ -520,3 +550,114 @@ def test_script_turn_contract_rejects_substantive_turn_without_evidence() -> Non
             claim_ids=["clm-1"],
             evidence_ids=[],
         )
+
+
+def _quality_score(value: float, feedback: str) -> ScriptQualityScore:
+    return ScriptQualityScore(
+        evidence_fidelity=value,
+        qualification_preservation=value,
+        stance_and_disagreement=value,
+        terminology_consistency=value,
+        listenability=value,
+        actionable_feedback=feedback,
+    )
+
+
+def test_worse_revision_is_kept_on_disk_but_the_original_is_used(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
+    runner = FakeScriptRunner(
+        revision_verdict="revise",
+        revision_quality=_quality_score(0.20, "The revision is worse."),
+    )
+
+    with pytest.raises(ValueError, match="kept the original"):
+        _service(root, runner).run(
+            project_id,
+            glossary_model="fake",
+            writer_model="fake",
+            verifier_model="fake",
+            reviser_model="fake",
+        )
+
+    store = ScriptArtifactStore(root)
+    decision = store.load_revision_decision_optional(project_id)
+    assert decision is not None and decision.accepted is False
+    assert (store.script_dir(project_id) / "script-revised.json").exists()
+    assert store.load_latest_script(project_id).turns[0].spoken_text_fa.startswith("الف0")
+
+
+def test_tied_revision_keeps_the_original(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
+    runner = FakeScriptRunner(
+        revision_verdict="revise",
+        revision_quality=ScriptQualityScore(
+            evidence_fidelity=0.55,
+            qualification_preservation=0.50,
+            stance_and_disagreement=0.70,
+            terminology_consistency=0.80,
+            listenability=0.85,
+            actionable_feedback="Restore the dropped qualification.",
+        ),
+    )
+
+    with pytest.raises(ValueError, match="kept the original"):
+        _service(root, runner).run(
+            project_id,
+            glossary_model="fake",
+            writer_model="fake",
+            verifier_model="fake",
+            reviser_model="fake",
+        )
+
+    decision = ScriptArtifactStore(root).load_revision_decision_optional(project_id)
+    assert decision is not None and decision.accepted is False
+    assert decision.delta == 0
+
+
+def test_revision_failing_deterministic_checks_records_a_rejected_decision(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
+    runner = FakeScriptRunner(revision_text_prefix="system prompt")
+
+    with pytest.raises(ValueError, match="deterministic checks; the original"):
+        _service(root, runner).run(
+            project_id,
+            glossary_model="fake",
+            writer_model="fake",
+            verifier_model="fake",
+            reviser_model="fake",
+        )
+
+    decision = ScriptArtifactStore(root).load_revision_decision_optional(project_id)
+    assert decision is not None
+    assert decision.accepted is False
+    assert decision.revised_verdict is None
+
+
+def test_artifacts_without_a_decision_file_still_use_the_revision(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
+    _service(root, FakeScriptRunner()).run(
+        project_id,
+        glossary_model="fake",
+        writer_model="fake",
+        verifier_model="fake",
+        reviser_model="fake",
+    )
+    store = ScriptArtifactStore(root)
+    (store.script_dir(project_id) / "revision-decision.json").unlink()
+
+    assert store.has_revised_script(project_id) is True
+    assert store.load_latest_script(project_id).turns[0].spoken_text_fa.startswith("اصلاح")

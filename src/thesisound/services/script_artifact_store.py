@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from thesisound.domain import Script
 from thesisound.script import (
     Glossary,
+    RevisionDecision,
     ScriptCheckReport,
     ScriptPipelineManifest,
     SegmentScriptDraft,
@@ -125,8 +126,30 @@ class ScriptArtifactStore:
         except FileNotFoundError:
             return None
 
+    def save_revision_decision(self, decision: RevisionDecision) -> None:
+        self._write_json(
+            self.script_dir(decision.project_id) / "revision-decision.json",
+            decision,
+        )
+
+    def load_revision_decision_optional(
+        self, project_id: UUID
+    ) -> RevisionDecision | None:
+        path = self.script_dir(project_id, create=False) / "revision-decision.json"
+        try:
+            return RevisionDecision.model_validate_json(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+
     def has_revised_script(self, project_id: UUID) -> bool:
-        return (self.script_dir(project_id, create=False) / "script-revised.json").exists()
+        if not (
+            self.script_dir(project_id, create=False) / "script-revised.json"
+        ).exists():
+            return False
+        decision = self.load_revision_decision_optional(project_id)
+        # Artifacts written before revision decisions existed have no file; keep
+        # the old "a revision exists, so use it" behaviour for them.
+        return True if decision is None else decision.accepted
 
     def load_latest_script(self, project_id: UUID) -> Script:
         return self.load_script(project_id, revised=self.has_revised_script(project_id))
