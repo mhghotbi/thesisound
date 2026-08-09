@@ -15,11 +15,24 @@
   width: fit-content;
 }
 
+/* The auth hero panel is --brand, a different colour in each theme, so the
+   reversed lockup ships once per theme: glyph in that theme's paper, gold
+   accents lightened to clear 3.5:1 on that panel. Driven by background-image
+   rather than <img src> because the theme switcher only flips data-theme on
+   <html> — no reload — and this way exactly one file is fetched. */
 .auth-brand__logo {
   display: block;
   width: min(190px, 72%);
-  height: auto;
-  border-radius: 12px;
+  aspect-ratio: 504 / 519;
+  background: url("maghal-logo-full-reverse-cobalt.webp") center / contain no-repeat;
+}
+
+html[data-theme="wood"] .auth-brand__logo {
+  background-image: url("maghal-logo-full-reverse-wood.webp");
+}
+
+html[data-theme="olive"] .auth-brand__logo {
+  background-image: url("maghal-logo-full-reverse-olive.webp");
 }
 
 @media (max-width: 760px) {
