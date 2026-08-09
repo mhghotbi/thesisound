@@ -19,171 +19,68 @@ def replace_once(path: str, old: str, new: str) -> None:
     content = read(path)
     if new in content:
         return
-    if content.count(old) != 1:
-        raise RuntimeError(f"Expected one anchor in {path!r}, found {content.count(old)}")
+    count = content.count(old)
+    if count != 1:
+        raise RuntimeError(f"Expected one anchor in {path!r}, found {count}")
     write(path, content.replace(old, new, 1))
 
 
-# Item 1: independent reviewer routing and doctor warning.
+# Item 5: one persisted rollup row per workflow run.
 replace_once(
-    "src/thesisound/config.py",
-    '    model_strong: str = "gemini-3.6-flash"\n',
-    '    model_strong: str = "gemini-3.6-flash"\n'
-    '    # Independent reviewer model. Unset falls back to model_strong, which makes\n'
-    '    # the writer grade its own work -- `doctor` warns when that happens.\n'
-    '    model_reviewer: str = ""\n',
-)
-replace_once(
-    "src/thesisound/config.py",
-    "        configure_gemini_http_proxy(self.http_proxy)\n",
-    "        if not self.model_reviewer.strip():\n"
-    "            self.model_reviewer = self.model_strong\n"
-    "        configure_gemini_http_proxy(self.http_proxy)\n",
+    "src/thesisound/observability.py",
+    "\n\nclass SpanSummary(BaseModel):\n",
+    '''\n\n@dataclass(frozen=True)\nclass PipelineRunSpec:\n    workflow_run_id: UUID\n    project_id: UUID | None\n    trace_id: UUID\n    kind: str\n    started_at: datetime\n\n\nclass PipelineRunSummary(BaseModel):\n    workflow_run_id: UUID\n    project_id: UUID | None = None\n    trace_id: UUID | None = None\n    kind: str\n    status: str\n    started_at: datetime\n    finished_at: datetime | None = None\n    duration_ms: int | None = None\n    call_count: int = 0\n    failed_call_count: int = 0\n    input_tokens: int = 0\n    output_tokens: int = 0\n    thinking_tokens: int = 0\n    cached_tokens: int = 0\n    total_tokens: int = 0\n    models: list[str] = Field(default_factory=list)\n    prompt_versions: list[str] = Field(default_factory=list)\n    error_message: str | None = None\n\n\nclass SpanSummary(BaseModel):\n''',
 )
 
 replace_once(
-    "src/thesisound/model_routing.py",
-    'ModelSettingName = Literal["model_fast", "model_strong"]\n',
-    'ModelSettingName = Literal["model_fast", "model_strong", "model_reviewer"]\n\n'
-    '# (reviewer route key, reviewed route key, tier). Route keys are prompt\n'
-    '# contract ids -- see model_runner.py.\n'
-    'REVIEWER_PAIRS: tuple[tuple[str, str, Literal["fast", "strong"]], ...] = (\n'
-    '    ("script_verifier", "persian_script_segment", "strong"),\n'
-    '    ("coverage_audit", "claim_reconciliation", "strong"),\n'
-    ')\n',
-)
-replace_once(
-    "src/thesisound/model_routing.py",
-    "    def uses_provider(self, provider: ProviderName) -> bool:\n",
-    "    def self_grading_pairs(self) -> list[tuple[str, str, str]]:\n"
-    "        \"\"\"Reviewer/reviewed pairs that resolve to the same provider and model.\n\n"
-    "        Compares the resolved (provider, model), not the profile name: two\n"
-    "        distinct profiles can still point at the same model.\n"
-    "        Returns (reviewer, reviewed, \"provider/model\").\n"
-    "        \"\"\"\n\n"
-    "        collisions: list[tuple[str, str, str]] = []\n"
-    "        for reviewer, reviewed, tier in REVIEWER_PAIRS:\n"
-    "            requested_model = (\n"
-    "                self.settings.model_fast\n"
-    "                if tier == \"fast\"\n"
-    "                else self.settings.model_strong\n"
-    "            )\n"
-    "            reviewer_route = self.resolve(\n"
-    "                stage=reviewer,\n"
-    "                requested_model=requested_model,\n"
-    "                model_tier=tier,\n"
-    "            )\n"
-    "            reviewed_route = self.resolve(\n"
-    "                stage=reviewed,\n"
-    "                requested_model=requested_model,\n"
-    "                model_tier=tier,\n"
-    "            )\n"
-    "            if (reviewer_route.provider, reviewer_route.model) == (\n"
-    "                reviewed_route.provider,\n"
-    "                reviewed_route.model,\n"
-    "            ):\n"
-    "                collisions.append(\n"
-    "                    (\n"
-    "                        reviewer,\n"
-    "                        reviewed,\n"
-    "                        f\"{reviewer_route.provider}/{reviewer_route.model}\",\n"
-    "                    )\n"
-    "                )\n"
-    "        return collisions\n\n"
-    "    def uses_provider(self, provider: ProviderName) -> bool:\n",
+    "src/thesisound/observability.py",
+    "    def start_span(self, record: SpanRecord) -> None:\n",
+    '''    def begin_run(self, spec: PipelineRunSpec) -> UUID:\n        """Insert a root workflow run if it is not already present.\n\n        ``INSERT OR IGNORE`` is intentional: a workflow may open more than one\n        root span with the same run id, and all calls still belong to one rollup.\n        """\n\n        with self._lock, closing(self._connect()) as connection, connection:\n            connection.execute(\n                """\n                INSERT OR IGNORE INTO pipeline_runs(\n                    workflow_run_id, project_id, trace_id, kind, status, started_at\n                ) VALUES (?, ?, ?, ?, 'running', ?)\n                """,\n                (\n                    str(spec.workflow_run_id),\n                    _uuid_text(spec.project_id),\n                    str(spec.trace_id),\n                    spec.kind,\n                    _to_db_timestamp(spec.started_at),\n                ),\n            )\n        return spec.workflow_run_id\n\n    def finish_run(\n        self,\n        workflow_run_id: UUID,\n        *,\n        status: str,\n        error_message: str | None = None,\n    ) -> None:\n        """Finish a run and recompute its call/token aggregates idempotently.\n\n        Cost is deliberately absent: calls are not priced until a pricing table\n        exists, so a run-level zero would be misleading rather than useful.\n        """\n\n        with self._lock, closing(self._connect()) as connection, connection:\n            existing = connection.execute(\n                "SELECT started_at, finished_at FROM pipeline_runs "\n                "WHERE workflow_run_id = ?",\n                (str(workflow_run_id),),\n            ).fetchone()\n            if existing is None:\n                return\n            aggregate = connection.execute(\n                """\n                SELECT COUNT(*),\n                       COUNT(*) FILTER (WHERE status IN ('failed', 'rejected')),\n                       COALESCE(SUM(input_tokens), 0),\n                       COALESCE(SUM(output_tokens), 0),\n                       COALESCE(SUM(thinking_tokens), 0),\n                       COALESCE(SUM(cached_tokens), 0),\n                       COALESCE(SUM(total_tokens), 0)\n                FROM model_calls WHERE workflow_run_id = ?\n                """,\n                (str(workflow_run_id),),\n            ).fetchone()\n            models = [\n                row[0]\n                for row in connection.execute(\n                    "SELECT DISTINCT resolved_model FROM model_calls "\n                    "WHERE workflow_run_id = ? AND resolved_model IS NOT NULL "\n                    "ORDER BY resolved_model",\n                    (str(workflow_run_id),),\n                ).fetchall()\n            ]\n            prompt_versions = [\n                f"{row[0]}@{row[1]}"\n                for row in connection.execute(\n                    "SELECT DISTINCT prompt_id, prompt_version FROM model_calls "\n                    "WHERE workflow_run_id = ? AND prompt_id IS NOT NULL "\n                    "AND prompt_version IS NOT NULL ORDER BY prompt_id, prompt_version",\n                    (str(workflow_run_id),),\n                ).fetchall()\n            ]\n            finished_at = (\n                _from_db_timestamp(existing[1]) if existing[1] else _now()\n            )\n            started_at = _from_db_timestamp(existing[0])\n            connection.execute(\n                """\n                UPDATE pipeline_runs\n                SET status = ?, finished_at = ?, duration_ms = ?,\n                    call_count = ?, failed_call_count = ?, input_tokens = ?,\n                    output_tokens = ?, thinking_tokens = ?, cached_tokens = ?,\n                    total_tokens = ?, models_json = ?, prompt_versions_json = ?,\n                    error_message = ?\n                WHERE workflow_run_id = ?\n                """,\n                (\n                    status,\n                    _to_db_timestamp(finished_at),\n                    _elapsed_ms(started_at, finished_at),\n                    aggregate[0],\n                    aggregate[1],\n                    aggregate[2],\n                    aggregate[3],\n                    aggregate[4],\n                    aggregate[5],\n                    aggregate[6],\n                    json.dumps(models, ensure_ascii=False),\n                    json.dumps(prompt_versions, ensure_ascii=False),\n                    _truncate(error_message),\n                    str(workflow_run_id),\n                ),\n            )\n\n    def run_summary(self, workflow_run_id: UUID) -> PipelineRunSummary:\n        with self._lock, closing(self._connect()) as connection, connection:\n            row = connection.execute(\n                "SELECT " + _PIPELINE_RUN_COLUMNS + " FROM pipeline_runs "\n                "WHERE workflow_run_id = ?",\n                (str(workflow_run_id),),\n            ).fetchone()\n        if row is None:\n            raise FileNotFoundError(f"Pipeline run not found: {workflow_run_id}")\n        return _pipeline_run_from_row(row)\n\n    def list_runs(\n        self, project_id: UUID, *, limit: int = 50\n    ) -> list[PipelineRunSummary]:\n        with self._lock, closing(self._connect()) as connection, connection:\n            rows = connection.execute(\n                "SELECT " + _PIPELINE_RUN_COLUMNS + " FROM pipeline_runs "\n                "WHERE project_id = ? ORDER BY started_at DESC LIMIT ?",\n                (str(project_id), max(1, min(limit, 2_000))),\n            ).fetchall()\n        return [_pipeline_run_from_row(row) for row in rows]\n\n    def start_span(self, record: SpanRecord) -> None:\n''',
 )
 
 replace_once(
-    "config/model-routing.toml",
-    '[profiles.gemini_strong]\nprovider = "gemini"\nmodel_setting = "model_strong"\n',
-    '[profiles.gemini_strong]\nprovider = "gemini"\nmodel_setting = "model_strong"\n\n'
-    '# Independent reviewer. Reads THESISOUND_MODEL_REVIEWER; when that is unset it\n'
-    '# falls back to THESISOUND_MODEL_STRONG and `doctor` warns about self-grading.\n'
-    '[profiles.gemini_reviewer]\nprovider = "gemini"\nmodel_setting = "model_reviewer"\n',
-)
-replace_once(
-    "config/model-routing.toml",
-    'script_verifier = "gemini_strong"\n',
-    'script_verifier = "gemini_reviewer"\n',
+    "src/thesisound/observability.py",
+    '''    def begin(self, record: SpanRecord) -> None:\n        self.ledger.start_span(record)\n\n    def end(self, record: SpanRecord) -> None:\n        self.ledger.end_span(record)\n''',
+    '''    def begin(self, record: SpanRecord) -> None:\n        self.ledger.start_span(record)\n        if (\n            record.kind == "stage"\n            and record.context.workflow_run_id is not None\n            and record.parent_span_id is None\n        ):\n            try:\n                self.ledger.begin_run(\n                    PipelineRunSpec(\n                        workflow_run_id=record.context.workflow_run_id,\n                        project_id=record.context.project_id,\n                        trace_id=record.context.trace_id,\n                        kind=record.component,\n                        started_at=record.started_at,\n                    )\n                )\n            except Exception:\n                # Observability enrichment must never break the traced workflow.\n                pass\n\n    def end(self, record: SpanRecord) -> None:\n        self.ledger.end_span(record)\n        if (\n            record.kind == "stage"\n            and record.context.workflow_run_id is not None\n            and record.parent_span_id is None\n        ):\n            try:\n                self.ledger.finish_run(\n                    record.context.workflow_run_id,\n                    status="failed" if record.status == "error" else "succeeded",\n                    error_message=record.error_message,\n                )\n            except Exception:\n                # A rollup write is secondary to the workflow and span record.\n                pass\n''',
 )
 
 replace_once(
-    ".env.example",
-    "THESISOUND_MODEL_STRONG=gemini-3.6-flash\n",
-    "THESISOUND_MODEL_STRONG=gemini-3.6-flash\n"
-    "# Independent reviewer used by script_verifier. Leave empty to fall back to\n"
-    "# THESISOUND_MODEL_STRONG -- `doctor` warns while it is empty, because the\n"
-    "# writer then grades its own script.\n"
-    "THESISOUND_MODEL_REVIEWER=\n",
+    "src/thesisound/observability.py",
+    "\ndef _now() -> datetime:\n",
+    '''\n_PIPELINE_RUN_COLUMNS = """\nworkflow_run_id, project_id, trace_id, kind, status, started_at, finished_at,\nduration_ms, call_count, failed_call_count, input_tokens, output_tokens,\nthinking_tokens, cached_tokens, total_tokens, models_json,\nprompt_versions_json, error_message\n""".replace("\\n", " ").strip()\n\n\ndef _pipeline_run_from_row(row: tuple[Any, ...]) -> PipelineRunSummary:\n    return PipelineRunSummary(\n        workflow_run_id=UUID(row[0]),\n        project_id=_optional_uuid(row[1]),\n        trace_id=_optional_uuid(row[2]),\n        kind=row[3],\n        status=row[4],\n        started_at=_from_db_timestamp(row[5]),\n        finished_at=_from_db_timestamp(row[6]) if row[6] else None,\n        duration_ms=row[7],\n        call_count=row[8],\n        failed_call_count=row[9],\n        input_tokens=row[10],\n        output_tokens=row[11],\n        thinking_tokens=row[12],\n        cached_tokens=row[13],\n        total_tokens=row[14],\n        models=json.loads(row[15] or "[]"),\n        prompt_versions=json.loads(row[16] or "[]"),\n        error_message=row[17],\n    )\n\n\ndef _now() -> datetime:\n''',
 )
 
 replace_once(
-    "src/thesisound/services/runtime_preflight.py",
-    "            self._model_routing(),\n            self._okian_provider(),\n",
-    "            self._model_routing(),\n"
-    "            self._reviewer_independence(),\n"
-    "            self._okian_provider(),\n",
+    "src/thesisound/observability.py",
+    "\n# New model_calls columns added by migration 2.",
+    '''\n_SCHEMA_V3_PIPELINE_RUNS = """\nCREATE TABLE IF NOT EXISTS pipeline_runs(\n    workflow_run_id TEXT PRIMARY KEY,\n    project_id      TEXT,\n    trace_id        TEXT,\n    kind            TEXT NOT NULL,\n    status          TEXT NOT NULL,\n    started_at      TEXT NOT NULL,\n    finished_at     TEXT,\n    duration_ms     INTEGER,\n    call_count      INTEGER NOT NULL DEFAULT 0,\n    failed_call_count INTEGER NOT NULL DEFAULT 0,\n    input_tokens    INTEGER NOT NULL DEFAULT 0,\n    output_tokens   INTEGER NOT NULL DEFAULT 0,\n    thinking_tokens INTEGER NOT NULL DEFAULT 0,\n    cached_tokens   INTEGER NOT NULL DEFAULT 0,\n    total_tokens    INTEGER NOT NULL DEFAULT 0,\n    models_json     TEXT NOT NULL DEFAULT '[]',\n    prompt_versions_json TEXT NOT NULL DEFAULT '[]',\n    error_message   TEXT\n);\nCREATE INDEX IF NOT EXISTS idx_runs_project_started\n    ON pipeline_runs(project_id, started_at DESC);\nCREATE INDEX IF NOT EXISTS idx_runs_kind_status\n    ON pipeline_runs(kind, status);\n"""\n\n# New model_calls columns added by migration 2.''',
 )
 replace_once(
-    "src/thesisound/services/runtime_preflight.py",
-    "    def _okian_provider(self) -> RuntimeCheck:\n",
-    "    def _reviewer_independence(self) -> RuntimeCheck:\n"
-    "        try:\n"
-    "            router = load_model_router(self.settings)\n"
-    "        except ModelConfigurationError:\n"
-    "            return RuntimeCheck(\n"
-    "                code=\"reviewer-independence\",\n"
-    "                label=\"Reviewer independence\",\n"
-    "                status=\"pass\",\n"
-    "                detail=\"Skipped: model routing did not load.\",\n"
-    "            )\n"
-    "        collisions = router.self_grading_pairs()\n"
-    "        if not collisions:\n"
-    "            route = router.resolve(\n"
-    "                stage=\"script_verifier\",\n"
-    "                requested_model=self.settings.model_strong,\n"
-    "                model_tier=\"strong\",\n"
-    "            )\n"
-    "            return RuntimeCheck(\n"
-    "                code=\"reviewer-independence\",\n"
-    "                label=\"Reviewer independence\",\n"
-    "                status=\"pass\",\n"
-    "                detail=(\n"
-    "                    f\"script_verifier runs on `{route.model}`, distinct from the writer.\"\n"
-    "                ),\n"
-    "            )\n"
-    "        detail = \" \".join(\n"
-    "            f\"{reviewer} and {reviewed} both resolve to `{resolved}`.\"\n"
-    "            for reviewer, reviewed, resolved in collisions\n"
-    "        )\n"
-    "        return RuntimeCheck(\n"
-    "            code=\"reviewer-independence\",\n"
-    "            label=\"Reviewer independence\",\n"
-    "            status=\"warning\",\n"
-    "            detail=detail + \" Set THESISOUND_MODEL_REVIEWER.\",\n"
-    "        )\n\n"
-    "    def _okian_provider(self) -> RuntimeCheck:\n",
+    "src/thesisound/observability.py",
+    "    _migrate_v2_pipeline_spans_and_events,\n)",
+    "    _migrate_v2_pipeline_spans_and_events,\n    _SCHEMA_V3_PIPELINE_RUNS,\n)",
 )
 
-# Replace the stale checked-in routing assertions and add item-specific coverage.
-path = "tests/test_model_routing.py"
+replace_once(
+    "src/thesisound/observability_cli.py",
+    "    @app.command(\"model-call\")\n",
+    '''    @app.command("runs")\n    def runs(\n        project_id: UUID,\n        limit: int = typer.Option(50, min=1, max=2_000),\n    ) -> None:\n        """Show one aggregate row per pipeline workflow run."""\n\n        ledger = ledger_from_settings(Settings())\n        console = Console()\n        table = Table(show_lines=False)\n        table.add_column("Started")\n        table.add_column("Kind")\n        table.add_column("Status")\n        table.add_column("Duration", justify="right")\n        table.add_column("Calls", justify="right")\n        table.add_column("Failed", justify="right")\n        table.add_column("Total tokens", justify="right")\n        table.add_column("Run ID")\n        for run in ledger.list_runs(project_id, limit=limit):\n            table.add_row(\n                run.started_at.isoformat(timespec="seconds"),\n                run.kind,\n                run.status,\n                f"{run.duration_ms or 0} ms",\n                str(run.call_count),\n                str(run.failed_call_count),\n                str(run.total_tokens),\n                str(run.workflow_run_id),\n            )\n        console.print(table)\n\n    @app.command("run-summary")\n    def run_summary(run_id: UUID) -> None:\n        """Print the persisted aggregate for one pipeline workflow run."""\n\n        summary = ledger_from_settings(Settings()).run_summary(run_id)\n        Console().print_json(\n            json.dumps(summary.model_dump(mode="json"), ensure_ascii=False)\n        )\n\n    @app.command("model-call")\n''',
+)
+
+# Migration coverage.
+path = "tests/test_ledger_migrations.py"
 content = read(path)
-content = content.replace(
-    '    assert script_route.provider == "okian"\n    assert script_route.profile == "okian_gemma"\n',
-    '    assert script_route.provider == "gemini"\n'
-    '    assert script_route.profile == "gemini_strong"\n'
-    '    verifier_route = router.resolve(\n'
-    '        stage="script_verifier",\n'
-    '        requested_model=settings.model_strong,\n'
-    '        model_tier="strong",\n'
-    '    )\n'
-    '    assert verifier_route.profile == "gemini_reviewer"\n',
-)
-if "test_unset_reviewer_model_falls_back_to_strong" not in content:
-    content += '''\n\ndef test_unset_reviewer_model_falls_back_to_strong() -> None:\n    settings = Settings(_env_file=None)\n\n    assert settings.model_reviewer == settings.model_strong\n\n\ndef test_reviewer_route_uses_the_configured_reviewer_model() -> None:\n    settings = Settings(\n        _env_file=None,\n        model_reviewer="gemini-reviewer-test",\n        model_routing_file=Path("config/model-routing.toml"),\n    )\n    router = load_model_router(settings)\n    reviewer = router.resolve(\n        stage="script_verifier",\n        requested_model=settings.model_strong,\n        model_tier="strong",\n    )\n    writer = router.resolve(\n        stage="persian_script_segment",\n        requested_model=settings.model_strong,\n        model_tier="strong",\n    )\n\n    assert reviewer.model == "gemini-reviewer-test"\n    assert reviewer.model != writer.model\n\n\ndef test_self_grading_pairs_flags_identical_models_behind_distinct_profiles(\n    tmp_path: Path,\n) -> None:\n    routing_file = tmp_path / "routing.toml"\n    routing_file.write_text(\n        """\nversion = 1\n\n[profiles.writer]\nprovider = "gemini"\nmodel_setting = "model_strong"\n\n[profiles.reviewer]\nprovider = "gemini"\nmodel_setting = "model_strong"\n\n[routes]\npersian_script_segment = "writer"\nscript_verifier = "reviewer"\n""".strip(),\n        encoding="utf-8",\n    )\n    settings = Settings(_env_file=None, model_routing_file=routing_file)\n\n    assert (\n        "script_verifier",\n        "persian_script_segment",\n        f"gemini/{settings.model_strong}",\n    ) in load_model_router(settings).self_grading_pairs()\n\n\ndef test_self_grading_pairs_is_empty_when_the_reviewer_model_differs(\n    tmp_path: Path,\n) -> None:\n    routing_file = tmp_path / "routing.toml"\n    routing_file.write_text(\n        """\nversion = 1\n\n[profiles.writer]\nprovider = "gemini"\nmodel_setting = "model_strong"\n\n[profiles.reviewer]\nprovider = "gemini"\nmodel_setting = "model_reviewer"\n\n[routes]\npersian_script_segment = "writer"\nscript_verifier = "reviewer"\nclaim_reconciliation = "writer"\ncoverage_audit = "reviewer"\n""".strip(),\n        encoding="utf-8",\n    )\n    settings = Settings(\n        _env_file=None,\n        model_reviewer="gemini-reviewer-test",\n        model_routing_file=routing_file,\n    )\n\n    assert load_model_router(settings).self_grading_pairs() == []\n'''
+if "test_fresh_ledger_has_the_pipeline_runs_table" not in content:
+    content += '''\n\ndef test_fresh_ledger_has_the_pipeline_runs_table(tmp_path: Path) -> None:\n    ledger = ObservabilityLedger(tmp_path / "ledger.sqlite3", tmp_path / "artifacts")\n    connection = sqlite3.connect(ledger.database_path)\n    try:\n        tables = {\n            row[0]\n            for row in connection.execute(\n                "SELECT name FROM sqlite_master WHERE type = 'table'"\n            )\n        }\n    finally:\n        connection.close()\n\n    assert "pipeline_runs" in tables\n\n\ndef test_upgrading_a_v2_ledger_adds_pipeline_runs(tmp_path: Path) -> None:\n    database_path = tmp_path / "ledger.sqlite3"\n    artifact_root = tmp_path / "artifacts"\n    ledger = ObservabilityLedger(database_path, artifact_root)\n    spec = ModelCallSpec(\n        stage="document_map",\n        operation="structured_text",\n        provider="gemini",\n        requested_model="gemini-test",\n    )\n    ledger.begin_call(spec, {"prompt": "hello"})\n    connection = sqlite3.connect(database_path)\n    try:\n        connection.execute("DROP TABLE pipeline_runs")\n        connection.execute(\n            "UPDATE schema_meta SET value = '2' WHERE key = 'schema_version'"\n        )\n        connection.commit()\n    finally:\n        connection.close()\n\n    upgraded = ObservabilityLedger(database_path, artifact_root)\n\n    assert upgraded.get_call(spec.call_id).call.call_id == spec.call_id\n    connection = sqlite3.connect(database_path)\n    try:\n        tables = {\n            row[0]\n            for row in connection.execute(\n                "SELECT name FROM sqlite_master WHERE type = 'table'"\n            )\n        }\n    finally:\n        connection.close()\n    assert "pipeline_runs" in tables\n'''
 write(path, content)
 
 write(
-    "tests/test_runtime_preflight.py",
-    '''from __future__ import annotations\n\nfrom pathlib import Path\n\nfrom thesisound.config import Settings\nfrom thesisound.services.runtime_preflight import RuntimePreflight\n\n\ndef test_doctor_warns_when_the_verifier_shares_the_writer_model() -> None:\n    settings = Settings(\n        _env_file=None,\n        model_routing_file=Path("config/model-routing.toml"),\n    )\n\n    check = RuntimePreflight(settings)._reviewer_independence()\n\n    assert check.status == "warning"\n    assert check.blocking is False\n    assert "script_verifier" in check.detail\n\n\ndef test_doctor_passes_when_the_reviewer_model_is_distinct(tmp_path: Path) -> None:\n    routing_file = tmp_path / "routing.toml"\n    routing_file.write_text(\n        """\nversion = 1\n\n[profiles.writer]\nprovider = "gemini"\nmodel_setting = "model_strong"\n\n[profiles.reviewer]\nprovider = "gemini"\nmodel_setting = "model_reviewer"\n\n[routes]\npersian_script_segment = "writer"\nscript_verifier = "reviewer"\nclaim_reconciliation = "writer"\ncoverage_audit = "reviewer"\n""".strip(),\n        encoding="utf-8",\n    )\n    settings = Settings(\n        _env_file=None,\n        model_reviewer="gemini-reviewer-test",\n        model_routing_file=routing_file,\n    )\n\n    check = RuntimePreflight(settings)._reviewer_independence()\n\n    assert check.status == "pass"\n    assert check.blocking is False\n\n\ndef test_reviewer_check_is_skipped_when_routing_fails_to_load(tmp_path: Path) -> None:\n    routing_file = tmp_path / "routing.toml"\n    routing_file.write_text("not = [valid", encoding="utf-8")\n    settings = Settings(_env_file=None, model_routing_file=routing_file)\n    checks = {check.code: check for check in RuntimePreflight(settings).run("full")}\n\n    assert checks["model-routing"].status == "fail"\n    assert checks["reviewer-independence"].status == "pass"\n    assert checks["reviewer-independence"].detail == "Skipped: model routing did not load."\n''',
+    "tests/test_pipeline_runs.py",
+    '''from __future__ import annotations\n\nfrom datetime import UTC, datetime\nfrom uuid import UUID, uuid4\n\nfrom thesisound.modeling import ModelUsage\nfrom thesisound.observability import (\n    ModelCallSpec,\n    ObservabilityLedger,\n    PipelineRunSpec,\n    ProviderMetadata,\n)\n\n\ndef _begin_run(ledger: ObservabilityLedger, run_id: UUID, project_id: UUID) -> None:\n    ledger.begin_run(\n        PipelineRunSpec(\n            workflow_run_id=run_id,\n            project_id=project_id,\n            trace_id=uuid4(),\n            kind="script",\n            started_at=datetime.now(UTC),\n        )\n    )\n\n\ndef _record_call(\n    ledger: ObservabilityLedger,\n    *,\n    run_id: UUID,\n    model: str,\n    prompt_id: str,\n    prompt_version: str,\n    status: str = "succeeded",\n    input_tokens: int = 3,\n    output_tokens: int = 5,\n) -> None:\n    spec = ModelCallSpec(\n        workflow_run_id=run_id,\n        stage=prompt_id,\n        operation="structured_text",\n        provider="gemini",\n        requested_model=model,\n        prompt_id=prompt_id,\n        prompt_version=prompt_version,\n    )\n    ledger.begin_call(spec, {"prompt": "test"})\n    if status == "failed":\n        ledger.fail(spec.call_id, RuntimeError("failed"))\n        return\n    if status == "rejected":\n        ledger.reject(spec.call_id, ValueError("rejected"))\n        return\n    ledger.provider_succeeded(\n        spec.call_id,\n        response_payload={"ok": True},\n        usage=ModelUsage(\n            input_tokens=input_tokens,\n            output_tokens=output_tokens,\n            thinking_tokens=2,\n            cached_tokens=1,\n            total_tokens=input_tokens + output_tokens + 2,\n        ),\n        provider_metadata=ProviderMetadata(resolved_model=model),\n    )\n    ledger.succeed(spec.call_id, {"ok": True})\n\n\ndef test_run_totals_are_scoped_and_collect_distinct_metadata(\n    ledger: ObservabilityLedger,\n) -> None:\n    project_id = uuid4()\n    run_id = uuid4()\n    other_run_id = uuid4()\n    _begin_run(ledger, run_id, project_id)\n    _begin_run(ledger, other_run_id, project_id)\n    _record_call(\n        ledger, run_id=run_id, model="model-a", prompt_id="writer", prompt_version="1.0.0"\n    )\n    _record_call(\n        ledger, run_id=run_id, model="model-a", prompt_id="writer", prompt_version="1.0.0"\n    )\n    _record_call(\n        ledger,\n        run_id=run_id,\n        model="model-b",\n        prompt_id="reviewer",\n        prompt_version="1.1.0",\n        input_tokens=7,\n        output_tokens=11,\n    )\n    _record_call(\n        ledger, run_id=run_id, model="model-b", prompt_id="failed", prompt_version="1.0.0", status="failed"\n    )\n    _record_call(\n        ledger, run_id=run_id, model="model-b", prompt_id="rejected", prompt_version="1.0.0", status="rejected"\n    )\n    _record_call(\n        ledger, run_id=other_run_id, model="leak", prompt_id="other", prompt_version="9.9.9", input_tokens=100\n    )\n\n    ledger.finish_run(run_id, status="succeeded")\n    summary = ledger.run_summary(run_id)\n\n    assert summary.call_count == 5\n    assert summary.failed_call_count == 2\n    assert summary.input_tokens == 13\n    assert summary.output_tokens == 21\n    assert summary.thinking_tokens == 6\n    assert summary.cached_tokens == 3\n    assert summary.total_tokens == 40\n    assert summary.models == ["model-a", "model-b"]\n    assert summary.prompt_versions == [\n        "reviewer@1.1.0",\n        "writer@1.0.0",\n    ]\n\n\ndef test_zero_call_run_and_finish_are_idempotent(ledger: ObservabilityLedger) -> None:\n    project_id = uuid4()\n    run_id = uuid4()\n    _begin_run(ledger, run_id, project_id)\n\n    ledger.finish_run(run_id, status="succeeded")\n    first = ledger.run_summary(run_id)\n    ledger.finish_run(run_id, status="succeeded")\n    second = ledger.run_summary(run_id)\n\n    assert first == second\n    assert second.call_count == 0\n    assert second.failed_call_count == 0\n    assert second.total_tokens == 0\n    assert second.models == []\n    assert second.prompt_versions == []\n\n\ndef test_finish_unknown_run_is_a_no_op(ledger: ObservabilityLedger) -> None:\n    ledger.finish_run(uuid4(), status="failed", error_message="missing")\n''',
 )
+
+path = "tests/test_ledger_spans_and_events.py"
+content = read(path)
+if "test_root_stage_span_with_run_id_writes_one_pipeline_run" not in content:
+    content += '''\n\ndef test_root_stage_span_with_run_id_writes_one_pipeline_run(\n    ledger: ObservabilityLedger,\n) -> None:\n    project_id = uuid4()\n    run_id = uuid4()\n    ledger_tracer = _ledger_tracer(ledger)\n\n    with ledger_tracer.span(\n        "script.run",\n        component="script",\n        kind="stage",\n        project_id=project_id,\n        workflow_run_id=run_id,\n    ):\n        pass\n\n    runs = ledger.list_runs(project_id)\n    assert len(runs) == 1\n    assert runs[0].workflow_run_id == run_id\n    assert runs[0].status == "succeeded"\n\n\ndef test_nested_stage_span_with_run_id_does_not_write_another_pipeline_run(\n    ledger: ObservabilityLedger,\n) -> None:\n    project_id = uuid4()\n    run_id = uuid4()\n    ledger_tracer = _ledger_tracer(ledger)\n\n    with ledger_tracer.span(\n        "script.run",\n        component="script",\n        kind="stage",\n        project_id=project_id,\n        workflow_run_id=run_id,\n    ):\n        with ledger_tracer.span(\n            "script.child",\n            component="script",\n            kind="stage",\n            workflow_run_id=run_id,\n        ):\n            pass\n\n    assert len(ledger.list_runs(project_id)) == 1\n\n\ndef test_root_stage_span_without_run_id_writes_no_pipeline_run(\n    ledger: ObservabilityLedger,\n) -> None:\n    project_id = uuid4()\n    ledger_tracer = _ledger_tracer(ledger)\n\n    with ledger_tracer.span(\n        "script.run", component="script", kind="stage", project_id=project_id\n    ):\n        pass\n\n    assert ledger.list_runs(project_id) == []\n'''
+write(path, content)
