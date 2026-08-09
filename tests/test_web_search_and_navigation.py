@@ -202,8 +202,9 @@ def test_search_auth_failure_shows_actionable_message(
             },
         )
         assert response.status_code == 422
-        assert "احراز هویت Gemini رد شد" in response.text
-        assert "ACCESS_TOKEN_TYPE_UNSUPPORTED" in response.text
+        assert "احراز هویت مدل رد شد" in response.text
+        assert "جست‌وجوی وب انجام نشد" in response.text
+        assert "ACCESS_TOKEN_TYPE_UNSUPPORTED" not in response.text
 
 
 def test_failed_project_can_rewind_to_sources_and_edit_again(

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components.html" import status_label, technical_details %}
+{% from "components.html" import status_label, technical_details, error_notice %}
 {% block title %}تحلیل منابع | مقال{% endblock %}
 {% block content %}
 <header class="page-heading page-heading--compact">
@@ -19,9 +19,9 @@
 </header>
 
 {% if request.query_params.get('error') == 'retry-unavailable' %}
-<div class="notice notice--danger" role="alert">این اجرا در وضعیت قابل تلاش دوباره نیست. خروجی‌های موجود بدون تغییر باقی مانده‌اند.<span class="operator-only"> Existing artifacts are preserved.</span></div>
+{{ error_notice(request.query_params.get('reason') or 'این اجرا در وضعیت قابل تلاش دوباره نیست. خروجی‌های موجود بدون تغییر باقی مانده‌اند.') }}
 {% elif request.query_params.get('error') == 'skip-unavailable' %}
-<div class="notice notice--danger" role="alert">کنار گذاشتن این منبع ممکن نبود. دست‌کم یک منبع باید در گفتار بماند و منبع تکمیل‌شده کنار گذاشته نمی‌شود. هیچ خروجی‌ای تغییر نکرد.</div>
+{{ error_notice('کنار گذاشتن این منبع ممکن نبود. دست‌کم یک منبع باید در گفتار بماند و منبع تکمیل‌شده کنار گذاشته نمی‌شود. هیچ خروجی‌ای تغییر نکرد.') }}
 {% endif %}
 
 <section class="section-block" aria-labelledby="pipeline-title">
@@ -68,7 +68,8 @@
       {% elif source.status == 'running' %}{{ status_label('در حال اجرا', 'اقدامی لازم نیست', 'running', source.status) }}
       {% else %}{{ status_label('در صف', '', 'neutral', source.status) }}{% endif %}
       {% if source.last_error %}
-        {% call technical_details('خطای این منبع') %}<p><bdi dir="ltr">{{ source.last_error }}</bdi></p>{% endcall %}
+        <p class="source-row__summary">{{ source.last_error | user_error('corpus') }}</p>
+        {% call technical_details('کد و متن خطا') %}<p><bdi dir="ltr">{{ source.last_error }}</bdi></p>{% endcall %}
       {% endif %}
     </article>
     {% endfor %}
@@ -96,14 +97,21 @@
     </div>
     {{ status_label('در حال انجام' if planning_run.status in ['queued', 'running'] else ('منتظر تصمیم شما' if planning_run.status == 'blocked' else ('انجام شد' if planning_run.status == 'succeeded' else 'متوقف شد')), '', 'running' if planning_run.status in ['queued', 'running'] else ('attention' if planning_run.status == 'blocked' else ('success' if planning_run.status == 'succeeded' else 'danger')), planning_run.status) }}
   </div>
-  {% if planning_run.last_error %}{% call technical_details('جزئیات اجرای طرح گفتار') %}<p><bdi dir="ltr">{{ planning_run.last_error }}</bdi></p>{% endcall %}{% endif %}
+  {% if planning_run.last_error %}
+    <p class="source-row__summary">{{ planning_run.last_error | user_error('planning') }}</p>
+    {% call technical_details('جزئیات اجرای طرح گفتار') %}<p><bdi dir="ltr">{{ planning_run.last_error }}</bdi></p>{% endcall %}
+  {% endif %}
 </section>
 {% endif %}
 
 {% if corpus_run and corpus_run.status == 'failed' %}
 <section class="error-recovery" role="alert">
   <div class="error-recovery__grid">
-    <div><span class="attention-panel__label">چه شد</span><h2>تحلیل منابع متوقف شد</h2><p class="error-recovery__impact"><strong>اثر:</strong> منابع اصلی و خروجی‌های سالم باقی مانده‌اند؛ مرحلهٔ ناموفق وارد طرح گفتار نشده است.</p></div>
+    <div>
+      <span class="attention-panel__label">چه شد</span>
+      <h2>{{ corpus_run.last_error | user_error('corpus') if corpus_run.last_error else 'تحلیل منابع متوقف شد' }}</h2>
+      <p class="error-recovery__impact"><strong>اثر:</strong> منابع اصلی و خروجی‌های سالم باقی مانده‌اند؛ مرحلهٔ ناموفق وارد طرح گفتار نشده است.</p>
+    </div>
     <form method="post" action="/projects/{{ project.project_id }}/corpus/retry">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button class="button button--primary" type="submit">تلاش دوباره در اجرای جدید</button>

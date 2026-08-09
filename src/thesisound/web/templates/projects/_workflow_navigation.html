@@ -87,7 +87,7 @@
   {% endif %}
 </nav>
 {% if request.query_params.get('workflow_error') %}
-<div class="page-content page-content--wide"><div class="notice notice--danger" role="alert">امکان بازکردن این مرحله وجود ندارد. جزئیات در حالت پیشرفته: <code class="operator-only"><bdi dir="ltr">{{ request.query_params.get('workflow_error') }}</bdi></code></div></div>
+<div class="page-content page-content--wide"><div class="notice notice--danger" role="alert">{{ request.query_params.get('workflow_error') }}</div></div>
 {% elif request.query_params.get('rewound') %}
 <div class="page-content page-content--wide"><div class="notice notice--success" role="status">مرحله باز شد. خروجی‌های وابستهٔ قبلی بایگانی شدند و فایل‌های خام باقی ماندند.</div></div>
 {% endif %}

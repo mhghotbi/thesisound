@@ -26,7 +26,7 @@ model = "gemma4-31"
 [routes]
 # Grounded: keep on Gemini
 research_brief = "gemini_fast"
-glossary = "gemini_strong"
+glossary = "okian_gemma"
 web_source_capture = "gemini_fast"
 
 # Text-only stages: Gemini Fast/Strong as in reference file
@@ -35,7 +35,7 @@ document_map_merge = "gemini_fast"
 evidence_extraction = "gemini_fast"
 claim_reconciliation = "gemini_strong"
 coverage_audit = "gemini_strong"
-episode_plan = "gemini_strong"
-persian_script_segment = "gemini_strong"
-script_verifier = "gemini_strong"
-script_reviser = "gemini_strong"
+episode_plan = "okian_gemma"
+persian_script_segment = "okian_gemma"
+script_verifier = "okian_gemma"
+script_reviser = "okian_gemma"

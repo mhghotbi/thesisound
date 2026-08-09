@@ -31,6 +31,7 @@ from thesisound.services.episode_planning_run import (
 from thesisound.services.runtime_preflight import RuntimePreflight
 from thesisound.services.workflow_revision import WorkflowRevisionService
 from thesisound.web.corpus_runtime import corpus_source_inputs
+from thesisound.web.error_messages import user_facing_error
 from thesisound.web.source_discovery import (
     WebSourceCandidate,
     WebSourceCandidateStore,
@@ -198,10 +199,16 @@ def register_source_routes(
             return _source_redirect(project_id, error="selection-locked")
         try:
             RuntimePreflight(settings).require("model")
-        except RuntimeError:
-            return RedirectResponse(
-                "/system-check?blocked=1&scope=model",
-                status_code=HTTP_303_SEE_OTHER,
+        except RuntimeError as error:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    project,
+                    UiSourceManifestStore(workspace.project_dir(project_id)).load(),
+                    error=user_facing_error(error, action="search"),
+                ),
+                status_code=422,
             )
 
         manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
@@ -231,7 +238,7 @@ def register_source_routes(
                 source_context(
                     project,
                     sources,
-                    error=_search_failure_message(error),
+                    error=user_facing_error(error, action="search"),
                 ),
                 status_code=422,
             )
@@ -259,10 +266,16 @@ def register_source_routes(
             return _source_redirect(project_id, error="selection-locked")
         try:
             RuntimePreflight(settings).require("model")
-        except RuntimeError:
-            return RedirectResponse(
-                "/system-check?blocked=1&scope=model",
-                status_code=HTTP_303_SEE_OTHER,
+        except RuntimeError as error:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    project,
+                    UiSourceManifestStore(workspace.project_dir(project_id)).load(),
+                    error=user_facing_error(error, action="retrieve"),
+                ),
+                status_code=422,
             )
 
         candidate_store = WebSourceCandidateStore(workspace.project_dir(project_id))
@@ -296,9 +309,7 @@ def register_source_routes(
                 source_context(
                     project,
                     manifest_store.load(),
-                    error=(
-                        f"بازیابی این منبع کامل نشد و وارد شاهدها نشد. جزئیات: {str(error)[:300]}"
-                    ),
+                    error=user_facing_error(error, action="retrieve"),
                 ),
                 status_code=422,
             )
@@ -358,8 +369,17 @@ def register_source_routes(
             elif project.state == ProjectState.SOURCE_SELECTION_REQUIRED and not has_ready_source:
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
-        except (OSError, RuntimeError, ValueError):
-            return _source_redirect(project_id, error="source-retry-failed")
+        except (OSError, RuntimeError, ValueError, FileNotFoundError) as error:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    workspace.load_project(project_id),
+                    UiSourceManifestStore(workspace.project_dir(project_id)).load(),
+                    error=user_facing_error(error, action="retry_source"),
+                ),
+                status_code=422,
+            )
         return _source_redirect(project_id)
 
     @app.post("/projects/{project_id}/sources/{source_id}/delete")
@@ -402,8 +422,17 @@ def register_source_routes(
             ):
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
-        except (OSError, ValueError):
-            return _source_redirect(project_id, error="source-delete-failed")
+        except (OSError, ValueError) as error:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    workspace.load_project(project_id),
+                    UiSourceManifestStore(workspace.project_dir(project_id)).load(),
+                    error=user_facing_error(error, action="delete_source"),
+                ),
+                status_code=422,
+            )
         return _source_redirect(project_id)
 
     @app.post("/projects/{project_id}/sources/{source_id}/toggle")
@@ -447,7 +476,7 @@ def register_source_routes(
         except (OSError, ValueError) as error:
             return RedirectResponse(
                 f"/projects/{project_id}/{destination}?workflow_error="
-                + quote(str(error), safe=""),
+                + quote(user_facing_error(error, action="workflow"), safe=""),
                 status_code=HTTP_303_SEE_OTHER,
             )
         return RedirectResponse(
@@ -496,7 +525,11 @@ def register_source_routes(
             return render(
                 request,
                 "projects/sources.html",
-                source_context(current, sources, error=str(error)),
+                source_context(
+                    current,
+                    sources,
+                    error=user_facing_error(error, action="corpus"),
+                ),
                 status_code=422,
             )
         return RedirectResponse(
@@ -517,9 +550,10 @@ def register_source_routes(
             validate_csrf(request, csrf_token)
             corpus_builder.retry(project_id)
             background_tasks.add_task(execute_corpus, project_id)
-        except ValueError:
+        except ValueError as error:
             return RedirectResponse(
-                f"/projects/{project_id}/processing?error=retry-unavailable",
+                f"/projects/{project_id}/processing?error=retry-unavailable"
+                f"&reason={quote(user_facing_error(error, action='corpus'), safe='')}",
                 status_code=HTTP_303_SEE_OTHER,
             )
         return RedirectResponse(
@@ -737,29 +771,8 @@ def _safe_filename(value: str) -> str:
     return name[:180]
 
 
-def _search_failure_message(error: Exception) -> str:
-    detail = str(error).strip()
-    lowered = detail.casefold()
-    if "resource_exhausted" in lowered or "429" in detail or "rate limit" in lowered:
-        return (
-            "جست‌وجوی وب انجام نشد: سهمیه Google Search مدل Gemini تمام شده است. "
-            "چند دقیقه بعد دوباره تلاش کنید. "
-            f"جزئیات: {detail[:220]}"
-        )
-    if "ACCESS_TOKEN_TYPE_UNSUPPORTED" in detail or "UNAUTHENTICATED" in detail:
-        return (
-            "جست‌وجوی وب انجام نشد: احراز هویت Gemini رد شد. "
-            "کلید معیوب را از مجموعه کلیدها حذف یا جایگزین کنید. "
-            f"جزئیات: {detail[:220]}"
-        )
-    return (
-        "جست‌وجوی وب یا بازیابی منبع انجام نشد. تنظیمات Gemini و "
-        f"اتصال را بررسی کنید. جزئیات: {detail[:300]}"
-    )
-
-
 def _source_redirect(project_id: UUID, *, error: str | None = None) -> RedirectResponse:
     url = f"/projects/{project_id}/sources"
     if error:
-        url += f"?error={error}"
+        url += f"?error={quote(error, safe='')}"
     return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)

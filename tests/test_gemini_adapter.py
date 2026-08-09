@@ -67,7 +67,13 @@ def test_gemini_adapter_uses_pydantic_schema_without_sampling_parameters() -> No
     assert result.output.value == "ok"
     config = models.calls[0]["config"]
     assert isinstance(config, dict)
-    assert config["response_schema"] is ExampleOutput
+    assert "response_schema" not in config
+    assert config["response_json_schema"] == {
+        "properties": {"value": {"title": "Value", "type": "string"}},
+        "required": ["value"],
+        "title": "ExampleOutput",
+        "type": "object",
+    }
     assert config["response_mime_type"] == "application/json"
     assert "temperature" not in config
     assert "top_p" not in config

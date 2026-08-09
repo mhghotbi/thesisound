@@ -25,6 +25,10 @@
 </details>
 {%- endmacro %}
 
+{% macro error_notice(message) -%}
+<div class="notice notice--danger" role="alert">{{ message }}</div>
+{%- endmacro %}
+
 {% macro error_recovery(title, impact, action_label='', action_url='') -%}
 <section class="error-recovery" role="alert">
   <div class="error-recovery__grid">

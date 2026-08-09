@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components.html" import status_label, technical_details %}
+{% from "components.html" import status_label, technical_details, error_notice %}
 {% block title %}منابع | مقال{% endblock %}
 {% block content %}
 <header class="page-heading page-heading--compact">
@@ -12,19 +12,11 @@
 </header>
 
 {% if error %}
-  <div class="notice notice--danger" role="alert">
-    بازیابی یا وارسی منبع کامل نشد. منبع ناقص وارد گفتار نشده است.
-    <p class="operator-only"><bdi dir="ltr">{{ error }}</bdi></p>
-  </div>
-{% endif %}
-{% if request.query_params.get('error') == 'file-too-large' %}
-  <div class="notice notice--danger" role="alert">حجم فایل از حد مجاز بارگذاری بیشتر است.</div>
+  {{ error_notice(error) }}
+{% elif request.query_params.get('error') == 'file-too-large' %}
+  {{ error_notice('حجم فایل از حد مجاز بارگذاری بیشتر است؛ فایل پذیرفته نشد.') }}
 {% elif request.query_params.get('error') == 'selection-locked' %}
-  <div class="notice notice--danger" role="alert">این مجموعه وارد تحلیل منابع شده است. برای تغییر، از «بازگشت و اصلاح مراحل قبلی» استفاده کنید.</div>
-{% elif request.query_params.get('error') == 'source-retry-failed' %}
-  <div class="notice notice--danger" role="alert">استخراج دوباره انجام نشد. اصل فایل باقی مانده است و می‌توانید پس از بررسی محیط دوباره تلاش کنید.</div>
-{% elif request.query_params.get('error') == 'source-delete-failed' %}
-  <div class="notice notice--danger" role="alert">حذف منبع انجام نشد. هیچ خروجی دیگری تغییر نکرد.</div>
+  {{ error_notice('این مجموعه وارد تحلیل منابع شده و قفل است. برای تغییر منابع، از «بازگشت و اصلاح مراحل قبلی» استفاده کنید.') }}
 {% elif request.query_params.get('searched') %}
   <div class="notice notice--success" role="status">پیشنهادهای منبع آماده‌اند. برای تبدیل به منبع پیشنهادی باید متن کامل هر مورد بازیابی و وارسی شود.</div>
 {% elif request.query_params.get('auto-search') %}
@@ -92,7 +84,7 @@
         {{ status_label('متن کامل بازیابی شد', 'منبع پیشنهادی افزوده شد', 'success') }}
       {% elif candidate.status == 'failed' %}
         {{ status_label('متن کامل بازیابی نشد', 'منبع پیشنهادی نشد', 'danger') }}
-        {% if candidate.issue_summary %}<p class="operator-only">{{ candidate.issue_summary }}</p>{% endif %}
+        {% if candidate.issue_summary %}<p class="source-row__summary">{{ candidate.issue_summary | user_error('retrieve') }}</p>{% endif %}
       {% else %}
         <form method="post" action="/projects/{{ project.project_id }}/sources/web/{{ candidate.candidate_id }}/add">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

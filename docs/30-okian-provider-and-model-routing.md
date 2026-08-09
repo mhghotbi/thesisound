@@ -51,8 +51,8 @@ The referenced profile must still exist in the TOML file.
 For versioned structured prompts, routing resolves in this order:
 
 1. an explicit CLI `--model` override remains a direct Gemini model override;
-2. `THESISOUND_MODEL_ROUTE_OVERRIDES` for the stage;
-3. the stage route in `config/model-routing.toml`;
+2. `THESISOUND_MODEL_ROUTE_OVERRIDES` for the prompt contract id;
+3. the prompt-contract route in `config/model-routing.toml` (e.g. `persian_script_segment`, not observability stages like `script_segment:{id}`);
 4. the existing `THESISOUND_MODEL_FAST` or `THESISOUND_MODEL_STRONG` Gemini fallback.
 
 Prompt contracts continue to declare only the logical tier (`fast` or `strong`). Provider deployment decisions remain outside the prompts.
@@ -65,7 +65,9 @@ Keep these operations on Gemini:
 
 - Google Search source discovery;
 - URL Context source capture;
-- any future prompt whose grounding mode is not `none`.
+- research brief and any future prompt whose grounding mode is not `none`.
+
+Glossary is ungrounded and may be routed to Okian with the rest of script drafting.
 
 TTS and ASR also remain on their dedicated Gemini settings and are not controlled by the text routing file.
 
