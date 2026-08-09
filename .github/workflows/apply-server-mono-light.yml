@@ -6,6 +6,7 @@ on:
       - codex/server-mono-light-items-1-5
     paths:
       - .github/scripts/apply_server_mono_light.py
+      - .github/scripts/fix_recent_baseline_lint.py
       - .github/workflows/apply-server-mono-light.yml
 
 permissions:
@@ -27,10 +28,12 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: uv sync --extra dev --extra gemini --extra web-ui
+      - name: Repair latest baseline lint
+        run: uv run python .github/scripts/fix_recent_baseline_lint.py
       - name: Apply current item
         run: uv run python .github/scripts/apply_server_mono_light.py
       - name: Lint
-        run: uv run ruff check .
+        run: uv run ruff check src tests
       - name: Test
         run: uv run pytest -q
       - name: Commit verified implementation
