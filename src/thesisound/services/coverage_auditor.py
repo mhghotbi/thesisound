@@ -4,10 +4,28 @@ from collections.abc import Iterable
 from uuid import UUID
 
 from thesisound.domain import ClaimRecord, ResearchBrief
-from thesisound.episode import CoverageAuditDraft, CoverageReport
+from thesisound.episode import CoverageAuditDraft, CoverageRecommendation, CoverageReport
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import EvidenceExtractionPlan
+
+
+def can_plan_episode(
+    *,
+    recommendation: CoverageRecommendation,
+    max_supported_minutes: int,
+    target_duration_minutes: int,
+) -> bool:
+    """Whether an audited corpus carries the requested duration.
+
+    Kept separate from the audit itself because the supported minutes describe the
+    corpus, while the verdict depends on the duration the listener asked for. A shorter
+    request can turn the same audit into a yes.
+    """
+
+    return recommendation == "continue" and max_supported_minutes >= round(
+        target_duration_minutes * 0.8
+    )
 
 
 class CoverageAuditorService:
@@ -44,9 +62,10 @@ class CoverageAuditorService:
             validator=lambda draft: _validate_draft(draft, brief, claim_ids),
         )
         draft = execution.output
-        can_plan = (
-            draft.recommendation == "continue"
-            and draft.max_supported_minutes >= round(brief.target_duration_minutes * 0.8)
+        can_plan = can_plan_episode(
+            recommendation=draft.recommendation,
+            max_supported_minutes=draft.max_supported_minutes,
+            target_duration_minutes=brief.target_duration_minutes,
         )
         return (
             CoverageReport(

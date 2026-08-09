@@ -15,6 +15,7 @@ from thesisound.episode import (
     EpisodeBudgetReport,
     EpisodePlanDraft,
     EpisodePreparationManifest,
+    EpisodeStageInputs,
     SegmentEvidencePack,
 )
 
@@ -122,6 +123,18 @@ class EpisodeArtifactStore:
             SegmentEvidencePack.model_validate(item)
             for item in self._read_jsonl(path)
         ]
+
+    def save_stage_inputs(self, project_id: UUID, inputs: EpisodeStageInputs) -> None:
+        self._write_json(self.episode_dir(project_id) / "stage-inputs.json", inputs)
+
+    def load_stage_inputs(self, project_id: UUID) -> EpisodeStageInputs:
+        """Missing or unreadable keys mean nothing is reusable, never a hard failure."""
+
+        path = self.episode_dir(project_id) / "stage-inputs.json"
+        try:
+            return EpisodeStageInputs.model_validate_json(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return EpisodeStageInputs()
 
     def save_manifest(self, manifest: EpisodePreparationManifest) -> None:
         self._write_json(

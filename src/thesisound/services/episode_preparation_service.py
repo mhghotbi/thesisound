@@ -4,23 +4,32 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, EpisodePlan, EvidenceItem, Project, ProjectState
+from thesisound.domain import (
+    ClaimRecord,
+    EpisodePlan,
+    EvidenceItem,
+    Project,
+    ProjectState,
+    ResearchBrief,
+)
 from thesisound.episode import (
     ClaimPriorityReport,
     CoverageReport,
     DisagreementGraph,
     EpisodeBudgetReport,
     EpisodePreparationManifest,
+    EpisodeStageInputs,
     SegmentEvidencePack,
 )
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
-from thesisound.services.coverage_auditor import CoverageAuditorService
+from thesisound.services.coverage_auditor import CoverageAuditorService, can_plan_episode
 from thesisound.services.disagreement_graph import DisagreementGraphBuilder
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.episode_budget import EpisodeBudgetEstimator
 from thesisound.services.episode_planner import EpisodePlannerService
+from thesisound.services.episode_reuse import planning_input_key
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
@@ -75,6 +84,12 @@ class EpisodePreparationService:
         self.workspace_store.save_project(project)
         corpus = self._load_corpus(project_id)
         assert project.brief is not None
+        key = self._planning_key(corpus, project.brief, include_duration=False)
+        reused = self._reusable_coverage(project_id, key, project.brief)
+        if reused is not None:
+            self._save_coverage_manifest(project_id, reused, corpus.source_ids)
+            return reused
+
         report, run = self.coverage_auditor.audit(
             project_id=project_id,
             brief=project.brief,
@@ -84,14 +99,9 @@ class EpisodePreparationService:
             prompt_version=prompt_version,
         )
         self.episode_store.save_coverage(report)
-        manifest = EpisodePreparationManifest(
-            project_id=project_id,
-            status="coverage_ready",
-            source_ids=corpus.source_ids,
-            coverage_recommendation=report.recommendation,
-            model_run_ids=[run.run_id],
-        )
-        self.episode_store.save_manifest(manifest)
+        # A fresh audit invalidates the stored plan: it was built on the previous answer.
+        self.episode_store.save_stage_inputs(project_id, EpisodeStageInputs(coverage=key))
+        self._save_coverage_manifest(project_id, report, corpus.source_ids)
         return report
 
     def prioritize_claims(self, project_id: UUID) -> ClaimPriorityReport:
@@ -165,29 +175,40 @@ class EpisodePreparationService:
         if project.brief is None:
             raise ValueError("ResearchBrief is required for episode planning.")
         corpus = self._load_corpus(project_id)
-        coverage = self.episode_store.load_coverage(project_id)
-        budget = self.episode_store.load_budget(project_id)
-        priorities = self.episode_store.load_priorities(project_id)
-        disagreement_graph = self.episode_store.load_disagreement_graph(project_id)
-        plan, draft, run = self.episode_planner.plan(
-            project_id=project_id,
-            brief=project.brief,
-            claims=corpus.claims,
-            coverage=coverage,
-            budget=budget,
-            priorities=priorities,
-            disagreement_graph=disagreement_graph,
-            extraction_plans=corpus.extraction_plans,
-            model=model,
-            prompt_version=prompt_version,
-        )
-        self.episode_store.save_plan(project_id, plan, draft)
+        key = self._planning_key(corpus, project.brief, include_duration=True)
+        stored_inputs = self.episode_store.load_stage_inputs(project_id)
+        plan = self._reusable_plan(project_id, stored_inputs, key)
+        model_run_ids: list[UUID] = []
+        if plan is None:
+            coverage = self.episode_store.load_coverage(project_id)
+            budget = self.episode_store.load_budget(project_id)
+            priorities = self.episode_store.load_priorities(project_id)
+            disagreement_graph = self.episode_store.load_disagreement_graph(project_id)
+            plan, draft, run = self.episode_planner.plan(
+                project_id=project_id,
+                brief=project.brief,
+                claims=corpus.claims,
+                coverage=coverage,
+                budget=budget,
+                priorities=priorities,
+                disagreement_graph=disagreement_graph,
+                extraction_plans=corpus.extraction_plans,
+                model=model,
+                prompt_version=prompt_version,
+            )
+            self.episode_store.save_plan(project_id, plan, draft)
+            self.episode_store.save_stage_inputs(
+                project_id,
+                stored_inputs.model_copy(update={"plan": key}),
+            )
+            model_run_ids.append(run.run_id)
+
         project.episode_plan = plan
         self.workspace_store.save_project(project)
         manifest = self.episode_store.load_manifest(project_id)
         manifest.status = "plan_ready"
         manifest.segment_count = len(plan.segments)
-        manifest.model_run_ids.append(run.run_id)
+        manifest.model_run_ids.extend(model_run_ids)
         manifest.updated_at = datetime.now(UTC)
         self.episode_store.save_manifest(manifest)
         return plan
@@ -260,6 +281,78 @@ class EpisodePreparationService:
         except (FileNotFoundError, ModelError, ValueError) as exc:
             self._mark_failed(project_id, str(exc))
             raise
+
+    @staticmethod
+    def _planning_key(
+        corpus: CorpusArtifacts,
+        brief: ResearchBrief,
+        *,
+        include_duration: bool,
+    ) -> str:
+        return planning_input_key(
+            source_ids=corpus.source_ids,
+            claim_ids=[claim.claim_id for claim in corpus.claims],
+            extraction_plans=corpus.extraction_plans,
+            brief=brief,
+            include_duration=include_duration,
+        )
+
+    def _reusable_coverage(
+        self,
+        project_id: UUID,
+        key: str,
+        brief: ResearchBrief,
+    ) -> CoverageReport | None:
+        """Return the stored audit when the corpus and the research question are the same.
+
+        The verdict is re-derived for the duration currently requested, so a reduced
+        duration is answered from the audit already paid for.
+        """
+
+        if self.episode_store.load_stage_inputs(project_id).coverage != key:
+            return None
+        try:
+            report = self.episode_store.load_coverage(project_id)
+        except (OSError, ValueError):
+            return None
+        verdict = can_plan_episode(
+            recommendation=report.recommendation,
+            max_supported_minutes=report.max_supported_minutes,
+            target_duration_minutes=brief.target_duration_minutes,
+        )
+        if report.can_plan_episode != verdict:
+            report.can_plan_episode = verdict
+            self.episode_store.save_coverage(report)
+        return report
+
+    def _reusable_plan(
+        self,
+        project_id: UUID,
+        stored_inputs: EpisodeStageInputs,
+        key: str,
+    ) -> EpisodePlan | None:
+        if stored_inputs.plan != key:
+            return None
+        try:
+            return self.episode_store.load_plan(project_id)
+        except (OSError, ValueError):
+            return None
+
+    def _save_coverage_manifest(
+        self,
+        project_id: UUID,
+        report: CoverageReport,
+        source_ids: list[UUID],
+    ) -> None:
+        self.episode_store.save_manifest(
+            EpisodePreparationManifest(
+                project_id=project_id,
+                status="coverage_ready",
+                source_ids=source_ids,
+                coverage_recommendation=report.recommendation,
+                model_run_ids=[report.model_run_id],
+            )
+        )
 
     def _load_corpus(self, project_id: UUID) -> CorpusArtifacts:
         project = self.workspace_store.load_project(project_id)

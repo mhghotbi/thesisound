@@ -161,6 +161,18 @@ class EpisodeBudgetReport(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
+class EpisodeStageInputs(BaseModel):
+    """Input keys the stored coverage report and episode plan were produced from.
+
+    A stage is reusable only while its key still matches the current inputs. Writing a
+    fresh coverage report clears `plan`, because everything downstream of coverage was
+    planned against the answer that just changed.
+    """
+
+    coverage: str | None = None
+    plan: str | None = None
+
+
 class EpisodePreparationManifest(BaseModel):
     project_id: UUID
     status: Literal[

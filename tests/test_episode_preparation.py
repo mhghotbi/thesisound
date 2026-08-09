@@ -46,6 +46,10 @@ from thesisound.source_analysis import (
 
 
 class FakeEpisodeRunner:
+    def __init__(self, fail_stages: set[str] | None = None) -> None:
+        self.calls: list[str] = []
+        self.fail_stages = fail_stages or set()
+
     def run(
         self,
         *,
@@ -57,6 +61,9 @@ class FakeEpisodeRunner:
         validator=None,
         **_: object,
     ):
+        self.calls.append(stage)
+        if stage in self.fail_stages:
+            raise ValueError(f"{stage} failed")
         if output_type is CoverageAuditDraft:
             brief = variables["research_brief"]
             claims = variables["claims"]
@@ -164,9 +171,12 @@ def _claim(index: int, evidence_id: str) -> ClaimRecord:
     )
 
 
-def _seed_source(root: Path, project_id: UUID) -> UUID:
+def _seed_source(root: Path, project_id: UUID, *, offset: int = 0) -> UUID:
+    """Seed one claim-ready source; `offset` keeps a second source's IDs distinct."""
+
     source_id = uuid4()
     store = SourceArtifactStore(root)
+    first, last = 1 + offset, 3 + offset
     blocks = [
         SourceDocumentBlock(
             block_id=f"block-{index}",
@@ -177,10 +187,10 @@ def _seed_source(root: Path, project_id: UUID) -> UUID:
             text=f"Original grounded passage number {index} explains action and plurality.",
             estimated_token_count=80,
             source_block_keys=[f"p{index}"],
-            previous_block_id=f"block-{index - 1}" if index > 1 else None,
-            next_block_id=f"block-{index + 1}" if index < 3 else None,
+            previous_block_id=f"block-{index - 1}" if index > first else None,
+            next_block_id=f"block-{index + 1}" if index < last else None,
         )
-        for index in range(1, 4)
+        for index in range(first, last + 1)
     ]
     store.save_blocks(
         project_id,
@@ -194,7 +204,7 @@ def _seed_source(root: Path, project_id: UUID) -> UUID:
     )
     records = []
     claims = []
-    for index, block in enumerate(blocks, start=1):
+    for index, block in enumerate(blocks, start=first):
         evidence = EvidenceItem(
             evidence_id=f"ev-{index}",
             source_id=source_id,
@@ -260,8 +270,8 @@ def _seed_source(root: Path, project_id: UUID) -> UUID:
     return source_id
 
 
-def _service(root: Path) -> EpisodePreparationService:
-    runner = FakeEpisodeRunner()
+def _service(root: Path, runner: FakeEpisodeRunner | None = None) -> EpisodePreparationService:
+    runner = runner or FakeEpisodeRunner()
     return EpisodePreparationService(
         workspace_store=WorkspaceStore(root),
         source_store=SourceArtifactStore(root),
@@ -309,6 +319,120 @@ def test_prepare_episode_writes_plan_and_grounded_packs(tmp_path: Path) -> None:
     assert (episode_dir / "disagreement-graph.json").exists()
     assert (episode_dir / "episode-plan.json").exists()
     assert (episode_dir / "evidence-packs.jsonl").exists()
+
+
+def _prepared_project(root: Path, duration: int = 10) -> Project:
+    workspace = WorkspaceStore(root)
+    project = Project(
+        raw_input="Arendt and action",
+        state=ProjectState.CORPUS_READY,
+        brief=_brief(duration),
+    )
+    workspace.save_project(project)
+    _seed_source(root, project.project_id)
+    return project
+
+
+def _prepare(root: Path, project_id: UUID, runner: FakeEpisodeRunner) -> None:
+    _service(root, runner).prepare_episode(
+        project_id,
+        coverage_model="fake-strong",
+        planning_model="fake-strong",
+    )
+
+
+def test_replanning_an_unchanged_corpus_reuses_both_model_stages(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project = _prepared_project(root)
+    runner = FakeEpisodeRunner()
+
+    _prepare(root, project.project_id, runner)
+    first_plan = EpisodeArtifactStore(root).load_plan(project.project_id)
+    _prepare(root, project.project_id, runner)
+
+    assert runner.calls == ["coverage_audit", "episode_plan"]
+    assert EpisodeArtifactStore(root).load_plan(project.project_id) == first_plan
+    assert WorkspaceStore(root).load_project(project.project_id).state == (
+        ProjectState.EPISODE_PLANNED
+    )
+
+
+def test_retrying_after_a_planning_failure_reuses_the_coverage_audit(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project = _prepared_project(root)
+    runner = FakeEpisodeRunner(fail_stages={"episode_plan"})
+
+    with pytest.raises(ValueError, match="episode_plan failed"):
+        _prepare(root, project.project_id, runner)
+    assert WorkspaceStore(root).load_project(project.project_id).state == (
+        ProjectState.FAILED_RETRYABLE
+    )
+
+    runner.fail_stages.clear()
+    _prepare(root, project.project_id, runner)
+
+    assert runner.calls == ["coverage_audit", "episode_plan", "episode_plan"]
+    assert WorkspaceStore(root).load_project(project.project_id).state == (
+        ProjectState.EPISODE_PLANNED
+    )
+
+
+def test_a_shorter_duration_reuses_the_coverage_audit_and_replans(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    workspace = WorkspaceStore(root)
+    project = _prepared_project(root, duration=10)
+    runner = FakeEpisodeRunner()
+    _prepare(root, project.project_id, runner)
+
+    shortened = workspace.load_project(project.project_id)
+    assert shortened.brief is not None
+    shortened.brief.target_duration_minutes = 5
+    workspace.save_project(shortened)
+    _prepare(root, project.project_id, runner)
+
+    assert runner.calls == ["coverage_audit", "episode_plan", "episode_plan"]
+    coverage = EpisodeArtifactStore(root).load_coverage(project.project_id)
+    assert coverage.max_supported_minutes == 10  # still the audited corpus, not the request
+    assert coverage.can_plan_episode is True
+
+
+def test_a_changed_corpus_reruns_both_model_stages(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project = _prepared_project(root)
+    runner = FakeEpisodeRunner()
+    _prepare(root, project.project_id, runner)
+
+    _seed_source(root, project.project_id, offset=3)  # a second source joins the corpus
+    _prepare(root, project.project_id, runner)
+
+    assert runner.calls == [
+        "coverage_audit",
+        "episode_plan",
+        "coverage_audit",
+        "episode_plan",
+    ]
+
+
+def test_a_fresh_coverage_audit_invalidates_the_stored_plan(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    workspace = WorkspaceStore(root)
+    project = _prepared_project(root)
+    runner = FakeEpisodeRunner()
+    _prepare(root, project.project_id, runner)
+
+    # A revised question re-audits coverage, so the plan built on the old audit cannot stand.
+    revised = workspace.load_project(project.project_id)
+    assert revised.brief is not None
+    revised.brief.central_question = "چه چیزی کنش را از ساختن جدا می‌کند؟"
+    workspace.save_project(revised)
+    _prepare(root, project.project_id, runner)
+
+    assert runner.calls == [
+        "coverage_audit",
+        "episode_plan",
+        "coverage_audit",
+        "episode_plan",
+    ]
 
 
 def test_longer_duration_prioritizes_more_claims() -> None:
