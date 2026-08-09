@@ -51,6 +51,20 @@ jobs:
       - name: Test
         run: uv run pytest -q
 
+      - name: Archive working tree
+        if: always()
+        run: |
+          tar --exclude=.git --exclude=.venv --exclude=working-tree.tgz \
+            -czf working-tree.tgz .
+
+      - name: Upload working tree
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: medium-items-working-tree-${{ github.run_number }}
+          path: working-tree.tgz
+          retention-days: 2
+
       - name: Commit validated changes
         run: |
           if git diff --quiet && git diff --cached --quiet; then
