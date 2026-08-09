@@ -6,9 +6,11 @@ ROOT = Path(__file__).resolve().parents[2]
 def replace(path: str, old: str, new: str) -> None:
     target = ROOT / path
     text = target.read_text(encoding="utf-8")
-    if new in text:
+    if new and new in text:
         return
     if old not in text:
+        if not new:
+            return
         raise RuntimeError(f"Missing item 2 correction anchor in {path}")
     target.write_text(text.replace(old, new, 1), encoding="utf-8")
 
