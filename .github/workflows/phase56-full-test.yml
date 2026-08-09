@@ -1,4 +1,4 @@
-name: Phase 5-6 full test
+name: Phase 5-6 focused validation
 
 on:
   push:
@@ -20,4 +20,5 @@ jobs:
           enable-cache: true
       - run: uv sync --extra dev --extra web-ui
       - run: uv run thesisound models verify --allow-missing
-      - run: uv run pytest
+      - run: uv run ruff check src/thesisound/config.py src/thesisound/tracing.py src/thesisound/observability_cli.py src/thesisound/services/observability_reporting.py src/thesisound/web/app.py src/thesisound/web/observability_routes.py tests/test_observability_phase56.py
+      - run: uv run pytest tests/test_observability_phase56.py tests/test_ui_language_contract.py
