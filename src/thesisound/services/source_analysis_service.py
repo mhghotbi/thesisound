@@ -55,9 +55,7 @@ class SourceAnalysisService:
         self.document_mapper = document_mapper
         self.evidence_extractor = evidence_extractor
         self.claim_reconciler = claim_reconciler
-        self.document_map_cache = document_map_cache or DocumentMapCache(
-            workspace_store.root
-        )
+        self.document_map_cache = document_map_cache or DocumentMapCache(workspace_store.root)
 
     def build_blocks(
         self,
@@ -206,9 +204,7 @@ class SourceAnalysisService:
             for record in self.artifact_store.load_block_extractions(project_id, source_id)
             if record.block_id in known_ids
         ]
-        extracted_prior = [
-            record for record in prior if record.status == "extracted"
-        ]
+        extracted_prior = [record for record in prior if record.status == "extracted"]
         skip_ids = {record.block_id for record in extracted_prior}
 
         def save_one(record: BlockEvidenceExtraction) -> None:
@@ -231,11 +227,7 @@ class SourceAnalysisService:
         )
         by_id = {record.block_id: record for record in extracted_prior}
         by_id.update({record.block_id: record for record in new_records})
-        records = [
-            by_id[block.block_id]
-            for block in blocks
-            if block.block_id in by_id
-        ]
+        records = [by_id[block.block_id] for block in blocks if block.block_id in by_id]
         validate_evidence_collection(
             [record for record in records if record.status == "extracted"],
             blocks,
@@ -243,9 +235,7 @@ class SourceAnalysisService:
         self.artifact_store.save_evidence(project_id, source_id, records)
 
         selected_ids = set(plan.selected_block_ids)
-        kept_ids = {
-            record.block_id for record in records if record.status == "extracted"
-        }
+        kept_ids = {record.block_id for record in records if record.status == "extracted"}
         kept_tokens = sum(
             block.estimated_token_count
             for block in blocks
@@ -256,16 +246,32 @@ class SourceAnalysisService:
         kept_coverage = kept_tokens / total_tokens if total_tokens else 1.0
         retention = kept_tokens / planned_tokens if planned_tokens else 1.0
         claim_count = sum(
-            len(record.extraction.claims)
-            for record in records
-            if record.status == "extracted"
+            len(record.extraction.claims) for record in records if record.status == "extracted"
         )
         rejected = [record for record in records if record.status == "rejected"]
+        skipped = [record for record in records if record.status == "skipped"]
         warnings = [
             f"Rejected evidence for {record.block_id}: {record.rejection_reason}"
             for record in rejected
             if record.rejection_reason
         ]
+        for record in skipped:
+            reason = record.rejection_reason or "provider failure"
+            warnings.append(f"Skipped evidence for {record.block_id}: {reason}")
+            tracing.event(
+                "corpus.block_skipped",
+                component="corpus",
+                level="warn",
+                project_id=project_id,
+                subject_type="block",
+                subject_id=record.block_id,
+                reason=reason,
+            )
+        warnings.append(
+            f"Extracted {len(kept_ids)} of {len(plan.selected_block_ids)} planned blocks; "
+            f"{len(skipped)} skipped after provider errors, {len(rejected)} rejected. "
+            f"Kept {retention:.0%} of planned tokens."
+        )
 
         manifest = self.artifact_store.load_manifest(project_id, source_id)
         manifest.status = "evidence_ready"
@@ -274,6 +280,7 @@ class SourceAnalysisService:
         manifest.analysis_depth = plan.profile.depth
         manifest.evidence_token_coverage = min(1.0, kept_coverage)
         manifest.evidence_count = claim_count
+        manifest.skipped_block_count = len(skipped)
         manifest.model_run_ids.extend(run.run_id for run in runs)
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
@@ -285,7 +292,7 @@ class SourceAnalysisService:
         if retention + 1e-9 < _MIN_PLANNED_TOKEN_RETENTION:
             raise ValueError(
                 f"Evidence extraction lost {1 - retention:.0%} of the planned source tokens "
-                f"across {len(rejected)} rejected block(s); at least "
+                f"across {len(rejected)} rejected and {len(skipped)} skipped block(s); at least "
                 f"{_MIN_PLANNED_TOKEN_RETENTION:.0%} must survive. "
                 f"Kept coverage is {kept_coverage:.0%} of the source."
             )
@@ -397,9 +404,7 @@ class SourceAnalysisService:
         if document_map.source_id != source_id:
             return None
         known_ids = {block.block_id for block in blocks}
-        content_ids = {
-            block.block_id for block in blocks if block.block_type != "front_matter"
-        }
+        content_ids = {block.block_id for block in blocks if block.block_type != "front_matter"}
         mapped: list[str] = []
         for section in document_map.sections:
             if set(section.source_block_ids) - known_ids:

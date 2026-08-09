@@ -35,6 +35,7 @@ _STATE_LABELS = {
     ProjectState.SCRIPT_DRAFTING: "در حال نوشتن متن گفتار",
     ProjectState.SCRIPT_READY: "متن گفتار آمادهٔ وارسی است",
     ProjectState.SCRIPT_VERIFYING: "در حال راستی‌آزمایی متن گفتار",
+    ProjectState.SCRIPT_REVIEW_REQUIRED: "متن گفتار نیازمند بازبینی است",
     ProjectState.SCRIPT_VERIFIED: "متن گفتار تأیید شد",
     ProjectState.AUDIO_GENERATING: "در حال ساخت نسخهٔ شنیداری",
     ProjectState.AUDIO_READY: "نسخهٔ شنیداری آمادهٔ وارسی است",
@@ -56,6 +57,7 @@ _STEP_BY_STATE = {
     ProjectState.SCRIPT_DRAFTING: 5,
     ProjectState.SCRIPT_READY: 5,
     ProjectState.SCRIPT_VERIFYING: 5,
+    ProjectState.SCRIPT_REVIEW_REQUIRED: 5,
     ProjectState.SCRIPT_VERIFIED: 5,
     ProjectState.AUDIO_GENERATING: 6,
     ProjectState.AUDIO_READY: 6,
@@ -201,8 +203,7 @@ def build_project_read_model(
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
-                "طرح گفتار بر پایهٔ بسندگی شاهدها ساخته‌شده و "
-                "برای تأیید انسانی آماده است."
+                "طرح گفتار بر پایهٔ بسندگی شاهدها ساخته‌شده و برای تأیید انسانی آماده است."
             ),
         )
 
@@ -223,6 +224,22 @@ def build_project_read_model(
             overview_summary="متن گفتار در حال نگارش، وارسی ساختاری و راستی‌آزمایی مستقل است.",
         )
 
+    if project.state == ProjectState.SCRIPT_REVIEW_REQUIRED:
+        return _read_model(
+            project,
+            attention_label="متن گفتار نیازمند بازبینی است",
+            primary_action_label="بازبینی متن گفتار",
+            primary_action_url=f"/projects/{project_id}/script",
+            tone="attention",
+            group_key="attention",
+            group_label="منتظر شما",
+            requires_action=True,
+            overview_summary=(
+                "راستی‌آزمایی نکته‌ای غیرمسدودکننده باقی گذاشته است؛ "
+                "پذیرش یا بازگرداندن متن باید با دلیل ثبت شود."
+            ),
+        )
+
     if project.state == ProjectState.SCRIPT_VERIFIED:
         return _read_model(
             project,
@@ -234,8 +251,7 @@ def build_project_read_model(
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
-                "همهٔ گفته‌های محتوایی از وارسی ساختاری و "
-                "راستی‌آزمایی مستقل عبور کرده‌اند."
+                "همهٔ گفته‌های محتوایی از وارسی ساختاری و راستی‌آزمایی مستقل عبور کرده‌اند."
             ),
         )
 

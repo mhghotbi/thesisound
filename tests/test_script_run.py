@@ -246,9 +246,7 @@ def test_restart_reconciles_verified_project_with_stale_running_pointer(
         project.project_id,
         VerificationDraft(verdict="pass", unsupported_claim_ratio=0),
     )
-    store.save_manifest(
-        ScriptPipelineManifest(project_id=project.project_id, status="verified")
-    )
+    store.save_manifest(ScriptPipelineManifest(project_id=project.project_id, status="verified"))
 
     recovered = service.recover_interrupted_runs()
 
@@ -275,3 +273,66 @@ def test_restart_marks_active_script_state_retryable(tmp_path: Path) -> None:
 
     assert service.run_store.load(project.project_id).status == "failed"
     assert workspace.load_project(project.project_id).state == ProjectState.FAILED_RETRYABLE
+
+
+def test_review_required_artifacts_survive_interrupted_run_recovery(
+    tmp_path: Path,
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    pipeline = FakePipeline(workspace)
+    service = _service(tmp_path, project, pipeline)
+    run = service.approve_and_queue(project.project_id, approved_by="operator")
+    run.status = "running"
+    run.stage = "verifying_revision"
+    service.run_store.save(run)
+
+    review = workspace.load_project(project.project_id)
+    transition(review, ProjectState.SCRIPT_DRAFTING)
+    transition(review, ProjectState.SCRIPT_READY)
+    transition(review, ProjectState.SCRIPT_VERIFYING)
+    transition(review, ProjectState.SCRIPT_REVIEW_REQUIRED)
+    workspace.save_project(review)
+    store = ScriptArtifactStore(workspace.root)
+    store.save_script(
+        project.project_id,
+        Script(
+            title="متن",
+            turns=[
+                ScriptTurn(
+                    turn_id="seg-1-turn-001",
+                    segment_id="seg-1",
+                    speaker="A",
+                    spoken_text_fa="متن",
+                    claim_ids=["claim-1"],
+                    evidence_ids=["evidence-1"],
+                )
+            ],
+        ),
+    )
+    store.save_checks(
+        ScriptCheckReport(
+            project_id=project.project_id,
+            verdict="pass",
+            word_count=1,
+            estimated_minutes=0.01,
+            substantive_turn_count=1,
+        )
+    )
+    store.save_verification(
+        project.project_id,
+        VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),
+    )
+    store.save_manifest(
+        ScriptPipelineManifest(
+            project_id=project.project_id,
+            status="review_required",
+            last_error="Human review required.",
+        )
+    )
+
+    recovered = service.recover_interrupted_runs()
+
+    assert recovered == [project.project_id]
+    assert service.run_store.load(project.project_id).status == "succeeded"
+    assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_REVIEW_REQUIRED

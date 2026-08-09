@@ -23,6 +23,7 @@ from thesisound.services.persian_script_writer import PersianScriptWriterService
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
+from thesisound.services.script_outcome import script_outcome
 from thesisound.services.script_quality import is_better
 from thesisound.services.script_reviser import TargetedScriptReviserService
 from thesisound.services.script_verifier import ScriptVerifierService
@@ -45,6 +46,8 @@ class ScriptPipelineService:
         script_checker: ScriptChecker,
         verifier: ScriptVerifierService,
         reviser: TargetedScriptReviserService,
+        quality_gate_enabled: bool = False,
+        min_quality_overall: float = 0.70,
     ) -> None:
         self.workspace_store = workspace_store
         self.source_store = source_store
@@ -56,6 +59,8 @@ class ScriptPipelineService:
         self.script_checker = script_checker
         self.verifier = verifier
         self.reviser = reviser
+        self.quality_gate_enabled = quality_gate_enabled
+        self.min_quality_overall = min_quality_overall
 
     def build_glossary(
         self,
@@ -107,8 +112,7 @@ class ScriptPipelineService:
         glossary = self.script_store.load_glossary(project_id)
         graph = self.episode_store.load_disagreement_graph(project_id)
         pack_by_segment = {
-            pack.segment_id: pack
-            for pack in self.episode_store.load_evidence_packs(project_id)
+            pack.segment_id: pack for pack in self.episode_store.load_evidence_packs(project_id)
         }
         turns: list[ScriptTurn] = []
         run_ids = []
@@ -287,8 +291,11 @@ class ScriptPipelineService:
                     )
             else:
                 tracing.event(
-                    "cache.lookup", component="cache", project_id=project_id,
-                    cache="script_glossary", result="hit",
+                    "cache.lookup",
+                    component="cache",
+                    project_id=project_id,
+                    cache="script_glossary",
+                    result="hit",
                 )
 
             script = self.script_store.load_script_optional(project_id)
@@ -305,8 +312,11 @@ class ScriptPipelineService:
             else:
                 self._ensure_script_ready(project_id, script)
                 tracing.event(
-                    "cache.lookup", component="cache", project_id=project_id,
-                    cache="script_draft", result="hit",
+                    "cache.lookup",
+                    component="cache",
+                    project_id=project_id,
+                    cache="script_draft",
+                    result="hit",
                 )
 
             checks = self.script_store.load_checks_optional(project_id)
@@ -338,9 +348,7 @@ class ScriptPipelineService:
                         )
                         span.set(verdict=verification.verdict)
                         if verification.quality is not None:
-                            span.measure(
-                                quality_overall=verification.quality.overall
-                            )
+                            span.measure(quality_overall=verification.quality.overall)
 
             if checks.verdict != "pass" or verification.verdict != "pass":
                 revised = self.script_store.load_script_optional(project_id, revised=True)
@@ -369,15 +377,11 @@ class ScriptPipelineService:
                 original_script = self.script_store.load_script(project_id)
                 changed_turn_count = sum(
                     1
-                    for before, after in zip(
-                        original_script.turns, revised.turns, strict=True
-                    )
+                    for before, after in zip(original_script.turns, revised.turns, strict=True)
                     if before.spoken_text_fa != after.spoken_text_fa
                 )
                 original_overall = (
-                    verification.quality.overall
-                    if verification.quality is not None
-                    else None
+                    verification.quality.overall if verification.quality is not None else None
                 )
                 original_issue_count = len(checks.issues) + len(verification.issues)
                 if revised_checks.verdict != "pass":
@@ -396,8 +400,7 @@ class ScriptPipelineService:
                     )
                     self.script_store.save_revision_decision(decision)
                     raise ValueError(
-                        "Revised script failed deterministic checks; "
-                        "the original script was kept."
+                        "Revised script failed deterministic checks; the original script was kept."
                     )
 
                 revised_verification = self.script_store.load_verification_optional(
@@ -416,9 +419,7 @@ class ScriptPipelineService:
                         )
                         span.set(verdict=revised_verification.verdict)
                         if revised_verification.quality is not None:
-                            span.measure(
-                                quality_overall=revised_verification.quality.overall
-                            )
+                            span.measure(quality_overall=revised_verification.quality.overall)
                 revised_overall = (
                     revised_verification.quality.overall
                     if revised_verification.quality is not None
@@ -458,30 +459,26 @@ class ScriptPipelineService:
                     checks = revised_checks
                     verification = revised_verification
 
-            if verification.verdict != "pass" or verification.unsupported_claim_ratio != 0:
-                kept = "revision" if decision.accepted else "original"
-                before = (
-                    f"{decision.original_overall:.2f}"
-                    if decision.original_overall is not None
-                    else "n/a"
-                )
-                after = (
-                    f"{decision.revised_overall:.2f}"
-                    if decision.revised_overall is not None
-                    else "n/a"
-                )
-                raise ValueError(
-                    "Script failed verification after one targeted revision "
-                    f"(kept the {kept}; quality {before} -> {after})."
-                )
+            outcome, reason = script_outcome(
+                checks,
+                verification,
+                min_overall=(self.min_quality_overall if self.quality_gate_enabled else None),
+            )
+            if outcome == "rejected":
+                raise ValueError(f"Script rejected: {reason}")
             self._ensure_script_verifying(project_id, script)
             project = self.workspace_store.load_project(project_id)
-            transition(project, ProjectState.SCRIPT_VERIFIED)
-            project.script = script
-            self.workspace_store.save_project(project)
             manifest = self.script_store.load_manifest(project_id)
-            manifest.status = "verified"
-            manifest.last_error = None
+            project.script = script
+            if outcome == "review_required":
+                transition(project, ProjectState.SCRIPT_REVIEW_REQUIRED)
+                manifest.status = "review_required"
+                manifest.last_error = reason
+            else:
+                transition(project, ProjectState.SCRIPT_VERIFIED)
+                manifest.status = "verified"
+                manifest.last_error = None
+            self.workspace_store.save_project(project)
             manifest.updated_at = datetime.now(UTC)
             self.script_store.save_manifest(manifest)
             return ScriptPipelineResult(
@@ -497,9 +494,7 @@ class ScriptPipelineService:
     def _load_claims(self, project_id: UUID) -> list[ClaimRecord]:
         project = self.workspace_store.load_project(project_id)
         claim_ready_ids = self.source_store.list_claim_ready_source_ids(project_id)
-        source_ids = [
-            source.source_id for source in project.sources if source.usable_as_evidence
-        ]
+        source_ids = [source.source_id for source in project.sources if source.usable_as_evidence]
         if not project.sources:
             source_ids = claim_ready_ids
         if not source_ids:
@@ -512,9 +507,7 @@ class ScriptPipelineService:
             )
         claims: list[ClaimRecord] = []
         for source_id in source_ids:
-            claims.extend(
-                self.source_store.load_claim_ledger(project_id, source_id).claims
-            )
+            claims.extend(self.source_store.load_claim_ledger(project_id, source_id).claims)
         return claims
 
     def _ensure_script_drafting(self, project_id: UUID) -> None:
@@ -526,6 +519,7 @@ class ScriptPipelineService:
             ProjectState.FAILED_RETRYABLE,
             ProjectState.SCRIPT_READY,
             ProjectState.SCRIPT_VERIFYING,
+            ProjectState.SCRIPT_REVIEW_REQUIRED,
         }:
             transition(project, ProjectState.SCRIPT_DRAFTING)
         else:
@@ -588,6 +582,7 @@ class ScriptPipelineService:
             ProjectState.FAILED_RETRYABLE,
             ProjectState.SCRIPT_READY,
             ProjectState.SCRIPT_VERIFYING,
+            ProjectState.SCRIPT_REVIEW_REQUIRED,
         }:
             transition(project, ProjectState.SCRIPT_DRAFTING)
         elif project.state != ProjectState.SCRIPT_DRAFTING:

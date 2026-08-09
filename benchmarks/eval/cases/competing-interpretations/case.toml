@@ -1,0 +1,16 @@
+sources = ["interpretation-a.md", "interpretation-b.md"]
+
+[brief]
+normalized_topic = "Competing interpretations of a philosophical thesis"
+topic_type = "debate"
+central_question = "Where do two scholarly interpretations agree, and where do their explanations diverge?"
+audience = "educated general listener"
+prior_knowledge = "intermediate"
+target_duration_minutes = 5
+output_language = "fa"
+modes = ["comparative", "debate"]
+learning_objectives = ["Separate agreement from disagreement", "Attribute each interpretation accurately"]
+subquestions = ["What evidence does each interpretation emphasize?"]
+scope_inclusions = ["agreement", "disagreement", "attribution"]
+scope_exclusions = ["author biography"]
+ambiguities = []

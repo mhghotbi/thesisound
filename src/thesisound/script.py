@@ -114,10 +114,7 @@ class ScriptQualityScore(BaseModel):
     @property
     def overall(self) -> float:
         return round(
-            sum(
-                getattr(self, name) * weight
-                for name, weight in _QUALITY_WEIGHTS.items()
-            ),
+            sum(getattr(self, name) * weight for name, weight in _QUALITY_WEIGHTS.items()),
             4,
         )
 
@@ -166,6 +163,7 @@ class ScriptPipelineManifest(BaseModel):
         "verification_ready",
         "revision_ready",
         "verified",
+        "review_required",
         "failed",
     ]
     segment_count: int = Field(default=0, ge=0)
@@ -174,6 +172,19 @@ class ScriptPipelineManifest(BaseModel):
     model_run_ids: list[UUID] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     last_error: str | None = None
+
+
+class ScriptReviewDecision(BaseModel):
+    project_id: UUID
+    decision: Literal["accepted", "sent_back"]
+    reviewer: str = Field(min_length=1, max_length=200)
+    reason: str = Field(min_length=1, max_length=2_000)
+    plan_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    checks_verdict: str
+    verification_verdict: str
+    unsupported_claim_ratio: float
+    quality_overall: float | None
+    decided_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class ScriptPipelineResult(BaseModel):

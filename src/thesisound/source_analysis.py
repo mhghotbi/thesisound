@@ -168,11 +168,19 @@ class EvidenceExtractionDraft(BaseModel):
 
 
 class BlockEvidenceExtraction(BaseModel):
+    """One block extraction outcome.
+
+    ``rejected`` means the model answered but the answer remained unusable after
+    retries. ``skipped`` means no usable answer was obtained at all, normally
+    because a provider or safety failure prevented the model from answering.
+    """
+
     source_id: UUID
     block_id: str = Field(min_length=1)
     extraction: EvidenceExtraction
-    status: Literal["extracted", "rejected"] = "extracted"
+    status: Literal["extracted", "rejected", "skipped"] = "extracted"
     rejection_reason: str | None = None
+    failure_kind: Literal["contract", "provider"] | None = None
 
 
 class ClaimDraft(BaseModel):
@@ -220,6 +228,7 @@ class SourceAnalysisManifest(BaseModel):
     analysis_depth: AnalysisDepth | None = None
     evidence_token_coverage: float | None = Field(default=None, ge=0, le=1)
     evidence_count: int = Field(default=0, ge=0)
+    skipped_block_count: int = Field(default=0, ge=0)
     claim_count: int = Field(default=0, ge=0)
     model_run_ids: list[UUID] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

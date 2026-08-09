@@ -2,6 +2,8 @@
 
 Last updated: 2026-08-08
 
+The operating procedure is [`docs/34-production-sop.md`](docs/34-production-sop.md). The `thesisound readiness` command and matching web view re-run stored-input gate logic without model calls. The frozen machine-checkable evaluation is under [`benchmarks/eval/`](benchmarks/eval/); human scoring and the blind NotebookLM comparison remain separate work.
+
 ## Implemented local end-to-end path
 
 ```text
@@ -18,6 +20,7 @@ OTP login
 → explicitly approved Episode Plan
 → grounded Persian script
 → deterministic checks and independent verification
+→ named human review when verification leaves non-blocking issues
 → direct UI transition to audio
 → runtime preflight before provider work
 → TTS-safe chunks

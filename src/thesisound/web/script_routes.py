@@ -9,7 +9,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound.domain import Locator, Project, ProjectState, Script
-from thesisound.pipeline import WorkspaceStore
+from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.script import ScriptReviewDecision
 from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
     episode_plan_hash,
@@ -110,6 +111,74 @@ def register_script_routes(
             )
         return _script_redirect(project_id)
 
+    @app.post("/projects/{project_id}/script/review")
+    def review_script(
+        request: Request,
+        background_tasks: BackgroundTasks,
+        project_id: UUID,
+        csrf_token: Annotated[str, Form()],
+        decision: Annotated[str, Form()],
+        reason: Annotated[str, Form()],
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        try:
+            validate_csrf(request, csrf_token)
+            project = workspace.load_project(project_id)
+            if project.state != ProjectState.SCRIPT_REVIEW_REQUIRED:
+                raise ValueError("This script is not awaiting a review decision.")
+            clean_reason = reason.strip()
+            if not clean_reason:
+                raise ValueError("A review reason is required.")
+            if decision not in {"accept", "send_back"}:
+                raise ValueError("Unknown script review decision.")
+            plan_hash = episode_plan_hash(project.episode_plan) if project.episode_plan else ""
+            checks = script_store.load_latest_checks(project_id)
+            verification = script_store.load_latest_verification(project_id)
+            review = ScriptReviewDecision(
+                project_id=project_id,
+                decision="accepted" if decision == "accept" else "sent_back",
+                reviewer=request.state.account.label,
+                reason=clean_reason,
+                plan_hash=plan_hash,
+                checks_verdict=checks.verdict,
+                verification_verdict=verification.verdict,
+                unsupported_claim_ratio=verification.unsupported_claim_ratio,
+                quality_overall=(
+                    verification.quality.overall if verification.quality is not None else None
+                ),
+            )
+            script_store.save_review_decision(review)
+            manifest = script_store.load_manifest(project_id)
+            if decision == "accept":
+                transition(project, ProjectState.SCRIPT_VERIFIED)
+                manifest.status = "verified"
+                manifest.last_error = None
+            else:
+                transition(project, ProjectState.SCRIPT_DRAFTING)
+                manifest.last_error = clean_reason
+            workspace.save_project(project)
+            script_store.save_manifest(manifest)
+            if decision == "send_back":
+                builder.send_back(project_id)
+                background_tasks.add_task(execute, project_id)
+        except (OSError, RuntimeError, ValueError) as error:
+            return _render_script_page(
+                request,
+                project_id,
+                workspace=workspace,
+                builder=builder,
+                script_store=script_store,
+                approval_store=approval_store,
+                source_store=source_store,
+                render=render,
+                error=user_facing_error(error, action="script"),
+                status_code=422,
+            )
+        return _script_redirect(project_id)
+
     @app.post("/projects/{project_id}/script/retry")
     def retry_script(
         request: Request,
@@ -163,8 +232,7 @@ def _render_script_page(
     stored_approval = approval_store.load_optional(project_id)
     run = (
         stored_run
-        if stored_run is not None
-        and stored_run.approved_plan_hash == current_plan_hash
+        if stored_run is not None and stored_run.approved_plan_hash == current_plan_hash
         else None
     )
     approval = (
@@ -173,18 +241,13 @@ def _render_script_page(
         else None
     )
     artifacts_current = bool(
-        current_plan_hash
-        and script_store.artifacts_match_plan(project_id, current_plan_hash)
+        current_plan_hash and script_store.artifacts_match_plan(project_id, current_plan_hash)
     )
     script = (
-        _load_optional(script_store.load_latest_script, project_id)
-        if artifacts_current
-        else None
+        _load_optional(script_store.load_latest_script, project_id) if artifacts_current else None
     )
     checks = (
-        _load_optional(script_store.load_latest_checks, project_id)
-        if artifacts_current
-        else None
+        _load_optional(script_store.load_latest_checks, project_id) if artifacts_current else None
     )
     verification = (
         _load_optional(script_store.load_latest_verification, project_id)
@@ -209,6 +272,12 @@ def _render_script_page(
                 if artifacts_current
                 else None
             ),
+            "review_decision": (
+                script_store.load_review_decision_optional(project_id)
+                if artifacts_current
+                else None
+            ),
+            "outcome_reason": manifest.last_error if manifest else None,
             "manifest": manifest,
             "used_revision": bool(
                 artifacts_current and script_store.has_revised_script(project_id)
@@ -218,8 +287,7 @@ def _render_script_page(
             "can_retry": bool(
                 run
                 and run.status == "failed"
-                and project.state
-                in {ProjectState.EPISODE_PLANNED, ProjectState.FAILED_RETRYABLE}
+                and project.state in {ProjectState.EPISODE_PLANNED, ProjectState.FAILED_RETRYABLE}
             ),
             "error": error,
         },
@@ -288,10 +356,7 @@ def _locator_label(locator: Locator) -> str:
         parts.append(f"بخش {locator.section}")
     if locator.paragraph_start is not None:
         paragraph = str(locator.paragraph_start)
-        if (
-            locator.paragraph_end is not None
-            and locator.paragraph_end != locator.paragraph_start
-        ):
+        if locator.paragraph_end is not None and locator.paragraph_end != locator.paragraph_start:
             paragraph += f"–{locator.paragraph_end}"
         parts.append(f"بند {paragraph}")
     return "، ".join(parts) if parts else "نشانی در منبع مشخص نیست"

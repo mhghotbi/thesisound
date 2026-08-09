@@ -24,6 +24,7 @@ from thesisound.ingestion import IngestionResult, ParserRoute
 from thesisound.modeling import (
     DeterministicValidationError,
     ModelExecution,
+    ModelProviderError,
     ModelRunRecord,
 )
 from thesisound.pipeline import WorkspaceStore
@@ -223,6 +224,20 @@ def _ingestion(path: Path) -> IngestionResult:
     )
 
 
+class ProviderSkippingRunner(FakeRunner):
+    def __init__(self, provider_error_block_ids: set[str]) -> None:
+        super().__init__()
+        self.provider_error_block_ids = provider_error_block_ids
+
+    def run(self, *, output_type, variables: dict[str, object], **kwargs):
+        if output_type is EvidenceExtractionDraft:
+            block = variables["block"]
+            assert isinstance(block, dict)
+            if str(block["block_id"]) in self.provider_error_block_ids:
+                raise ModelProviderError(f"provider failed for {block['block_id']}")
+        return super().run(output_type=output_type, variables=variables, **kwargs)
+
+
 def _brief(duration: int = 30) -> ResearchBrief:
     return ResearchBrief(
         normalized_topic="Arendt and action",
@@ -390,11 +405,7 @@ def test_complete_one_source_pipeline_writes_auditable_artifacts(
     )
 
     source_dir = (
-        tmp_path
-        / "workspaces"
-        / str(project.project_id)
-        / "sources"
-        / str(manifest.source_id)
+        tmp_path / "workspaces" / str(project.project_id) / "sources" / str(manifest.source_id)
     )
     assert manifest.status == "claims_ready"
     assert manifest.block_count == 1
@@ -723,9 +734,7 @@ def test_document_map_is_shared_between_sources_with_the_same_text(tmp_path: Pat
         block_id for section in reused.sections for block_id in section.source_block_ids
     ]
     assert reused_blocks
-    assert all(
-        block_id.startswith(f"blk-{str(second_source)[:8]}") for block_id in reused_blocks
-    )
+    assert all(block_id.startswith(f"blk-{str(second_source)[:8]}") for block_id in reused_blocks)
 
 
 def test_shared_document_map_reuse_emits_a_cache_hit_event(
@@ -825,6 +834,7 @@ def _prepare_equal_blocks_source(
     block_count: int,
     tokens_per_block: int,
     reject_block_ids: set[str] | frozenset[str] = frozenset(),
+    provider_error_block_ids: set[str] | frozenset[str] = frozenset(),
 ) -> tuple[SourceAnalysisService, UUID, UUID, list[SourceDocumentBlock]]:
     workspace = WorkspaceStore(tmp_path / "workspaces")
     project = Project(
@@ -871,7 +881,11 @@ def _prepare_equal_blocks_source(
         )
     )
     map_runner = FakeRunner()
-    evidence_runner = FakeRunner(reject_block_ids=reject_block_ids)
+    evidence_runner = (
+        ProviderSkippingRunner(set(provider_error_block_ids))
+        if provider_error_block_ids
+        else FakeRunner(reject_block_ids=reject_block_ids)
+    )
     service = SourceAnalysisService(
         workspace_store=workspace,
         artifact_store=store,
@@ -896,6 +910,36 @@ def test_evidence_gate_tolerates_single_block_rejection(tmp_path: Path) -> None:
     )
     _manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
     assert any("coverage" in warning.casefold() for warning in warnings)
+
+
+def test_manifest_records_skipped_block_count_and_warning(tmp_path: Path) -> None:
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=18,
+        tokens_per_block=100,
+        provider_error_block_ids={"block-02"},
+    )
+
+    manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
+
+    assert manifest.skipped_block_count == 1
+    assert any("1 skipped after provider errors" in warning for warning in warnings)
+
+
+def test_low_retention_after_skips_names_rejected_and_skipped_counts(
+    tmp_path: Path,
+) -> None:
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=18,
+        tokens_per_block=100,
+        provider_error_block_ids={"block-02", "block-03"},
+    )
+
+    with pytest.raises(ValueError, match=r"0 rejected and 2 skipped"):
+        service.extract_evidence(project_id, source_id, model="fake")
 
 
 def test_evidence_gate_fails_when_most_blocks_rejected(tmp_path: Path) -> None:

@@ -14,6 +14,7 @@ from thesisound.script import (
     RevisionDecision,
     ScriptCheckReport,
     ScriptPipelineManifest,
+    ScriptReviewDecision,
     SegmentScriptDraft,
     VerificationDraft,
 )
@@ -132,19 +133,25 @@ class ScriptArtifactStore:
             decision,
         )
 
-    def load_revision_decision_optional(
-        self, project_id: UUID
-    ) -> RevisionDecision | None:
+    def load_revision_decision_optional(self, project_id: UUID) -> RevisionDecision | None:
         path = self.script_dir(project_id, create=False) / "revision-decision.json"
         try:
             return RevisionDecision.model_validate_json(path.read_text(encoding="utf-8"))
         except FileNotFoundError:
             return None
 
+    def save_review_decision(self, decision: ScriptReviewDecision) -> None:
+        self._write_json(self.script_dir(decision.project_id) / "review-decision.json", decision)
+
+    def load_review_decision_optional(self, project_id: UUID) -> ScriptReviewDecision | None:
+        path = self.script_dir(project_id, create=False) / "review-decision.json"
+        try:
+            return ScriptReviewDecision.model_validate_json(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+
     def has_revised_script(self, project_id: UUID) -> bool:
-        if not (
-            self.script_dir(project_id, create=False) / "script-revised.json"
-        ).exists():
+        if not (self.script_dir(project_id, create=False) / "script-revised.json").exists():
             return False
         decision = self.load_revision_decision_optional(project_id)
         # Artifacts written before revision decisions existed have no file; keep
@@ -248,12 +255,42 @@ class ScriptArtifactStore:
             self.load_latest_script(project_id)
         except FileNotFoundError:
             return False
-        return (
+        verified_normally = (
             checks.verdict == "pass"
             and verification.verdict == "pass"
             and verification.unsupported_claim_ratio == 0
             and manifest.status == "verified"
         )
+        decision = self.load_review_decision_optional(project_id)
+        accepted_under_review = bool(
+            decision
+            and decision.decision == "accepted"
+            and decision.plan_hash == expected_hash
+            and manifest.status == "verified"
+        )
+        return verified_normally or accepted_under_review
+
+    def has_reviewable_artifacts(
+        self,
+        project_id: UUID,
+        *,
+        plan_hash: str,
+    ) -> bool:
+        """Whether a completed non-rejected pipeline result can await human review."""
+
+        if not self.artifacts_match_plan(project_id, plan_hash):
+            return False
+        try:
+            checks = self.load_latest_checks(project_id)
+            verification = self.load_latest_verification(project_id)
+            manifest = self.load_manifest(project_id)
+            self.load_latest_script(project_id)
+        except FileNotFoundError:
+            return False
+        from thesisound.services.script_outcome import script_outcome
+
+        outcome, _ = script_outcome(checks, verification)
+        return outcome == "review_required" and manifest.status == "review_required"
 
     def _current_run_plan_hash(self, project_id: UUID) -> str | None:
         path = self.workspace_root / str(project_id) / "script-build-run.json"
@@ -275,9 +312,7 @@ class ScriptArtifactStore:
 
     @staticmethod
     def _write_json(path: Path, value: BaseModel | dict[str, Any] | list[Any]) -> None:
-        payload: Any = (
-            value.model_dump(mode="json") if isinstance(value, BaseModel) else value
-        )
+        payload: Any = value.model_dump(mode="json") if isinstance(value, BaseModel) else value
         path.parent.mkdir(parents=True, exist_ok=True)
         temporary = path.with_suffix(path.suffix + ".tmp")
         temporary.write_text(
