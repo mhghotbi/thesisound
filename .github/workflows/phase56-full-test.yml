@@ -1,0 +1,23 @@
+name: Phase 5-6 full test
+
+on:
+  push:
+    branches: [codex/observability-phases-5-6]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev --extra web-ui
+      - run: uv run python scripts/validate_ocr_models_lock.py
+      - run: uv run pytest
