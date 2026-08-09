@@ -107,7 +107,7 @@
 {% endif %}
 
 <section class="section-block" aria-labelledby="obs-cache-title">
-  <div class="section-heading"><h2 id="obs-cache-title">کش و زمان تجمعی</h2><span>کل پروژه</span></div>
+  <div class="section-heading"><h2 id="obs-cache-title">کش و زمان تجمعی</h2><span>کل گفتار</span></div>
   <div class="obs-grid">
     {% for cache in cache_rates %}
     <div class="obs-metric"><span><bdi dir="ltr">{{ cache.cache }}</bdi></span><strong>{{ "%.1f%%" | format(cache.hit_rate * 100) }}</strong><small>{{ cache.hits | fa_num }} hit · {{ cache.misses | fa_num }} miss</small></div>
