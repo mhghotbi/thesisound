@@ -1,0 +1,86 @@
+name: Apply final medium adoption items
+
+on:
+  push:
+    branches: [implement-medium-items-6-10]
+    paths:
+      - .automation/medium-items.patch.gz
+      - .github/workflows/apply-final-medium-items.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-format-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v6
+        with:
+          ref: implement-medium-items-6-10
+          fetch-depth: 0
+
+      - name: Apply complete implementation patch
+        run: gzip -dc .automation/medium-items.patch.gz | git apply --binary --index
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra dev --extra web-ui
+
+      - name: Format and fix changed Python files
+        shell: bash
+        run: |
+          mapfile -t py_files < <(git diff --name-only --diff-filter=ACMR HEAD -- '*.py')
+          if ((${#py_files[@]})); then
+            uv run ruff format "${py_files[@]}"
+            uv run ruff check "${py_files[@]}" --fix
+          fi
+
+      - name: Lint entire repository
+        run: uv run ruff check . --output-format=github
+
+      - name: Validate OCR lock without downloading models
+        run: uv run thesisound models verify --allow-missing
+
+      - name: Validate frozen eval cases without model construction
+        run: uv run thesisound eval --dry-run
+
+      - name: Run complete test suite
+        run: uv run pytest -q
+
+      - name: Remove one-shot automation files
+        if: success()
+        run: rm -f .automation/medium-items.patch.gz .github/workflows/apply-final-medium-items.yml
+
+      - name: Commit validated implementation
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: implement server-mono medium adoption items"
+          git push origin HEAD:implement-medium-items-6-10
+
+      - name: Archive failed working tree
+        if: failure()
+        run: tar --exclude=.git --exclude=.venv -czf /tmp/failed-medium-tree.tgz .
+
+      - name: Upload failed working tree
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-medium-tree-${{ github.run_number }}
+          path: /tmp/failed-medium-tree.tgz
+          retention-days: 2
