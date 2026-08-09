@@ -6,6 +6,7 @@ on:
       - codex/server-mono-light-items-1-5
     paths:
       - .github/scripts/apply_item2.py
+      - .github/scripts/fix_item2_output.py
       - .github/scripts/fix_recent_baseline_lint.py
       - .github/workflows/apply-server-mono-light.yml
 
@@ -34,6 +35,8 @@ jobs:
         run: uv run python .github/scripts/fix_recent_baseline_lint.py
       - name: Apply current item
         run: uv run python .github/scripts/apply_item2.py
+      - name: Correct generated item 2 output
+        run: uv run python .github/scripts/fix_item2_output.py
       - name: Lint
         run: uv run ruff check src tests
       - name: Test
