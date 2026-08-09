@@ -50,7 +50,7 @@ _PREFLIGHT_POST_SCOPES: tuple[tuple[str, PreflightScope], ...] = (
     ("/audio/generate", "audio"),
     ("/audio/retry", "audio"),
 )
-_VALID_UI_THEMES = {"cobalt", "wood", "olive"}
+_VALID_UI_THEMES = {"cobalt", "wood", "olive", "slate"}
 _VALID_UI_MODES = {"simple", "operator"}
 _PERSIAN_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 _JALALI_MONTHS = (

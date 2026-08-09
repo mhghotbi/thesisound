@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="{{ url_for('static', path='/apple-touch-icon.png') }}">
   <script>
     (() => {
-      const themes = new Set(["cobalt", "wood", "olive"]);
+      const themes = new Set(["cobalt", "wood", "olive", "slate"]);
       const modes = new Set(["simple", "operator"]);
       try {
         const theme = localStorage.getItem("maqaal-theme") || localStorage.getItem("thesisound-theme");
@@ -62,6 +62,7 @@
             <button class="theme-option" type="button" data-theme-value="cobalt" aria-pressed="{{ 'true' if ui_theme == 'cobalt' else 'false' }}"><span class="theme-option__swatch" aria-hidden="true"></span>آبی</button>
             <button class="theme-option" type="button" data-theme-value="wood" aria-pressed="{{ 'true' if ui_theme == 'wood' else 'false' }}"><span class="theme-option__swatch" aria-hidden="true"></span>قهوه‌ای</button>
             <button class="theme-option" type="button" data-theme-value="olive" aria-pressed="{{ 'true' if ui_theme == 'olive' else 'false' }}"><span class="theme-option__swatch" aria-hidden="true"></span>سبز</button>
+            <button class="theme-option" type="button" data-theme-value="slate" aria-pressed="{{ 'true' if ui_theme == 'slate' else 'false' }}"><span class="theme-option__swatch" aria-hidden="true"></span>خاکستری</button>
           </div>
         </details>
         <form class="logout-form" method="post" action="/logout">

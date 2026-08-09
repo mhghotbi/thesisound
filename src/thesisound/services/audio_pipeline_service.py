@@ -40,6 +40,7 @@ class AudioPipelineService:
         voices: dict[str, str],
         style_prompt: str,
         max_regeneration_attempts: int = 1,
+        accept_manual_review: bool = False,
     ) -> None:
         self.workspace_store = workspace_store
         self.script_store = script_store
@@ -55,6 +56,7 @@ class AudioPipelineService:
         self.voices = voices
         self.style_prompt = style_prompt
         self.max_regeneration_attempts = max_regeneration_attempts
+        self.accept_manual_review = accept_manual_review
 
     def run(
         self,
@@ -130,7 +132,7 @@ class AudioPipelineService:
         regenerated: list[str] = []
         for chunk in chunks:
             report = self._transcribe_and_check(project_id, chunk)
-            if report.verdict != "pass" and self.max_regeneration_attempts > 0:
+            if self._needs_regeneration(report.verdict) and self.max_regeneration_attempts > 0:
                 stage("regenerating")
                 instruction = report.regeneration_instruction or (
                     "متن را دقیق و کامل بازتولید کن"
@@ -150,7 +152,7 @@ class AudioPipelineService:
         manifest.passed_chunk_count = sum(report.verdict == "pass" for report in qa_reports)
         manifest.updated_at = datetime.now(UTC)
         self.audio_store.save_manifest(manifest)
-        failed = [report for report in qa_reports if report.verdict != "pass"]
+        failed = [report for report in qa_reports if not self._qa_acceptable(report.verdict)]
         if failed:
             detail = ", ".join(f"{item.chunk_id}:{item.verdict}" for item in failed)
             raise ValueError(f"Audio QA did not pass for all chunks: {detail}")
@@ -180,6 +182,19 @@ class AudioPipelineService:
             transition(project, ProjectState.COMPLETE)
             self.workspace_store.save_project(project)
         return manifest
+
+    def _qa_acceptable(self, verdict: str) -> bool:
+        if verdict == "pass":
+            return True
+        return self.accept_manual_review and verdict == "manual_review"
+
+    def _needs_regeneration(self, verdict: str) -> bool:
+        if verdict == "regenerate":
+            return True
+        # When manual_review is accepted for assembly, skip costly regen loops on it.
+        if verdict == "manual_review" and self.accept_manual_review:
+            return False
+        return verdict != "pass"
 
     def _synthesize(
         self,

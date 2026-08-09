@@ -106,12 +106,14 @@ class AudioBuildRunService:
         script_store: ScriptArtifactStore,
         audio_store: AudioArtifactStore,
         pipeline_factory: Callable[[UUID], AudioPipelineService],
+        accept_manual_review: bool = False,
     ) -> None:
         self.workspace_store = workspace_store
         self.run_store = run_store
         self.script_store = script_store
         self.audio_store = audio_store
         self.pipeline_factory = pipeline_factory
+        self.accept_manual_review = accept_manual_review
         self._mutation_lock = Lock()
 
     def queue(self, project_id: UUID) -> AudioBuildRun:
@@ -178,19 +180,16 @@ class AudioBuildRunService:
             project = self.workspace_store.load_project(project_id)
             if project.state != ProjectState.COMPLETE:
                 raise ValueError("Audio pipeline ended without reaching COMPLETE.")
-            if not self.audio_store.has_verified_artifacts(
-                project_id,
-                script_hash=run.verified_script_hash,
-            ):
+            if not self._has_verified_artifacts(project_id, run.verified_script_hash):
                 raise ValueError("Audio pipeline ended without verified artifacts.")
             self._mark_succeeded(run)
             return run
         except Exception as exc:
             message = str(exc)[:1_000] or type(exc).__name__
             project = self.workspace_store.load_project(project_id)
-            if project.state == ProjectState.COMPLETE and self.audio_store.has_verified_artifacts(
+            if project.state == ProjectState.COMPLETE and self._has_verified_artifacts(
                 project_id,
-                script_hash=run.verified_script_hash,
+                run.verified_script_hash,
             ):
                 self._mark_succeeded(run)
                 return run
@@ -227,10 +226,7 @@ class AudioBuildRunService:
             except FileNotFoundError:
                 project = None
             if project is not None and project.state == ProjectState.COMPLETE:
-                if self.audio_store.has_verified_artifacts(
-                    run.project_id,
-                    script_hash=run.verified_script_hash,
-                ):
+                if self._has_verified_artifacts(run.project_id, run.verified_script_hash):
                     self._mark_succeeded(run)
                 else:
                     run.status = "failed"
@@ -261,6 +257,13 @@ class AudioBuildRunService:
                 self.workspace_store.save_project(project)
             recovered.append(run.project_id)
         return recovered
+
+    def _has_verified_artifacts(self, project_id: UUID, script_hash: str) -> bool:
+        return self.audio_store.has_verified_artifacts(
+            project_id,
+            script_hash=script_hash,
+            accept_manual_review=self.accept_manual_review,
+        )
 
     def _mark_succeeded(self, run: AudioBuildRun) -> None:
         run.status = "succeeded"

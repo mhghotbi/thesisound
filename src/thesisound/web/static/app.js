@@ -1,6 +1,6 @@
 (() => {
   const root = document.documentElement;
-  const validThemes = new Set(["cobalt", "wood", "olive"]);
+  const validThemes = new Set(["cobalt", "wood", "olive", "slate"]);
   const validModes = new Set(["simple", "operator"]);
   const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
 

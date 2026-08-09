@@ -114,9 +114,46 @@ def register_audio_routes(
             digest = script_hash(script_store.load_latest_script(project_id))
         except FileNotFoundError:
             return Response(status_code=404)
-        if not audio_store.has_verified_artifacts(project_id, script_hash=digest):
+        if not audio_store.has_verified_artifacts(
+            project_id,
+            script_hash=digest,
+            accept_manual_review=builder.accept_manual_review,
+        ):
             return Response(status_code=404)
-        return FileResponse(audio_store.final_audio_path(project_id), media_type="audio/wav")
+        return FileResponse(
+            audio_store.final_audio_path(project_id),
+            media_type="audio/wav",
+            filename="final.wav",
+        )
+
+    @app.get("/projects/{project_id}/audio/final.mp3")
+    def final_audio_mp3(request: Request, project_id: UUID) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        project = workspace.load_project(project_id)
+        if project.state != ProjectState.COMPLETE:
+            return Response(status_code=404)
+        try:
+            digest = script_hash(script_store.load_latest_script(project_id))
+        except FileNotFoundError:
+            return Response(status_code=404)
+        if not audio_store.has_verified_artifacts(
+            project_id,
+            script_hash=digest,
+            accept_manual_review=builder.accept_manual_review,
+        ):
+            return Response(status_code=404)
+        mp3_path = audio_store.final_mp3_path(project_id)
+        if not mp3_path.exists():
+            try:
+                mp3_path = audio_store.write_final_mp3_from_wav(project_id)
+            except (OSError, RuntimeError):
+                return Response(status_code=404)
+        return FileResponse(
+            mp3_path,
+            media_type="audio/mpeg",
+            filename="final.mp3",
+        )
 
     @app.get("/projects/{project_id}/audio/segments/{chunk_id}.wav")
     def segment_audio(request: Request, project_id: UUID, chunk_id: str) -> Response:

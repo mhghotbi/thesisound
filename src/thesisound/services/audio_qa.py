@@ -7,6 +7,7 @@ from difflib import SequenceMatcher
 from thesisound.audio import AsrTranscript, AudioChunk, AudioSegmentQa
 
 _PERSIAN_DIACRITICS = re.compile(r"[\u064b-\u065f\u0670]")
+_PERSIAN_PUNCTUATION = re.compile(r"[،؛؟٪٫٬«»]")
 _NON_WORD = re.compile(r"[^\w\u0600-\u06ff]+", re.UNICODE)
 _SENTENCES = re.compile(r"(?<=[.!؟؛])\s+")
 
@@ -21,7 +22,13 @@ class AudioQaService:
     def compare(self, chunk: AudioChunk, transcript: AsrTranscript) -> AudioSegmentQa:
         expected = _normalize(chunk.text)
         actual = _normalize(transcript.text)
-        ratio = SequenceMatcher(None, expected, actual).ratio() if expected and actual else 0
+        # autojunk=True treats frequent Persian letters as junk and collapses
+        # near-identical transcripts to ~0.02 similarity.
+        ratio = (
+            SequenceMatcher(None, expected, actual, autojunk=False).ratio()
+            if expected and actual
+            else 0
+        )
         missing = [
             sentence
             for sentence in _sentences(chunk.text)
@@ -73,7 +80,11 @@ class AudioQaService:
 
 def _normalize(text: str) -> str:
     value = text.replace("ي", "ی").replace("ك", "ک").replace("ۀ", "ه")
+    # Drop ZWNJ/ZWJ so TTS/ASR spelling variants like زحمت‌کش vs زحمتکش match.
+    value = value.replace("\u200c", "").replace("\u200d", "")
     value = _PERSIAN_DIACRITICS.sub("", value)
+    # Arabic-block punctuation stays inside \u0600-\u06ff; strip it explicitly.
+    value = _PERSIAN_PUNCTUATION.sub(" ", value)
     value = _NON_WORD.sub(" ", value.casefold())
     return " ".join(value.split())
 
@@ -85,15 +96,19 @@ def _sentences(text: str) -> list[str]:
 def _sentence_similarity(sentence: str, transcript: str) -> float:
     needle = _normalize(sentence)
     haystack = _normalize(transcript)
+    if not needle:
+        return 1
     if needle in haystack:
         return 1
-    return SequenceMatcher(None, needle, haystack).ratio()
+    return SequenceMatcher(None, needle, haystack, autojunk=False).ratio()
 
 
 def _is_truncated(expected: str, actual: str) -> bool:
     expected_tail = " ".join(expected.split()[-6:])
     actual_tail = " ".join(actual.split()[-10:])
-    return bool(expected_tail) and SequenceMatcher(None, expected_tail, actual_tail).ratio() < 0.55
+    return bool(expected_tail) and (
+        SequenceMatcher(None, expected_tail, actual_tail, autojunk=False).ratio() < 0.55
+    )
 
 
 def _repeated_phrases(text: str) -> list[str]:

@@ -24,8 +24,14 @@ class FakeAudioStore:
     def __init__(self) -> None:
         self.valid = False
 
-    def has_verified_artifacts(self, project_id, *, script_hash: str) -> bool:
-        del project_id, script_hash
+    def has_verified_artifacts(
+        self,
+        project_id,
+        *,
+        script_hash: str,
+        accept_manual_review: bool = False,
+    ) -> bool:
+        del project_id, script_hash, accept_manual_review
         return self.valid
 
 

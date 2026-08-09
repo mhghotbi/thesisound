@@ -59,6 +59,7 @@ def create_audio_builder(
             voices={"A": settings.tts_voice_a, "B": settings.tts_voice_b},
             style_prompt=settings.tts_style_prompt,
             max_regeneration_attempts=settings.audio_max_regeneration_attempts,
+            accept_manual_review=settings.audio_qa_accept_manual_review,
         )
 
     builder = AudioBuildRunService(
@@ -67,6 +68,7 @@ def create_audio_builder(
         script_store=script_store,
         audio_store=audio_store,
         pipeline_factory=pipeline_factory,
+        accept_manual_review=settings.audio_qa_accept_manual_review,
     )
     builder.recover_interrupted_runs()
     return builder

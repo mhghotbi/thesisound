@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -165,12 +166,70 @@ class AudioArtifactStore:
     def save_final_audio(self, project_id: UUID, wav_bytes: bytes) -> tuple[str, str]:
         path = self.audio_dir(project_id) / "final.wav"
         _atomic_write_bytes(path, wav_bytes)
+        # Browser players are unreliable with long PCM WAV; keep a streamable MP3 too.
+        self.write_final_mp3_from_wav(project_id)
         return "audio/final.wav", hashlib.sha256(wav_bytes).hexdigest()
 
     def final_audio_path(self, project_id: UUID) -> Path:
         return self.audio_dir(project_id, create=False) / "final.wav"
 
-    def has_verified_artifacts(self, project_id: UUID, *, script_hash: str) -> bool:
+    def final_mp3_path(self, project_id: UUID) -> Path:
+        return self.audio_dir(project_id, create=False) / "final.mp3"
+
+    def write_final_mp3_from_wav(
+        self,
+        project_id: UUID,
+        *,
+        ffmpeg_command: str = "ffmpeg",
+    ) -> Path:
+        wav_path = self.final_audio_path(project_id)
+        if not wav_path.exists():
+            raise FileNotFoundError(f"Final WAV missing for {project_id}")
+        mp3_path = self.audio_dir(project_id) / "final.mp3"
+        command = shutil.which(ffmpeg_command)
+        if command is None:
+            raise RuntimeError("FFmpeg is required to build the streamable MP3.")
+        temporary = mp3_path.with_name(mp3_path.name + ".partial")
+        completed = subprocess.run(
+            [
+                command,
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-y",
+                "-i",
+                str(wav_path),
+                "-codec:a",
+                "libmp3lame",
+                "-qscale:a",
+                "4",
+                "-ar",
+                "24000",
+                "-ac",
+                "1",
+                "-f",
+                "mp3",
+                str(temporary),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=300,
+            check=False,
+        )
+        if completed.returncode != 0 or not temporary.exists():
+            temporary.unlink(missing_ok=True)
+            detail = completed.stderr.strip() or "FFmpeg did not create streamable MP3."
+            raise RuntimeError(detail)
+        temporary.replace(mp3_path)
+        return mp3_path
+
+    def has_verified_artifacts(
+        self,
+        project_id: UUID,
+        *,
+        script_hash: str,
+        accept_manual_review: bool = False,
+    ) -> bool:
         if not self.artifacts_match_script(project_id, script_hash):
             return False
         try:
@@ -182,16 +241,17 @@ class AudioArtifactStore:
         if not (
             manifest.status == "verified"
             and manifest.final_audio_sha256 == hashlib.sha256(payload).hexdigest()
-            and manifest.passed_chunk_count == manifest.chunk_count
             and manifest.final_duration_seconds is not None
         ):
             return False
+        acceptable = {"pass", "manual_review"} if accept_manual_review else {"pass"}
         try:
             chunks = self.load_chunks(project_id)
         except (FileNotFoundError, ValueError):
             return False
         if len(chunks) != manifest.chunk_count:
             return False
+        accepted = 0
         for chunk in chunks:
             segment = self.load_segment_optional(
                 project_id,
@@ -213,9 +273,10 @@ class AudioArtifactStore:
                 chunk.content_hash,
                 record.wav_sha256,
             )
-            if transcript is None or qa is None or qa.verdict != "pass":
+            if transcript is None or qa is None or qa.verdict not in acceptable:
                 return False
-        return True
+            accepted += 1
+        return accepted == manifest.chunk_count
 
     @staticmethod
     def _write_json(path: Path, value: BaseModel | dict[str, Any] | list[Any]) -> None:

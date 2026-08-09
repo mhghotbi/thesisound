@@ -35,6 +35,10 @@ html[data-theme="olive"] .auth-brand__logo {
   background-image: url("maghal-logo-full-reverse-olive.webp");
 }
 
+html[data-theme="slate"] .auth-brand__logo {
+  background-image: url("maghal-logo-full-reverse-slate.webp");
+}
+
 @media (max-width: 760px) {
   .brand__logo {
     width: 30px;

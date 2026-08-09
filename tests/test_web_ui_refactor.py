@@ -69,7 +69,7 @@ def test_theme_tokens_are_complete_and_cobalt_is_default() -> None:
 
     blocks: dict[str, set[str]] = {}
     pattern = re.compile(
-        r'html\[data-theme="(?P<theme>cobalt|wood|olive)"\]'
+        r'html\[data-theme="(?P<theme>cobalt|wood|olive|slate)"\]'
         r'(?:,\s*:root)?\s*\{(?P<body>.*?)\n\}',
         re.DOTALL,
     )
@@ -78,8 +78,8 @@ def test_theme_tokens_are_complete_and_cobalt_is_default() -> None:
             re.findall(r"--([a-z0-9-]+)\s*:", match.group("body"))
         )
 
-    assert set(blocks) == {"cobalt", "wood", "olive"}
-    assert blocks["cobalt"] == blocks["wood"] == blocks["olive"]
+    assert set(blocks) == {"cobalt", "wood", "olive", "slate"}
+    assert blocks["cobalt"] == blocks["wood"] == blocks["olive"] == blocks["slate"]
     assert 'data-theme="{{ ui_theme or \'cobalt\' }}"' in base
     assert 'data-mode="{{ ui_mode or \'simple\' }}"' in base
     assert "workflow.css" not in base
@@ -122,6 +122,7 @@ def test_default_theme_mode_preferences_and_overview_route(tmp_path: Path) -> No
         assert 'data-mode="simple"' in login.text
         assert 'data-theme-value="wood"' in login.text
         assert 'data-theme-value="olive"' in login.text
+        assert 'data-theme-value="slate"' in login.text
 
         _login(client)
         projects = client.get("/projects")

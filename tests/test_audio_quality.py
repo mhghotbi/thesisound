@@ -58,3 +58,38 @@ def test_audio_qa_detects_missing_or_truncated_content() -> None:
     assert report.wav_sha256 == transcript.wav_sha256
     assert report.truncated or report.missing_sentences
     assert report.regeneration_instruction
+
+
+def test_audio_qa_passes_near_identical_persian_despite_zwnj_and_punctuation() -> None:
+    expected = (
+        "خیر، آرنت فعالیت‌ها و قلمروهای زندگی انسانی را در سه سطح کاملاً متمایز و بر اساس "
+        "مرتبه، ارزش و اصالت دسته‌بندی می‌کند. در پایین‌ترین مرتبه، قلمرو خصوصی قرار دارد "
+        "که حیطه حضور انسان زحمت‌کش و انجام زحمت برای رفع نیازهای زیستی است. در طرف دیگر "
+        "این طیف، قلمرو عمومی قرار می‌گیرد که بالاترین و برترین قلمرو به شمار می‌رود. "
+        "قلمرو عمومی جایگاه اصلی کنش است؛ جایی که فعل انسان دیگر یک رفتار یا تبعیت ساده "
+        "از ضرورت محسوب نمی‌شود، بلکه کنشی اصیل در عرصه میان‌انسانی است."
+    )
+    actual = (
+        "خیر. آرنت فعالیت‌ها و قلمروهای زندگی انسانی را در سه سطح کاملاً متمایز و بر اساس "
+        "مرتبه، ارزش و اصالت دسته‌بندی می‌کند. در پایین‌ترین مرتبه، قلمرو خصوصی قرار دارد "
+        "که حیطه حضور انسان زحمتکش و انجام زحمت برای رفع نیازهای زیستی است. در طرف دیگر "
+        "این طیف، قلمرو عمومی قرار می‌گیرد که بالاترین و برترین قلمرو به شمار می‌رود. "
+        "قلمرو عمومی جایگاه اصلی کنش است. جایی که فعل انسان دیگر یک رفتار یا تبعیت ساده "
+        "از ضرورت محسوب نمی‌شود، بلکه کنشی اصیل در عرصه میان‌انسانی است."
+    )
+    chunk = _chunk(expected)
+    transcript = AsrTranscript(
+        chunk_id=chunk.chunk_id,
+        chunk_hash=chunk.content_hash,
+        wav_sha256="b" * 64,
+        text=actual,
+        speaker="A",
+        provider="fake",
+        model="fake",
+    )
+
+    report = AudioQaService().compare(chunk, transcript)
+
+    assert report.similarity_ratio >= 0.9
+    assert report.verdict == "pass"
+    assert not report.missing_sentences
