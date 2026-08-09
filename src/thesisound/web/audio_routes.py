@@ -10,11 +10,19 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Resp
 from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound.audio import script_hash
+from thesisound.config import Settings
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.audio_artifact_store import AudioArtifactStore
+from thesisound.services.audio_direction import (
+    DEFAULT_ACCENT,
+    DEFAULT_PACE,
+    DEFAULT_TONE,
+    AudioDirectionSettings,
+)
 from thesisound.services.audio_run import AudioBuildRunService
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.tts_voices import GEMINI_TTS_VOICES
 from thesisound.web.error_messages import user_facing_error
 
 Render = Callable[..., HTMLResponse]
@@ -31,6 +39,7 @@ def register_audio_routes(
     render: Render,
     login_redirect: LoginRedirect,
     validate_csrf: ValidateCsrf,
+    settings: Settings,
 ) -> None:
     audio_store = AudioArtifactStore(workspace.root)
     script_store = ScriptArtifactStore(workspace.root)
@@ -47,6 +56,7 @@ def register_audio_routes(
             audio_store=audio_store,
             script_store=script_store,
             render=render,
+            settings=settings,
         )
 
     @app.post("/projects/{project_id}/audio/generate")
@@ -55,12 +65,29 @@ def register_audio_routes(
         background_tasks: BackgroundTasks,
         project_id: UUID,
         csrf_token: Annotated[str, Form()],
+        voice_a: Annotated[str, Form()],
+        voice_b: Annotated[str, Form()],
+        pace: Annotated[str, Form()],
+        tone: Annotated[str, Form()],
+        accent: Annotated[str, Form()],
+        speaker_a_notes: Annotated[str, Form()],
+        speaker_b_notes: Annotated[str, Form()],
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        submitted = {
+            "voice_a": voice_a,
+            "voice_b": voice_b,
+            "pace": pace,
+            "tone": tone,
+            "accent": accent,
+            "speaker_a_notes": speaker_a_notes,
+            "speaker_b_notes": speaker_b_notes,
+        }
         try:
             validate_csrf(request, csrf_token)
-            builder.queue(project_id)
+            direction = AudioDirectionSettings(**submitted)
+            builder.queue(project_id, direction=direction)
             background_tasks.add_task(execute, project_id)
         except (OSError, RuntimeError, ValueError) as error:
             return _render_audio_page(
@@ -71,7 +98,9 @@ def register_audio_routes(
                 audio_store=audio_store,
                 script_store=script_store,
                 render=render,
+                settings=settings,
                 error=user_facing_error(error, action="audio"),
+                values=submitted,
                 status_code=422,
             )
         return _audio_redirect(project_id)
@@ -98,6 +127,7 @@ def register_audio_routes(
                 audio_store=audio_store,
                 script_store=script_store,
                 render=render,
+                settings=settings,
                 error=user_facing_error(error, action="audio"),
                 status_code=422,
             )
@@ -193,6 +223,8 @@ def _render_audio_page(
     audio_store: AudioArtifactStore,
     script_store: ScriptArtifactStore,
     render: Render,
+    settings: Settings,
+    values: dict[str, str] | None = None,
     error: str | None = None,
     status_code: int = 200,
 ) -> HTMLResponse:
@@ -244,6 +276,15 @@ def _render_audio_page(
                     "qa": qa,
                 }
             )
+    defaults = {
+        "voice_a": settings.tts_voice_a,
+        "voice_b": settings.tts_voice_b,
+        "pace": DEFAULT_PACE,
+        "tone": DEFAULT_TONE,
+        "accent": DEFAULT_ACCENT,
+        "speaker_a_notes": "",
+        "speaker_b_notes": "",
+    }
     return render(
         request,
         "projects/audio.html",
@@ -259,6 +300,8 @@ def _render_audio_page(
                 and run.status == "failed"
                 and project.state == ProjectState.FAILED_RETRYABLE
             ),
+            "voices": GEMINI_TTS_VOICES,
+            "selected": values or defaults,
             "error": error,
         },
         status_code=status_code,

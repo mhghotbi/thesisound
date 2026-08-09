@@ -5,19 +5,18 @@
 {% block content_class %}auth-layout{% endblock %}
 {% block content %}
 <section class="auth-story" aria-labelledby="auth-story-title">
-  <div class="brand brand--auth">
-    <span class="auth-brand__logo" role="img" aria-label="مقال"></span>
-  </div>
-  <div>
-    <h1 id="auth-story-title">از یک سؤال جدی، یک گفتار مستند بسازید.</h1>
-    <p>منابع را خودتان انتخاب می‌کنید. هر مدعا تا شاهد و منبع قابل‌ردیابی می‌ماند و محصول جایی که شاهد کافی نیست، با صراحت متوقف می‌شود.</p>
+  <div class="auth-story__lead">
+    <div class="brand brand--auth">
+      <span class="auth-brand__logo" role="img" aria-label="مقال"></span>
+    </div>
+    <h1 id="auth-story-title">پرسش‌های جدی،<br>گفتاری سنجیده می‌طلبند.</h1>
+    <p>موضوع را مشخص کنید و منابع موردنظرتان را برگزینید. مقال آن‌ها را بررسی می‌کند و به گفتاری روشن بدل می‌سازد؛ گفتاری که هر مدعایش به شاهدی مشخص بازمی‌گردد و هرجا شواهد کافی نباشد، همان‌جا می‌ایستد.</p>
   </div>
 </section>
 
 <section class="auth-card" aria-labelledby="login-title">
   <p class="kicker">ورود امن با کد یک‌بارمصرف</p>
-  <h2 id="login-title">شمارهٔ موبایل را وارد کنید</h2>
-  <p class="lede">برای ادامهٔ گفتارهای قبلی یا ساخت یک گفتار تازه، کد شش‌رقمی می‌فرستیم.</p>
+  <h2 id="login-title">شماره موبایل خود را وارد کنید:</h2>
 
   {% if error %}
     <div class="notice notice--danger" role="alert">{{ error }}</div>
@@ -27,9 +26,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="next_path" value="{{ next_path }}">
     <label class="field">
-      <span>شمارهٔ موبایل</span>
-      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="09[0-9]{9}" placeholder="09120000000" value="{{ phone or '' }}" required autofocus aria-describedby="phone-hint">
-      <small class="field-hint" id="phone-hint">۱۱ رقم به صورت 09xxxxxxxxx؛ ارقام فارسی خودکار به انگلیسی تبدیل می‌شوند.</small>
+      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="09[0-9]{9}" placeholder="09120000000" value="{{ phone or '' }}" required autofocus aria-label="شمارهٔ موبایل">
     </label>
     <button class="button button--primary button--full" type="submit" disabled>ارسال کد ورود</button>
   </form>

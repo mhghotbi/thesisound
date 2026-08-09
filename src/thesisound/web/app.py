@@ -252,10 +252,10 @@ def create_app(
         *,
         status_code: int = 200,
     ) -> HTMLResponse:
-        theme = request.session.get("ui_theme", "cobalt")
+        theme = request.session.get("ui_theme", "olive")
         mode = request.session.get("ui_mode", "simple")
         if theme not in _VALID_UI_THEMES:
-            theme = "cobalt"
+            theme = "olive"
         if mode not in _VALID_UI_MODES:
             mode = "simple"
         payload: dict[str, object] = {
@@ -608,6 +608,7 @@ def create_app(
         render=render,
         login_redirect=_login_redirect,
         validate_csrf=_validate_csrf,
+        settings=runtime,
     )
 
     return app

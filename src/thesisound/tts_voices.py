@@ -1,0 +1,36 @@
+from __future__ import annotations
+
+GEMINI_TTS_VOICES: tuple[tuple[str, str], ...] = (
+    ("Zephyr", "درخشان"),
+    ("Puck", "سرزنده"),
+    ("Charon", "آموزنده"),
+    ("Kore", "محکم"),
+    ("Fenrir", "پرشور"),
+    ("Leda", "جوان"),
+    ("Orus", "محکم"),
+    ("Aoede", "سبک‌بال"),
+    ("Callirrhoe", "آرام‌خو"),
+    ("Autonoe", "درخشان"),
+    ("Enceladus", "نفس‌دار"),
+    ("Iapetus", "شفاف"),
+    ("Umbriel", "آرام‌خو"),
+    ("Algieba", "نرم"),
+    ("Despina", "نرم"),
+    ("Erinome", "شفاف"),
+    ("Algenib", "خش‌دار"),
+    ("Rasalgethi", "آموزنده"),
+    ("Laomedeia", "سرزنده"),
+    ("Achernar", "ملایم"),
+    ("Alnilam", "محکم"),
+    ("Schedar", "متعادل"),
+    ("Gacrux", "پخته"),
+    ("Pulcherrima", "رک‌گو"),
+    ("Achird", "دوستانه"),
+    ("Zubenelgenubi", "غیررسمی"),
+    ("Vindemiatrix", "لطیف"),
+    ("Sadachbia", "بانشاط"),
+    ("Sadaltager", "آگاه"),
+    ("Sulafat", "گرم"),
+)
+
+GEMINI_TTS_VOICE_NAMES: frozenset[str] = frozenset(name for name, _ in GEMINI_TTS_VOICES)

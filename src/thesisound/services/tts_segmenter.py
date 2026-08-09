@@ -22,7 +22,7 @@ class TtsSegmenter:
         script_hash: str,
         model: str,
         voices: dict[str, str],
-        style_prompt: str,
+        style_prompts: dict[str, str],
     ) -> list[AudioChunk]:
         chunks: list[AudioChunk] = []
         sequence = 0
@@ -30,6 +30,9 @@ class TtsSegmenter:
             voice = voices.get(turn.speaker)
             if not voice:
                 raise ValueError(f"No TTS voice configured for speaker {turn.speaker}.")
+            style = style_prompts.get(turn.speaker)
+            if not style:
+                raise ValueError(f"No style prompt configured for speaker {turn.speaker}.")
             pieces = self._split(turn.spoken_text_fa)
             for piece_index, text in enumerate(pieces, start=1):
                 chunk_id = f"audio-{sequence + 1:04d}"
@@ -41,7 +44,7 @@ class TtsSegmenter:
                     turn.speaker,
                     voice,
                     model,
-                    style_prompt,
+                    style,
                     text,
                 )
                 word_count = max(1, len(text.split()))

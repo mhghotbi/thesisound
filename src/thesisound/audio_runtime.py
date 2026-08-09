@@ -8,6 +8,7 @@ from thesisound.gemini_key_pool import shared_gemini_key_pool
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.audio_artifact_store import AudioArtifactStore
 from thesisound.services.audio_assembler import AudioAssembler
+from thesisound.services.audio_direction import AudioDirectionSettings
 from thesisound.services.audio_pipeline_service import AudioPipelineService
 from thesisound.services.audio_qa import AudioQaService
 from thesisound.services.audio_run import AudioBuildRunService, AudioBuildRunStore
@@ -22,9 +23,20 @@ def create_audio_builder(
 ) -> AudioBuildRunService:
     script_store = ScriptArtifactStore(workspace.root)
     audio_store = AudioArtifactStore(workspace.root)
+    default_direction = AudioDirectionSettings(
+        voice_a=settings.tts_voice_a,
+        voice_b=settings.tts_voice_b,
+    )
 
-    def pipeline_factory(project_id: UUID) -> AudioPipelineService:
+    def pipeline_factory(
+        project_id: UUID,
+        direction: AudioDirectionSettings,
+    ) -> AudioPipelineService:
         gemini_pool = shared_gemini_key_pool(settings.gemini_api_keys)
+        style_prompts = {
+            speaker: f"{settings.tts_style_prompt}\n{direction.style_prompt_for(speaker)}"
+            for speaker in ("A", "B")
+        }
         return AudioPipelineService(
             workspace_store=workspace,
             script_store=script_store,
@@ -56,8 +68,8 @@ def create_audio_builder(
             ),
             tts_model=settings.model_tts,
             asr_model=settings.model_asr,
-            voices={"A": settings.tts_voice_a, "B": settings.tts_voice_b},
-            style_prompt=settings.tts_style_prompt,
+            voices=direction.voices_map,
+            style_prompts=style_prompts,
             max_regeneration_attempts=settings.audio_max_regeneration_attempts,
             accept_manual_review=settings.audio_qa_accept_manual_review,
         )
@@ -68,6 +80,7 @@ def create_audio_builder(
         script_store=script_store,
         audio_store=audio_store,
         pipeline_factory=pipeline_factory,
+        default_direction=default_direction,
         accept_manual_review=settings.audio_qa_accept_manual_review,
     )
     builder.recover_interrupted_runs()

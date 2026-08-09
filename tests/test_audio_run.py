@@ -2,7 +2,8 @@ from pathlib import Path
 
 from thesisound.audio import AudioPipelineManifest
 from thesisound.domain import Project, ProjectState, Script, ScriptTurn
-from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.pipeline import WorkspaceStore, mark_failed, transition
+from thesisound.services.audio_direction import AudioDirectionSettings
 from thesisound.services.audio_run import AudioBuildRunService, AudioBuildRunStore
 
 
@@ -86,10 +87,11 @@ def _service(tmp_path: Path):
         run_store=AudioBuildRunStore(workspace.root),
         script_store=scripts,  # type: ignore[arg-type]
         audio_store=audio,  # type: ignore[arg-type]
-        pipeline_factory=lambda _: FakePipeline(  # type: ignore[return-value]
+        pipeline_factory=lambda _project_id, _direction: FakePipeline(  # type: ignore[return-value]
             workspace,
             audio,
         ),
+        default_direction=AudioDirectionSettings(voice_a="Kore", voice_b="Puck"),
     )
     return workspace, project, service, scripts, audio
 
@@ -171,3 +173,20 @@ def test_succeeded_pointer_does_not_hide_deleted_or_corrupt_final_audio(
     repaired = service.run_store.load(project.project_id)
     assert repaired.status == "failed"
     assert "missing or stale" in repaired.last_error
+
+
+def test_retry_preserves_direction_from_previous_run(tmp_path: Path) -> None:
+    workspace, project, service, _, _ = _service(tmp_path)
+    direction = AudioDirectionSettings(voice_a="Puck", voice_b="Kore", tone="شوخ‌طبع")
+    queued = service.queue(project.project_id, direction=direction)
+    assert queued.direction == direction
+
+    run = service.run_store.load(project.project_id)
+    run.status = "failed"
+    service.run_store.save(run)
+    completed = workspace.load_project(project.project_id)
+    mark_failed(completed, "forced failure for retry direction test")
+    workspace.save_project(completed)
+
+    retried = service.retry(project.project_id)
+    assert retried.direction == direction

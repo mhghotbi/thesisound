@@ -15,28 +15,32 @@
   width: fit-content;
 }
 
-/* The auth hero panel is --brand, a different colour in each theme, so the
-   reversed lockup ships once per theme: glyph in that theme's paper, gold
-   accents lightened to clear 3.5:1 on that panel. Driven by background-image
-   rather than <img src> because the theme switcher only flips data-theme on
-   <html> — no reload — and this way exactly one file is fetched. */
+/* Crop the full reverse lockup in CSS (top calligraphic mark only) so we
+   never re-encode the asset. background-size width-fills; the shorter box
+   clips the second typography. Absolute width — not % of fit-content. */
 .auth-brand__logo {
   display: block;
-  width: min(190px, 72%);
-  aspect-ratio: 504 / 519;
-  background: url("maghal-logo-full-reverse-cobalt.webp") center / contain no-repeat;
+  width: clamp(168px, 22vw, 228px);
+  aspect-ratio: 504 / 328;
+  background: url("maghal-logo-full-reverse-olive.webp") center top / 100% auto no-repeat;
+}
+
+html[data-theme="cobalt"] .auth-brand__logo {
+  background-image: url("maghal-logo-full-reverse-cobalt.webp");
 }
 
 html[data-theme="wood"] .auth-brand__logo {
   background-image: url("maghal-logo-full-reverse-wood.webp");
 }
 
-html[data-theme="olive"] .auth-brand__logo {
-  background-image: url("maghal-logo-full-reverse-olive.webp");
-}
-
 html[data-theme="slate"] .auth-brand__logo {
   background-image: url("maghal-logo-full-reverse-slate.webp");
+}
+
+@media (max-width: 980px) {
+  .auth-brand__logo {
+    width: clamp(140px, 34vw, 188px);
+  }
 }
 
 @media (max-width: 760px) {
@@ -46,6 +50,6 @@ html[data-theme="slate"] .auth-brand__logo {
   }
 
   .auth-brand__logo {
-    width: min(160px, 68%);
+    width: clamp(124px, 46vw, 164px);
   }
 }

@@ -110,7 +110,7 @@ def _service(tmp_path: Path, *, fail_first: bool = False):
         tts_model="fake-tts",
         asr_model="fake-asr",
         voices={"A": "Kore", "B": "Puck"},
-        style_prompt="طبیعی و دقیق بخوان",
+        style_prompts={"A": "طبیعی و دقیق بخوان", "B": "طبیعی و دقیق بخوان"},
         max_regeneration_attempts=1,
     )
     return workspace, project, service, audio_store, tts, asr
@@ -126,6 +126,7 @@ def test_audio_pipeline_reaches_complete_with_verified_artifacts(tmp_path: Path)
     assert workspace.load_project(project.project_id).state == ProjectState.COMPLETE
     assert store.has_verified_artifacts(project.project_id, script_hash=manifest.script_hash)
     assert len(tts.calls) == 1
+    assert tts.calls[0].style_prompt == "طبیعی و دقیق بخوان"
     assert asr.calls == 1
 
 

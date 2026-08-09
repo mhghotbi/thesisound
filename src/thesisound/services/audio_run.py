@@ -14,6 +14,7 @@ from thesisound.audio import script_hash
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed
 from thesisound.services.audio_artifact_store import AudioArtifactStore
+from thesisound.services.audio_direction import AudioDirectionSettings
 from thesisound.services.audio_pipeline_service import AudioPipelineService
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 
@@ -35,6 +36,7 @@ class AudioBuildRun(BaseModel):
     previous_run_id: UUID | None = None
     project_id: UUID
     verified_script_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    direction: AudioDirectionSettings | None = None
     status: AudioBuildStatus = "queued"
     stage: AudioBuildStage = "queued"
     started_at: datetime | None = None
@@ -105,7 +107,8 @@ class AudioBuildRunService:
         run_store: AudioBuildRunStore,
         script_store: ScriptArtifactStore,
         audio_store: AudioArtifactStore,
-        pipeline_factory: Callable[[UUID], AudioPipelineService],
+        pipeline_factory: Callable[[UUID, AudioDirectionSettings], AudioPipelineService],
+        default_direction: AudioDirectionSettings,
         accept_manual_review: bool = False,
     ) -> None:
         self.workspace_store = workspace_store
@@ -113,10 +116,16 @@ class AudioBuildRunService:
         self.script_store = script_store
         self.audio_store = audio_store
         self.pipeline_factory = pipeline_factory
+        self.default_direction = default_direction
         self.accept_manual_review = accept_manual_review
         self._mutation_lock = Lock()
 
-    def queue(self, project_id: UUID) -> AudioBuildRun:
+    def queue(
+        self,
+        project_id: UUID,
+        *,
+        direction: AudioDirectionSettings | None = None,
+    ) -> AudioBuildRun:
         with self._mutation_lock:
             project = self.workspace_store.load_project(project_id)
             if project.state != ProjectState.SCRIPT_VERIFIED:
@@ -132,6 +141,7 @@ class AudioBuildRunService:
                 project_id=project_id,
                 previous_run_id=existing.run_id if existing else None,
                 verified_script_hash=digest,
+                direction=direction or self.default_direction,
             )
             self.run_store.save(run)
             return run
@@ -154,6 +164,7 @@ class AudioBuildRunService:
                 project_id=project_id,
                 previous_run_id=previous.run_id,
                 verified_script_hash=digest,
+                direction=previous.direction or self.default_direction,
             )
             self.run_store.save(run)
             return run
@@ -175,7 +186,9 @@ class AudioBuildRunService:
             run.finished_at = None
             run.last_error = None
             self.run_store.save(run)
-            pipeline = self.pipeline_factory(project_id)
+            # run.direction is only None for runs queued before this field existed.
+            direction = run.direction or self.default_direction
+            pipeline = self.pipeline_factory(project_id, direction)
             pipeline.run(project_id, on_stage=lambda value: self._set_stage(run, value))
             project = self.workspace_store.load_project(project_id)
             if project.state != ProjectState.COMPLETE:

@@ -38,7 +38,7 @@ class AudioPipelineService:
         tts_model: str,
         asr_model: str,
         voices: dict[str, str],
-        style_prompt: str,
+        style_prompts: dict[str, str],
         max_regeneration_attempts: int = 1,
         accept_manual_review: bool = False,
     ) -> None:
@@ -54,7 +54,7 @@ class AudioPipelineService:
         self.tts_model = tts_model
         self.asr_model = asr_model
         self.voices = voices
-        self.style_prompt = style_prompt
+        self.style_prompts = style_prompts
         self.max_regeneration_attempts = max_regeneration_attempts
         self.accept_manual_review = accept_manual_review
 
@@ -90,7 +90,7 @@ class AudioPipelineService:
             script_hash=current_script_hash,
             model=self.tts_model,
             voices=self.voices,
-            style_prompt=self.style_prompt,
+            style_prompts=self.style_prompts,
         )
         chunks = self.audio_store.load_chunks_optional(project_id)
         if chunks is None or [item.content_hash for item in chunks] != [
@@ -204,7 +204,7 @@ class AudioPipelineService:
         attempts: int,
         additional_instruction: str | None = None,
     ) -> None:
-        style = self.style_prompt
+        style = self.style_prompts[chunk.speaker]
         if additional_instruction:
             style = f"{style}\nاصلاح لازم: {additional_instruction}"
         response = self.tts.synthesize(
