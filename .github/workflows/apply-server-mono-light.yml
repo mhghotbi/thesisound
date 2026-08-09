@@ -5,9 +5,7 @@ on:
     branches:
       - codex/server-mono-light-items-1-5
     paths:
-      - .github/scripts/apply_item4.py
-      - .github/scripts/fix_item4_failure_state.py
-      - .github/scripts/fix_item4_imports.py
+      - .github/scripts/apply_item2.py
       - .github/scripts/fix_recent_baseline_lint.py
       - .github/workflows/apply-server-mono-light.yml
 
@@ -35,11 +33,7 @@ jobs:
       - name: Repair latest baseline lint
         run: uv run python .github/scripts/fix_recent_baseline_lint.py
       - name: Apply current item
-        run: uv run python .github/scripts/apply_item4.py
-      - name: Correct item imports
-        run: uv run python .github/scripts/fix_item4_imports.py
-      - name: Preserve original failure errors
-        run: uv run python .github/scripts/fix_item4_failure_state.py
+        run: uv run python .github/scripts/apply_item2.py
       - name: Lint
         run: uv run ruff check src tests
       - name: Test
@@ -53,5 +47,5 @@ jobs:
             echo "No implementation changes to commit."
             exit 0
           fi
-          git commit -m "feat: retain the better script revision"
+          git commit -m "feat: add cheap web discovery gates"
           git push
