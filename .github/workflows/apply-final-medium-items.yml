@@ -4,7 +4,7 @@ on:
   push:
     branches: [implement-medium-items-6-10]
     paths:
-      - .automation/medium-items.patch.gz
+      - .automation/medium-items.patch.gz.b64.*
       - .github/workflows/apply-final-medium-items.yml
 
 permissions:
@@ -20,8 +20,12 @@ jobs:
           ref: implement-medium-items-6-10
           fetch-depth: 0
 
-      - name: Apply complete implementation patch
-        run: gzip -dc .automation/medium-items.patch.gz | git apply --binary --index
+      - name: Reconstruct and verify complete implementation patch
+        shell: bash
+        run: |
+          cat .automation/medium-items.patch.gz.b64.* | base64 -d > /tmp/medium-items.patch.gz
+          echo "7b9387af9da26d31341ec3eda311390b157baef50b4c4fdef35847826967f486  /tmp/medium-items.patch.gz" | sha256sum -c -
+          gzip -dc /tmp/medium-items.patch.gz | git apply --binary --index
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -62,7 +66,7 @@ jobs:
 
       - name: Remove one-shot automation files
         if: success()
-        run: rm -f .automation/medium-items.patch.gz .github/workflows/apply-final-medium-items.yml
+        run: rm -f .automation/medium-items.patch.gz.b64.* .github/workflows/apply-final-medium-items.yml
 
       - name: Commit validated implementation
         if: success()
