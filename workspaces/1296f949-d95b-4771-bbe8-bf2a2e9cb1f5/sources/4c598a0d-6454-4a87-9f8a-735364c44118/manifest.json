@@ -1,0 +1,18 @@
+{
+  "project_id": "1296f949-d95b-4771-bbe8-bf2a2e9cb1f5",
+  "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+  "source_sha256": "9612445f8cd558e5669ee390b01edbca9059b125257f10241f1d6ba83b71e893",
+  "status": "document_mapped",
+  "block_count": 198,
+  "selected_block_count": 0,
+  "deferred_block_count": 0,
+  "analysis_depth": null,
+  "evidence_token_coverage": null,
+  "evidence_count": 0,
+  "claim_count": 0,
+  "model_run_ids": [
+    "e6f4a22c-0c11-4009-8c99-7ea1be0cd78b"
+  ],
+  "updated_at": "2026-08-08T20:06:26.375419Z",
+  "last_error": null
+}

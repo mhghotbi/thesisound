@@ -1,0 +1,18 @@
+{
+  "candidates": [
+    {
+      "content": null,
+      "finish_reason": "STOP",
+      "grounding_metadata": "namespace(web_search_queries=['Arendt action primary sources'], grounding_chunks=[namespace(web=namespace(uri='https://example.org/arendt', title='Arendt archive', domain='example.org'))])",
+      "safety_ratings": null,
+      "url_context_metadata": "namespace(url_metadata=[namespace(retrieved_url='https://example.org/input.pdf', url_retrieval_status='URL_RETRIEVAL_STATUS_SUCCESS')])"
+    }
+  ],
+  "model_version": null,
+  "parsed": {
+    "value": "ok"
+  },
+  "prompt_feedback": null,
+  "text": "{\"value\":\"ok\"}",
+  "usage_metadata": null
+}

@@ -1,0 +1,114 @@
+{
+  "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+  "block_id": "blk-4c598a0d-00014-2929fc16d449",
+  "extraction": {
+    "segment_function": "Definition and elaboration of the fundamental activities of the vita activa (labor, work, action) and their corresponding human conditions.",
+    "claims": [
+      {
+        "evidence_id": "ev-09a96c89e4053fd2",
+        "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+        "block_id": "blk-4c598a0d-00014-2929fc16d449",
+        "claim": "The vita activa is designated by three fundamental human activities: labor, work, and action.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "With the term vita activa , I propose to designate three fundamental human activities: labor, work, and action.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-22a43c6e28191195",
+        "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+        "block_id": "blk-4c598a0d-00014-2929fc16d449",
+        "claim": "Labor corresponds to the biological process of the human body and its vital necessities, with its human condition being life itself.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Labor is the activity which corresponds to the biological process of the human body, whose spontaneous growth, metabolism, and eventual decay are bound to the vital necessities produced and fed into the life process by labor. The human condition of labor is life itself.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Labor",
+        "definition": "The activity corresponding to the biological process of the human body and its vital necessities.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Work",
+        "definition": "The activity providing an artificial world of things that outlast and transcend individual lives, with its condition being worldliness.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Action",
+        "definition": "The only activity going on directly between men without the intermediary of things, corresponding to the condition of plurality.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Labor",
+        "item_b": "Work",
+        "distinction": "Labor corresponds to the biological life process and body necessities, whereas work corresponds to the unnaturalness of human existence and produces an artificial world of things providing worldliness.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Distinction between labor, work, and action as fundamental components of the vita activa."
+    ]
+  }
+}

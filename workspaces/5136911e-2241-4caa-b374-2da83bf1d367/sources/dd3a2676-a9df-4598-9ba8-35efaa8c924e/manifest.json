@@ -1,0 +1,22 @@
+{
+  "project_id": "5136911e-2241-4caa-b374-2da83bf1d367",
+  "source_id": "dd3a2676-a9df-4598-9ba8-35efaa8c924e",
+  "source_sha256": "c55ce243772620a6d89f17ffb43e00920b732307a8dae792a4a15c72bfed8c7c",
+  "status": "claims_ready",
+  "block_count": 3,
+  "selected_block_count": 3,
+  "deferred_block_count": 0,
+  "analysis_depth": "brief",
+  "evidence_token_coverage": 1.0,
+  "evidence_count": 6,
+  "claim_count": 6,
+  "model_run_ids": [
+    "d1c59641-a5ee-465c-a369-888347d5c0f7",
+    "6613195c-a4b8-4a0a-b615-90e4a287b88a",
+    "9c7a6272-1360-4d47-8cd1-053db7f8cf29",
+    "687acf00-13e6-4355-940e-059e597c4c27",
+    "d4d0fa5c-f5a6-4422-880a-44c4bbd6ed83"
+  ],
+  "updated_at": "2026-08-08T17:24:55.731985Z",
+  "last_error": null
+}

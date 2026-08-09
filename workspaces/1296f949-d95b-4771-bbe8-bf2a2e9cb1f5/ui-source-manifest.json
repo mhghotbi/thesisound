@@ -1,0 +1,27 @@
+[
+  {
+    "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+    "filename": "Hannah Arendt - The Human Condition.epub",
+    "display_title": null,
+    "content_type": "application/epub+zip",
+    "size_bytes": 1223574,
+    "status": "ready",
+    "selected": true,
+    "issue_summary": "استخراج با موفقیت انجام شد و متن برای ساخت شواهد قابل‌استفاده است.",
+    "quality_issues": [],
+    "is_demo_result": false,
+    "parser_name": "epub",
+    "quality_verdict": "pass",
+    "safe_for_claim_extraction": true,
+    "block_count": 1779,
+    "text_characters": 903700,
+    "attempted_parsers": [
+      "epub"
+    ],
+    "artifact_ref": "Hannah-Arendt---The-Human-Condition-9612445f8cd558e5\\ingestion-result.json",
+    "inspection_sha256": "9612445f8cd558e5669ee390b01edbca9059b125257f10241f1d6ba83b71e893",
+    "origin": "local_upload",
+    "canonical_url": null,
+    "retrieval_scope": null
+  }
+]

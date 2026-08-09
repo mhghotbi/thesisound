@@ -1,0 +1,11 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "value": "ok"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "claims": [
+    {
+      "claim": "The 'Other' category should be chosen only when the user's intent is clear but no suitable category exists, and its selection rate is expected to be less than 1 percent of all data.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "Must be an exceptional choice and very rare",
+        "Select the specific category if hesitant between Other and a specific category"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "انتظار می‌رود نرخ انتخاب «سایر» کمتر از 1٪ کل داده‌ها باشد.\n\n«سایر» یک دسته استثنایی است و باید بسیار نادر باشد.\n\nاگر بین «سایر» و یک دسته مشخص مردد هستی، دسته مشخص را انتخاب کن.\n\nاگر نیت کاربر قابل تشخیص نباشد، «نامشخص» را انتخاب کن، نه «سایر».\n\n«سایر» فقط زمانی استفاده می‌شود که نیت مشخص است اما هیچ دسته مناسبی وجود ندارد."
+    },
+    {
+      "claim": "Confidence represents certainty in the chosen label, denoting certainty that the intent is truly unknown when 'Unknown' is chosen, or certainty that the topic matches the user's request when a specific topic is chosen.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "معنای confidence (اطمینان): مقدار confidence یعنی اطمینان به همان برچسبی که انتخاب کرده‌ای. اگر «نامشخص» انتخاب کردی، confidence یعنی «مطمئنم نیت کاربر واقعاً نامشخص است»؛ اگر یک موضوع مشخص انتخاب کردی، confidence یعنی «مطمئنم این موضوع با درخواست کاربر جور در می‌آید»."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "The degree of certainty in the chosen label, meaning certainty that the user intent is truly unknown when 'Unknown' is selected, or certainty that the topic matches the user request when a specific topic is selected.",
+      "term": "confidence"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "Other is used when the user intent is clear but no suitable category exists, whereas Unknown is used when the user's intent cannot be discerned at all.",
+      "item_a": "سایر (Other)",
+      "item_b": "نامشخص (Unknown)"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "Expected selection rate for 'Other' is less than 1 percent.",
+    "If confidence in the target category is not less than 0.6, the category should be selected.",
+    "Required JSON output structure includes fine_topic, main_topic, confidence, and reason fields."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Output Format and Decision Guidelines",
+  "unresolved_context": []
+}

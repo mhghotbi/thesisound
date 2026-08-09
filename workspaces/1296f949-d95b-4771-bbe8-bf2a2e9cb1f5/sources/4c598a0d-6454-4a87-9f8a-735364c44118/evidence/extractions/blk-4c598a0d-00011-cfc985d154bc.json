@@ -1,0 +1,63 @@
+{
+  "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+  "block_id": "blk-4c598a0d-00011-cfc985d154bc",
+  "extraction": {
+    "segment_function": "prologue introducing the significance of the 1957 satellite launch as an expression of the human desire to escape earth imprisonment and the human condition through science and technology",
+    "claims": [
+      {
+        "evidence_id": "ev-f986073116f3a45e",
+        "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+        "block_id": "blk-4c598a0d-00011-cfc985d154bc",
+        "claim": "The immediate reaction to the 1957 satellite launch was relief about the first step toward escaping human imprisonment to the earth rather than unmitigated triumph.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The immediate reaction, expressed on the spur of the moment, was relief about the first “step toward escape from men’s imprisonment to the earth.”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 07 pro",
+          "section": "9780226924571 07 pro",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-4cae49b05047298b",
+        "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+        "block_id": "blk-4c598a0d-00011-cfc985d154bc",
+        "claim": "The question of whether to use scientific and technical knowledge to exchange given human existence for a self-made existence is a political question of the first order.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The question is only whether we wish to use our new scientific and technical knowledge in this direction, and this question cannot be decided by scientific means; it is a political question of the first order and therefore can hardly be left to the decision of professional scientists or professional politicians.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 07 pro",
+          "section": "9780226924571 07 pro",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "cannot be decided by scientific means"
+        ],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Implications of the potential repudiation of the Earth as the Mother of living creatures and the rebellion against human existence as given."
+    ],
+    "must_not_be_lost": [
+      "The 1957 satellite launch represents a turning point in human desires regarding earthly imprisonment and the human condition."
+    ]
+  }
+}

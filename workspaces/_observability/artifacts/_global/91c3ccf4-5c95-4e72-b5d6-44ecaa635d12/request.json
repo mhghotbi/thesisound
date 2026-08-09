@@ -1,0 +1,22 @@
+{
+  "grounding_mode": "none",
+  "grounding_urls": [],
+  "model": "gemini-test",
+  "output_schema": {
+    "properties": {
+      "value": {
+        "title": "Value",
+        "type": "string"
+      }
+    },
+    "required": [
+      "value"
+    ],
+    "title": "ExampleOutput",
+    "type": "object"
+  },
+  "system_prompt": "system",
+  "timeout_ms": 180000,
+  "tools": [],
+  "user_prompt": "Use only the supplied evidence."
+}

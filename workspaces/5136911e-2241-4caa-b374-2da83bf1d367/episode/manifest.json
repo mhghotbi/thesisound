@@ -1,0 +1,16 @@
+{
+  "project_id": "5136911e-2241-4caa-b374-2da83bf1d367",
+  "status": "coverage_ready",
+  "source_ids": [
+    "dd3a2676-a9df-4598-9ba8-35efaa8c924e"
+  ],
+  "coverage_recommendation": "more_evidence",
+  "segment_count": 0,
+  "evidence_pack_count": 0,
+  "disagreement_count": 0,
+  "model_run_ids": [
+    "64359771-e6a3-4441-9851-623b7fffb4af"
+  ],
+  "updated_at": "2026-08-08T17:25:13.319829Z",
+  "last_error": null
+}

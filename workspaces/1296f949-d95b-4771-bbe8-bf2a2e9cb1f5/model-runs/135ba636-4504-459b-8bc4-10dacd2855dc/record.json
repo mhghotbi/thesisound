@@ -1,0 +1,22 @@
+{
+  "attempts": [],
+  "completed_at": null,
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "eda368360fce893f7dc77df3be3a2db96f552c324990223a17f072376bf09ea2",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "EvidenceExtractionDraft",
+  "project_id": "1296f949-d95b-4771-bbe8-bf2a2e9cb1f5",
+  "prompt_hash": "e25ceabd8a0052c5163c5ce16c0479c9e35402287fc9ea455d50cce503ac4509",
+  "prompt_id": "evidence_extraction",
+  "prompt_version": "1.1.0",
+  "provider": "gemini",
+  "run_id": "135ba636-4504-459b-8bc4-10dacd2855dc",
+  "stage": "evidence_extraction",
+  "started_at": "2026-08-08T20:06:35.342116Z",
+  "status": "running",
+  "web_search_queries": []
+}

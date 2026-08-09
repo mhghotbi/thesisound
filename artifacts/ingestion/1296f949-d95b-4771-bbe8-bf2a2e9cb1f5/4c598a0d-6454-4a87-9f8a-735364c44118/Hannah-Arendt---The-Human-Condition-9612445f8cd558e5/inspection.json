@@ -1,0 +1,15 @@
+{
+  "path": "C:\\Users\\mhghotbi\\Documents\\Git\\thesisound\\workspaces\\1296f949-d95b-4771-bbe8-bf2a2e9cb1f5\\uploads\\4c598a0d-6454-4a87-9f8a-735364c44118\\Hannah Arendt - The Human Condition.epub",
+  "mime_type": "application/epub+zip",
+  "extension": ".epub",
+  "file_size_bytes": 1223574,
+  "sha256": "9612445f8cd558e5669ee390b01edbca9059b125257f10241f1d6ba83b71e893",
+  "page_count": null,
+  "encrypted": false,
+  "sampled_text_characters": 0,
+  "image_only_ratio": null,
+  "likely_complex_layout": false,
+  "warnings": [
+    "No safe text sample could be decoded during inspection."
+  ]
+}

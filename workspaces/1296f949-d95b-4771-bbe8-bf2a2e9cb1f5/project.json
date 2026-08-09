@@ -1,0 +1,58 @@
+{
+  "project_id": "1296f949-d95b-4771-bbe8-bf2a2e9cb1f5",
+  "raw_input": "کتاب «وضع بشر» هانا آرنت",
+  "state": "failed_retryable",
+  "created_at": "2026-08-08T17:10:37.442152Z",
+  "updated_at": "2026-08-09T00:01:19.905345Z",
+  "brief": {
+    "normalized_topic": "کتاب «وضع بشر» هانا آرنت",
+    "topic_type": "mixed",
+    "central_question": "کتاب «وضع بشر» هانا آرنت",
+    "audience": "دانشجوی تحصیلات تکمیلی",
+    "prior_knowledge": "introductory",
+    "target_duration_minutes": 10,
+    "output_language": "fa",
+    "modes": [
+      "critical"
+    ],
+    "learning_objectives": [
+      "فهم روشن موضوع و ایده‌های اصلی آن"
+    ],
+    "subquestions": [],
+    "scope_inclusions": [
+      "زمینه تاریخی مفهوم"
+    ],
+    "scope_exclusions": [
+      "نکات کم اهمیت"
+    ],
+    "ambiguities": []
+  },
+  "sources": [
+    {
+      "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+      "title": "Hannah Arendt - The Human Condition.epub",
+      "authors": [],
+      "role": "user_context",
+      "source_type": "epub",
+      "origin": "local_upload",
+      "language": null,
+      "publication_year": null,
+      "publisher_or_venue": null,
+      "doi": null,
+      "canonical_url": null,
+      "access": "full_text",
+      "user_decision": "include",
+      "relevance_reasons": [
+        "Selected by the user after the real parse-quality gate using epub."
+      ],
+      "authority_class": "unknown",
+      "limitations": [
+        "استخراج با موفقیت انجام شد و متن برای ساخت شواهد قابل‌استفاده است."
+      ],
+      "duplicate_of": null
+    }
+  ],
+  "episode_plan": null,
+  "script": null,
+  "last_error": "Corpus building was interrupted by a service restart. Retry to continue."
+}

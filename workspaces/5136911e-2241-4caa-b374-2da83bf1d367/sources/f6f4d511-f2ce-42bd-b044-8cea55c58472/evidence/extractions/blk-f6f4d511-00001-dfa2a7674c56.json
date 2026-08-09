@@ -1,0 +1,89 @@
+{
+  "source_id": "f6f4d511-f2ce-42bd-b044-8cea55c58472",
+  "block_id": "blk-f6f4d511-00001-dfa2a7674c56",
+  "extraction": {
+    "segment_function": "مقدمه، معنای خداشناسی، قرآن، روایات، انواع و راه‌های اولیه شناخت",
+    "claims": [
+      {
+        "evidence_id": "ev-72919e0319901b7c",
+        "source_id": "f6f4d511-f2ce-42bd-b044-8cea55c58472",
+        "block_id": "blk-f6f4d511-00001-dfa2a7674c56",
+        "claim": "خداشناسی به معنای رسیدن انسان به حقیقتی است که در آن درک کند خداوند علت و خالق اوست و انسان عین نیاز و متعلق به اوست.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "خداشناسی به این معناست که انسان به حقیقتی برسد که درک کند خداوند علت و خالق اوست و او عین نیاز و متعلق به خداوند است.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-d665e2097fc75736",
+        "source_id": "f6f4d511-f2ce-42bd-b044-8cea55c58472",
+        "block_id": "blk-f6f4d511-00001-dfa2a7674c56",
+        "claim": "شناخت خداوند بر دو صورت حضوری (بدون وساطت مفاهیم ذهنی) و حصولی (به وسیله مفاهیم عقلی) تحقق می‌یابد.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "بطور کلی، معرفت و شناخت یک موجود به حسب آن شی مورد شناخت، به دو صورت تحقق می یابد. یکی شناخت حضوری و دیگری شناخت حصولی. در مورد خداوند متعال نیز همین دو نوع شناخت متصور است.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "خداشناسی",
+        "definition": "رسیدن انسان به حقیقتی که در آن درک کند خداوند علت و خالق اوست و او عین نیاز و متعلق به خداوند است.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "شناخت حضوری",
+        "item_b": "شناخت حصولی",
+        "distinction": "شناخت حضوری بدون وساطت مفاهیم ذهنی تحقق می‌یابد، در حالی که شناخت حصولی به وسیله مفاهیم عقلی حاصل می‌شود.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "تعریف خداشناسی",
+      "انواع خداشناسی (حضوری و حصولی)"
+    ]
+  }
+}

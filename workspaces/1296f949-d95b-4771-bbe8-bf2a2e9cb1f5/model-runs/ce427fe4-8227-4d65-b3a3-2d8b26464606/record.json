@@ -1,0 +1,53 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "f7c03e31-cebd-49ab-a74a-89d1b137d596",
+      "error_message": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 62271,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-08T19:56:51.543218Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "32e0437b-06c4-4601-8443-80a74066dedd",
+      "error_message": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 1933,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-08T19:56:54.477765Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-08T19:56:54.479006Z",
+  "error_message": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+  "error_type": "ModelProviderError",
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "064cb0b79fdebdf6eb228ce17653287b863ae117c676472a071efd4ad41ebe30",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapDraft",
+  "project_id": "1296f949-d95b-4771-bbe8-bf2a2e9cb1f5",
+  "prompt_hash": "bf943fe14dd09bd8207dee9380a6b9e67a6c50abba5afc4c0d69b51bd94de01e",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "ce427fe4-8227-4d65-b3a3-2d8b26464606",
+  "stage": "document_map_part",
+  "started_at": "2026-08-08T19:55:49.259412Z",
+  "status": "failed",
+  "web_search_queries": []
+}

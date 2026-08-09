@@ -1,0 +1,13 @@
+{
+  "verdict": "warning",
+  "issues": [
+    {
+      "issue_type": "lost_headings",
+      "severity": "medium",
+      "affected_locators": [],
+      "evidence": "No heading hierarchy survived in a document with at least 12 blocks."
+    }
+  ],
+  "suggested_parser": null,
+  "safe_for_claim_extraction": true
+}

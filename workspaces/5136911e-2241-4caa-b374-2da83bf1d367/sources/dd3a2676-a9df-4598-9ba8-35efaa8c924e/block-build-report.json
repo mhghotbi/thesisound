@@ -1,0 +1,10 @@
+{
+  "source_id": "dd3a2676-a9df-4598-9ba8-35efaa8c924e",
+  "input_block_count": 9,
+  "output_block_count": 3,
+  "removed_margin_block_keys": [],
+  "split_source_block_keys": [
+    "text-block-4"
+  ],
+  "warnings": []
+}

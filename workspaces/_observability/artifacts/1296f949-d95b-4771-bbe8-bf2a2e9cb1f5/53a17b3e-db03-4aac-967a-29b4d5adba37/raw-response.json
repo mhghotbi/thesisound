@@ -1,0 +1,752 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"working_thesis\": \"The human condition comprises distinct activities—primarily labor, work, and action—whose historical and theoretical conflation in the modern age, specifically through the elevation of the animal laborans and utilitarian instrumentalism, threatens the stability of the human world and the true nature of human freedom.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00041-45a9fcc0206f\"\n      ],\n      \"title\": \"Introduction: The Neglected Distinction Between Labor and Work\",\n      \"function\": \"front_matter\",\n      \"key_concepts\": [\n        \"labor vs. work distinction\",\n        \"linguistic testimony\",\n        \"historical scarcity of evidence\",\n        \"ancient contempt for labor\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00042-f7aa919f145a\"\n      ],\n      \"title\": \"Ancient Views on Slavery, Necessity, and the Animal Laborans\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"slavery and necessity\",\n        \"animal laborans\",\n        \"ancient vs. modern prejudice\",\n        \"leveling of activities by philosophers\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00043-ded5c049cadd\"\n      ],\n      \"title\": \"Modern Productivity and the Rise of Labor\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"productive vs. unproductive labor\",\n        \"Adam Smith and Karl Marx\",\n        \"productivity of labor power\",\n        \"surplus value\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00044-705024407fd9\"\n      ],\n      \"title\": \"Skilled vs. Unskilled and Manual vs. Intellectual Work\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"skilled and unskilled work\",\n        \"manual and intellectual labor\",\n        \"liberal and servile arts\",\n        \"bureaucracy\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00045-09504c919bfd\"\n      ],\n      \"title\": \"The Thing-Character of the World and Reification\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"consumer goods\",\n        \"use objects\",\n        \"products of action and speech\",\n        \"reification\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-006\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00046-6880025cebf7\"\n      ],\n      \"title\": \"Labor, Life, and the Cyclical Movement of Nature\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"metabolism with nature\",\n        \"cyclical movement\",\n        \"bios vs. zoe\",\n        \"growth and decay\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-007\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00047-e4926a23ac97\"\n      ],\n      \"title\": \"Labor, Fertility, and the Contradictions of Modern Theories\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"fertility\",\n        \"Locke, Smith, and Marx contradictions\",\n        \"destructive devouring aspect\",\n        \"fight against decay\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-006\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-008\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00048-4ac3e959ea0e\"\n      ],\n      \"title\": \"Marx's Fundamental Contradiction: Emancipation from Labor\",\n      \"function\": \"objection\",\n      \"key_concepts\": [\n        \"eternal necessity\",\n        \"realm of freedom vs. realm of necessity\",\n        \"equivocal attitude toward labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-007\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-009\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00049-99ac0610327d\"\n      ],\n      \"title\": \"The Experience of Fertility and the Blessing of Life\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"natural fertility\",\n        \"bliss of being alive\",\n        \"Old Testament perspective on life\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-007\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-010\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00050-e91b7ced182b\"\n      ],\n      \"title\": \"Happiness, Pain, and the Privacy of Property\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"happiness of the greatest number\",\n        \"private property\",\n        \"privacy and wealth\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-009\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-011\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00051-8ad6adfea771\"\n      ],\n      \"title\": \"The Privacy of the Body and Hedonism\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"property in one's own person\",\n        \"worldlessness\",\n        \"absence of pain\",\n        \"hedonism\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-010\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-012\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00052-1aaeca94df80\"\n      ],\n      \"title\": \"Worldlessness, Pain, and the Collective Life Process\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"sense experience of pain\",\n        \"socialized mankind\",\n        \"accumulation process\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-011\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-013\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00053-46ef49b52c96\"\n      ],\n      \"title\": \"The Evolution of Process and the Worldlessness of the Animal Laborans\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"concept of process\",\n        \"Darwin of history\",\n        \"hobbies\",\n        \"mass society of laborers\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-012\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-014\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00054-0ea99ec2db54\"\n      ],\n      \"title\": \"The Burden of Biological Life and Slavery\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"repugnance to futility\",\n        \"ancient consumption center\",\n        \"substitutive life\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-013\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-015\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00055-f9f0a05390c9\"\n      ],\n      \"title\": \"Tools, Instruments, and the Limits of Easing Labor\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"instrumentum vocale\",\n        \"mute robots\",\n        \"Aristotle's automated tools\",\n        \"tools of work vs. labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-013\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-016\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00056-e324fbf7401d\"\n      ],\n      \"title\": \"The Division of Labor and Mass Production\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"division of labor vs. specialization\",\n        \"collective labor force\",\n        \"mass production\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-015\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-017\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00057-9d0d14d22955\"\n      ],\n      \"title\": \"Transformation of Work into Labor and the Consumers' Society\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"waste economy\",\n        \"ideals of homo faber vs. animal laborans\",\n        \"consumers' society\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-016\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-018\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00058-11150ee95600\"\n      ],\n      \"title\": \"The Emancipation of Labor and the Problem of Freedom\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"art of earning money\",\n        \"violence and necessity\",\n        \"threat to freedom\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-017\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-019\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00059-f73cea452505\"\n      ],\n      \"title\": \"Mass Culture, Universal Unhappiness, and the Labor Society\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"mass culture\",\n        \"universal unhappiness\",\n        \"demand for happiness\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-018\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-020\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00060-4cd6cb863369\"\n      ],\n      \"title\": \"Conclusion to Labor: The Need for a World of Things\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"waste economy\",\n        \"condition under which life is at home\",\n        \"futility of labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-019\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-021\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00061-5613acad3e65\"\n      ],\n      \"title\": \"Chapter IV Work: The Durability of the World\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"human artifice\",\n        \"durability\",\n        \"objectivity of the world\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-020\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-022\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00062-9aa5de647675\"\n      ],\n      \"title\": \"Reification and the Violence of Fabrication\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"reification\",\n        \"violence against nature\",\n        \"Prometean revolt\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-021\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-023\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00063-9440742c4fce\"\n      ],\n      \"title\": \"The Model, Multiplication, and Means-End Categories in Making\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"guidance of a model\",\n        \"Plato's eternal ideas\",\n        \"means and end\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-022\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-024\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00064-7408029a32f4\"\n      ],\n      \"title\": \"Instrumentality and Animal Laborans\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"tool-maker\",\n        \"loss of means-end category in labor\",\n        \"mechanization of rhythm\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-023\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-025\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00065-936943606979\"\n      ],\n      \"title\": \"Stages of Technology: From Tools to Machines and Automation\",\n      \"function\": \"example\",\n      \"key_concepts\": [\n        \"steam engine\",\n        \"electricity\",\n        \"automation\",\n        \"continuous process\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-024\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-026\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00066-e49e49d808e4\"\n      ],\n      \"title\": \"Nuclear Technology and the Automatism of Natural Processes\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"nuclear technology\",\n        \"automatism\",\n        \"destruction of world qua world\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-025\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-027\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00067-66852767fa22\"\n      ],\n      \"title\": \"Instrumentality and Homo Faber: The Perplexity of Utilitarianism\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"standards of utility\",\n        \"chain of means and ends\",\n        \"end in itself\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-023\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-028\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00068-a58ed713283e\"\n      ],\n      \"title\": \"Utility vs. Meaning and Kantian Anthropocentrism\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"meaninglessness\",\n        \"anthropocentric utilitarianism\",\n        \"Kantian formula\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-027\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-029\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00069-1e36a37977c9\"\n      ],\n      \"title\": \"The Devaluation of Nature and Protagoras' Measure\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"instrumentalization of the world\",\n        \"banausic arts\",\n        \"Protagoras vs. Plato\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-028\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-030\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00070-0df9a0040a34\"\n      ],\n      \"title\": \"The Exchange Market as the Public Realm of Homo Faber\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"exchange market\",\n        \"conspicuous production\",\n        \"splendid isolation\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-022\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-031\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00071-83645bcd1f3f\"\n      ],\n      \"title\": \"Commercial Society, Commodities, and Market Value\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"commercial society\",\n        \"use value vs. exchange value\",\n        \"marketable value\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-030\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-032\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00072-8432597e6bd2\"\n      ],\n      \"title\": \"Universal Relativity and Loss of Intrinsic Worth\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"universal relativity\",\n        \"loss of absolute standards\",\n        \"money as common denominator\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-031\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-033\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00073-484f60306745\"\n      ],\n      \"title\": \"The Permanence of the World and the Work of Art\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"works of art\",\n        \"uselessness of art\",\n        \"immortality of mortal hands\",\n        \"thought\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-021\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-034\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00074-152179c77412\"\n      ],\n      \"title\": \"Transfiguration, Poetry, and the Distinction from Cognition\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"transfiguration\",\n        \"poetry and memorability\",\n        \"thought vs. cognition\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-033\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-035\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00075-90bd683a5dd0\"\n      ],\n      \"title\": \"Intelligence, Brain Power, and the Beauty of Things\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"intelligence\",\n        \"brain power\",\n        \"beauty and ugliness\",\n        \"transcendence of functional use\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-034\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-036\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00076-4d3b5a787291\"\n      ],\n      \"title\": \"Conclusion: The Human Artifice as a Home for Action and Speech\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"human artifice\",\n        \"action and speech\",\n        \"rejection of biological necessity and utilitarianism\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-033\",\n        \"sec-020\"\n      ],\n      \"required_for_global_understanding\": true\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"The Conflict Between Labor and Work\",\n      \"section_ids\": [\n        \"sec-001\",\n        \"sec-005\",\n        \"sec-007\",\n        \"sec-017\",\n        \"sec-021\"\n      ],\n      \"description\": \"The persistent historical and theoretical confusion between labor (associated with consumption and the biological life process) and work (associated with fabrication, permanence, and the human artifice).\"\n    },\n    {\n      \"label\": \"Marx's Philosophy and Contradictions\",\n      \"section_ids\": [\n        \"sec-003\",\n        \"sec-008\",\n        \"sec-009\",\n        \"sec-013\",\n        \"sec-031\"\n      ],\n      \"description\": \"Karl Marx's central role in the elevation of labor, his formulation of labor power and productivity, and the inherent contradictions between defining man as an animal laborans and seeking his emancipation from labor.\"\n    },\n    {\n      \"label\": \"The Crisis of Utilitarianism and Instrumentality\",\n      \"section_ids\": [\n        \"sec-027\",\n        \"sec-028\",\n        \"sec-029\",\n        \"sec-032\"\n      ],\n      \"description\": \"The expansion of the means-end category from fabrication into a universal rule of utility, leading to the loss of intrinsic worth, meaninglessness, and the devaluation of nature and the world.\"\n    }\n  ],\n  \"warnings\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPnmCoOnGJywPmRKy3bWJPX9qgUwj68ptfPWpAfPkUgEa4q0HxRHdD-gr9C4_9",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "cross_section_threads": [
+      {
+        "description": "The persistent historical and theoretical confusion between labor (associated with consumption and the biological life process) and work (associated with fabrication, permanence, and the human artifice).",
+        "label": "The Conflict Between Labor and Work",
+        "section_ids": [
+          "sec-001",
+          "sec-005",
+          "sec-007",
+          "sec-017",
+          "sec-021"
+        ]
+      },
+      {
+        "description": "Karl Marx's central role in the elevation of labor, his formulation of labor power and productivity, and the inherent contradictions between defining man as an animal laborans and seeking his emancipation from labor.",
+        "label": "Marx's Philosophy and Contradictions",
+        "section_ids": [
+          "sec-003",
+          "sec-008",
+          "sec-009",
+          "sec-013",
+          "sec-031"
+        ]
+      },
+      {
+        "description": "The expansion of the means-end category from fabrication into a universal rule of utility, leading to the loss of intrinsic worth, meaninglessness, and the devaluation of nature and the world.",
+        "label": "The Crisis of Utilitarianism and Instrumentality",
+        "section_ids": [
+          "sec-027",
+          "sec-028",
+          "sec-029",
+          "sec-032"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "depends_on_section_ids": [],
+        "function": "front_matter",
+        "key_concepts": [
+          "labor vs. work distinction",
+          "linguistic testimony",
+          "historical scarcity of evidence",
+          "ancient contempt for labor"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-001",
+        "source_block_ids": [
+          "blk-4c598a0d-00041-45a9fcc0206f"
+        ],
+        "title": "Introduction: The Neglected Distinction Between Labor and Work",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "slavery and necessity",
+          "animal laborans",
+          "ancient vs. modern prejudice",
+          "leveling of activities by philosophers"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-002",
+        "source_block_ids": [
+          "blk-4c598a0d-00042-f7aa919f145a"
+        ],
+        "title": "Ancient Views on Slavery, Necessity, and the Animal Laborans",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-002"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "productive vs. unproductive labor",
+          "Adam Smith and Karl Marx",
+          "productivity of labor power",
+          "surplus value"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-003",
+        "source_block_ids": [
+          "blk-4c598a0d-00043-ded5c049cadd"
+        ],
+        "title": "Modern Productivity and the Rise of Labor",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-003"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "skilled and unskilled work",
+          "manual and intellectual labor",
+          "liberal and servile arts",
+          "bureaucracy"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-004",
+        "source_block_ids": [
+          "blk-4c598a0d-00044-705024407fd9"
+        ],
+        "title": "Skilled vs. Unskilled and Manual vs. Intellectual Work",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-003"
+        ],
+        "function": "definition",
+        "key_concepts": [
+          "consumer goods",
+          "use objects",
+          "products of action and speech",
+          "reification"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-005",
+        "source_block_ids": [
+          "blk-4c598a0d-00045-09504c919bfd"
+        ],
+        "title": "The Thing-Character of the World and Reification",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-005"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "metabolism with nature",
+          "cyclical movement",
+          "bios vs. zoe",
+          "growth and decay"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-006",
+        "source_block_ids": [
+          "blk-4c598a0d-00046-6880025cebf7"
+        ],
+        "title": "Labor, Life, and the Cyclical Movement of Nature",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-006"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "fertility",
+          "Locke, Smith, and Marx contradictions",
+          "destructive devouring aspect",
+          "fight against decay"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-007",
+        "source_block_ids": [
+          "blk-4c598a0d-00047-e4926a23ac97"
+        ],
+        "title": "Labor, Fertility, and the Contradictions of Modern Theories",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-007"
+        ],
+        "function": "objection",
+        "key_concepts": [
+          "eternal necessity",
+          "realm of freedom vs. realm of necessity",
+          "equivocal attitude toward labor"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-008",
+        "source_block_ids": [
+          "blk-4c598a0d-00048-4ac3e959ea0e"
+        ],
+        "title": "Marx's Fundamental Contradiction: Emancipation from Labor",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-007"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "natural fertility",
+          "bliss of being alive",
+          "Old Testament perspective on life"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-009",
+        "source_block_ids": [
+          "blk-4c598a0d-00049-99ac0610327d"
+        ],
+        "title": "The Experience of Fertility and the Blessing of Life",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-009"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "happiness of the greatest number",
+          "private property",
+          "privacy and wealth"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-010",
+        "source_block_ids": [
+          "blk-4c598a0d-00050-e91b7ced182b"
+        ],
+        "title": "Happiness, Pain, and the Privacy of Property",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-010"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "property in one's own person",
+          "worldlessness",
+          "absence of pain",
+          "hedonism"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-011",
+        "source_block_ids": [
+          "blk-4c598a0d-00051-8ad6adfea771"
+        ],
+        "title": "The Privacy of the Body and Hedonism",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-011"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "sense experience of pain",
+          "socialized mankind",
+          "accumulation process"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-012",
+        "source_block_ids": [
+          "blk-4c598a0d-00052-1aaeca94df80"
+        ],
+        "title": "Worldlessness, Pain, and the Collective Life Process",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-012"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "concept of process",
+          "Darwin of history",
+          "hobbies",
+          "mass society of laborers"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-013",
+        "source_block_ids": [
+          "blk-4c598a0d-00053-46ef49b52c96"
+        ],
+        "title": "The Evolution of Process and the Worldlessness of the Animal Laborans",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-013"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "repugnance to futility",
+          "ancient consumption center",
+          "substitutive life"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-014",
+        "source_block_ids": [
+          "blk-4c598a0d-00054-0ea99ec2db54"
+        ],
+        "title": "The Burden of Biological Life and Slavery",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-013"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "instrumentum vocale",
+          "mute robots",
+          "Aristotle's automated tools",
+          "tools of work vs. labor"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-015",
+        "source_block_ids": [
+          "blk-4c598a0d-00055-f9f0a05390c9"
+        ],
+        "title": "Tools, Instruments, and the Limits of Easing Labor",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-015"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "division of labor vs. specialization",
+          "collective labor force",
+          "mass production"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-016",
+        "source_block_ids": [
+          "blk-4c598a0d-00056-e324fbf7401d"
+        ],
+        "title": "The Division of Labor and Mass Production",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-016"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "waste economy",
+          "ideals of homo faber vs. animal laborans",
+          "consumers' society"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-017",
+        "source_block_ids": [
+          "blk-4c598a0d-00057-9d0d14d22955"
+        ],
+        "title": "Transformation of Work into Labor and the Consumers' Society",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-017"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "art of earning money",
+          "violence and necessity",
+          "threat to freedom"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-018",
+        "source_block_ids": [
+          "blk-4c598a0d-00058-11150ee95600"
+        ],
+        "title": "The Emancipation of Labor and the Problem of Freedom",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-018"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "mass culture",
+          "universal unhappiness",
+          "demand for happiness"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-019",
+        "source_block_ids": [
+          "blk-4c598a0d-00059-f73cea452505"
+        ],
+        "title": "Mass Culture, Universal Unhappiness, and the Labor Society",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-019"
+        ],
+        "function": "conclusion",
+        "key_concepts": [
+          "waste economy",
+          "condition under which life is at home",
+          "futility of labor"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-020",
+        "source_block_ids": [
+          "blk-4c598a0d-00060-4cd6cb863369"
+        ],
+        "title": "Conclusion to Labor: The Need for a World of Things",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-020"
+        ],
+        "function": "definition",
+        "key_concepts": [
+          "human artifice",
+          "durability",
+          "objectivity of the world"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-021",
+        "source_block_ids": [
+          "blk-4c598a0d-00061-5613acad3e65"
+        ],
+        "title": "Chapter IV Work: The Durability of the World",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-021"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "reification",
+          "violence against nature",
+          "Prometean revolt"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-022",
+        "source_block_ids": [
+          "blk-4c598a0d-00062-9aa5de647675"
+        ],
+        "title": "Reification and the Violence of Fabrication",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-022"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "guidance of a model",
+          "Plato's eternal ideas",
+          "means and end"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-023",
+        "source_block_ids": [
+          "blk-4c598a0d-00063-9440742c4fce"
+        ],
+        "title": "The Model, Multiplication, and Means-End Categories in Making",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-023"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "tool-maker",
+          "loss of means-end category in labor",
+          "mechanization of rhythm"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-024",
+        "source_block_ids": [
+          "blk-4c598a0d-00064-7408029a32f4"
+        ],
+        "title": "Instrumentality and Animal Laborans",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-024"
+        ],
+        "function": "example",
+        "key_concepts": [
+          "steam engine",
+          "electricity",
+          "automation",
+          "continuous process"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-025",
+        "source_block_ids": [
+          "blk-4c598a0d-00065-936943606979"
+        ],
+        "title": "Stages of Technology: From Tools to Machines and Automation",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-025"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "nuclear technology",
+          "automatism",
+          "destruction of world qua world"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-026",
+        "source_block_ids": [
+          "blk-4c598a0d-00066-e49e49d808e4"
+        ],
+        "title": "Nuclear Technology and the Automatism of Natural Processes",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-023"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "standards of utility",
+          "chain of means and ends",
+          "end in itself"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-027",
+        "source_block_ids": [
+          "blk-4c598a0d-00067-66852767fa22"
+        ],
+        "title": "Instrumentality and Homo Faber: The Perplexity of Utilitarianism",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-027"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "meaninglessness",
+          "anthropocentric utilitarianism",
+          "Kantian formula"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-028",
+        "source_block_ids": [
+          "blk-4c598a0d-00068-a58ed713283e"
+        ],
+        "title": "Utility vs. Meaning and Kantian Anthropocentrism",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-028"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "instrumentalization of the world",
+          "banausic arts",
+          "Protagoras vs. Plato"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-029",
+        "source_block_ids": [
+          "blk-4c598a0d-00069-1e36a37977c9"
+        ],
+        "title": "The Devaluation of Nature and Protagoras' Measure",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-022"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "exchange market",
+          "conspicuous production",
+          "splendid isolation"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-030",
+        "source_block_ids": [
+          "blk-4c598a0d-00070-0df9a0040a34"
+        ],
+        "title": "The Exchange Market as the Public Realm of Homo Faber",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-030"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "commercial society",
+          "use value vs. exchange value",
+          "marketable value"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-031",
+        "source_block_ids": [
+          "blk-4c598a0d-00071-83645bcd1f3f"
+        ],
+        "title": "Commercial Society, Commodities, and Market Value",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-031"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "universal relativity",
+          "loss of absolute standards",
+          "money as common denominator"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-032",
+        "source_block_ids": [
+          "blk-4c598a0d-00072-8432597e6bd2"
+        ],
+        "title": "Universal Relativity and Loss of Intrinsic Worth",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-021"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "works of art",
+          "uselessness of art",
+          "immortality of mortal hands",
+          "thought"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-033",
+        "source_block_ids": [
+          "blk-4c598a0d-00073-484f60306745"
+        ],
+        "title": "The Permanence of the World and the Work of Art",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-033"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "transfiguration",
+          "poetry and memorability",
+          "thought vs. cognition"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-034",
+        "source_block_ids": [
+          "blk-4c598a0d-00074-152179c77412"
+        ],
+        "title": "Transfiguration, Poetry, and the Distinction from Cognition",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-034"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "intelligence",
+          "brain power",
+          "beauty and ugliness",
+          "transcendence of functional use"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-035",
+        "source_block_ids": [
+          "blk-4c598a0d-00075-90bd683a5dd0"
+        ],
+        "title": "Intelligence, Brain Power, and the Beauty of Things",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-033",
+          "sec-020"
+        ],
+        "function": "conclusion",
+        "key_concepts": [
+          "human artifice",
+          "action and speech",
+          "rejection of biological necessity and utilitarianism"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-036",
+        "source_block_ids": [
+          "blk-4c598a0d-00076-4d3b5a787291"
+        ],
+        "title": "Conclusion: The Human Artifice as a Home for Action and Speech",
+        "unresolved_context": []
+      }
+    ],
+    "warnings": [],
+    "working_thesis": "The human condition comprises distinct activities—primarily labor, work, and action—whose historical and theoretical conflation in the modern age, specifically through the elevation of the animal laborans and utilitarian instrumentalism, threatens the stability of the human world and the true nature of human freedom."
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"working_thesis\": \"The human condition comprises distinct activities—primarily labor, work, and action—whose historical and theoretical conflation in the modern age, specifically through the elevation of the animal laborans and utilitarian instrumentalism, threatens the stability of the human world and the true nature of human freedom.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00041-45a9fcc0206f\"\n      ],\n      \"title\": \"Introduction: The Neglected Distinction Between Labor and Work\",\n      \"function\": \"front_matter\",\n      \"key_concepts\": [\n        \"labor vs. work distinction\",\n        \"linguistic testimony\",\n        \"historical scarcity of evidence\",\n        \"ancient contempt for labor\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00042-f7aa919f145a\"\n      ],\n      \"title\": \"Ancient Views on Slavery, Necessity, and the Animal Laborans\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"slavery and necessity\",\n        \"animal laborans\",\n        \"ancient vs. modern prejudice\",\n        \"leveling of activities by philosophers\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00043-ded5c049cadd\"\n      ],\n      \"title\": \"Modern Productivity and the Rise of Labor\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"productive vs. unproductive labor\",\n        \"Adam Smith and Karl Marx\",\n        \"productivity of labor power\",\n        \"surplus value\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00044-705024407fd9\"\n      ],\n      \"title\": \"Skilled vs. Unskilled and Manual vs. Intellectual Work\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"skilled and unskilled work\",\n        \"manual and intellectual labor\",\n        \"liberal and servile arts\",\n        \"bureaucracy\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00045-09504c919bfd\"\n      ],\n      \"title\": \"The Thing-Character of the World and Reification\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"consumer goods\",\n        \"use objects\",\n        \"products of action and speech\",\n        \"reification\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-006\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00046-6880025cebf7\"\n      ],\n      \"title\": \"Labor, Life, and the Cyclical Movement of Nature\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"metabolism with nature\",\n        \"cyclical movement\",\n        \"bios vs. zoe\",\n        \"growth and decay\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-007\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00047-e4926a23ac97\"\n      ],\n      \"title\": \"Labor, Fertility, and the Contradictions of Modern Theories\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"fertility\",\n        \"Locke, Smith, and Marx contradictions\",\n        \"destructive devouring aspect\",\n        \"fight against decay\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-006\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-008\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00048-4ac3e959ea0e\"\n      ],\n      \"title\": \"Marx's Fundamental Contradiction: Emancipation from Labor\",\n      \"function\": \"objection\",\n      \"key_concepts\": [\n        \"eternal necessity\",\n        \"realm of freedom vs. realm of necessity\",\n        \"equivocal attitude toward labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-007\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-009\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00049-99ac0610327d\"\n      ],\n      \"title\": \"The Experience of Fertility and the Blessing of Life\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"natural fertility\",\n        \"bliss of being alive\",\n        \"Old Testament perspective on life\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-007\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-010\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00050-e91b7ced182b\"\n      ],\n      \"title\": \"Happiness, Pain, and the Privacy of Property\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"happiness of the greatest number\",\n        \"private property\",\n        \"privacy and wealth\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-009\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-011\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00051-8ad6adfea771\"\n      ],\n      \"title\": \"The Privacy of the Body and Hedonism\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"property in one's own person\",\n        \"worldlessness\",\n        \"absence of pain\",\n        \"hedonism\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-010\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-012\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00052-1aaeca94df80\"\n      ],\n      \"title\": \"Worldlessness, Pain, and the Collective Life Process\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"sense experience of pain\",\n        \"socialized mankind\",\n        \"accumulation process\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-011\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-013\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00053-46ef49b52c96\"\n      ],\n      \"title\": \"The Evolution of Process and the Worldlessness of the Animal Laborans\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"concept of process\",\n        \"Darwin of history\",\n        \"hobbies\",\n        \"mass society of laborers\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-012\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-014\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00054-0ea99ec2db54\"\n      ],\n      \"title\": \"The Burden of Biological Life and Slavery\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"repugnance to futility\",\n        \"ancient consumption center\",\n        \"substitutive life\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-013\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-015\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00055-f9f0a05390c9\"\n      ],\n      \"title\": \"Tools, Instruments, and the Limits of Easing Labor\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"instrumentum vocale\",\n        \"mute robots\",\n        \"Aristotle's automated tools\",\n        \"tools of work vs. labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-013\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-016\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00056-e324fbf7401d\"\n      ],\n      \"title\": \"The Division of Labor and Mass Production\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"division of labor vs. specialization\",\n        \"collective labor force\",\n        \"mass production\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-015\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-017\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00057-9d0d14d22955\"\n      ],\n      \"title\": \"Transformation of Work into Labor and the Consumers' Society\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"waste economy\",\n        \"ideals of homo faber vs. animal laborans\",\n        \"consumers' society\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-016\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-018\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00058-11150ee95600\"\n      ],\n      \"title\": \"The Emancipation of Labor and the Problem of Freedom\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"art of earning money\",\n        \"violence and necessity\",\n        \"threat to freedom\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-017\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-019\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00059-f73cea452505\"\n      ],\n      \"title\": \"Mass Culture, Universal Unhappiness, and the Labor Society\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"mass culture\",\n        \"universal unhappiness\",\n        \"demand for happiness\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-018\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-020\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00060-4cd6cb863369\"\n      ],\n      \"title\": \"Conclusion to Labor: The Need for a World of Things\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"waste economy\",\n        \"condition under which life is at home\",\n        \"futility of labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-019\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-021\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00061-5613acad3e65\"\n      ],\n      \"title\": \"Chapter IV Work: The Durability of the World\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"human artifice\",\n        \"durability\",\n        \"objectivity of the world\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-020\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-022\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00062-9aa5de647675\"\n      ],\n      \"title\": \"Reification and the Violence of Fabrication\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"reification\",\n        \"violence against nature\",\n        \"Prometean revolt\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-021\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-023\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00063-9440742c4fce\"\n      ],\n      \"title\": \"The Model, Multiplication, and Means-End Categories in Making\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"guidance of a model\",\n        \"Plato's eternal ideas\",\n        \"means and end\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-022\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-024\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00064-7408029a32f4\"\n      ],\n      \"title\": \"Instrumentality and Animal Laborans\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"tool-maker\",\n        \"loss of means-end category in labor\",\n        \"mechanization of rhythm\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-023\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-025\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00065-936943606979\"\n      ],\n      \"title\": \"Stages of Technology: From Tools to Machines and Automation\",\n      \"function\": \"example\",\n      \"key_concepts\": [\n        \"steam engine\",\n        \"electricity\",\n        \"automation\",\n        \"continuous process\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-024\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-026\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00066-e49e49d808e4\"\n      ],\n      \"title\": \"Nuclear Technology and the Automatism of Natural Processes\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"nuclear technology\",\n        \"automatism\",\n        \"destruction of world qua world\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-025\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-027\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00067-66852767fa22\"\n      ],\n      \"title\": \"Instrumentality and Homo Faber: The Perplexity of Utilitarianism\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"standards of utility\",\n        \"chain of means and ends\",\n        \"end in itself\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-023\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-028\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00068-a58ed713283e\"\n      ],\n      \"title\": \"Utility vs. Meaning and Kantian Anthropocentrism\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"meaninglessness\",\n        \"anthropocentric utilitarianism\",\n        \"Kantian formula\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-027\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-029\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00069-1e36a37977c9\"\n      ],\n      \"title\": \"The Devaluation of Nature and Protagoras' Measure\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"instrumentalization of the world\",\n        \"banausic arts\",\n        \"Protagoras vs. Plato\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-028\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-030\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00070-0df9a0040a34\"\n      ],\n      \"title\": \"The Exchange Market as the Public Realm of Homo Faber\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"exchange market\",\n        \"conspicuous production\",\n        \"splendid isolation\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-022\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-031\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00071-83645bcd1f3f\"\n      ],\n      \"title\": \"Commercial Society, Commodities, and Market Value\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"commercial society\",\n        \"use value vs. exchange value\",\n        \"marketable value\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-030\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-032\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00072-8432597e6bd2\"\n      ],\n      \"title\": \"Universal Relativity and Loss of Intrinsic Worth\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"universal relativity\",\n        \"loss of absolute standards\",\n        \"money as common denominator\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-031\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-033\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00073-484f60306745\"\n      ],\n      \"title\": \"The Permanence of the World and the Work of Art\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"works of art\",\n        \"uselessness of art\",\n        \"immortality of mortal hands\",\n        \"thought\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-021\"\n      ],\n      \"required_for_global_understanding\": true\n    },\n    {\n      \"section_id\": \"sec-034\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00074-152179c77412\"\n      ],\n      \"title\": \"Transfiguration, Poetry, and the Distinction from Cognition\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"transfiguration\",\n        \"poetry and memorability\",\n        \"thought vs. cognition\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-033\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-035\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00075-90bd683a5dd0\"\n      ],\n      \"title\": \"Intelligence, Brain Power, and the Beauty of Things\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"intelligence\",\n        \"brain power\",\n        \"beauty and ugliness\",\n        \"transcendence of functional use\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-034\"\n      ],\n      \"required_for_global_understanding\": false\n    },\n    {\n      \"section_id\": \"sec-036\",\n      \"source_block_ids\": [\n        \"blk-4c598a0d-00076-4d3b5a787291\"\n      ],\n      \"title\": \"Conclusion: The Human Artifice as a Home for Action and Speech\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"human artifice\",\n        \"action and speech\",\n        \"rejection of biological necessity and utilitarianism\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-033\",\n        \"sec-020\"\n      ],\n      \"required_for_global_understanding\": true\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"The Conflict Between Labor and Work\",\n      \"section_ids\": [\n        \"sec-001\",\n        \"sec-005\",\n        \"sec-007\",\n        \"sec-017\",\n        \"sec-021\"\n      ],\n      \"description\": \"The persistent historical and theoretical confusion between labor (associated with consumption and the biological life process) and work (associated with fabrication, permanence, and the human artifice).\"\n    },\n    {\n      \"label\": \"Marx's Philosophy and Contradictions\",\n      \"section_ids\": [\n        \"sec-003\",\n        \"sec-008\",\n        \"sec-009\",\n        \"sec-013\",\n        \"sec-031\"\n      ],\n      \"description\": \"Karl Marx's central role in the elevation of labor, his formulation of labor power and productivity, and the inherent contradictions between defining man as an animal laborans and seeking his emancipation from labor.\"\n    },\n    {\n      \"label\": \"The Crisis of Utilitarianism and Instrumentality\",\n      \"section_ids\": [\n        \"sec-027\",\n        \"sec-028\",\n        \"sec-029\",\n        \"sec-032\"\n      ],\n      \"description\": \"The expansion of the means-end category from fabrication into a universal rule of utility, leading to the loss of intrinsic worth, meaninglessness, and the devaluation of nature and the world.\"\n    }\n  ],\n  \"warnings\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 6303,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 55541,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 55541
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 61844,
+    "traffic_type": null
+  }
+}

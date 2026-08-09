@@ -1,0 +1,18 @@
+{
+  "run_id": "276ad489-352a-4fe2-b071-113f21967739",
+  "previous_run_id": null,
+  "project_id": "5136911e-2241-4caa-b374-2da83bf1d367",
+  "status": "blocked",
+  "stage": "blocked",
+  "target_duration_minutes": 10,
+  "max_supported_minutes": 0,
+  "effective_supported_minutes": null,
+  "coverage_recommendation": "more_evidence",
+  "material_gaps": [
+    "Missing content and substantive evidence regarding theology and the meaning of knowing God."
+  ],
+  "started_at": "2026-08-08T17:25:05.553752Z",
+  "updated_at": "2026-08-08T17:25:13.324278Z",
+  "finished_at": "2026-08-08T17:25:13.324272Z",
+  "last_error": "The supplied claim corpus covers software classification guidelines rather than the central question of theology, leaving the objective completely unsupported."
+}

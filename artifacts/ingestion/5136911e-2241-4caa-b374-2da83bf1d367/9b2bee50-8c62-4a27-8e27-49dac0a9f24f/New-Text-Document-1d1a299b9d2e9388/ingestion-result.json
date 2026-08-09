@@ -1,0 +1,1809 @@
+{
+  "inspection": {
+    "path": "C:\\Users\\mhghotbi\\Documents\\Git\\thesisound\\workspaces\\5136911e-2241-4caa-b374-2da83bf1d367\\uploads\\9b2bee50-8c62-4a27-8e27-49dac0a9f24f\\New Text Document.txt",
+    "mime_type": "text/plain",
+    "extension": ".txt",
+    "file_size_bytes": 19181,
+    "sha256": "1d1a299b9d2e9388583c4bfa6f159ece737c4cf8a8b16369af59ac1d93be4c4d",
+    "page_count": null,
+    "encrypted": false,
+    "sampled_text_characters": 11028,
+    "image_only_ratio": null,
+    "likely_complex_layout": true,
+    "warnings": []
+  },
+  "route": {
+    "primary": "docling",
+    "fallbacks": [
+      "native"
+    ],
+    "reasons": [
+      "Docling is the default local parser for text-bearing documents."
+    ]
+  },
+  "attempts": [
+    {
+      "parser_name": "docling",
+      "status": "success",
+      "duration_seconds": 96.03954019999946,
+      "parsed": {
+        "parser_name": "docling",
+        "parser_version": "2.118.1",
+        "blocks": [
+          {
+            "source_block_key": "/texts/0",
+            "text": "خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/1",
+            "text": "ذخیره مقاله با فرمت پی دی اف",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/2",
+            "text": "یکی از مهم ترین مسائلی که بشر با آن مواجهه است خدا و خداشناسی است. اینکه انسان از کجا آمده است و به کجا می رود.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/3",
+            "text": "فهرست مندرجات",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/4",
+            "text": "۱ - معنای خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/5",
+            "text": "۲ - خداشناسی در قرآن",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/6",
+            "text": "۳ - خداشناسی در روایات",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/7",
+            "text": "۴ - انواع خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/8",
+            "text": "۴.۱ - خداشناسی فطری (حضوری)",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/9",
+            "text": "۴.۲ - خداشناسی فطری (حصولی)",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/10",
+            "text": "۵ - راه‌های خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/11",
+            "text": "۵.۱ - تفکر و استدلال",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/12",
+            "text": "۵.۲ - تزکیه و تصفیه نفس",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/13",
+            "text": "۵.۳ - مطالعه آثار علمی دیگران",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/14",
+            "text": "۵.۴ - خودشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/15",
+            "text": "۶ - آثار خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/16",
+            "text": "۶.۱ - آثار فردی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/17",
+            "text": "۶.۱.۱ - ایمان و آرامش در زندگی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/18",
+            "text": "۶.۱.۲ - اجابت دعا",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/19",
+            "text": "۶.۲ - آثار اجتماعی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/20",
+            "text": "۶.۲.۱ - عدالت اجتماعی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/21",
+            "text": "۶.۲.۲ - وحدت اجتماعی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/22",
+            "text": "۷ - موانع شناخت خدا",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/23",
+            "text": "۷.۱ - شیطان",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/24",
+            "text": "۷.۲ - تعلق به دنیا",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/25",
+            "text": "۷.۳ - گناه",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/26",
+            "text": "۸ - پانویس",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/27",
+            "text": "۹ - منبع",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/28",
+            "text": "۱ - معنای خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/29",
+            "text": "[ویرایش]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/30",
+            "text": "خداشناسی به این معناست که انسان به حقیقتی برسد که درک کند خداوند علت و خالق اوست و او عین نیاز و متعلق به خداوند است. چنانکه در قرآن می فرماید:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/31",
+            "text": "«ای مردم شما(همگی) نیازمند به خدایید، تنها خداوند است که بی نیاز و شایسته هرگونه حمد و ستایش است.» [۱]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/32",
+            "text": "۲ - خداشناسی در قرآن",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/33",
+            "text": "[ویرایش]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/34",
+            "text": "خداوند در قرآن کریم به ذکر نمونه ها و راه هایی برای خداشناسی پرداخته و می فرماید:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/35",
+            "text": "«به زودی نشانه های خود را در اطراف جهان و در درون جانشان به آنها نشان می دهیم تا برای آنان آشکار گردد که او حق است. آیا کافی نیست که پروردگارت بر همه چیز شاهد و گواه است.»[۲]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/36",
+            "text": "«و در زمین آیاتی برای جویندگان یقین است و در وجود خود شما نیز (آیاتی است)، آیا نمی بیند.» [۳]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/37",
+            "text": "۳ - خداشناسی در روایات",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/38",
+            "text": "[ویرایش]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/39",
+            "text": "روایات بسیاری در باب خداشناسی مطرح شده که در اینجا به برخی از آنها می پردازیم:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/40",
+            "text": "۱. امام علی(علیه‌السلام) می فرماید: هر که خدا را شناخت، معرفتش کامل گشت. [۴]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/41",
+            "text": "۲. امام علی(علیه‌السلام): علم داشتن به خدا، برترین دو علم است. [۵]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/42",
+            "text": "۳. موجب دل برکندن از دنیا می شود. [۶]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/43",
+            "text": "۴. موجب ترس از خدا می شود. [۷]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/44",
+            "text": "۵. موجب پشت کردن به دنیای فانی می شود. [۸]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/45",
+            "text": "و...",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/46",
+            "text": "۴ - انواع خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/47",
+            "text": "[ویرایش]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/48",
+            "text": "بطور کلی، معرفت و شناخت یک موجود به حسب آن شی مورد شناخت، به دو صورت تحقق می یابد. یکی شناخت حضوری و دیگری شناخت حصولی. در مورد خداوند متعال نیز همین دو نوع شناخت متصور است. یکی شناخت حضوری که بدون وساطت مفاهیم ذهنی، تحقق می یابد و دیگری شناخت کلی و حصولی که به وسیله مفاهیم عقلی حاصل می شود و مسقیماً به ذات الهی تعلق نمی گیرد. [۹]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/49",
+            "text": "قرآن کریم انسان را بالفطره خداشناس معرفی می کند و مدعی است که همه انسان ها در مرحله ای وجود، پروردگار خویش را به صورت عیان مشاهده کرده و به ربوبیت او اعتراف کرده اند و به حسب آفرینش خود، یک نوع شناخت از آفریننده خود دارند.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/50",
+            "text": "شناخت حصولی و حضوری خداوند را اینگونه بیان می کنیم:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/51",
+            "text": "۴.۱ - خداشناسی فطری (حضوری)",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/52",
+            "text": "منظور از خداشناسی فطری و حضوری این است که دل انسان ارتباط عمیقی با آفریننده ی خود دارد و هنگامی که انسان به عمق دل خود، توجه نماید چنین رابطه ای را خواهد یافت ولی اکثر مردم مخصوصا در اوقات عادی زندگی که سرگرم امور دنیا هستند، توجهی به این رابطه قلبی ندارند و تنها هنگامی که توجهشان از همه چیز بریده می شود و امیدشان از همه اسباب قطع می گردد، می توانند به این رابطه قلبی توجه نمایند.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/53",
+            "text": "۴.۲ - خداشناسی فطری (حصولی)",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/54",
+            "text": "منظور از خداشناسی فطری و حصولی این است که عقل انسان برای تصدیق وجود خدا نیازی به تلاش و کوشش ندارد، بلکه به آسانی درک می کند که وجود انسان و همه پدیده های جهان نیازمند هستند. پس خدای بی نیازی وجود دارد که نیاز آنها را رفع کند. [۱۰]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/55",
+            "text": "۵ - راه‌های خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/56",
+            "text": "[ویرایش]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/57",
+            "text": "برای شناختن خداوند، راه های متعددی وجود دارد، که در اینجا به برخی از آنها اشاره می کنیم.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/58",
+            "text": "۵.۱ - تفکر و استدلال",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/59",
+            "text": "خداوند در قرآن کریم می فرماید:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/60",
+            "text": "«و خداوند شما را از شکم مادرانتان خارج نمود در حالی که هیچ چیز نمی دانستید و برای شما گوش و چشم و عقل قرار داد، تا شکر نعمت او را بجا آورید.» [۱۱] [۱۲]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/61",
+            "text": "در این آیه کریمه تصریح شده است که انسان در ابتدای تولد فاقد هرگونه شناختی است و خداوند به انسان حواس را عنایت فرموده تا جهان را به این وسیله مطالعه و بررسی کند و به او ضمیر و قوه تجزیه و تحلیل داده که آنچه را از راه حواس به دست می آورد، در مرحله بعد تعمق کند و از ظواهر گذشته به درون اشیاء و قوانین حاکم بر آنها راه یابد. [۱۳]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/62",
+            "text": "۵.۲ - تزکیه و تصفیه نفس",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/63",
+            "text": "همانطور که صراحتاً در قرآن حواس و قوه تفکر بعنوان ابزار شناخت معرفی شده اند، تزکیه و تصفیه نفس نیز وسیله ای برای شناخت دانسته شده است. [۱۴]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/64",
+            "text": "خداوند در قرآن می فرماید:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/65",
+            "text": "«ای کسانی که ایمان آورده اید اگر از (مخالفت فرمان) خدا بپرهیزید، برای شما وسیله ای جهت جدا ساختن حق از باطل قرار می دهد (روشن بینی خاصی که در پرتو آن، حق را از باطل خواهید شناخت) و گناهانتان را می پوشاند و شما را می آمرزد و خداوند صاحب فضل و بخشش عظیم است.» [۱۵]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/66",
+            "text": "۵.۳ - مطالعه آثار علمی دیگران",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/67",
+            "text": "تعلم و یاد گرفتن و خواندن کتاب، یکی دیگر از اسباب و ابرازهایی است که برای شناخت خداوند به آن توجه شده است. [۱۶]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/68",
+            "text": "۵.۴ - خودشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/69",
+            "text": "یکی از مهم ترین راه های خداشناسی، خودشناسی است. پیامبر اکرم (ص) می فرماید: هر کس خود را شناخت، خدای خود را شناخته است.[۱۷]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/70",
+            "text": "اگر انسان خویش را بشناسد، هم مبدأ جهان امکان را می شناسد و هم به معاد ایمان می آورد و حیات ابدی را پیش از هر چیزی می بیند و به آن دل می بندد و هم مسیر بین آغاز و انجام را می شناسد اما اگر خویش را نشناسد، هم مبدأ یعنی خدا را فراموش می کند و هم به معاد و حیات ابدی توجهی ندارد و در واقع با فراموش کردن نفس از همه معارف باز می ماند. [۱۸]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/71",
+            "text": "امام خمینی در آثار خود به بحث از خداشناسی و راه‌های اثبات آن پرداخته، با تحلیل و بررسی آرای برخی متکلمان در اثبات وجود حق تعالی و با استناد به آیات الهی، به براهین فلسفی و کلامی خداشناسی پرداخته است.[۱۹] ایشان با پذیرش مبانی حکمت متعالیه نظیر اصالت وجود، تشکیک در وجود و با استناد به برخی آیات الهی، دیدگاه‌هایی را که بر تنزیه محض حق‌ تعالی یا تشبیه محض حق‌ تعالی دلالت دارند، رد کرده، [۲۰][۲۱] درباره امکان شناخت خداوند معتقد است بشر می‌تواند به مرتبه‌ای برسد که خدا را بشناسد. ایشان وجود حق تعالی را دارای مراتبی می‌داند که شناخت بشر و مخلوقات به تمامی آن مراتب تعلق نمی‌گیرد؛ یعنی امکان معرفت به مرتبه غیب الغیوب و مرتبه احدیت وجود ندارد؛ [۲۲][۲۳][۲۴] اما در مرتبه واحدیت که همان مرتبه ظهور اسماء و صفات الهی است، هر موجودی به‌اندازه ظرفیت خود، می‌تواند به معرفتی از این مرتبه برسد.[۲۵] در این قسم به اعتقاد امام نه تنها بشر بر ادراک و شناخت حق تعالی توانا می‌باشد بلکه ایشان چندین راه برای آن معرفی می‌کند؛ از جمله شناخت انسان کامل، شناخت نفس و شناخت کلام الهی؛ زیرا هر سه در واقع تجلی خداوند و مظهر اسماء و صفات او هستند.[۲۶]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/72",
+            "text": "امام خمینی راه‌های خداشناسی را با توجه به روش و مبنا متفاوت می‌داند و برخی براهین را عقلی و فلسفی و برخی را طبیعی و برخی دیگر را کلامی می‌داند و قائل است هر صاحب فن و علمی از فن و علم خود بر ذات واجب برهان اقامه می‌کند، چنانکه عالم الهی در الهیات از راه ذات واجب تعالی بر خود ذات و حکیم طبیعی از حرکت طبیعی بر ذات اقدس الهی و متکلمان از راه حدوث عالم بر اثبات وجود خداوند برهان اقامه می‌کنند.[۲۷][۲۸]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/73",
+            "text": "۶ - آثار خداشناسی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/74",
+            "text": "[ویرایش]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/75",
+            "text": "شناخت خداوند -و درک این مطلب که مبدأ و معاد از آن خداوند است- آثار و برکات فراوانی را هم در زندگی فردی و هم در زندگی اجتماعی بشر به دنبال دارد. در اینجا به تعدادی از آنها اشاره می کنیم.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/76",
+            "text": "۶.۱ - آثار فردی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/77",
+            "text": "۶.۱.۱ - ایمان و آرامش در زندگی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/78",
+            "text": "بی تردید امروز تمدن بشری و جهش های زندگی ماشینی آثار مسمومی در زندگی انسان ها گذاشته و اکثر انسان ها را دچار نوعی پریشانی خاطر و اضطراب کرده است. آنچه قرآن کریم و روایات و تجارب علمی تأکید می کنند این است که جامعه بشری برای رها شدن از این دغدغه ها و نگرانی ها، باید ایمانش را قوی تر کند. چرا که اعتقاد به خدای متعال و رعایت تمامی لوازم و شرایط بندگی، مستحکم ترین سنگر معنوی و محافظ بشر در مقابل سختی های خرد کننده است. [۲۹]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/79",
+            "text": "قرآن کریم در این باره می فرماید:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/80",
+            "text": "«آنها کسانی هستند که ایمان آورده اند و دل هایشان به یاد خدا مطمئن (و آرام) است، آگاه باشید، تنها با یاد خدا دل ها آرامش می یابد.» [۳۰]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/81",
+            "text": "انسان هر چه به خدا ایمان بالاتری پیدا کند، عطش و نیاز درونی اش کم می شود و وقتی قدم در راه ایمان به خدا گذاشت، احساس بی نیازی کرده و به آرامش مطلق می رسد و هرگاه به خدای کاذب (هوای نفس) نزدیک شود، اضطرابش زیاد می گردد. [۳۱]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/82",
+            "text": "۶.۱.۲ - اجابت دعا",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/83",
+            "text": "از دیگر آثار مهم خداشناسی اجابت دعاست. شناختی که ملازم با اجابت است. شناخت قلبی پس از رفع کلیه موانع شناخت و گذر از مرحله تقوا و رسیدن به مرتبه یقین و طی کردن مراحل ذکر و انس و عشق و انقطاع است.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/84",
+            "text": "در این مرحله بنده به مرتبه ای می رسد که قادر به دخل و تصرف در عالم کاینات است. چرا که از غیر منقطع شده، به حق متصل گشته و اراده اش در اراده خداوند فانی می شود. [۳۲]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/85",
+            "text": "۶.۲ - آثار اجتماعی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/86",
+            "text": "۶.۲.۱ - عدالت اجتماعی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/87",
+            "text": "برای اینکه عدالت در جامعه پیاده شود باید دولت ها و حکومت ها به خدای متعال ایمان داشته باشند. زیرا حکومت های بشری که ایمان و حس خداشناسی در آنها حاکم نیست در اجرای قانون فقط می توانند به مقابله با سرکشی ها و خلاف های آشکاری که در سطح جامعه به وجود می آید، بپردازند و هرگز از تعدی های پنهانی که از دید دستگاه قضایی و نیروی نظامی مخفی است نمی توانند جلوگیری کنند. زیرا ایمانی ندارند تا خود را در محکمه وجدان خویش و حضور مدام حق تعالی در هر جا و هر زمان مجرم بشناسند. بر خلاف حکومت دینی که نه تنها فرد را از گناه آشکار یعنی فساد و سرکشی در سطح جامعه باز می دارد، بلکه به نهی از انجام گناه در زندگی می پردازد.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/88",
+            "text": "در جامعه ای که زیر بنای آن را اخلاق و ایمان به خدا تشکیل می دهد، قانون به وجه نیک اجرا می شود و در زندگی افراد جامعه جاری است. [۳۳]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/89",
+            "text": "۶.۲.۲ - وحدت اجتماعی",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/90",
+            "text": "قرآن کریم می فرماید:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/91",
+            "text": "«مومنان برادر یکدیگرند، پس دو برادر خود را صلح و آشتی دهید و تقوای الهی پیشه کنید، باشد که مشمول رحمت او شوید.» [۳۴]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/92",
+            "text": "اسلام با اولین شعارش، حتی آنجا که پیامبر(ص) مردم را به یگانه پرستی دعوت می کند، جامعه را به سوی یک هدف و مبدأ دعوت می نماید و امر می کند همه به یک زبان (عربی) و به سمت یک قبله نماز بخوانند و توده های بشریت را به صورت یک واحد متشکل در می آورد.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/93",
+            "text": "بنابراین توحید و شناخت خدا، جامعه بشری را از دوگانه پرستی ها و بت پرستی ها و... نجات می دهد و به صورت امت واحد در صراط مستقیم به سوی هدف معینی به نام الله روانه می کند. پس وقتی مبدأ و هدف یکی شد، همگان خود را بنده یکی دانسته و به یک نقطه ختم می شوند. [۳۵]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/94",
+            "text": "۷ - موانع شناخت خدا",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/95",
+            "text": "[ویرایش]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/96",
+            "text": "با توجه به اهمیت و ضرورت خداشناسی، گاهی باز هم عواملی وجود دارد که مانع شناخت خدا و رسیدن به آثار و برکات آن می شود. در اینجا به مواردی از این موانع اشاره می کنیم:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/97",
+            "text": "۷.۱ - شیطان",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/98",
+            "text": "خداوند در قرآن کریم درباره کافران و دلباختگان به عالم طبیعت می فرماید:",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/99",
+            "text": "«شیطان بر آنان مسلط شده و یاد خدا را از خاطر آنها برده، آنها حزب شیطانند. بدانید حزب شیطان زیانکارانند.» [۳۶]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/100",
+            "text": "تمام تلاش شیطان این است که سرمایه خداخواهی را از انسان بگیرد و اگر کسی این سرمایه را باخت، خودش را از یاد می برد. این آیه به این نکته اشاره دارد که شیطان در برابر انسان دسیسه می کند تا بر او تسلط یابد و سرمایه او را از او بگیرد. [۳۷]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/101",
+            "text": "۷.۲ - تعلق به دنیا",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/102",
+            "text": "امام علی(علیه‌السلام) می فرمایند: از فرومایگی دنیا همین بس که خدا در هیچ عالمی، نه در عوالم قبل از دنیا و نه در عوالم بعد از دنیا معصیت نمی شود، تنها در دنیا معصیت می شود. [۳۸]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/103",
+            "text": "باید توجه داشت که مقصود از دنیا، زمین و آسمان و دریا و صحرا و جانوران نیست؛ زیرا همه این پدیده های عالم، آیات الهی اند و هرگز نشانه های خدا مذموم نخواهد بود. بلکه مراد از دنیا، عناوین اعتباری است که هر کدام مایه تفاخر بیجاست. مثل اینکه کسی افتخار کند که این مال انبوه از آن من است و یا آن مقام اعتباری به من تعلق دارد.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/104",
+            "text": "بنابراین آن کس که خود را شناخت و به ارزش جاودانه خویش پی برد، خود را به خدا می فروشد و آنکه خود را نشناخت، گرفتار طبیعت شده و به آن مشغول می گردد. [۳۹]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/105",
+            "text": "۷.۳ - گناه",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/106",
+            "text": "یکی دیگر از عواملی که باعث فراموشی خدا و غفلت از او می شود، گناه است که همچون پرده ای بین انسان و خدا آویخته می شود و در نتیجه انسان خداوند را فراموش می کند.",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          },
+          {
+            "source_block_key": "/texts/107",
+            "text": "مرحوم شیخ صدوق از امام رضا(علیه‌السلام) نقل می کند که شخصی پرسید: چرا خدا محجوب است؟ فرمودند: او محجوب نیست. اینکه شما او را نمی بینید در اثر کثرت گناهان است که همانند پرده ای جلوی شهودفطرت را می گیرد و نمی گذارد انسان با چشم فطرت خداوند را مشاهده کند. [۴۰][۴۱]",
+            "page_start": null,
+            "page_end": null,
+            "heading_path": [],
+            "kind": "text"
+          }
+        ],
+        "warnings": [
+          "No page provenance was available in the parsed document."
+        ],
+        "raw_artifact_ref": null
+      },
+      "quality": {
+        "verdict": "warning",
+        "issues": [
+          {
+            "issue_type": "lost_headings",
+            "severity": "medium",
+            "affected_locators": [],
+            "evidence": "No heading hierarchy survived in a document with at least 12 blocks."
+          }
+        ],
+        "suggested_parser": null,
+        "safe_for_claim_extraction": true
+      },
+      "error_type": null,
+      "error_message": null
+    }
+  ],
+  "selected_parser": "docling",
+  "parsed": {
+    "parser_name": "docling",
+    "parser_version": "2.118.1",
+    "blocks": [
+      {
+        "source_block_key": "/texts/0",
+        "text": "خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/1",
+        "text": "ذخیره مقاله با فرمت پی دی اف",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/2",
+        "text": "یکی از مهم ترین مسائلی که بشر با آن مواجهه است خدا و خداشناسی است. اینکه انسان از کجا آمده است و به کجا می رود.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/3",
+        "text": "فهرست مندرجات",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/4",
+        "text": "۱ - معنای خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/5",
+        "text": "۲ - خداشناسی در قرآن",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/6",
+        "text": "۳ - خداشناسی در روایات",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/7",
+        "text": "۴ - انواع خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/8",
+        "text": "۴.۱ - خداشناسی فطری (حضوری)",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/9",
+        "text": "۴.۲ - خداشناسی فطری (حصولی)",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/10",
+        "text": "۵ - راه‌های خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/11",
+        "text": "۵.۱ - تفکر و استدلال",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/12",
+        "text": "۵.۲ - تزکیه و تصفیه نفس",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/13",
+        "text": "۵.۳ - مطالعه آثار علمی دیگران",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/14",
+        "text": "۵.۴ - خودشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/15",
+        "text": "۶ - آثار خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/16",
+        "text": "۶.۱ - آثار فردی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/17",
+        "text": "۶.۱.۱ - ایمان و آرامش در زندگی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/18",
+        "text": "۶.۱.۲ - اجابت دعا",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/19",
+        "text": "۶.۲ - آثار اجتماعی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/20",
+        "text": "۶.۲.۱ - عدالت اجتماعی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/21",
+        "text": "۶.۲.۲ - وحدت اجتماعی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/22",
+        "text": "۷ - موانع شناخت خدا",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/23",
+        "text": "۷.۱ - شیطان",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/24",
+        "text": "۷.۲ - تعلق به دنیا",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/25",
+        "text": "۷.۳ - گناه",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/26",
+        "text": "۸ - پانویس",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/27",
+        "text": "۹ - منبع",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/28",
+        "text": "۱ - معنای خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/29",
+        "text": "[ویرایش]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/30",
+        "text": "خداشناسی به این معناست که انسان به حقیقتی برسد که درک کند خداوند علت و خالق اوست و او عین نیاز و متعلق به خداوند است. چنانکه در قرآن می فرماید:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/31",
+        "text": "«ای مردم شما(همگی) نیازمند به خدایید، تنها خداوند است که بی نیاز و شایسته هرگونه حمد و ستایش است.» [۱]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/32",
+        "text": "۲ - خداشناسی در قرآن",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/33",
+        "text": "[ویرایش]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/34",
+        "text": "خداوند در قرآن کریم به ذکر نمونه ها و راه هایی برای خداشناسی پرداخته و می فرماید:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/35",
+        "text": "«به زودی نشانه های خود را در اطراف جهان و در درون جانشان به آنها نشان می دهیم تا برای آنان آشکار گردد که او حق است. آیا کافی نیست که پروردگارت بر همه چیز شاهد و گواه است.»[۲]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/36",
+        "text": "«و در زمین آیاتی برای جویندگان یقین است و در وجود خود شما نیز (آیاتی است)، آیا نمی بیند.» [۳]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/37",
+        "text": "۳ - خداشناسی در روایات",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/38",
+        "text": "[ویرایش]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/39",
+        "text": "روایات بسیاری در باب خداشناسی مطرح شده که در اینجا به برخی از آنها می پردازیم:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/40",
+        "text": "۱. امام علی(علیه‌السلام) می فرماید: هر که خدا را شناخت، معرفتش کامل گشت. [۴]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/41",
+        "text": "۲. امام علی(علیه‌السلام): علم داشتن به خدا، برترین دو علم است. [۵]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/42",
+        "text": "۳. موجب دل برکندن از دنیا می شود. [۶]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/43",
+        "text": "۴. موجب ترس از خدا می شود. [۷]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/44",
+        "text": "۵. موجب پشت کردن به دنیای فانی می شود. [۸]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/45",
+        "text": "و...",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/46",
+        "text": "۴ - انواع خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/47",
+        "text": "[ویرایش]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/48",
+        "text": "بطور کلی، معرفت و شناخت یک موجود به حسب آن شی مورد شناخت، به دو صورت تحقق می یابد. یکی شناخت حضوری و دیگری شناخت حصولی. در مورد خداوند متعال نیز همین دو نوع شناخت متصور است. یکی شناخت حضوری که بدون وساطت مفاهیم ذهنی، تحقق می یابد و دیگری شناخت کلی و حصولی که به وسیله مفاهیم عقلی حاصل می شود و مسقیماً به ذات الهی تعلق نمی گیرد. [۹]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/49",
+        "text": "قرآن کریم انسان را بالفطره خداشناس معرفی می کند و مدعی است که همه انسان ها در مرحله ای وجود، پروردگار خویش را به صورت عیان مشاهده کرده و به ربوبیت او اعتراف کرده اند و به حسب آفرینش خود، یک نوع شناخت از آفریننده خود دارند.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/50",
+        "text": "شناخت حصولی و حضوری خداوند را اینگونه بیان می کنیم:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/51",
+        "text": "۴.۱ - خداشناسی فطری (حضوری)",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/52",
+        "text": "منظور از خداشناسی فطری و حضوری این است که دل انسان ارتباط عمیقی با آفریننده ی خود دارد و هنگامی که انسان به عمق دل خود، توجه نماید چنین رابطه ای را خواهد یافت ولی اکثر مردم مخصوصا در اوقات عادی زندگی که سرگرم امور دنیا هستند، توجهی به این رابطه قلبی ندارند و تنها هنگامی که توجهشان از همه چیز بریده می شود و امیدشان از همه اسباب قطع می گردد، می توانند به این رابطه قلبی توجه نمایند.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/53",
+        "text": "۴.۲ - خداشناسی فطری (حصولی)",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/54",
+        "text": "منظور از خداشناسی فطری و حصولی این است که عقل انسان برای تصدیق وجود خدا نیازی به تلاش و کوشش ندارد، بلکه به آسانی درک می کند که وجود انسان و همه پدیده های جهان نیازمند هستند. پس خدای بی نیازی وجود دارد که نیاز آنها را رفع کند. [۱۰]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/55",
+        "text": "۵ - راه‌های خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/56",
+        "text": "[ویرایش]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/57",
+        "text": "برای شناختن خداوند، راه های متعددی وجود دارد، که در اینجا به برخی از آنها اشاره می کنیم.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/58",
+        "text": "۵.۱ - تفکر و استدلال",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/59",
+        "text": "خداوند در قرآن کریم می فرماید:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/60",
+        "text": "«و خداوند شما را از شکم مادرانتان خارج نمود در حالی که هیچ چیز نمی دانستید و برای شما گوش و چشم و عقل قرار داد، تا شکر نعمت او را بجا آورید.» [۱۱] [۱۲]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/61",
+        "text": "در این آیه کریمه تصریح شده است که انسان در ابتدای تولد فاقد هرگونه شناختی است و خداوند به انسان حواس را عنایت فرموده تا جهان را به این وسیله مطالعه و بررسی کند و به او ضمیر و قوه تجزیه و تحلیل داده که آنچه را از راه حواس به دست می آورد، در مرحله بعد تعمق کند و از ظواهر گذشته به درون اشیاء و قوانین حاکم بر آنها راه یابد. [۱۳]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/62",
+        "text": "۵.۲ - تزکیه و تصفیه نفس",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/63",
+        "text": "همانطور که صراحتاً در قرآن حواس و قوه تفکر بعنوان ابزار شناخت معرفی شده اند، تزکیه و تصفیه نفس نیز وسیله ای برای شناخت دانسته شده است. [۱۴]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/64",
+        "text": "خداوند در قرآن می فرماید:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/65",
+        "text": "«ای کسانی که ایمان آورده اید اگر از (مخالفت فرمان) خدا بپرهیزید، برای شما وسیله ای جهت جدا ساختن حق از باطل قرار می دهد (روشن بینی خاصی که در پرتو آن، حق را از باطل خواهید شناخت) و گناهانتان را می پوشاند و شما را می آمرزد و خداوند صاحب فضل و بخشش عظیم است.» [۱۵]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/66",
+        "text": "۵.۳ - مطالعه آثار علمی دیگران",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/67",
+        "text": "تعلم و یاد گرفتن و خواندن کتاب، یکی دیگر از اسباب و ابرازهایی است که برای شناخت خداوند به آن توجه شده است. [۱۶]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/68",
+        "text": "۵.۴ - خودشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/69",
+        "text": "یکی از مهم ترین راه های خداشناسی، خودشناسی است. پیامبر اکرم (ص) می فرماید: هر کس خود را شناخت، خدای خود را شناخته است.[۱۷]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/70",
+        "text": "اگر انسان خویش را بشناسد، هم مبدأ جهان امکان را می شناسد و هم به معاد ایمان می آورد و حیات ابدی را پیش از هر چیزی می بیند و به آن دل می بندد و هم مسیر بین آغاز و انجام را می شناسد اما اگر خویش را نشناسد، هم مبدأ یعنی خدا را فراموش می کند و هم به معاد و حیات ابدی توجهی ندارد و در واقع با فراموش کردن نفس از همه معارف باز می ماند. [۱۸]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/71",
+        "text": "امام خمینی در آثار خود به بحث از خداشناسی و راه‌های اثبات آن پرداخته، با تحلیل و بررسی آرای برخی متکلمان در اثبات وجود حق تعالی و با استناد به آیات الهی، به براهین فلسفی و کلامی خداشناسی پرداخته است.[۱۹] ایشان با پذیرش مبانی حکمت متعالیه نظیر اصالت وجود، تشکیک در وجود و با استناد به برخی آیات الهی، دیدگاه‌هایی را که بر تنزیه محض حق‌ تعالی یا تشبیه محض حق‌ تعالی دلالت دارند، رد کرده، [۲۰][۲۱] درباره امکان شناخت خداوند معتقد است بشر می‌تواند به مرتبه‌ای برسد که خدا را بشناسد. ایشان وجود حق تعالی را دارای مراتبی می‌داند که شناخت بشر و مخلوقات به تمامی آن مراتب تعلق نمی‌گیرد؛ یعنی امکان معرفت به مرتبه غیب الغیوب و مرتبه احدیت وجود ندارد؛ [۲۲][۲۳][۲۴] اما در مرتبه واحدیت که همان مرتبه ظهور اسماء و صفات الهی است، هر موجودی به‌اندازه ظرفیت خود، می‌تواند به معرفتی از این مرتبه برسد.[۲۵] در این قسم به اعتقاد امام نه تنها بشر بر ادراک و شناخت حق تعالی توانا می‌باشد بلکه ایشان چندین راه برای آن معرفی می‌کند؛ از جمله شناخت انسان کامل، شناخت نفس و شناخت کلام الهی؛ زیرا هر سه در واقع تجلی خداوند و مظهر اسماء و صفات او هستند.[۲۶]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/72",
+        "text": "امام خمینی راه‌های خداشناسی را با توجه به روش و مبنا متفاوت می‌داند و برخی براهین را عقلی و فلسفی و برخی را طبیعی و برخی دیگر را کلامی می‌داند و قائل است هر صاحب فن و علمی از فن و علم خود بر ذات واجب برهان اقامه می‌کند، چنانکه عالم الهی در الهیات از راه ذات واجب تعالی بر خود ذات و حکیم طبیعی از حرکت طبیعی بر ذات اقدس الهی و متکلمان از راه حدوث عالم بر اثبات وجود خداوند برهان اقامه می‌کنند.[۲۷][۲۸]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/73",
+        "text": "۶ - آثار خداشناسی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/74",
+        "text": "[ویرایش]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/75",
+        "text": "شناخت خداوند -و درک این مطلب که مبدأ و معاد از آن خداوند است- آثار و برکات فراوانی را هم در زندگی فردی و هم در زندگی اجتماعی بشر به دنبال دارد. در اینجا به تعدادی از آنها اشاره می کنیم.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/76",
+        "text": "۶.۱ - آثار فردی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/77",
+        "text": "۶.۱.۱ - ایمان و آرامش در زندگی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/78",
+        "text": "بی تردید امروز تمدن بشری و جهش های زندگی ماشینی آثار مسمومی در زندگی انسان ها گذاشته و اکثر انسان ها را دچار نوعی پریشانی خاطر و اضطراب کرده است. آنچه قرآن کریم و روایات و تجارب علمی تأکید می کنند این است که جامعه بشری برای رها شدن از این دغدغه ها و نگرانی ها، باید ایمانش را قوی تر کند. چرا که اعتقاد به خدای متعال و رعایت تمامی لوازم و شرایط بندگی، مستحکم ترین سنگر معنوی و محافظ بشر در مقابل سختی های خرد کننده است. [۲۹]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/79",
+        "text": "قرآن کریم در این باره می فرماید:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/80",
+        "text": "«آنها کسانی هستند که ایمان آورده اند و دل هایشان به یاد خدا مطمئن (و آرام) است، آگاه باشید، تنها با یاد خدا دل ها آرامش می یابد.» [۳۰]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/81",
+        "text": "انسان هر چه به خدا ایمان بالاتری پیدا کند، عطش و نیاز درونی اش کم می شود و وقتی قدم در راه ایمان به خدا گذاشت، احساس بی نیازی کرده و به آرامش مطلق می رسد و هرگاه به خدای کاذب (هوای نفس) نزدیک شود، اضطرابش زیاد می گردد. [۳۱]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/82",
+        "text": "۶.۱.۲ - اجابت دعا",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/83",
+        "text": "از دیگر آثار مهم خداشناسی اجابت دعاست. شناختی که ملازم با اجابت است. شناخت قلبی پس از رفع کلیه موانع شناخت و گذر از مرحله تقوا و رسیدن به مرتبه یقین و طی کردن مراحل ذکر و انس و عشق و انقطاع است.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/84",
+        "text": "در این مرحله بنده به مرتبه ای می رسد که قادر به دخل و تصرف در عالم کاینات است. چرا که از غیر منقطع شده، به حق متصل گشته و اراده اش در اراده خداوند فانی می شود. [۳۲]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/85",
+        "text": "۶.۲ - آثار اجتماعی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/86",
+        "text": "۶.۲.۱ - عدالت اجتماعی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/87",
+        "text": "برای اینکه عدالت در جامعه پیاده شود باید دولت ها و حکومت ها به خدای متعال ایمان داشته باشند. زیرا حکومت های بشری که ایمان و حس خداشناسی در آنها حاکم نیست در اجرای قانون فقط می توانند به مقابله با سرکشی ها و خلاف های آشکاری که در سطح جامعه به وجود می آید، بپردازند و هرگز از تعدی های پنهانی که از دید دستگاه قضایی و نیروی نظامی مخفی است نمی توانند جلوگیری کنند. زیرا ایمانی ندارند تا خود را در محکمه وجدان خویش و حضور مدام حق تعالی در هر جا و هر زمان مجرم بشناسند. بر خلاف حکومت دینی که نه تنها فرد را از گناه آشکار یعنی فساد و سرکشی در سطح جامعه باز می دارد، بلکه به نهی از انجام گناه در زندگی می پردازد.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/88",
+        "text": "در جامعه ای که زیر بنای آن را اخلاق و ایمان به خدا تشکیل می دهد، قانون به وجه نیک اجرا می شود و در زندگی افراد جامعه جاری است. [۳۳]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/89",
+        "text": "۶.۲.۲ - وحدت اجتماعی",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/90",
+        "text": "قرآن کریم می فرماید:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/91",
+        "text": "«مومنان برادر یکدیگرند، پس دو برادر خود را صلح و آشتی دهید و تقوای الهی پیشه کنید، باشد که مشمول رحمت او شوید.» [۳۴]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/92",
+        "text": "اسلام با اولین شعارش، حتی آنجا که پیامبر(ص) مردم را به یگانه پرستی دعوت می کند، جامعه را به سوی یک هدف و مبدأ دعوت می نماید و امر می کند همه به یک زبان (عربی) و به سمت یک قبله نماز بخوانند و توده های بشریت را به صورت یک واحد متشکل در می آورد.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/93",
+        "text": "بنابراین توحید و شناخت خدا، جامعه بشری را از دوگانه پرستی ها و بت پرستی ها و... نجات می دهد و به صورت امت واحد در صراط مستقیم به سوی هدف معینی به نام الله روانه می کند. پس وقتی مبدأ و هدف یکی شد، همگان خود را بنده یکی دانسته و به یک نقطه ختم می شوند. [۳۵]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/94",
+        "text": "۷ - موانع شناخت خدا",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/95",
+        "text": "[ویرایش]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/96",
+        "text": "با توجه به اهمیت و ضرورت خداشناسی، گاهی باز هم عواملی وجود دارد که مانع شناخت خدا و رسیدن به آثار و برکات آن می شود. در اینجا به مواردی از این موانع اشاره می کنیم:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/97",
+        "text": "۷.۱ - شیطان",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/98",
+        "text": "خداوند در قرآن کریم درباره کافران و دلباختگان به عالم طبیعت می فرماید:",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/99",
+        "text": "«شیطان بر آنان مسلط شده و یاد خدا را از خاطر آنها برده، آنها حزب شیطانند. بدانید حزب شیطان زیانکارانند.» [۳۶]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/100",
+        "text": "تمام تلاش شیطان این است که سرمایه خداخواهی را از انسان بگیرد و اگر کسی این سرمایه را باخت، خودش را از یاد می برد. این آیه به این نکته اشاره دارد که شیطان در برابر انسان دسیسه می کند تا بر او تسلط یابد و سرمایه او را از او بگیرد. [۳۷]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/101",
+        "text": "۷.۲ - تعلق به دنیا",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/102",
+        "text": "امام علی(علیه‌السلام) می فرمایند: از فرومایگی دنیا همین بس که خدا در هیچ عالمی، نه در عوالم قبل از دنیا و نه در عوالم بعد از دنیا معصیت نمی شود، تنها در دنیا معصیت می شود. [۳۸]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/103",
+        "text": "باید توجه داشت که مقصود از دنیا، زمین و آسمان و دریا و صحرا و جانوران نیست؛ زیرا همه این پدیده های عالم، آیات الهی اند و هرگز نشانه های خدا مذموم نخواهد بود. بلکه مراد از دنیا، عناوین اعتباری است که هر کدام مایه تفاخر بیجاست. مثل اینکه کسی افتخار کند که این مال انبوه از آن من است و یا آن مقام اعتباری به من تعلق دارد.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/104",
+        "text": "بنابراین آن کس که خود را شناخت و به ارزش جاودانه خویش پی برد، خود را به خدا می فروشد و آنکه خود را نشناخت، گرفتار طبیعت شده و به آن مشغول می گردد. [۳۹]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/105",
+        "text": "۷.۳ - گناه",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/106",
+        "text": "یکی دیگر از عواملی که باعث فراموشی خدا و غفلت از او می شود، گناه است که همچون پرده ای بین انسان و خدا آویخته می شود و در نتیجه انسان خداوند را فراموش می کند.",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      },
+      {
+        "source_block_key": "/texts/107",
+        "text": "مرحوم شیخ صدوق از امام رضا(علیه‌السلام) نقل می کند که شخصی پرسید: چرا خدا محجوب است؟ فرمودند: او محجوب نیست. اینکه شما او را نمی بینید در اثر کثرت گناهان است که همانند پرده ای جلوی شهودفطرت را می گیرد و نمی گذارد انسان با چشم فطرت خداوند را مشاهده کند. [۴۰][۴۱]",
+        "page_start": null,
+        "page_end": null,
+        "heading_path": [],
+        "kind": "text"
+      }
+    ],
+    "warnings": [
+      "No page provenance was available in the parsed document."
+    ],
+    "raw_artifact_ref": null
+  },
+  "quality": {
+    "verdict": "warning",
+    "issues": [
+      {
+        "issue_type": "lost_headings",
+        "severity": "medium",
+        "affected_locators": [],
+        "evidence": "No heading hierarchy survived in a document with at least 12 blocks."
+      }
+    ],
+    "suggested_parser": null,
+    "safe_for_claim_extraction": true
+  },
+  "safe_for_claim_extraction": true
+}

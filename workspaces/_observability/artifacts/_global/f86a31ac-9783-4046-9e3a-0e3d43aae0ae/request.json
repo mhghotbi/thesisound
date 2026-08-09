@@ -1,0 +1,31 @@
+{
+  "grounding_mode": "google_search_and_url_context",
+  "grounding_urls": [
+    "https://example.org/input.pdf"
+  ],
+  "model": "gemini-test",
+  "output_schema": {
+    "properties": {
+      "value": {
+        "title": "Value",
+        "type": "string"
+      }
+    },
+    "required": [
+      "value"
+    ],
+    "title": "ExampleOutput",
+    "type": "object"
+  },
+  "system_prompt": "system",
+  "timeout_ms": 180000,
+  "tools": [
+    {
+      "google_search": {}
+    },
+    {
+      "url_context": {}
+    }
+  ],
+  "user_prompt": "Read https://example.org/input.pdf and search for context."
+}

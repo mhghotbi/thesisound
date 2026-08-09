@@ -1,0 +1,9 @@
+{
+  "parser_name": "docling",
+  "status": "error",
+  "duration_seconds": 465.2693705999991,
+  "parsed": null,
+  "quality": null,
+  "error_type": "DocumentParseError",
+  "error_message": "Docling conversion failed: ConversionError"
+}

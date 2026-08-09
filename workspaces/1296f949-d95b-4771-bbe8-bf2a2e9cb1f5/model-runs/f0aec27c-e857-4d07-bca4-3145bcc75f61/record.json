@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "de34f6d3-9228-4071-af05-7d99681cc438",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 8421,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-08T20:06:13.012810Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 50606,
+        "output_tokens": 2896,
+        "thinking_tokens": null,
+        "total_tokens": 53502
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-08T20:06:13.012822Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "8a2b2e05bfe30aa7988b28ca83017747cd6717f6d46ae3b572c4fe81be2cfa1f",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapDraft",
+  "project_id": "1296f949-d95b-4771-bbe8-bf2a2e9cb1f5",
+  "prompt_hash": "bf943fe14dd09bd8207dee9380a6b9e67a6c50abba5afc4c0d69b51bd94de01e",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "f0aec27c-e857-4d07-bca4-3145bcc75f61",
+  "stage": "document_map_part",
+  "started_at": "2026-08-08T20:06:04.587891Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

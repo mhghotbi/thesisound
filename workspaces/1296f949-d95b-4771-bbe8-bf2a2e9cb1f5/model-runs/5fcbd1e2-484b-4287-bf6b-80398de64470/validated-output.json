@@ -1,0 +1,34 @@
+{
+  "claims": [
+    {
+      "claim": "Hannah Arendt is characterized as a theorist of beginnings whose works reflect on the human capacity to start something new.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "Hannah Arendt is preeminently the theorist of beginnings. All her books are tales of the unexpected (whether concerned with the novel horrors of totalitarianism or the new dawn of revolution), and reflections on the human capacity to start something new pervade her thinking."
+    },
+    {
+      "claim": "Arendt emphatically denied that her role as a political thinker was to propose a blueprint for the future or to tell anyone what to do.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "she emphatically denied that her role as a political thinker was to propose a blueprint for the future or to tell anyone what to do."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "The book does not offer a utopian blueprint of political action or conventional political prescriptions.",
+    "Arendt uses ancient Greece as an Archimedean point to challenge modern assumptions."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Introduction to Hannah Arendt's The Human Condition, highlighting her focus on beginnings, the unique and idiosyncratic nature of the book, its use of novel distinctions, its engagement with ancient Greek thought to challenge modern assumptions, and a clarification that she is not offering a conventional political philosophy or utopia.",
+  "unresolved_context": [
+    "Readers have found it hard to understand what is actually going on in the book due to its lack of a clearly apparent argumentative structure and its unconventional genre."
+  ]
+}

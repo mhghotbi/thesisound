@@ -1,0 +1,18 @@
+{
+  "central_question_claim_ids": [],
+  "central_question_status": "not_covered",
+  "material_gaps": [
+    "Missing content and substantive evidence regarding theology and the meaning of knowing God."
+  ],
+  "max_supported_minutes": 0,
+  "objective_coverage": [
+    {
+      "claim_ids": [],
+      "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+      "rationale": "The available claims discuss topic classification systems and user intent rules, providing no evidence relevant to theology or the concept of knowing God.",
+      "status": "not_covered"
+    }
+  ],
+  "recommendation": "more_evidence",
+  "recommendation_reason": "The supplied claim corpus covers software classification guidelines rather than the central question of theology, leaving the objective completely unsupported."
+}

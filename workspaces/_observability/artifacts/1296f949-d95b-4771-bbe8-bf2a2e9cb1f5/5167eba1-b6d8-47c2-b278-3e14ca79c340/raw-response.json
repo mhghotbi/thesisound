@@ -1,0 +1,61 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"working_thesis\": null,\n  \"section_updates\": [],\n  \"globally_required_section_ids\": [],\n  \"cross_section_threads\": [],\n  \"warnings\": [\n    \"No partitions were provided in the input context.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIP5s9PO10V7ZdhCW0GP8IdR-sgWWcCAZXHukvOEk_W3tKbATGou3pJyqdnleGz",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "cross_section_threads": [],
+    "globally_required_section_ids": [],
+    "section_updates": [],
+    "warnings": [
+      "No partitions were provided in the input context."
+    ],
+    "working_thesis": null
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"working_thesis\": null,\n  \"section_updates\": [],\n  \"globally_required_section_ids\": [],\n  \"cross_section_threads\": [],\n  \"warnings\": [\n    \"No partitions were provided in the input context.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 64,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 258,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 258
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 322,
+    "traffic_type": null
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "claims": [
+    {
+      "claim": "The vita activa is designated by three fundamental human activities: labor, work, and action.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "With the term vita activa , I propose to designate three fundamental human activities: labor, work, and action."
+    },
+    {
+      "claim": "Labor corresponds to the biological process of the human body and its vital necessities, with its human condition being life itself.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "Labor is the activity which corresponds to the biological process of the human body, whose spontaneous growth, metabolism, and eventual decay are bound to the vital necessities produced and fed into the life process by labor. The human condition of labor is life itself."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "The activity corresponding to the biological process of the human body and its vital necessities.",
+      "term": "Labor"
+    },
+    {
+      "definition": "The activity providing an artificial world of things that outlast and transcend individual lives, with its condition being worldliness.",
+      "term": "Work"
+    },
+    {
+      "definition": "The only activity going on directly between men without the intermediary of things, corresponding to the condition of plurality.",
+      "term": "Action"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "Labor corresponds to the biological life process and body necessities, whereas work corresponds to the unnaturalness of human existence and produces an artificial world of things providing worldliness.",
+      "item_a": "Labor",
+      "item_b": "Work"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "Distinction between labor, work, and action as fundamental components of the vita activa."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Definition and elaboration of the fundamental activities of the vita activa (labor, work, action) and their corresponding human conditions.",
+  "unresolved_context": []
+}

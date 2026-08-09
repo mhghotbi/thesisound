@@ -1,0 +1,28 @@
+{
+  "source_id": "dd3a2676-a9df-4598-9ba8-35efaa8c924e",
+  "profile": {
+    "depth": "brief",
+    "target_duration_minutes": 10,
+    "block_coverage_target": 0.35,
+    "evidence_input_token_budget": 18000,
+    "max_claims_per_block": 2,
+    "neighbor_context_blocks": 0,
+    "include_examples": false,
+    "include_objections_and_responses": false,
+    "second_pass_for_core_sections": false,
+    "rationale": [
+      "Duration 10 minutes maps to the brief analysis tier.",
+      "Block construction and document mapping remain output-independent.",
+      "Evidence breadth and per-block depth are output-dependent."
+    ]
+  },
+  "selected_block_ids": [
+    "blk-dd3a2676-00001-6332add35180",
+    "blk-dd3a2676-00002-2eec186b675d",
+    "blk-dd3a2676-00003-b8527c430a2f"
+  ],
+  "deferred_block_ids": [],
+  "selected_source_tokens": 3318,
+  "total_source_tokens": 3318,
+  "achieved_token_coverage": 1.0
+}

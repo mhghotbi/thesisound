@@ -1,0 +1,54 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "error_message": "Document map referenced unknown blocks: blk-4c598a0d-00077-5e4939c361c7.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 14918,
+      "retryable": true,
+      "started_at": "2026-08-08T19:06:02.070088Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 9667,
+      "retryable": false,
+      "started_at": "2026-08-08T19:06:11.742142Z",
+      "success": true,
+      "usage": {
+        "input_tokens": 55623,
+        "output_tokens": 3552,
+        "thinking_tokens": null,
+        "total_tokens": 59175
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-08T19:06:11.742149Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "abcbf74fde219177e8618567dba5ebb4978a670997fcd6944e40496fcb42b09a",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapDraft",
+  "project_id": "1296f949-d95b-4771-bbe8-bf2a2e9cb1f5",
+  "prompt_hash": "bf943fe14dd09bd8207dee9380a6b9e67a6c50abba5afc4c0d69b51bd94de01e",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "49246ab3-7d8d-4821-a31e-8d6a71c62317",
+  "stage": "document_map_part",
+  "started_at": "2026-08-08T19:05:47.146704Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

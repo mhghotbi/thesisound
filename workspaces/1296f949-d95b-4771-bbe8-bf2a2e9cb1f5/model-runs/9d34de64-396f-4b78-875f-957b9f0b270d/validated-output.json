@@ -1,0 +1,184 @@
+{
+  "cross_section_threads": [
+    {
+      "description": "Explores how labor, work, and action are differentiated, how traditional philosophy subordinated them to contemplation, and how modernity inverted or distorted these distinctions through the rise of the social.",
+      "label": "The Distinction and Hierarchy of Activities",
+      "section_ids": [
+        "sec-003",
+        "sec-004",
+        "sec-006"
+      ]
+    },
+    {
+      "description": "Traces the ancient separation between the private household and the public polis, and examines how the modern rise of society has absorbed both into mass economic and biological concerns.",
+      "label": "Public versus Private and the Social",
+      "section_ids": [
+        "sec-002",
+        "sec-006"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "depends_on_section_ids": [],
+      "function": "front_matter",
+      "key_concepts": [
+        "vita activa",
+        "labor, work, and action",
+        "modern age",
+        "totalitarianism",
+        "plurality"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-001",
+      "source_block_ids": [
+        "blk-4c598a0d-00001-d63e18794c51",
+        "blk-4c598a0d-00002-9f16d7964abd",
+        "blk-4c598a0d-00003-a7d0021b37df",
+        "blk-4c598a0d-00004-a1c4a049193c",
+        "blk-4c598a0d-00005-9503519b95b8",
+        "blk-4c598a0d-00006-ad83a09f8711",
+        "blk-4c598a0d-00007-ef27bc8317db",
+        "blk-4c598a0d-00008-bc48a961db74",
+        "blk-4c598a0d-00009-d379d7f1d990",
+        "blk-4c598a0d-00010-b07f10ee6718"
+      ],
+      "title": "Front Matter and Introduction",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-001"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "satellite launch",
+        "earth-alienation",
+        "automation",
+        "society of laborers",
+        "thinking what we are doing"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-002",
+      "source_block_ids": [
+        "blk-4c598a0d-00011-cfc985d154bc",
+        "blk-4c598a0d-00012-e43525f478a5",
+        "blk-4c598a0d-00013-ee676e873bdc"
+      ],
+      "title": "Prologue",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-002"
+      ],
+      "function": "definition",
+      "key_concepts": [
+        "labor",
+        "work",
+        "action",
+        "plurality",
+        "natality",
+        "mortality"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-003",
+      "source_block_ids": [
+        "blk-4c598a0d-00014-2929fc16d449",
+        "blk-4c598a0d-00015-0dc93405ad60"
+      ],
+      "title": "Vita Activa and the Human Condition",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-003"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "bios politikos",
+        "vita contemplativa",
+        "contemplation",
+        "quiet",
+        "hierarchy of activities"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-004",
+      "source_block_ids": [
+        "blk-4c598a0d-00016-0bae9913560f",
+        "blk-4c598a0d-00017-8d2b21d55a85"
+      ],
+      "title": "The Term Vita Activa",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-004"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "immortality",
+        "eternity",
+        "theoria",
+        "mortal existence",
+        "fame"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-005",
+      "source_block_ids": [
+        "blk-4c598a0d-00018-c110ef9718e2",
+        "blk-4c598a0d-00019-87eeca01511a"
+      ],
+      "title": "Eternity versus Immortality",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-003",
+        "sec-004",
+        "sec-005"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "public realm",
+        "private realm",
+        "household",
+        "polis",
+        "rise of the social",
+        "property",
+        "behaviorism",
+        "conformism",
+        "goodness"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-006",
+      "source_block_ids": [
+        "blk-4c598a0d-00020-b6939d12c2ab",
+        "blk-4c598a0d-00021-62fc4bace9d3",
+        "blk-4c598a0d-00022-360c6289622f",
+        "blk-4c598a0d-00023-5f79e4666b2e",
+        "blk-4c598a0d-00024-2933cef84dd9",
+        "blk-4c598a0d-00025-9be9277af64f",
+        "blk-4c598a0d-00026-980ba5e99a46",
+        "blk-4c598a0d-00027-5c53f02a15fc",
+        "blk-4c598a0d-00028-9b4ca688b49a",
+        "blk-4c598a0d-00029-f36b56728386",
+        "blk-4c598a0d-00030-2024aaf66660",
+        "blk-4c598a0d-00031-75f26de0f939",
+        "blk-4c598a0d-00032-eee5696a79ca",
+        "blk-4c598a0d-00033-0410164c12b2",
+        "blk-4c598a0d-00034-2759e45d7054",
+        "blk-4c598a0d-00035-bcf4009bded8",
+        "blk-4c598a0d-00036-4bda9e090bb2",
+        "blk-4c598a0d-00037-12ec6df6a76f",
+        "blk-4c598a0d-00038-4bcfb6bf2ad4",
+        "blk-4c598a0d-00039-6411020c333a",
+        "blk-4c598a0d-00040-90b0c6194a41"
+      ],
+      "title": "The Public and the Private Realm",
+      "unresolved_context": []
+    }
+  ],
+  "warnings": [],
+  "working_thesis": "Hannah Arendt's The Human Condition explores the foundational activities of the vita activa—labor, work, and action—analyzing their historical transformations, their relationship to the public and private realms, and their implications for the modern human predicament."
+}
