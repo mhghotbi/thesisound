@@ -40,6 +40,7 @@ _EDITABLE_BRIEF_STATES = {
 _PREFLIGHT_POST_SCOPES: tuple[tuple[str, PreflightScope], ...] = (
     ("/corpus/confirm", "model"),
     ("/corpus/retry", "model"),
+    ("/skip", "model"),
     ("/episode/prepare", "model"),
     ("/episode/retry", "model"),
     ("/episode/reduce-duration", "model"),
@@ -110,6 +111,7 @@ def _corpus_stage_label(stage: str) -> str:
         "extracting_evidence": "استخراج شاهدها",
         "building_claims": "ساخت دفتر مدعاها",
         "complete": "آماده",
+        "skipped": "کنار گذاشته شد",
         "failed": "متوقف‌شده",
     }.get(stage, stage)
 

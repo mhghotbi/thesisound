@@ -11,6 +11,7 @@ from thesisound.prompt_loader import PromptLoader
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.corpus_building import (
+    SETTLED_SOURCE_STATUSES,
     CorpusBuildingService,
     CorpusBuildRunStore,
     CorpusSourceInput,
@@ -78,7 +79,8 @@ def _reconcile_completed_runs(
             continue
         if (
             project.state == ProjectState.CORPUS_READY
-            and all(source.status == "succeeded" for source in run.sources)
+            and any(source.status == "succeeded" for source in run.sources)
+            and all(source.status in SETTLED_SOURCE_STATUSES for source in run.sources)
         ):
             run.status = "succeeded"
             run.finished_at = datetime.now(UTC)

@@ -12,11 +12,12 @@ from pydantic import BaseModel, Field
 
 from thesisound.domain import Project, ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
+from thesisound.services.corpus_reuse import reusable_claim_ledger
 from thesisound.services.source_analysis_service import SourceAnalysisService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 
 CorpusRunStatus = Literal["queued", "running", "succeeded", "failed"]
-CorpusSourceStatus = Literal["queued", "running", "succeeded", "failed"]
+CorpusSourceStatus = Literal["queued", "running", "succeeded", "skipped", "failed"]
 CorpusStage = Literal[
     "queued",
     "building_blocks",
@@ -24,8 +25,11 @@ CorpusStage = Literal[
     "extracting_evidence",
     "building_claims",
     "complete",
+    "skipped",
     "failed",
 ]
+# A settled source needs no further work in any later attempt of the same corpus.
+SETTLED_SOURCE_STATUSES: frozenset[str] = frozenset({"succeeded", "skipped"})
 
 
 class CorpusSourceInput(BaseModel):
@@ -40,6 +44,8 @@ class CorpusSourceRun(CorpusSourceInput):
     claim_count: int = Field(default=0, ge=0)
     last_error: str | None = None
     warnings: list[str] = Field(default_factory=list)
+    carried_forward: bool = False
+    """Finished before this attempt and reused instead of rebuilt."""
 
 
 class CorpusBuildRun(BaseModel):
@@ -56,6 +62,16 @@ class CorpusBuildRun(BaseModel):
     @property
     def completed_source_count(self) -> int:
         return sum(source.status == "succeeded" for source in self.sources)
+
+    @property
+    def skipped_source_count(self) -> int:
+        return sum(source.status == "skipped" for source in self.sources)
+
+    @property
+    def selected_source_count(self) -> int:
+        """Sources still part of the corpus, excluding the ones the user dropped."""
+
+        return len(self.sources) - self.skipped_source_count
 
 
 class CorpusBuildRunStore:
@@ -213,7 +229,7 @@ class CorpusBuildingService:
         run = CorpusBuildRun(
             project_id=project_id,
             previous_run_id=existing.run_id if existing else None,
-            sources=[CorpusSourceRun(**source.model_dump()) for source in sources],
+            sources=[self._confirmed_source(project, source) for source in sources],
         )
         self.run_store.save(run)
         return run
@@ -226,25 +242,70 @@ class CorpusBuildingService:
         if previous.status != "failed":
             raise ValueError("The latest corpus run is not failed.")
 
-        sources: list[CorpusSourceRun] = []
-        for source in previous.sources:
-            if source.status == "succeeded":
-                sources.append(source.model_copy(deep=True))
-            else:
-                sources.append(
-                    CorpusSourceRun(
-                        source_id=source.source_id,
-                        filename=source.filename,
-                        ingestion_path=source.ingestion_path,
-                    )
-                )
         run = CorpusBuildRun(
             project_id=project_id,
             previous_run_id=previous.run_id,
-            sources=sources,
+            sources=_next_attempt_sources(previous),
         )
         self.run_store.save(run)
         return run
+
+    def skip_source(self, project_id: UUID, source_id: UUID) -> CorpusBuildRun:
+        """Drop one stopped source and continue the corpus with what is left.
+
+        The dropped source also leaves the confirmed selection on the project, because
+        every later stage reads `Project.sources` and requires a claim ledger for each
+        of them.
+        """
+
+        with self._mutation_lock:
+            previous = self.run_store.load(project_id)
+            if previous.status != "failed":
+                raise ValueError("Only a stopped corpus run can drop a source.")
+            target = next(
+                (source for source in previous.sources if source.source_id == source_id),
+                None,
+            )
+            if target is None:
+                raise ValueError("The source is not part of the latest corpus run.")
+            if target.status not in {"queued", "failed"}:
+                raise ValueError(f"A {target.status} source cannot be dropped.")
+
+            original_project = self.workspace_store.load_project(project_id)
+            if original_project.state not in {
+                ProjectState.CORPUS_BUILDING,
+                ProjectState.FAILED_RETRYABLE,
+            }:
+                raise ValueError(
+                    f"Cannot drop a source from project state {original_project.state}."
+                )
+
+            sources = _next_attempt_sources(previous, skip_source_id=source_id)
+            if all(source.status == "skipped" for source in sources):
+                raise ValueError("At least one source must stay in the corpus.")
+            skipped_ids = {
+                source.source_id for source in sources if source.status == "skipped"
+            }
+
+            project = original_project.model_copy(deep=True)
+            project.sources = [
+                source
+                for source in project.sources
+                if source.source_id not in skipped_ids
+            ]
+            project.updated_at = datetime.now(UTC)
+            self.workspace_store.save_project(project)
+            try:
+                run = CorpusBuildRun(
+                    project_id=project_id,
+                    previous_run_id=previous.run_id,
+                    sources=sources,
+                )
+                self.run_store.save(run)
+            except Exception:
+                self.workspace_store.save_project(original_project)
+                raise
+            return run
 
     def run(self, project_id: UUID) -> CorpusBuildRun:
         run = self.run_store.load(project_id)
@@ -267,11 +328,16 @@ class CorpusBuildingService:
         self.run_store.save(run)
 
         try:
-            service = self.analysis_service_factory()
+            service: SourceAnalysisService | None = None
             for source in run.sources:
-                if source.status == "succeeded":
+                if source.status in SETTLED_SOURCE_STATUSES:
                     continue
+                if service is None:
+                    service = self.analysis_service_factory()
                 self._run_source(service, run, source)
+
+            if not any(source.status == "succeeded" for source in run.sources):
+                raise ValueError("Every selected source was dropped; the corpus is empty.")
 
             project = self.workspace_store.load_project(project_id)
             if project.state != ProjectState.CORPUS_BUILDING:
@@ -298,6 +364,29 @@ class CorpusBuildingService:
             run.finished_at = datetime.now(UTC)
             self.run_store.save(run)
             return run
+
+    def _confirmed_source(
+        self,
+        project: Project,
+        source: CorpusSourceInput,
+    ) -> CorpusSourceRun:
+        """Carry a finished source into the new run instead of rebuilding it."""
+
+        queued = CorpusSourceRun(**source.model_dump())
+        ledger = reusable_claim_ledger(
+            artifact_store=self.source_store,
+            project_id=project.project_id,
+            source_id=source.source_id,
+            ingestion_path=source.ingestion_path,
+            brief=project.brief,
+        )
+        if ledger is None:
+            return queued
+        queued.status = "succeeded"
+        queued.stage = "complete"
+        queued.claim_count = len(ledger.claims)
+        queued.carried_forward = True
+        return queued
 
     def _run_source(
         self,
@@ -363,6 +452,33 @@ class CorpusBuildingService:
     ) -> None:
         source.stage = stage
         self.run_store.save(run)
+
+
+def _next_attempt_sources(
+    previous: CorpusBuildRun,
+    *,
+    skip_source_id: UUID | None = None,
+) -> list[CorpusSourceRun]:
+    """Keep settled sources, drop the skipped one, and re-queue everything else."""
+
+    sources: list[CorpusSourceRun] = []
+    for source in previous.sources:
+        if source.source_id == skip_source_id:
+            dropped = source.model_copy(deep=True)
+            dropped.status = "skipped"
+            dropped.stage = "skipped"
+            sources.append(dropped)
+        elif source.status in SETTLED_SOURCE_STATUSES:
+            sources.append(source.model_copy(deep=True))
+        else:
+            sources.append(
+                CorpusSourceRun(
+                    source_id=source.source_id,
+                    filename=source.filename,
+                    ingestion_path=source.ingestion_path,
+                )
+            )
+    return sources
 
 
 def _atomic_write(path: Path, content: str) -> None:

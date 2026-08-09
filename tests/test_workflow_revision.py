@@ -98,10 +98,13 @@ def test_rewind_to_sources_archives_downstream_and_preserves_raw_inputs(
     assert current.sources == []
     assert current.last_error is None
     assert (project_dir / "uploads" / "raw" / "source.txt").exists()
-    assert not (project_dir / "sources").exists()
-    assert "sources" in receipt.archived_paths
+    # Per-source analysis stays put; a rebuild re-validates each source before reusing it.
+    assert (project_dir / "sources" / "artifact.json").exists()
+    assert "sources" not in receipt.archived_paths
+    assert not (project_dir / "episode").exists()
+    assert not (project_dir / "corpus-build-run.json").exists()
     archive = next((project_dir / "archive" / "revisions").iterdir())
-    assert (archive / "sources" / "artifact.json").exists()
+    assert (archive / "episode" / "artifact.json").exists()
     assert (archive / "revision.json").exists()
     manifest = json.loads((project_dir / "ui-source-manifest.json").read_text())
     assert manifest[0]["selected"] is True

@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from thesisound.config import Settings
 from thesisound.domain import ProjectState
-from thesisound.pipeline import WorkspaceStore
+from thesisound.pipeline import WorkspaceStore, mark_failed
 from thesisound.services.corpus_building import CorpusBuildRunStore
 from thesisound.web.app import create_app
 from thesisound.web.source_manifest import UiSourceManifestStore, UiSourceStatus
@@ -128,6 +128,104 @@ def _upload_and_select_source(
         data={"csrf_token": _csrf(page.text)},
     )
     return source_id, manifest_store
+
+
+def _upload_and_select_named_source(
+    client: TestClient,
+    settings: Settings,
+    project_id: UUID,
+    filename: str,
+) -> UUID:
+    page = client.get(f"/projects/{project_id}/sources")
+    source_text = ("این یک منبع واقعی برای آزمون استخراج و کنترل کیفیت است. " * 12).encode()
+    client.post(
+        f"/projects/{project_id}/sources/upload",
+        data={"csrf_token": _csrf(page.text)},
+        files={"source_file": (filename, source_text, "text/plain")},
+    )
+    workspace = WorkspaceStore(settings.workspace_root)
+    store = UiSourceManifestStore(workspace.project_dir(project_id))
+    source = next(item for item in store.load() if item.filename == filename)
+    assert source.status == UiSourceStatus.READY
+    page = client.get(f"/projects/{project_id}/sources")
+    client.post(
+        f"/projects/{project_id}/sources/{source.source_id}/toggle",
+        data={"csrf_token": _csrf(page.text)},
+    )
+    return source.source_id
+
+
+def _stop_corpus_run_on_second_source(settings: Settings, project_id: UUID) -> None:
+    """Reproduce the state one failed source leaves behind: the rest never started."""
+
+    run_store = CorpusBuildRunStore(settings.workspace_root)
+    run = run_store.load(project_id)
+    run.status = "failed"
+    run.last_error = "mapping failed"
+    run.sources[0].status = "succeeded"
+    run.sources[0].stage = "complete"
+    run.sources[0].claim_count = 3
+    run.sources[1].status = "failed"
+    run.sources[1].stage = "failed"
+    run.sources[1].last_error = "mapping failed"
+    run_store.save(run)
+
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = workspace.load_project(project_id)
+    mark_failed(project, "mapping failed")
+    workspace.save_project(project)
+
+
+def test_skipping_a_stopped_source_continues_without_reconfirming(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    executed: list[UUID] = []
+    app = create_app(
+        settings,
+        corpus_executor=executed.append,
+        episode_executor=lambda _: None,
+    )
+    with TestClient(app) as client:
+        _login(client)
+        project_id = _create_project(client)
+        _confirm_brief(client, project_id)
+        first_id = _upload_and_select_named_source(client, settings, project_id, "first.txt")
+        stopped_id = _upload_and_select_named_source(client, settings, project_id, "second.txt")
+
+        page = client.get(f"/projects/{project_id}/sources")
+        client.post(
+            f"/projects/{project_id}/corpus/confirm",
+            data={"csrf_token": _csrf(page.text)},
+        )
+        _stop_corpus_run_on_second_source(settings, project_id)
+        executed.clear()
+
+        processing = client.get(f"/projects/{project_id}/processing")
+        skip_action = f"/projects/{project_id}/corpus/sources/{stopped_id}/skip"
+        assert skip_action in processing.text
+
+        response = client.post(
+            skip_action,
+            data={"csrf_token": _csrf(processing.text)},
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/projects/{project_id}/processing"
+    assert executed == [project_id]
+
+    run = CorpusBuildRunStore(settings.workspace_root).load(project_id)
+    assert [source.status for source in run.sources] == ["succeeded", "skipped"]
+    assert run.status == "queued"
+    assert run.selected_source_count == 1
+
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = workspace.load_project(project_id)
+    assert [source.source_id for source in project.sources] == [first_id]
+    manifest = UiSourceManifestStore(workspace.project_dir(project_id)).load()
+    assert {source.source_id: source.selected for source in manifest} == {
+        first_id: True,
+        stopped_id: False,
+    }
 
 
 def test_create_and_confirm_brief(tmp_path: Path) -> None:

@@ -390,6 +390,12 @@ def register_source_routes(
                 settings.ensure_ingestion_artifact_root() / str(project_id) / str(source_id),
                 ignore_errors=True,
             )
+            # Analysis artifacts outlive a sources rewind, so a deleted source must not
+            # leave a claim ledger behind for the corpus to pick up again.
+            shutil.rmtree(
+                workspace.project_dir(project_id) / "sources" / str(source_id),
+                ignore_errors=True,
+            )
             sources = store.load()
             if project.state == ProjectState.SOURCE_SELECTION_REQUIRED and not any(
                 item.status == UiSourceStatus.READY for item in sources
@@ -521,6 +527,31 @@ def register_source_routes(
             status_code=HTTP_303_SEE_OTHER,
         )
 
+    @app.post("/projects/{project_id}/corpus/sources/{source_id}/skip")
+    def skip_corpus_source(
+        request: Request,
+        background_tasks: BackgroundTasks,
+        project_id: UUID,
+        source_id: UUID,
+        csrf_token: Annotated[str, Form()],
+    ) -> RedirectResponse:
+        if redirect := login_redirect(request):
+            return redirect
+        try:
+            validate_csrf(request, csrf_token)
+            corpus_builder.skip_source(project_id, source_id)
+        except (FileNotFoundError, OSError, ValueError):
+            return RedirectResponse(
+                f"/projects/{project_id}/processing?error=skip-unavailable",
+                status_code=HTTP_303_SEE_OTHER,
+            )
+        _deselect_source(workspace, project_id, source_id)
+        background_tasks.add_task(execute_corpus, project_id)
+        return RedirectResponse(
+            f"/projects/{project_id}/processing",
+            status_code=HTTP_303_SEE_OTHER,
+        )
+
     @app.get("/projects/{project_id}/processing", response_class=HTMLResponse)
     def processing_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
@@ -584,6 +615,27 @@ async def _auto_import_candidates(
             candidate.status = "failed"
             candidate.issue_summary = str(error)[:300]
         candidate_store.replace(candidate)
+
+
+def _deselect_source(
+    workspace: WorkspaceStore,
+    project_id: UUID,
+    source_id: UUID,
+) -> None:
+    """Keep the UI selection aligned with a source the corpus run just dropped.
+
+    Best effort on purpose: the corpus run is already the source of truth here, and a
+    manifest problem must not strand the queued run that follows.
+    """
+
+    store = UiSourceManifestStore(workspace.project_dir(project_id))
+    try:
+        source = store.get(source_id)
+        if source.selected:
+            source.selected = False
+            store.replace(source)
+    except (OSError, ValueError):
+        return
 
 
 def _source_candidate(source: UiSourceManifest) -> SourceCandidate:

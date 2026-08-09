@@ -29,6 +29,10 @@ _DOWNSTREAM_PATHS = (
     "model-runs",
     *_RUN_POINTERS,
 )
+# Per-source analysis survives a sources-scope rewind so a corpus rebuild can reuse the
+# sources the user keeps. Every reuse is re-validated against the file and the current
+# brief in `corpus_reuse.reusable_claim_ledger`, so nothing stale can slip through.
+_SOURCE_SCOPE_KEPT_PATHS = ("sources",)
 
 
 class WorkflowRevisionReceipt(BaseModel):
@@ -70,7 +74,11 @@ class WorkflowRevisionService:
 
         previous_state = project.state
         archive_dir = _archive_directory(project_dir)
-        archived_paths = _archive_downstream(project_dir, archive_dir)
+        archived_paths = _archive_downstream(
+            project_dir,
+            archive_dir,
+            keep=() if target == "brief" else _SOURCE_SCOPE_KEPT_PATHS,
+        )
         if target == "brief":
             candidate_path = project_dir / "web-search-candidates.json"
             if candidate_path.exists():
@@ -131,9 +139,16 @@ def _archive_directory(project_dir: Path) -> Path:
     return project_dir / "archive" / "revisions" / stamp
 
 
-def _archive_downstream(project_dir: Path, archive_dir: Path) -> list[str]:
+def _archive_downstream(
+    project_dir: Path,
+    archive_dir: Path,
+    *,
+    keep: tuple[str, ...] = (),
+) -> list[str]:
     archived: list[str] = []
     for relative in _DOWNSTREAM_PATHS:
+        if relative in keep:
+            continue
         source = project_dir / relative
         if not source.exists():
             continue
