@@ -51,6 +51,21 @@ def _validate_verification(
     draft: VerificationDraft,
     known_turn_ids: set[str],
 ) -> None:
+    if draft.quality is None:
+        raise DeterministicValidationError(
+            "Verification must include quality scores."
+        )
+    if draft.verdict != "pass" and not draft.quality.actionable_feedback.strip():
+        raise DeterministicValidationError(
+            "A non-passing verification must include actionable feedback."
+        )
+    if (
+        draft.unsupported_claim_ratio > 0
+        and draft.quality.evidence_fidelity >= 1.0
+    ):
+        raise DeterministicValidationError(
+            "Unsupported claims contradict perfect evidence fidelity."
+        )
     unknown = sorted({issue.turn_id for issue in draft.issues} - known_turn_ids)
     if unknown:
         raise DeterministicValidationError(

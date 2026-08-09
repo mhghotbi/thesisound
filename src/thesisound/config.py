@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     model_fast: str = "gemini-3.5-flash-lite"
     model_strong: str = "gemini-3.6-flash"
+    # Independent reviewer model. Unset falls back to model_strong, which makes
+    # the writer grade its own work -- `doctor` warns when that happens.
+    model_reviewer: str = ""
     model_tts: str = "gemini-3.1-flash-tts-preview"
     model_asr: str = "gemini-3.6-flash"
     model_routing_file: Path = Path("./config/model-routing.toml")
@@ -55,6 +58,9 @@ class Settings(BaseSettings):
     model_retry_base_seconds: float = Field(default=1, ge=0, le=60)
     model_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
     search_timeout_seconds: int = Field(default=120, ge=5, le=3_600)
+    url_probe_enabled: bool = True
+    url_probe_timeout_seconds: int = Field(default=10, ge=1, le=60)
+    web_search_cache_ttl_hours: int = Field(default=24, ge=1, le=720)
     tts_timeout_seconds: int = Field(default=240, ge=5, le=3_600)
     asr_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
     provider_max_attempts: int = Field(default=2, ge=1, le=5)
@@ -106,6 +112,9 @@ class Settings(BaseSettings):
     audio_sample_rate_hz: int = Field(default=24_000, ge=8_000, le=48_000)
     audio_qa_pass_threshold: float = Field(default=0.90, ge=0.5, le=1)
     audio_qa_review_threshold: float = Field(default=0.78, ge=0.4, le=1)
+    # Recorded and displayed only. Nothing gates on it yet -- see item 7 of
+    # docs/33-server-mono-process-adoption.md.
+    script_quality_min_overall: float = Field(default=0.70, ge=0, le=1)
     # Temporary for live e2e: keep scoring manual_review, but do not block assembly on it.
     audio_qa_accept_manual_review: bool = True
     audio_max_regeneration_attempts: int = Field(default=1, ge=0, le=1)
@@ -195,6 +204,8 @@ class Settings(BaseSettings):
                 raise ValueError("KAVENEGAR_API_KEY is required in production")
             if not (self.kavenegar_otp_template and self.kavenegar_otp_template.strip()):
                 raise ValueError("KAVENEGAR_TEMPLATE_NAME is required in production")
+        if not self.model_reviewer.strip():
+            self.model_reviewer = self.model_strong
         configure_gemini_http_proxy(self.http_proxy)
         return self
 

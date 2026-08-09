@@ -10,7 +10,14 @@ from thesisound.config import Settings
 from thesisound.modeling import ModelConfigurationError
 
 ProviderName = Literal["gemini", "okian"]
-ModelSettingName = Literal["model_fast", "model_strong"]
+ModelSettingName = Literal["model_fast", "model_strong", "model_reviewer"]
+
+# (reviewer route key, reviewed route key, tier). Route keys are prompt
+# contract ids -- see model_runner.py.
+REVIEWER_PAIRS: tuple[tuple[str, str, Literal["fast", "strong"]], ...] = (
+    ("script_verifier", "persian_script_segment", "strong"),
+    ("coverage_audit", "claim_reconciliation", "strong"),
+)
 
 
 class ModelProfile(BaseModel):
@@ -94,6 +101,44 @@ class ModelRouter:
             model=profile.resolve_model(self.settings),
             profile=profile_name,
         )
+
+    def self_grading_pairs(self) -> list[tuple[str, str, str]]:
+        """Reviewer/reviewed pairs that resolve to the same provider and model.
+
+        Compares the resolved (provider, model), not the profile name: two
+        distinct profiles can still point at the same model.
+        Returns (reviewer, reviewed, "provider/model").
+        """
+
+        collisions: list[tuple[str, str, str]] = []
+        for reviewer, reviewed, tier in REVIEWER_PAIRS:
+            requested_model = (
+                self.settings.model_fast
+                if tier == "fast"
+                else self.settings.model_strong
+            )
+            reviewer_route = self.resolve(
+                stage=reviewer,
+                requested_model=requested_model,
+                model_tier=tier,
+            )
+            reviewed_route = self.resolve(
+                stage=reviewed,
+                requested_model=requested_model,
+                model_tier=tier,
+            )
+            if (reviewer_route.provider, reviewer_route.model) == (
+                reviewed_route.provider,
+                reviewed_route.model,
+            ):
+                collisions.append(
+                    (
+                        reviewer,
+                        reviewed,
+                        f"{reviewer_route.provider}/{reviewer_route.model}",
+                    )
+                )
+        return collisions
 
     def uses_provider(self, provider: ProviderName) -> bool:
         profile_names = set(self.document.routes.values()) | set(

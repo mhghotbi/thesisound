@@ -10,6 +10,7 @@ from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.script import (
     Glossary,
+    RevisionDecision,
     ScriptCheckReport,
     ScriptPipelineManifest,
     ScriptPipelineResult,
@@ -22,6 +23,7 @@ from thesisound.services.persian_script_writer import PersianScriptWriterService
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
+from thesisound.services.script_quality import is_better
 from thesisound.services.script_reviser import TargetedScriptReviserService
 from thesisound.services.script_verifier import ScriptVerifierService
 from thesisound.services.source_artifact_store import SourceArtifactStore
@@ -335,6 +337,10 @@ class ScriptPipelineService:
                             prompt_version=prompt_version,
                         )
                         span.set(verdict=verification.verdict)
+                        if verification.quality is not None:
+                            span.measure(
+                                quality_overall=verification.quality.overall
+                            )
 
             if checks.verdict != "pass" or verification.verdict != "pass":
                 revised = self.script_store.load_script_optional(project_id, revised=True)
@@ -360,8 +366,39 @@ class ScriptPipelineService:
                     with tracing.span("script.checking_revision", component="script") as span:
                         revised_checks = self.run_checks(project_id, revised=True)
                         span.set(verdict=revised_checks.verdict)
+                original_script = self.script_store.load_script(project_id)
+                changed_turn_count = sum(
+                    1
+                    for before, after in zip(
+                        original_script.turns, revised.turns, strict=True
+                    )
+                    if before.spoken_text_fa != after.spoken_text_fa
+                )
+                original_overall = (
+                    verification.quality.overall
+                    if verification.quality is not None
+                    else None
+                )
+                original_issue_count = len(checks.issues) + len(verification.issues)
                 if revised_checks.verdict != "pass":
-                    raise ValueError("Revised script failed deterministic checks.")
+                    decision = RevisionDecision(
+                        project_id=project_id,
+                        accepted=False,
+                        reason="Revised script failed deterministic checks.",
+                        original_verdict=verification.verdict,
+                        revised_verdict=None,
+                        original_overall=original_overall,
+                        revised_overall=None,
+                        delta=None,
+                        original_issue_count=original_issue_count,
+                        revised_issue_count=None,
+                        changed_turn_count=changed_turn_count,
+                    )
+                    self.script_store.save_revision_decision(decision)
+                    raise ValueError(
+                        "Revised script failed deterministic checks; "
+                        "the original script was kept."
+                    )
 
                 revised_verification = self.script_store.load_verification_optional(
                     project_id,
@@ -378,12 +415,65 @@ class ScriptPipelineService:
                             prompt_version=prompt_version,
                         )
                         span.set(verdict=revised_verification.verdict)
-                script = revised
-                checks = revised_checks
-                verification = revised_verification
+                        if revised_verification.quality is not None:
+                            span.measure(
+                                quality_overall=revised_verification.quality.overall
+                            )
+                revised_overall = (
+                    revised_verification.quality.overall
+                    if revised_verification.quality is not None
+                    else None
+                )
+                delta = (
+                    round(revised_overall - original_overall, 4)
+                    if original_overall is not None and revised_overall is not None
+                    else None
+                )
+                accepted = is_better(
+                    (revised_checks, revised_verification),
+                    (checks, verification),
+                )
+                decision = RevisionDecision(
+                    project_id=project_id,
+                    accepted=accepted,
+                    reason=(
+                        "The revision ranked higher than the original."
+                        if accepted
+                        else "The original ranked equal to or higher than the revision."
+                    ),
+                    original_verdict=verification.verdict,
+                    revised_verdict=revised_verification.verdict,
+                    original_overall=original_overall,
+                    revised_overall=revised_overall,
+                    delta=delta,
+                    original_issue_count=original_issue_count,
+                    revised_issue_count=(
+                        len(revised_checks.issues) + len(revised_verification.issues)
+                    ),
+                    changed_turn_count=changed_turn_count,
+                )
+                self.script_store.save_revision_decision(decision)
+                if decision.accepted:
+                    script = revised
+                    checks = revised_checks
+                    verification = revised_verification
 
             if verification.verdict != "pass" or verification.unsupported_claim_ratio != 0:
-                raise ValueError("Script failed verification after one targeted revision.")
+                kept = "revision" if decision.accepted else "original"
+                before = (
+                    f"{decision.original_overall:.2f}"
+                    if decision.original_overall is not None
+                    else "n/a"
+                )
+                after = (
+                    f"{decision.revised_overall:.2f}"
+                    if decision.revised_overall is not None
+                    else "n/a"
+                )
+                raise ValueError(
+                    "Script failed verification after one targeted revision "
+                    f"(kept the {kept}; quality {before} -> {after})."
+                )
             self._ensure_script_verifying(project_id, script)
             project = self.workspace_store.load_project(project_id)
             transition(project, ProjectState.SCRIPT_VERIFIED)
@@ -507,9 +597,15 @@ class ScriptPipelineService:
         project = self.workspace_store.load_project(project_id)
         if project.state == ProjectState.EPISODE_PLANNED:
             return
-        if project.state != ProjectState.FAILED_RETRYABLE:
+        if project.state not in {
+            ProjectState.FAILED_RETRYABLE,
+            ProjectState.SCRIPT_READY,
+        }:
             mark_failed(project, message)
         else:
+            # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE. Preserve
+            # the original pipeline error instead of masking it with a transition
+            # error; a resumed run can restore drafting from SCRIPT_READY.
             project.last_error = message
             project.updated_at = datetime.now(UTC)
         self.workspace_store.save_project(project)

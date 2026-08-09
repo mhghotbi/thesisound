@@ -6,7 +6,7 @@ import re
 import sqlite3
 import time
 from collections.abc import Callable, Mapping
-from contextlib import closing
+from contextlib import closing, suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -229,6 +229,36 @@ class ProjectUsageSummary(BaseModel):
     total_latency_ms: int = 0
     total_cost_micros: int = 0
     unpriced_succeeded_count: int = 0
+
+
+@dataclass(frozen=True)
+class PipelineRunSpec:
+    workflow_run_id: UUID
+    project_id: UUID | None
+    trace_id: UUID
+    kind: str
+    started_at: datetime
+
+
+class PipelineRunSummary(BaseModel):
+    workflow_run_id: UUID
+    project_id: UUID | None = None
+    trace_id: UUID | None = None
+    kind: str
+    status: str
+    started_at: datetime
+    finished_at: datetime | None = None
+    duration_ms: int | None = None
+    call_count: int = 0
+    failed_call_count: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    thinking_tokens: int = 0
+    cached_tokens: int = 0
+    total_tokens: int = 0
+    models: list[str] = Field(default_factory=list)
+    prompt_versions: list[str] = Field(default_factory=list)
+    error_message: str | None = None
 
 
 class SpanSummary(BaseModel):
@@ -671,6 +701,136 @@ class ObservabilityLedger:
                 """,
                 (reason, max(0, backoff_ms), str(call_id)),
             )
+
+    def begin_run(self, spec: PipelineRunSpec) -> UUID:
+        """Insert a root workflow run if it is not already present.
+
+        ``INSERT OR IGNORE`` is intentional: a workflow may open more than one
+        root span with the same run id, and all calls still belong to one rollup.
+        """
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO pipeline_runs(
+                    workflow_run_id, project_id, trace_id, kind, status, started_at
+                ) VALUES (?, ?, ?, ?, 'running', ?)
+                """,
+                (
+                    str(spec.workflow_run_id),
+                    _uuid_text(spec.project_id),
+                    str(spec.trace_id),
+                    spec.kind,
+                    _to_db_timestamp(spec.started_at),
+                ),
+            )
+        return spec.workflow_run_id
+
+    def finish_run(
+        self,
+        workflow_run_id: UUID,
+        *,
+        status: str,
+        error_message: str | None = None,
+    ) -> None:
+        """Finish a run and recompute its call/token aggregates idempotently.
+
+        Cost is deliberately absent: calls are not priced until a pricing table
+        exists, so a run-level zero would be misleading rather than useful.
+        """
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            existing = connection.execute(
+                "SELECT started_at FROM pipeline_runs WHERE workflow_run_id = ?",
+                (str(workflow_run_id),),
+            ).fetchone()
+            if existing is None:
+                return
+            aggregate = connection.execute(
+                """
+                SELECT COUNT(*),
+                       COUNT(*) FILTER (WHERE status IN ('failed', 'rejected')),
+                       COALESCE(SUM(input_tokens), 0),
+                       COALESCE(SUM(output_tokens), 0),
+                       COALESCE(SUM(thinking_tokens), 0),
+                       COALESCE(SUM(cached_tokens), 0),
+                       COALESCE(SUM(total_tokens), 0)
+                FROM model_calls WHERE workflow_run_id = ?
+                """,
+                (str(workflow_run_id),),
+            ).fetchone()
+            models = [
+                row[0]
+                for row in connection.execute(
+                    "SELECT DISTINCT resolved_model FROM model_calls "
+                    "WHERE workflow_run_id = ? AND resolved_model IS NOT NULL "
+                    "ORDER BY resolved_model",
+                    (str(workflow_run_id),),
+                ).fetchall()
+            ]
+            prompt_versions = [
+                f"{row[0]}@{row[1]}"
+                for row in connection.execute(
+                    "SELECT DISTINCT prompt_id, prompt_version FROM model_calls "
+                    "WHERE workflow_run_id = ? AND prompt_id IS NOT NULL "
+                    "AND prompt_version IS NOT NULL ORDER BY prompt_id, prompt_version",
+                    (str(workflow_run_id),),
+                ).fetchall()
+            ]
+            # A workflow may have multiple root spans sharing this run id.
+            # Each terminal root refreshes the rollup so the final span contributes
+            # both its model calls and the actual run finish time.
+            finished_at = _now()
+            started_at = _from_db_timestamp(existing[0])
+            connection.execute(
+                """
+                UPDATE pipeline_runs
+                SET status = ?, finished_at = ?, duration_ms = ?,
+                    call_count = ?, failed_call_count = ?, input_tokens = ?,
+                    output_tokens = ?, thinking_tokens = ?, cached_tokens = ?,
+                    total_tokens = ?, models_json = ?, prompt_versions_json = ?,
+                    error_message = ?
+                WHERE workflow_run_id = ?
+                """,
+                (
+                    status,
+                    _to_db_timestamp(finished_at),
+                    _elapsed_ms(started_at, finished_at),
+                    aggregate[0],
+                    aggregate[1],
+                    aggregate[2],
+                    aggregate[3],
+                    aggregate[4],
+                    aggregate[5],
+                    aggregate[6],
+                    json.dumps(models, ensure_ascii=False),
+                    json.dumps(prompt_versions, ensure_ascii=False),
+                    _truncate(error_message),
+                    str(workflow_run_id),
+                ),
+            )
+
+    def run_summary(self, workflow_run_id: UUID) -> PipelineRunSummary:
+        with self._lock, closing(self._connect()) as connection, connection:
+            row = connection.execute(
+                "SELECT " + _PIPELINE_RUN_COLUMNS + " FROM pipeline_runs "
+                "WHERE workflow_run_id = ?",
+                (str(workflow_run_id),),
+            ).fetchone()
+        if row is None:
+            raise FileNotFoundError(f"Pipeline run not found: {workflow_run_id}")
+        return _pipeline_run_from_row(row)
+
+    def list_runs(
+        self, project_id: UUID, *, limit: int = 50
+    ) -> list[PipelineRunSummary]:
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                "SELECT " + _PIPELINE_RUN_COLUMNS + " FROM pipeline_runs "
+                "WHERE project_id = ? ORDER BY started_at DESC LIMIT ?",
+                (str(project_id), max(1, min(limit, 2_000))),
+            ).fetchall()
+        return [_pipeline_run_from_row(row) for row in rows]
 
     def start_span(self, record: SpanRecord) -> None:
         """Insert a span as ``running``. Writes through immediately (no
@@ -1246,9 +1406,35 @@ class LedgerSpanSink:
 
     def begin(self, record: SpanRecord) -> None:
         self.ledger.start_span(record)
+        if (
+            record.kind == "stage"
+            and record.context.workflow_run_id is not None
+            and record.parent_span_id is None
+        ):
+            with suppress(Exception):
+                self.ledger.begin_run(
+                    PipelineRunSpec(
+                        workflow_run_id=record.context.workflow_run_id,
+                        project_id=record.context.project_id,
+                        trace_id=record.context.trace_id,
+                        kind=record.component,
+                        started_at=record.started_at,
+                    )
+                )
 
     def end(self, record: SpanRecord) -> None:
         self.ledger.end_span(record)
+        if (
+            record.kind == "stage"
+            and record.context.workflow_run_id is not None
+            and record.parent_span_id is None
+        ):
+            with suppress(Exception):
+                self.ledger.finish_run(
+                    record.context.workflow_run_id,
+                    status="failed" if record.status == "error" else "succeeded",
+                    error_message=record.error_message,
+                )
 
     def event(self, record: EventRecord) -> None:
         self.ledger.record_event(record)
@@ -1626,6 +1812,37 @@ def _trace_node_from_row(row: tuple[Any, ...]) -> TraceNode:
     )
 
 
+_PIPELINE_RUN_COLUMNS = """
+workflow_run_id, project_id, trace_id, kind, status, started_at, finished_at,
+duration_ms, call_count, failed_call_count, input_tokens, output_tokens,
+thinking_tokens, cached_tokens, total_tokens, models_json,
+prompt_versions_json, error_message
+""".replace("\n", " ").strip()
+
+
+def _pipeline_run_from_row(row: tuple[Any, ...]) -> PipelineRunSummary:
+    return PipelineRunSummary(
+        workflow_run_id=UUID(row[0]),
+        project_id=_optional_uuid(row[1]),
+        trace_id=_optional_uuid(row[2]),
+        kind=row[3],
+        status=row[4],
+        started_at=_from_db_timestamp(row[5]),
+        finished_at=_from_db_timestamp(row[6]) if row[6] else None,
+        duration_ms=row[7],
+        call_count=row[8],
+        failed_call_count=row[9],
+        input_tokens=row[10],
+        output_tokens=row[11],
+        thinking_tokens=row[12],
+        cached_tokens=row[13],
+        total_tokens=row[14],
+        models=json.loads(row[15] or "[]"),
+        prompt_versions=json.loads(row[16] or "[]"),
+        error_message=row[17],
+    )
+
+
 def _now() -> datetime:
     return datetime.now(UTC)
 
@@ -1879,6 +2096,33 @@ CREATE VIEW IF NOT EXISTS trace_nodes AS
       FROM model_calls;
 """
 
+_SCHEMA_V3_PIPELINE_RUNS = """
+CREATE TABLE IF NOT EXISTS pipeline_runs(
+    workflow_run_id TEXT PRIMARY KEY,
+    project_id      TEXT,
+    trace_id        TEXT,
+    kind            TEXT NOT NULL,
+    status          TEXT NOT NULL,
+    started_at      TEXT NOT NULL,
+    finished_at     TEXT,
+    duration_ms     INTEGER,
+    call_count      INTEGER NOT NULL DEFAULT 0,
+    failed_call_count INTEGER NOT NULL DEFAULT 0,
+    input_tokens    INTEGER NOT NULL DEFAULT 0,
+    output_tokens   INTEGER NOT NULL DEFAULT 0,
+    thinking_tokens INTEGER NOT NULL DEFAULT 0,
+    cached_tokens   INTEGER NOT NULL DEFAULT 0,
+    total_tokens    INTEGER NOT NULL DEFAULT 0,
+    models_json     TEXT NOT NULL DEFAULT '[]',
+    prompt_versions_json TEXT NOT NULL DEFAULT '[]',
+    error_message   TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_runs_project_started
+    ON pipeline_runs(project_id, started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_runs_kind_status
+    ON pipeline_runs(kind, status);
+"""
+
 # New model_calls columns added by migration 2. `trace_id` already existed
 # (meaning "one ModelRunRecord") before this migration and keeps that
 # meaning unchanged; `pipeline_trace_id` is the new, distinct concept of
@@ -1921,4 +2165,5 @@ def _migrate_v2_pipeline_spans_and_events(connection: sqlite3.Connection) -> Non
 _MIGRATIONS: tuple[str | Callable[[sqlite3.Connection], None], ...] = (
     _SCHEMA_V1,
     _migrate_v2_pipeline_spans_and_events,
+    _SCHEMA_V3_PIPELINE_RUNS,
 )

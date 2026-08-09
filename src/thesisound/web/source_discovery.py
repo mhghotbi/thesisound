@@ -11,6 +11,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, HttpUrl
 
+from thesisound import tracing
 from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.adapters.search.gemini import GeminiWebSearchPort
 from thesisound.config import Settings
@@ -19,6 +20,8 @@ from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
+from thesisound.services.url_probe import probe_url
+from thesisound.services.web_search_cache import WebSearchCache
 from thesisound.web.source_ingestion import ingest_uploaded_source
 from thesisound.web.source_manifest import UiSourceManifest, UiSourceStatus
 
@@ -110,31 +113,34 @@ class WebSourceDiscoveryService:
         if project.brief is None:
             raise ValueError("برای جست‌وجوی وب ابتدا برداشت پژوهش را تأیید کنید.")
         normalized = query.strip() or project.brief.central_question
-        model_port = GeminiStructuredModel(
-            api_keys=self.settings.gemini_api_keys,
-            settings=self.settings,
+        search_query = SearchQuery(
+            query=normalized,
+            provider="web",
+            source_role=SourceRole.REFERENCE,
+            language=project.brief.output_language,
+            purpose=(
+                "Find credible sources that can materially support the project's "
+                "central question and declared scope."
+            ),
+            priority=3,
         )
-        search_port = GeminiWebSearchPort(
-            model_port,
-            model=self.settings.model_fast,
-            project_id=project.project_id,
-            timeout_ms=self.settings.search_timeout_seconds * 1000,
-            max_provider_attempts=self.settings.provider_max_attempts,
-            provider_retry_base_seconds=self.settings.provider_retry_base_seconds,
-        )
-        results = search_port.search(
-            SearchQuery(
-                query=normalized,
-                provider="web",
-                source_role=SourceRole.REFERENCE,
-                language=project.brief.output_language,
-                purpose=(
-                    "Find credible sources that can materially support the project's "
-                    "central question and declared scope."
-                ),
-                priority=3,
+        cache = WebSearchCache(self.workspace.root, self.settings)
+        results = cache.load(project.project_id, search_query)
+        if results is None:
+            model_port = GeminiStructuredModel(
+                api_keys=self.settings.gemini_api_keys,
+                settings=self.settings,
             )
-        )
+            search_port = GeminiWebSearchPort(
+                model_port,
+                model=self.settings.model_fast,
+                project_id=project.project_id,
+                timeout_ms=self.settings.search_timeout_seconds * 1000,
+                max_provider_attempts=self.settings.provider_max_attempts,
+                provider_retry_base_seconds=self.settings.provider_retry_base_seconds,
+            )
+            results = search_port.search(search_query)
+            cache.save(search_query, results)
         candidates: list[WebSourceCandidate] = []
         seen_urls: set[str] = set()
         for result in results:
@@ -157,6 +163,33 @@ class WebSourceDiscoveryService:
         project_id: UUID,
         candidate: WebSourceCandidate,
     ) -> UiSourceManifest:
+        if self.settings.url_probe_enabled:
+            probe = probe_url(str(candidate.url), settings=self.settings)
+            if probe.outcome == "dead":
+                tracing.event(
+                    "source.probe_blocked",
+                    component="source",
+                    project_id=project_id,
+                    level="warn",
+                    reason=probe.reason,
+                    http_status=probe.http_status,
+                )
+                return UiSourceManifest(
+                    source_id=uuid4(),
+                    filename=_web_filename(candidate.title),
+                    display_title=candidate.title,
+                    content_type="text/markdown",
+                    size_bytes=0,
+                    status=UiSourceStatus.BLOCKED,
+                    issue_summary=(
+                        "نشانی منبع به‌طور قطعی در دسترس نیست و پیش از مصرف مدل "
+                        "مسدود شد."
+                    ),
+                    origin="gemini_web_search",
+                    canonical_url=str(candidate.url),
+                    retrieval_scope="unavailable",
+                    quality_issues=[probe.reason],
+                )
         source_id = uuid4()
         runner = ModelRunner(
             GeminiStructuredModel(

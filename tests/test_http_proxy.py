@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 
+import pytest
+
 from thesisound.config import Settings
 from thesisound.http_proxy import (
     configure_gemini_http_proxy,
@@ -9,7 +11,6 @@ from thesisound.http_proxy import (
     gemini_http_options,
     normalize_proxy_url,
 )
-import pytest
 
 
 def test_normalize_proxy_url_disables_sentinels() -> None:

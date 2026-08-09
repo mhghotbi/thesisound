@@ -204,6 +204,11 @@ def _render_script_page(
             "script": script,
             "checks": checks,
             "verification": verification,
+            "revision_decision": (
+                script_store.load_revision_decision_optional(project_id)
+                if artifacts_current
+                else None
+            ),
             "manifest": manifest,
             "used_revision": bool(
                 artifacts_current and script_store.has_revised_script(project_id)
