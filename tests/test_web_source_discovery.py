@@ -8,6 +8,7 @@ from thesisound.domain import Project, ResearchBrief, TopicType
 from thesisound.modeling import ModelExecution, ModelRunRecord
 from thesisound.pipeline import WorkspaceStore
 from thesisound.ports import RawSearchResult
+from thesisound.services.url_probe import UrlProbeResult
 from thesisound.web import source_discovery
 from thesisound.web.source_discovery import (
     WebSourceCandidate,
@@ -26,6 +27,7 @@ def _settings(tmp_path: Path) -> Settings:
         web_session_secret="test-secret-that-is-long-enough",
         allow_test_otp=True,
         ui_demo_mode=False,
+        url_probe_enabled=False,
     )
 
 
@@ -43,6 +45,7 @@ def _project() -> Project:
 class FakeRunner:
     def __init__(self, capture: WebSourceCaptureDraft) -> None:
         self.capture = capture
+        self.calls = 0
 
     def run(
         self,
@@ -54,6 +57,7 @@ class FakeRunner:
         validator=None,
         **_: object,
     ):
+        self.calls += 1
         assert output_type is WebSourceCaptureDraft
         if validator is not None:
             validator(self.capture)
@@ -184,3 +188,98 @@ def test_search_returns_deduplicated_candidates(tmp_path: Path, monkeypatch) -> 
     assert len(candidates) == 1
     assert candidates[0].query == project.brief.central_question
     assert str(candidates[0].url) == "https://example.com/article"
+
+
+
+def test_dead_url_is_blocked_before_any_model_call(tmp_path: Path, monkeypatch) -> None:
+    settings = _settings(tmp_path)
+    settings.url_probe_enabled = True
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project()
+    workspace.save_project(project)
+    runner = FakeRunner(_capture(full=True))
+    monkeypatch.setattr(
+        source_discovery,
+        "probe_url",
+        lambda *_args, **_kwargs: UrlProbeResult(
+            "https://example.com/dead", "dead", 404, "HTTP 404"
+        ),
+    )
+    monkeypatch.setattr(source_discovery, "GeminiStructuredModel", lambda **_: object())
+    monkeypatch.setattr(source_discovery, "ModelRunner", lambda *_, **__: runner)
+
+    manifest = WebSourceDiscoveryService(settings, workspace).import_candidate(
+        project.project_id,
+        WebSourceCandidate(
+            query="اخلاق کانت",
+            title="Dead",
+            url="https://example.com/dead",
+        ),
+    )
+
+    assert manifest.status == UiSourceStatus.BLOCKED
+    assert runner.calls == 0
+
+
+def test_unknown_probe_outcome_still_attempts_capture(tmp_path: Path, monkeypatch) -> None:
+    settings = _settings(tmp_path)
+    settings.url_probe_enabled = True
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project()
+    workspace.save_project(project)
+    runner = FakeRunner(_capture(full=True))
+    monkeypatch.setattr(
+        source_discovery,
+        "probe_url",
+        lambda *_args, **_kwargs: UrlProbeResult(
+            "https://example.com/article", "unknown", None, "TimeoutError"
+        ),
+    )
+    monkeypatch.setattr(source_discovery, "GeminiStructuredModel", lambda **_: object())
+    monkeypatch.setattr(source_discovery, "ModelRunner", lambda *_, **__: runner)
+
+    manifest = WebSourceDiscoveryService(settings, workspace).import_candidate(
+        project.project_id,
+        WebSourceCandidate(
+            query="اخلاق کانت",
+            title="Article",
+            url="https://example.com/article",
+        ),
+    )
+
+    assert manifest.status == UiSourceStatus.READY
+    assert runner.calls == 1
+
+
+def test_repeated_identical_search_uses_the_cache(tmp_path: Path, monkeypatch) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project()
+
+    class CountingSearchPort:
+        calls = 0
+
+        def __init__(self, *_: object, **__: object) -> None:
+            pass
+
+        def search(self, _query):
+            type(self).calls += 1
+            return [
+                RawSearchResult(
+                    provider="fake",
+                    title="Cached",
+                    url="https://example.com/cached",
+                )
+            ]
+
+    monkeypatch.setattr(source_discovery, "GeminiStructuredModel", lambda **_: object())
+    monkeypatch.setattr(source_discovery, "GeminiWebSearchPort", CountingSearchPort)
+    service = WebSourceDiscoveryService(settings, workspace)
+
+    first = service.search(project, "اخلاق")
+    second = service.search(project, "اخلاق")
+
+    assert [(item.title, str(item.url)) for item in first] == [
+        (item.title, str(item.url)) for item in second
+    ]
+    assert CountingSearchPort.calls == 1

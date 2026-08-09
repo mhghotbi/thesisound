@@ -1,6 +1,8 @@
-"""Gemini-only outbound HTTP(S) proxy helpers.
+"""Gemini-scoped outbound HTTP(S) proxy helpers.
 
-Okian and other non-Gemini clients must not inherit this proxy.
+Okian and other non-Gemini clients must not inherit this proxy. The URL probe
+deliberately reuses it so local reachability follows the operator's internet path;
+Gemini URL Context itself still fetches from Google's network.
 """
 
 from __future__ import annotations

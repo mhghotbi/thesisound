@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     model_retry_base_seconds: float = Field(default=1, ge=0, le=60)
     model_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
     search_timeout_seconds: int = Field(default=120, ge=5, le=3_600)
+    url_probe_enabled: bool = True
+    url_probe_timeout_seconds: int = Field(default=10, ge=1, le=60)
+    web_search_cache_ttl_hours: int = Field(default=24, ge=1, le=720)
     tts_timeout_seconds: int = Field(default=240, ge=5, le=3_600)
     asr_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
     provider_max_attempts: int = Field(default=2, ge=1, le=5)
