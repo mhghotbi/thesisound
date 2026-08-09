@@ -45,4 +45,5 @@ jobs:
             tests/test_pipeline_runs.py \
             tests/test_url_probe.py
           git commit -m "fix: close final observability and probe edge cases"
+          git pull --rebase origin codex/server-mono-light-items-1-5
           git push
