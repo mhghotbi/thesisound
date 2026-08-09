@@ -444,3 +444,66 @@ def test_cache_hit_rates_groups_by_the_cache_attribute(ledger: ObservabilityLedg
     assert rows["episode_plan"].misses == 1
     assert rows["episode_plan"].hit_rate == 0.0
     assert "project.state_changed" not in [row.cache for row in ledger.cache_hit_rates(project_id)]
+
+
+def test_root_stage_span_with_run_id_writes_one_pipeline_run(
+    ledger: ObservabilityLedger,
+) -> None:
+    project_id = uuid4()
+    run_id = uuid4()
+    ledger_tracer = _ledger_tracer(ledger)
+
+    with ledger_tracer.span(
+        "script.run",
+        component="script",
+        kind="stage",
+        project_id=project_id,
+        workflow_run_id=run_id,
+    ):
+        pass
+
+    runs = ledger.list_runs(project_id)
+    assert len(runs) == 1
+    assert runs[0].workflow_run_id == run_id
+    assert runs[0].status == "succeeded"
+
+
+def test_nested_stage_span_with_run_id_does_not_write_another_pipeline_run(
+    ledger: ObservabilityLedger,
+) -> None:
+    project_id = uuid4()
+    run_id = uuid4()
+    ledger_tracer = _ledger_tracer(ledger)
+
+    with (
+        ledger_tracer.span(
+            "script.run",
+            component="script",
+            kind="stage",
+            project_id=project_id,
+            workflow_run_id=run_id,
+        ),
+        ledger_tracer.span(
+            "script.child",
+            component="script",
+            kind="stage",
+            workflow_run_id=run_id,
+        ),
+    ):
+        pass
+
+    assert len(ledger.list_runs(project_id)) == 1
+
+
+def test_root_stage_span_without_run_id_writes_no_pipeline_run(
+    ledger: ObservabilityLedger,
+) -> None:
+    project_id = uuid4()
+    ledger_tracer = _ledger_tracer(ledger)
+
+    with ledger_tracer.span(
+        "script.run", component="script", kind="stage", project_id=project_id
+    ):
+        pass
+
+    assert ledger.list_runs(project_id) == []

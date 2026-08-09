@@ -207,3 +207,56 @@ def test_newer_schema_version_than_supported_raises(tmp_path: Path) -> None:
 
     with pytest.raises(RuntimeError, match="newer than this build supports"):
         ObservabilityLedger(database_path, artifact_root)
+
+
+def test_fresh_ledger_has_the_pipeline_runs_table(tmp_path: Path) -> None:
+    ledger = ObservabilityLedger(tmp_path / "ledger.sqlite3", tmp_path / "artifacts")
+    connection = sqlite3.connect(ledger.database_path)
+    try:
+        tables = {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+    finally:
+        connection.close()
+
+    assert "pipeline_runs" in tables
+
+
+def test_upgrading_a_v2_ledger_adds_pipeline_runs(tmp_path: Path) -> None:
+    database_path = tmp_path / "ledger.sqlite3"
+    artifact_root = tmp_path / "artifacts"
+    ledger = ObservabilityLedger(database_path, artifact_root)
+    spec = ModelCallSpec(
+        stage="document_map",
+        operation="structured_text",
+        provider="gemini",
+        requested_model="gemini-test",
+    )
+    ledger.begin_call(spec, {"prompt": "hello"})
+    connection = sqlite3.connect(database_path)
+    try:
+        connection.execute("DROP TABLE pipeline_runs")
+        connection.execute(
+            "UPDATE schema_meta SET value = '2' WHERE key = 'schema_version'"
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+    upgraded = ObservabilityLedger(database_path, artifact_root)
+
+    assert upgraded.get_call(spec.call_id).call.call_id == spec.call_id
+    connection = sqlite3.connect(database_path)
+    try:
+        tables = {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+    finally:
+        connection.close()
+    assert "pipeline_runs" in tables

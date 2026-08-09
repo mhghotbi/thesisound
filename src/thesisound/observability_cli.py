@@ -70,6 +70,46 @@ def register_observability_commands(app: typer.Typer) -> None:
             )
         console.print(table)
 
+    @app.command("runs")
+    def runs(
+        project_id: UUID,
+        limit: int = typer.Option(50, min=1, max=2_000),
+    ) -> None:
+        """Show one aggregate row per pipeline workflow run."""
+
+        ledger = ledger_from_settings(Settings())
+        console = Console()
+        table = Table(show_lines=False)
+        table.add_column("Started")
+        table.add_column("Kind")
+        table.add_column("Status")
+        table.add_column("Duration", justify="right")
+        table.add_column("Calls", justify="right")
+        table.add_column("Failed", justify="right")
+        table.add_column("Total tokens", justify="right")
+        table.add_column("Run ID")
+        for run in ledger.list_runs(project_id, limit=limit):
+            table.add_row(
+                run.started_at.isoformat(timespec="seconds"),
+                run.kind,
+                run.status,
+                f"{run.duration_ms or 0} ms",
+                str(run.call_count),
+                str(run.failed_call_count),
+                str(run.total_tokens),
+                str(run.workflow_run_id),
+            )
+        console.print(table)
+
+    @app.command("run-summary")
+    def run_summary(run_id: UUID) -> None:
+        """Print the persisted aggregate for one pipeline workflow run."""
+
+        summary = ledger_from_settings(Settings()).run_summary(run_id)
+        Console().print_json(
+            json.dumps(summary.model_dump(mode="json"), ensure_ascii=False)
+        )
+
     @app.command("model-call")
     def model_call(
         call_id: UUID,
