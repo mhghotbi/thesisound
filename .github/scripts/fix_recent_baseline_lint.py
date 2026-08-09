@@ -3,12 +3,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def replace(path: str, old: str, new: str) -> None:
+def replace(path: str, old: str, new: str, *, applied_marker: str | None = None) -> None:
     target = ROOT / path
     text = target.read_text(encoding="utf-8")
-    if new in text:
-        return
+    marker = applied_marker or new
     if old not in text:
+        if marker in text:
+            return
         raise RuntimeError(f"Missing lint-fix anchor in {path}")
     target.write_text(text.replace(old, new, 1), encoding="utf-8")
 
@@ -30,6 +31,7 @@ replace(
     '                "جست‌وجوی وب انجام نشد چون سهمیهٔ جست‌وجوی مدل تمام شده است. "\n'
     '                "چند دقیقه بعد دوباره تلاش کنید."\n'
     '            ),\n',
+    applied_marker='                "چند دقیقه بعد دوباره تلاش کنید."\n',
 )
 replace(
     "src/thesisound/web/error_messages.py",
@@ -38,16 +40,19 @@ replace(
     '                "بازیابی متن منبع به‌خاطر اتمام سهمیه متوقف شد. "\n'
     '                "چند دقیقه بعد دوباره تلاش کنید."\n'
     '            ),\n',
+    applied_marker='                "بازیابی متن منبع به‌خاطر اتمام سهمیه متوقف شد. "\n',
 )
 replace(
     "tests/test_http_proxy.py",
     "import os\n\nfrom thesisound.config import Settings\n",
     "import os\n\nimport pytest\n\nfrom thesisound.config import Settings\n",
+    applied_marker="import os\n\nimport pytest\n",
 )
 replace(
     "tests/test_http_proxy.py",
-    ")\nimport pytest\n",
-    ")\n",
+    ")\nimport pytest\n\n\n",
+    ")\n\n\n",
+    applied_marker="normalize_proxy_url,\n)\n\n\ndef test_normalize_proxy_url",
 )
 replace(
     "tests/test_kavenegar_otp.py",
