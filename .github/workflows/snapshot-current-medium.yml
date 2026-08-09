@@ -21,12 +21,11 @@ jobs:
 
       - name: Archive checkout
         run: |
-          tar --exclude=.git --exclude=.venv --exclude=current-medium.tgz \
-            -czf current-medium.tgz .
+          tar --exclude=.git --exclude=.venv -czf /tmp/current-medium.tgz .
 
       - name: Upload checkout
         uses: actions/upload-artifact@v4
         with:
           name: current-medium-branch
-          path: current-medium.tgz
+          path: /tmp/current-medium.tgz
           retention-days: 2
