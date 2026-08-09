@@ -8,16 +8,16 @@ This is the procedure a single operator follows to produce one defensible episod
 
 | Step | Code | Actor | Reads | Writes | Enforced at | If blocked |
 |---:|---|---|---|---|---|---|
-| 1 | `brief-confirmed` | Human | Project brief | Source-collection state | `src/thesisound/web/app.py:791` | Correct or narrow the brief, then confirm it. |
-| 2 | `source-selection-confirmed` | Human | Selected-source manifest | Confirmed corpus | `src/thesisound/web/source_routes.py:576` | Review source relevance and inclusion, then confirm the set. |
+| 1 | `brief-confirmed` | Human | Project brief | Source-collection state | `src/thesisound/web/app.py:787` | Correct or narrow the brief, then confirm it. |
+| 2 | `source-selection-confirmed` | Human | Selected-source manifest | Queued corpus build | `src/thesisound/web/source_routes.py:610` | Review source relevance and inclusion, then confirm the set. |
 | 3 | `parse-quality` | Machine | Parsed documents | Parse-quality verdicts | `src/thesisound/services/parse_quality.py:15` | Re-parse, OCR, or replace unsafe sources. |
 | 4 | `evidence-validation` | Machine | Extractions and source text | Validated evidence | `src/thesisound/services/evidence_validator.py:51` | Repair the extraction or remove unsupported material. |
-| 5 | `evidence-retention` | Machine | Planned blocks and outcomes | Source-analysis manifest | `src/thesisound/services/source_analysis_service.py:37` | Restore enough planned evidence or reduce the source scope. |
+| 5 | `evidence-retention` | Machine | Planned blocks and outcomes | Source-analysis manifest | `src/thesisound/services/source_analysis_service.py:292` | Restore enough planned evidence or reduce the source scope. |
 | 6 | `coverage-duration` | Machine | Coverage report and current brief | Planning eligibility | `src/thesisound/services/coverage_auditor.py:13` | Add sources or reduce the requested duration. |
 | 7 | `episode-plan-approval` | Human | Episode Plan | Named, hash-bound approval | `src/thesisound/services/plan_approval.py:57` | Review and approve the current plan; edited plans require new approval. |
-| 8 | `script-checks` | Machine | Script and bound artifacts | Deterministic check report | `src/thesisound/services/script_checks.py:26` | Correct blocking structure or grounding defects. |
-| 9 | `independent-verification` | Machine | Script and evidence packs | Verification report | `src/thesisound/services/script_verifier.py:12` | Revise unsupported claims or send the non-blocking result to human review. |
-| 10 | `script-review-decision` | Human | Review-required script | Named decision and reason | `src/thesisound/web/script_routes.py:116` | Accept with a reason or send the script back for drafting. |
+| 8 | `script-checks` | Machine | Script and bound artifacts | Deterministic check report | `src/thesisound/services/script_checks.py:185` | Correct blocking structure or grounding defects. |
+| 9 | `independent-verification` | Machine | Script and evidence packs | Verification report | `src/thesisound/services/script_verifier.py:30` | Revise unsupported claims or send the non-blocking result to human review. |
+| 10 | `script-review-decision` | Human | Review-required script | Named decision and reason | `src/thesisound/web/script_routes.py:114` | Accept with a reason or send the script back for drafting. |
 | 11 | `audio-qa` | Machine | Audio QA report | Accepted audio manifest | `src/thesisound/services/audio_pipeline_service.py:205` | Regenerate, fix segmentation, or explicitly accept manual review. |
 | 12 | `final-listen` | Human | Final assembled audio | Release decision | Unenforced | Listen before release. Attribution and enforcement remain a known gap. |
 
