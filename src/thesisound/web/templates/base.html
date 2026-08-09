@@ -42,7 +42,7 @@
         <img class="brand__logo" src="{{ url_for('static', path='/maghal-logo-mark.webp') }}" alt="" width="256" height="256">
         <span class="brand__identity">
           <strong>مقال</strong>
-          <small>مطالعه‌ای که شنیده می‌شود</small>
+          <small>آن‌جا که اندیشه‌ها به سخن می‌آیند</small>
         </span>
       </a>
       <nav class="app-nav" aria-label="ناوبری اصلی">
@@ -66,7 +66,7 @@
         </details>
         <form class="logout-form" method="post" action="/logout">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button class="logout-button" type="submit">خروج <bdi dir="ltr">{{ current_user }}</bdi></button>
+          <button class="logout-button" type="submit">خروج</button>
         </form>
       </div>
     </div>

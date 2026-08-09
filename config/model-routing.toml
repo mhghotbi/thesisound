@@ -26,7 +26,7 @@ model = "gemma4-31"
 [routes]
 # Grounded: keep on Gemini
 research_brief = "gemini_fast"
-glossary = "okian_gemma"
+glossary = "gemini_strong"
 web_source_capture = "gemini_fast"
 
 # Text-only stages: Gemini Fast/Strong as in reference file

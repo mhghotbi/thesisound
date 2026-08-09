@@ -385,9 +385,10 @@ html[data-mode="operator"] .simple-only { display: none !important; }
 .workflow-step {
   position: relative;
   min-width: 0;
-  display: grid;
-  grid-template-columns: 20px 1fr;
-  gap: 7px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   color: var(--disabled);
   font-size: 11px;
   line-height: 1.45;
@@ -396,13 +397,16 @@ html[data-mode="operator"] .simple-only { display: none !important; }
   content: "";
   position: absolute;
   inset-block-start: 9px;
-  inset-inline-start: calc(100% - 3px);
-  width: calc(100% - 26px);
+  inset-inline-start: 18px;
+  width: calc(100% - 18px);
   height: 1px;
   background: var(--border-strong);
+  pointer-events: none;
 }
 .workflow-step.is-complete:not(:last-child)::after { background: var(--brand-line); height: 2px; }
 .workflow-step__mark {
+  position: relative;
+  z-index: 1;
   width: 18px;
   height: 18px;
   display: grid;
