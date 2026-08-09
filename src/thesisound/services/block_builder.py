@@ -13,6 +13,8 @@ from thesisound.source_analysis import BlockBuildReport, BlockType, SourceDocume
 
 _HEADING_KINDS = {"heading", "title", "section_header"}
 _STANDALONE_KINDS = {"table", "formula", "code"}
+# Parser kinds that describe the wrapper around a text rather than the text itself.
+FRONT_MATTER_KINDS = frozenset({"front_matter", "footnote", "reference"})
 _SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?؟؛])\s+")
 
 
@@ -270,7 +272,7 @@ def _block_id(source_id: UUID, index: int, text: str) -> str:
 
 def _block_type(kind: str) -> BlockType:
     normalized = kind.casefold()
-    if normalized in {"front_matter", "footnote", "reference"}:
+    if normalized in FRONT_MATTER_KINDS:
         return "front_matter"
     if normalized == "table":
         return "table"

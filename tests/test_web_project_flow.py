@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid5
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -131,18 +131,25 @@ def _upload_and_select_source(
     return source_id, manifest_store
 
 
+def _source_text(marker: str) -> bytes:
+    """Distinct bodies, because sources are now identified by their text."""
+
+    body = "این یک منبع واقعی برای آزمون استخراج و کنترل کیفیت است. " * 12
+    return f"دربارهٔ {marker}. {body}".encode()
+
+
 def _upload_and_select_named_source(
     client: TestClient,
     settings: Settings,
     project_id: UUID,
     filename: str,
+    body: bytes | None = None,
 ) -> UUID:
     page = client.get(f"/projects/{project_id}/sources")
-    source_text = ("این یک منبع واقعی برای آزمون استخراج و کنترل کیفیت است. " * 12).encode()
     client.post(
         f"/projects/{project_id}/sources/upload",
         data={"csrf_token": _csrf(page.text)},
-        files={"source_file": (filename, source_text, "text/plain")},
+        files={"source_file": (filename, body or _source_text(filename), "text/plain")},
     )
     workspace = WorkspaceStore(settings.workspace_root)
     store = UiSourceManifestStore(workspace.project_dir(project_id))
@@ -175,6 +182,42 @@ def _stop_corpus_run_on_second_source(settings: Settings, project_id: UUID) -> N
     project = workspace.load_project(project_id)
     mark_failed(project, "mapping failed")
     workspace.save_project(project)
+
+
+def test_re_uploading_the_same_text_keeps_one_source(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    body = _source_text("kant")
+    with TestClient(_app(settings)) as client:
+        _login(client)
+        project_id = _create_project(client)
+        _confirm_brief(client, project_id)
+        source_id = _upload_and_select_named_source(
+            client,
+            settings,
+            project_id,
+            "kant.txt",
+            body=body,
+        )
+
+        page = client.get(f"/projects/{project_id}/sources")
+        again = client.post(
+            f"/projects/{project_id}/sources/upload",
+            data={"csrf_token": _csrf(page.text)},
+            files={"source_file": ("kant-copy.txt", body, "text/plain")},
+            follow_redirects=False,
+        )
+        assert again.status_code == 303
+        assert again.headers["location"].endswith("notice=duplicate-source")
+        assert "نسخهٔ دوم افزوده نشد" in client.get(again.headers["location"]).text
+
+    workspace = WorkspaceStore(settings.workspace_root)
+    sources = UiSourceManifestStore(workspace.project_dir(project_id)).load()
+    assert [item.source_id for item in sources] == [source_id]
+    assert sources[0].content_key is not None
+    assert source_id == uuid5(project_id, sources[0].content_key)
+    assert sources[0].selected  # the surviving source keeps its selection
+    uploads = workspace.project_dir(project_id) / "uploads"
+    assert [path.name for path in uploads.iterdir()] == [str(source_id)]
 
 
 def test_skipping_a_stopped_source_continues_without_reconfirming(tmp_path: Path) -> None:

@@ -56,6 +56,7 @@ from thesisound.source_analysis import (
 class FakeRunner:
     def __init__(self, reject_block_ids: set[str] | frozenset[str] = frozenset()) -> None:
         self.reject_block_ids = set(reject_block_ids)
+        self.calls: list[str] = []
 
     def run(
         self,
@@ -68,6 +69,7 @@ class FakeRunner:
         validator=None,
         **_: object,
     ):
+        self.calls.append(stage)
         if output_type is DocumentMapDraft:
             blocks = variables["blocks"]
             assert isinstance(blocks, list)
@@ -625,6 +627,85 @@ def test_reusable_document_map_skips_remap(tmp_path: Path) -> None:
     assert service.has_reusable_document_map(project.project_id, source_id)
     second = service.map_document(project.project_id, source_id, model="fake")
     assert first.model_run_ids == second.model_run_ids
+
+
+def test_document_map_is_shared_between_sources_with_the_same_text(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    workspace = WorkspaceStore(root)
+    first_project, second_project = _project(), _project()
+    workspace.save_project(first_project)
+    workspace.save_project(second_project)
+    ingestion = _ingestion(Path("chapter.pdf"))
+    runner = FakeRunner()
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=SourceArtifactStore(root),
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(runner),
+        evidence_extractor=EvidenceExtractorService(runner),
+        claim_reconciler=ClaimReconcilerService(runner),
+    )
+
+    first_source, _, _ = service.build_blocks(first_project.project_id, ingestion)
+    service.map_document(first_project.project_id, first_source, model="fake")
+    mapping_calls = list(runner.calls)
+    assert mapping_calls
+
+    second_source, _, _ = service.build_blocks(second_project.project_id, ingestion)
+    assert second_source != first_source
+    assert service.has_reusable_document_map(second_project.project_id, second_source)
+    service.map_document(second_project.project_id, second_source, model="fake")
+
+    assert runner.calls == mapping_calls  # the second source cost no model call
+    original = SourceArtifactStore(root).load_document_map(
+        first_project.project_id,
+        first_source,
+    )
+    reused = SourceArtifactStore(root).load_document_map(
+        second_project.project_id,
+        second_source,
+    )
+    assert reused.source_id == second_source
+    assert reused.working_thesis == original.working_thesis
+    assert [section.title for section in reused.sections] == [
+        section.title for section in original.sections
+    ]
+    reused_blocks = [
+        block_id for section in reused.sections for block_id in section.source_block_ids
+    ]
+    assert reused_blocks
+    assert all(
+        block_id.startswith(f"blk-{str(second_source)[:8]}") for block_id in reused_blocks
+    )
+
+
+def test_changed_body_text_does_not_reuse_a_shared_map(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    workspace = WorkspaceStore(root)
+    project = _project()
+    workspace.save_project(project)
+    runner = FakeRunner()
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=SourceArtifactStore(root),
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(runner),
+        evidence_extractor=EvidenceExtractorService(runner),
+        claim_reconciler=ClaimReconcilerService(runner),
+    )
+    source_id, _, _ = service.build_blocks(project.project_id, _ingestion(Path("chapter.pdf")))
+    service.map_document(project.project_id, source_id, model="fake")
+    mapping_calls = list(runner.calls)
+
+    edited = _ingestion(Path("chapter.pdf"))
+    edited.inspection.sha256 = "b" * 64
+    assert edited.parsed is not None
+    body = next(block for block in edited.parsed.blocks if block.kind == "text")
+    body.text = f"{body.text} An added sentence changes the body of the chapter."
+    other_source, _, _ = service.build_blocks(project.project_id, edited)
+    service.map_document(project.project_id, other_source, model="fake")
+
+    assert len(runner.calls) > len(mapping_calls)
 
 
 def test_extract_evidence_fails_when_all_blocks_rejected(tmp_path: Path) -> None:

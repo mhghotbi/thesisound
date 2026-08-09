@@ -6,7 +6,7 @@ from functools import partial
 from pathlib import Path
 from typing import Annotated
 from urllib.parse import quote
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4, uuid5
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
@@ -124,11 +124,16 @@ def register_source_routes(
             return _source_redirect(project_id, error="selection-locked")
 
         filename = _safe_filename(source_file.filename or "source")
-        source_id = uuid4()
+        # The real source ID comes from the parsed text, which is only known after
+        # ingestion, so the upload lands under a staging ID and is re-keyed below.
+        staging_id = uuid4()
         suffix = Path(filename).suffix.lower()
-        upload_root = workspace.project_dir(project_id) / "uploads" / str(source_id)
+        upload_root = workspace.project_dir(project_id) / "uploads" / str(staging_id)
         upload_root.mkdir(parents=True, exist_ok=True)
         destination = upload_root / filename
+        artifact_root = (
+            settings.ensure_ingestion_artifact_root() / str(project_id) / str(staging_id)
+        )
 
         size = 0
         with destination.open("wb") as output:
@@ -136,13 +141,13 @@ def register_source_routes(
                 size += len(chunk)
                 if size > settings.web_upload_limit_bytes:
                     output.close()
-                    destination.unlink(missing_ok=True)
+                    shutil.rmtree(upload_root, ignore_errors=True)
                     return _source_redirect(project_id, error="file-too-large")
                 output.write(chunk)
 
         if suffix not in _SUPPORTED_UPLOAD_SUFFIXES:
             manifest = UiSourceManifest(
-                source_id=source_id,
+                source_id=staging_id,
                 filename=filename,
                 content_type=source_file.content_type,
                 size_bytes=size,
@@ -150,14 +155,11 @@ def register_source_routes(
                 issue_summary="نوع فایل در این نسخه پشتیبانی نمی‌شود.",
             )
         else:
-            artifact_root = (
-                settings.ensure_ingestion_artifact_root() / str(project_id) / str(source_id)
-            )
             manifest = await run_in_threadpool(
                 partial(
                     ingest_uploaded_source,
                     destination,
-                    source_id=source_id,
+                    source_id=staging_id,
                     filename=filename,
                     content_type=source_file.content_type,
                     size_bytes=size,
@@ -167,6 +169,18 @@ def register_source_routes(
             )
 
         manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
+        if manifest.content_key:
+            resolved_id = uuid5(project_id, manifest.content_key)
+            if any(item.source_id == resolved_id for item in manifest_store.load()):
+                shutil.rmtree(upload_root, ignore_errors=True)
+                shutil.rmtree(artifact_root, ignore_errors=True)
+                return _source_redirect(project_id, notice="duplicate-source")
+            manifest = _rekey_source(
+                manifest,
+                resolved_id,
+                upload_root=upload_root,
+                artifact_root=artifact_root,
+            )
         manifest_store.add(manifest)
         sources = manifest_store.load()
         if project.state == ProjectState.SOURCES_COLLECTING and any(
@@ -651,6 +665,31 @@ async def _auto_import_candidates(
         candidate_store.replace(candidate)
 
 
+def _rekey_source(
+    manifest: UiSourceManifest,
+    resolved_id: UUID,
+    *,
+    upload_root: Path,
+    artifact_root: Path,
+) -> UiSourceManifest:
+    """Move a freshly ingested upload from its staging ID onto its content ID.
+
+    Uploading the same book twice then lands on the same source, and any analysis
+    that survived an earlier rewind is picked up again instead of rebuilt. Both
+    directories are re-derivable from the file, so replacing an orphaned one is safe;
+    `artifact_ref` is relative to the artifact root and stays valid across the move.
+    """
+
+    for current in (upload_root, artifact_root):
+        destination = current.with_name(str(resolved_id))
+        if current == destination or not current.exists():
+            continue
+        shutil.rmtree(destination, ignore_errors=True)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(current), str(destination))
+    return manifest.model_copy(update={"source_id": resolved_id})
+
+
 def _deselect_source(
     workspace: WorkspaceStore,
     project_id: UUID,
@@ -771,8 +810,15 @@ def _safe_filename(value: str) -> str:
     return name[:180]
 
 
-def _source_redirect(project_id: UUID, *, error: str | None = None) -> RedirectResponse:
+def _source_redirect(
+    project_id: UUID,
+    *,
+    error: str | None = None,
+    notice: str | None = None,
+) -> RedirectResponse:
     url = f"/projects/{project_id}/sources"
     if error:
         url += f"?error={quote(error, safe='')}"
+    elif notice:
+        url += f"?notice={quote(notice, safe='')}"
     return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)

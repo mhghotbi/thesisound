@@ -15,6 +15,7 @@ from thesisound.config import Settings
 from thesisound.ports import DocumentParserPort
 from thesisound.quality import ParseIssue, ParseReport
 from thesisound.services.artifact_writer import IngestionArtifactWriter
+from thesisound.services.document_identity import parsed_document_key
 from thesisound.services.document_ingestion import ingest_document
 from thesisound.web.error_messages import user_facing_error
 from thesisound.web.source_manifest import UiSourceManifest, UiSourceStatus
@@ -95,6 +96,7 @@ def ingest_uploaded_source(
         attempted_parsers=[attempt.parser_name for attempt in result.attempts],
         artifact_ref=artifact_ref,
         inspection_sha256=result.inspection.sha256,
+        content_key=parsed_document_key(parsed) if parsed is not None else None,
     )
 
 

@@ -17,6 +17,8 @@
   {{ error_notice('حجم فایل از حد مجاز بارگذاری بیشتر است؛ فایل پذیرفته نشد.') }}
 {% elif request.query_params.get('error') == 'selection-locked' %}
   {{ error_notice('این مجموعه وارد تحلیل منابع شده و قفل است. برای تغییر منابع، از «بازگشت و اصلاح مراحل قبلی» استفاده کنید.') }}
+{% elif request.query_params.get('notice') == 'duplicate-source' %}
+  <div class="notice notice--info" role="status">متن این فایل با یکی از منابع همین گفتار یکی است، پس نسخهٔ دوم افزوده نشد. منبع موجود و تحلیل آن دست‌نخورده ماند.</div>
 {% elif request.query_params.get('searched') %}
   <div class="notice notice--success" role="status">پیشنهادهای منبع آماده‌اند. برای تبدیل به منبع پیشنهادی باید متن کامل هر مورد بازیابی و وارسی شود.</div>
 {% elif request.query_params.get('auto-search') %}

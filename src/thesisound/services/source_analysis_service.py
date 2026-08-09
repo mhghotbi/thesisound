@@ -20,6 +20,8 @@ from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.analysis_profile import plan_evidence_extraction
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
+from thesisound.services.document_identity import block_sequence_key
+from thesisound.services.document_map_cache import DocumentMapCache
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_validator import validate_evidence_collection
@@ -44,6 +46,7 @@ class SourceAnalysisService:
         document_mapper: DocumentMapperService,
         evidence_extractor: EvidenceExtractorService,
         claim_reconciler: ClaimReconcilerService,
+        document_map_cache: DocumentMapCache | None = None,
     ) -> None:
         self.workspace_store = workspace_store
         self.artifact_store = artifact_store
@@ -51,6 +54,9 @@ class SourceAnalysisService:
         self.document_mapper = document_mapper
         self.evidence_extractor = evidence_extractor
         self.claim_reconciler = claim_reconciler
+        self.document_map_cache = document_map_cache or DocumentMapCache(
+            workspace_store.root
+        )
 
     def build_blocks(
         self,
@@ -97,13 +103,14 @@ class SourceAnalysisService:
         prompt_version: str | None = None,
     ) -> SourceAnalysisManifest:
         blocks = self.artifact_store.load_blocks(project_id, source_id)
-        existing = self._load_reusable_document_map(project_id, source_id, blocks)
-        if existing is not None:
-            manifest = self.artifact_store.load_manifest(project_id, source_id)
-            manifest.status = "document_mapped"
-            manifest.updated_at = datetime.now(UTC)
-            self.artifact_store.save_manifest(manifest)
-            return manifest
+        if self._load_reusable_document_map(project_id, source_id, blocks) is not None:
+            return self._mark_document_mapped(project_id, source_id)
+
+        content_key = block_sequence_key(blocks)
+        shared = self.document_map_cache.load(content_key, blocks, source_id=source_id)
+        if shared is not None:
+            self.artifact_store.save_document_map(project_id, source_id, shared)
+            return self._mark_document_mapped(project_id, source_id)
 
         document_map, run = self.document_mapper.map_document(
             project_id=project_id,
@@ -113,16 +120,36 @@ class SourceAnalysisService:
             prompt_version=prompt_version,
         )
         self.artifact_store.save_document_map(project_id, source_id, document_map)
-        manifest = self.artifact_store.load_manifest(project_id, source_id)
-        manifest.status = "document_mapped"
-        manifest.model_run_ids.append(run.run_id)
-        manifest.updated_at = datetime.now(UTC)
-        self.artifact_store.save_manifest(manifest)
-        return manifest
+        self.document_map_cache.save(content_key, blocks, document_map)
+        return self._mark_document_mapped(project_id, source_id, run_id=run.run_id)
 
     def has_reusable_document_map(self, project_id: UUID, source_id: UUID) -> bool:
         blocks = self.artifact_store.load_blocks(project_id, source_id)
-        return self._load_reusable_document_map(project_id, source_id, blocks) is not None
+        if self._load_reusable_document_map(project_id, source_id, blocks) is not None:
+            return True
+        return (
+            self.document_map_cache.load(
+                block_sequence_key(blocks),
+                blocks,
+                source_id=source_id,
+            )
+            is not None
+        )
+
+    def _mark_document_mapped(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        *,
+        run_id: UUID | None = None,
+    ) -> SourceAnalysisManifest:
+        manifest = self.artifact_store.load_manifest(project_id, source_id)
+        manifest.status = "document_mapped"
+        if run_id is not None:
+            manifest.model_run_ids.append(run_id)
+        manifest.updated_at = datetime.now(UTC)
+        self.artifact_store.save_manifest(manifest)
+        return manifest
 
     def extract_evidence(
         self,

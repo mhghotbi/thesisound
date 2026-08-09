@@ -82,7 +82,7 @@ class DocumentMapperService:
             "partitions": [
                 {
                     "part_number": index,
-                    "scope": _scope_locator(partition).model_dump(mode="json"),
+                    "scope": scope_locator(partition).model_dump(mode="json"),
                     "working_thesis": draft.working_thesis,
                     "sections": [section.model_dump(mode="json") for section in draft.sections],
                     "cross_section_threads": [
@@ -141,7 +141,7 @@ class DocumentMapperService:
         variables = {
             "source_id": str(source_id),
             "part_number": part_number,
-            "scope": _scope_locator(blocks).model_dump(mode="json"),
+            "scope": scope_locator(blocks).model_dump(mode="json"),
             "blocks": [block.model_dump(mode="json") for block in blocks],
         }
         known_ids = {block.block_id for block in blocks}
@@ -410,7 +410,7 @@ def _materialize_document_map(
 ) -> DocumentMap:
     return DocumentMap(
         source_id=source_id,
-        scope_locator=_scope_locator(blocks),
+        scope_locator=scope_locator(blocks),
         working_thesis=draft.working_thesis,
         sections=[
             DocumentMapSection(
@@ -453,7 +453,9 @@ def _unique(values: Iterable[str]) -> list[str]:
     return list(dict.fromkeys(value for value in values if value))
 
 
-def _scope_locator(blocks: list[SourceDocumentBlock]) -> Locator:
+def scope_locator(blocks: list[SourceDocumentBlock]) -> Locator:
+    """The span a run of blocks covers, taken from the file those blocks came from."""
+
     starts = [block.locator.page_start for block in blocks if block.locator.page_start is not None]
     ends = [block.locator.page_end for block in blocks if block.locator.page_end is not None]
     first_heading = next((block.heading_path for block in blocks if block.heading_path), [])

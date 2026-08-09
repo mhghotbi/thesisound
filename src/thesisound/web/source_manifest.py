@@ -35,6 +35,8 @@ class UiSourceManifest(BaseModel):
     attempted_parsers: list[str] = Field(default_factory=list)
     artifact_ref: str | None = None
     inspection_sha256: str | None = None
+    content_key: str | None = None
+    """Identity of the parsed body text, unlike `inspection_sha256` which is the file."""
     origin: str = "local_upload"
     canonical_url: str | None = None
     retrieval_scope: str | None = None
