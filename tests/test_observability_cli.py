@@ -7,6 +7,7 @@ on stdout.
 
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
 from uuid import uuid4
 
@@ -169,3 +170,113 @@ def test_existing_observability_and_model_call_commands_still_work(
     summary_result = runner.invoke(cli_app, ["observability", str(project_id)])
     assert summary_result.exit_code == 0, summary_result.output
     assert "document_map" in summary_result.output
+
+
+def _set_cost(ledger: ObservabilityLedger, call_id, *, cost_micros: int, version: str) -> None:
+    connection = sqlite3.connect(ledger.database_path)
+    try:
+        connection.execute(
+            "UPDATE model_calls SET cost_micros = ?, pricing_version = ? WHERE call_id = ?",
+            (cost_micros, version, str(call_id)),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def test_pipeline_summary_shows_self_time_and_cache_hit_rates(
+    cli_app: typer.Typer, seeded_ledger: ObservabilityLedger
+) -> None:
+    project_id = uuid4()
+    _seed_trace(seeded_ledger, project_id)
+    tracer = Tracer(LedgerSpanSink(seeded_ledger))
+    tracer.event(
+        "cache.lookup", project_id=project_id, cache="shared_document_map", result="hit"
+    )
+
+    result = runner.invoke(cli_app, ["pipeline-summary", str(project_id)])
+
+    assert result.exit_code == 0, result.output
+    assert "Self" in result.output
+    assert "shared_document_map" in result.output
+    assert "100%" in result.output
+
+
+def test_cost_shows_total_and_a_breakdown_for_priced_calls(
+    cli_app: typer.Typer, seeded_ledger: ObservabilityLedger
+) -> None:
+    project_id = uuid4()
+    _seed_trace(seeded_ledger, project_id)
+    call_summary = next(
+        call
+        for call in seeded_ledger.list_calls(project_id)
+        if call.stage == "document_map"
+    )
+    _set_cost(seeded_ledger, call_summary.call_id, cost_micros=1_250_000, version="test-2026")
+
+    result = runner.invoke(cli_app, ["cost", str(project_id)])
+
+    assert result.exit_code == 0, result.output
+    assert "$1.2500" in result.output
+    assert "document_map" in result.output
+    assert "gemini" in result.output
+
+
+def test_cost_flags_unpriced_calls_instead_of_a_silent_zero(
+    cli_app: typer.Typer, seeded_ledger: ObservabilityLedger
+) -> None:
+    project_id = uuid4()
+    _seed_trace(seeded_ledger, project_id)  # cost_micros stays NULL -- no pricer configured
+
+    result = runner.invoke(cli_app, ["cost", str(project_id)])
+
+    assert result.exit_code == 0, result.output
+    assert "unknown" in result.output
+    assert "no configured price" in result.output
+    assert "$0.0000" not in result.output
+
+
+def test_cost_reports_when_no_calls_exist(
+    cli_app: typer.Typer, seeded_ledger: ObservabilityLedger
+) -> None:
+    result = runner.invoke(cli_app, ["cost", str(uuid4())])
+
+    assert result.exit_code == 0
+    assert "No recorded model calls" in result.output
+
+
+def test_observability_reprice_recomputes_cost_and_reports_a_count(
+    cli_app: typer.Typer,
+    seeded_ledger: ObservabilityLedger,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project_id = uuid4()
+    _seed_trace(seeded_ledger, project_id)
+    call_summary = next(
+        call
+        for call in seeded_ledger.list_calls(project_id)
+        if call.stage == "document_map"
+    )
+    pricing_file = tmp_path / "pricing.toml"
+    pricing_file.write_text(
+        """
+        version = "reprice-test"
+        [[prices]]
+        provider = "gemini"
+        model = "gemini-test"
+        operation = "structured_text"
+        effective_from = 2020-01-01
+        per_call_micros = 7_000
+        """,
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("THESISOUND_PRICING_FILE", str(pricing_file))
+
+    result = runner.invoke(cli_app, ["observability-reprice"])
+
+    assert result.exit_code == 0, result.output
+    assert "Repriced 1 call" in result.output
+    priced = seeded_ledger.get_call(call_summary.call_id)
+    assert priced.call.cost_micros == 7_000
+    assert priced.call.pricing_version == "reprice-test"

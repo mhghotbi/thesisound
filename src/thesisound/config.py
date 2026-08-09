@@ -23,6 +23,10 @@ class Settings(BaseSettings):
 
     workspace_root: Path = Path("./workspaces")
     ingestion_artifact_root: Path = Path("./artifacts/ingestion")
+    # A shared parse store under <ingestion_artifact_root>/_shared. Turning this
+    # off is the first thing to try when a parse looks wrong: it answers "is this
+    # the cache or the parser?" without deleting anything.
+    parsed_document_cache_enabled: bool = True
     log_level: str = "INFO"
 
     # Gemini-only proxy (local Xray HTTP inbound). Okian always connects directly.

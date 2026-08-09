@@ -27,6 +27,7 @@ class ParseAttempt(BaseModel):
     quality: ParseReport | None = None
     error_type: str | None = None
     error_message: str | None = None
+    from_cache: bool = False
 
 
 class IngestionResult(BaseModel):

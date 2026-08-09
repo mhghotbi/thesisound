@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import platform
 import re
+import sys
 from pathlib import Path
 from xml.etree import ElementTree
 from zipfile import BadZipFile, ZipFile
 
 from thesisound.ports import DocumentInspection, ParsedBlock, ParsedDocument
+from thesisound.services.parser_identity import module_fingerprint, package_version
 
 _SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md"}
 _MARKDOWN_HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
@@ -29,6 +32,21 @@ class NativeDocumentParser:
 
     def supports(self, inspection: DocumentInspection) -> bool:
         return inspection.extension in _SUPPORTED_EXTENSIONS and not inspection.encrypted
+
+    def identity(self) -> dict[str, str] | None:
+        impl = module_fingerprint(sys.modules[__name__])
+        if impl is None:
+            return None
+        return {
+            "parser": "native",
+            "version": "1",
+            # pypdf drives the PDF branch; the stdlib drives .docx/.txt/.md. Both
+            # are included even though each only matters for some extensions --
+            # these are the cheap parsers, so over-invalidating them costs nothing.
+            "pypdf": package_version("pypdf"),
+            "python": platform.python_version(),
+            "impl": impl,
+        }
 
     def parse(self, path: Path, inspection: DocumentInspection) -> ParsedDocument:
         resolved = path.expanduser().resolve()

@@ -2,14 +2,18 @@
 from __future__ import annotations
 
 import os
+import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from functools import cache
 from importlib import metadata
 from pathlib import Path
 from typing import Any
 
 from thesisound.ports import DocumentInspection, ParsedDocument
+from thesisound.services import document_normalizer
 from thesisound.services.document_normalizer import normalize_docling_document
+from thesisound.services.parser_identity import module_fingerprint
 
 _SUPPORTED_EXTENSIONS = {
     ".pdf", ".docx", ".pptx", ".xlsx", ".html", ".htm", ".md", ".txt", ".epub",
@@ -23,6 +27,14 @@ class DoclingUnavailableError(RuntimeError):
 
 class DocumentParseError(RuntimeError):
     """Raised when Docling cannot return a usable document."""
+
+
+@cache
+def _cached_docling_version() -> str:
+    try:
+        return metadata.version("docling")
+    except metadata.PackageNotFoundError:
+        return "unknown"
 
 
 class DoclingParser:
@@ -41,6 +53,25 @@ class DoclingParser:
 
     def supports(self, inspection: DocumentInspection) -> bool:
         return inspection.extension in _SUPPORTED_EXTENSIONS and not inspection.encrypted
+
+    def identity(self) -> dict[str, str] | None:
+        # An injected converter or version resolver means this instance's output
+        # is not (only) Docling's -- typically a test double -- so it must never
+        # be shared under a "docling" identity.
+        if self._converter_factory is not None or self._version_resolver is not None:
+            return None
+        version = self._version()
+        if version == "unknown":
+            return None
+        impl = module_fingerprint(sys.modules[__name__], document_normalizer)
+        if impl is None:
+            return None
+        return {
+            "parser": "docling",
+            "docling": version,
+            "offline": str(self.offline),
+            "impl": impl,
+        }
 
     def parse(self, path: Path, inspection: DocumentInspection) -> ParsedDocument:
         resolved = path.expanduser().resolve()
@@ -83,10 +114,7 @@ class DoclingParser:
     def _version(self) -> str:
         if self._version_resolver is not None:
             return self._version_resolver()
-        try:
-            return metadata.version("docling")
-        except metadata.PackageNotFoundError:
-            return "unknown"
+        return _cached_docling_version()
 
 
 @contextmanager

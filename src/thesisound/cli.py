@@ -29,6 +29,7 @@ from thesisound.services.document_ingestion import ingest_document
 from thesisound.services.document_inspector import inspect_document
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
+from thesisound.services.parsed_document_cache import ParsedDocumentCache
 from thesisound.services.parser_benchmark import benchmark_directory, benchmark_document
 from thesisound.services.research_brief import ResearchBriefService
 from thesisound.source_cli import register_source_commands
@@ -78,6 +79,15 @@ def _artifact_writer(
     artifact_root: Path | None,
 ) -> IngestionArtifactWriter:
     return IngestionArtifactWriter(artifact_root or settings.ingestion_artifact_root)
+
+
+def _parse_cache(
+    settings: Settings,
+    artifact_root: Path | None,
+) -> ParsedDocumentCache | None:
+    if not settings.parsed_document_cache_enabled:
+        return None
+    return ParsedDocumentCache(artifact_root or settings.ingestion_artifact_root)
 
 
 def _parsers(
@@ -276,6 +286,7 @@ def parse_source(
             parsers=_parsers(settings, writer),
             parser_name=parser,
             artifact_writer=writer,
+            parse_cache=_parse_cache(settings, artifact_root),
         )
     except (OSError, ValueError, RuntimeError) as exc:
         console.print(f"[red]{exc}[/red]", stderr=True)

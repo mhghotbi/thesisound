@@ -17,6 +17,7 @@ from thesisound.quality import ParseIssue, ParseReport
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_identity import parsed_document_key
 from thesisound.services.document_ingestion import ingest_document
+from thesisound.services.parsed_document_cache import ParsedDocumentCache
 from thesisound.web.error_messages import user_facing_error
 from thesisound.web.source_manifest import UiSourceManifest, UiSourceStatus
 
@@ -51,12 +52,21 @@ def ingest_uploaded_source(
 
     writer = IngestionArtifactWriter(artifact_root)
     parsers = build_web_parsers(settings, writer)
+    # settings.ingestion_artifact_root, NOT writer.root/artifact_root: those are
+    # <ingestion_root>/<project_id>/<staging_id or source_id>, a fresh directory
+    # per upload, so a cache built from either could never hit.
+    parse_cache = (
+        ParsedDocumentCache(settings.ingestion_artifact_root)
+        if settings.parsed_document_cache_enabled
+        else None
+    )
     try:
         result = ingest_document(
             path,
             parsers=parsers,
             parser_name="auto",
             artifact_writer=writer,
+            parse_cache=parse_cache,
         )
     except Exception as exc:
         return UiSourceManifest(

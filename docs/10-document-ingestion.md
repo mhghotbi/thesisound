@@ -65,6 +65,53 @@ Adapter به‌ترتیب این خروجی‌ها را ترجیح می‌دهد
 
 `content_list` در مستندات MinerU به‌عنوان خروجی flat و reading-order-friendly برای downstream processing معرفی شده است.
 
+Adapter خودش نیز خروجی خام CLI را بر اساس `(sha256 فایل, نسخهٔ mineru, backend, model_source)` در `raw/mineru/<sha-prefix>/<fingerprint>/` نگه می‌دارد و دوباره اجرا نمی‌کند، مگر این‌که یکی از این‌ها عوض شود. کامل بودن اجرا با یک فایل نشانگر (`.mineru-complete`) تعیین می‌شود، نه صرفاً وجود یک JSON ساختاریافته؛ یک اجرای نیمه‌کاره که فرآیند در وسط راه از بین رفته دوباره از نو اجرا می‌شود.
+
+## کش مشترک پارس‌شدن
+
+پارس‌شدن گران‌ترین مرحلهٔ غیرمدلیِ کل pipeline است — OCR روی یک کتاب اسکن‌شده می‌تواند دقیقه‌ها طول بکشد، در برابر یک فراخوان مدل برای نقشهٔ سند. `ingest_document` این هزینه را برای بایت‌های یکسان فقط یک‌بار در کل ماشین می‌پردازد، نه یک‌بار به ازای هر پروژه یا هر کاربر.
+
+آنچه کش می‌شود دقیقاً `ParsedDocument` هر parser است، نه کل `IngestionResult`. `inspect_document`، routing، quality gate، رتبه‌بندی attemptها و نوشتن artifactهای پروژه هر بار محلی و کامل اجرا می‌شوند؛ فقط فراخوانی `parser.parse(...)` است که روی hit رد می‌شود.
+
+### کلید
+
+کلید سه فیلد از `DocumentInspection` را با نام و identity parser ترکیب می‌کند:
+
+- `sha256` فایل؛
+- `extension` — چون `native` روی آن dispatch می‌کند و بایت‌های یکسان با نام `.pdf` و `.txt` دو سند متفاوت‌اند؛
+- `encrypted`؛
+- `likely_complex_layout` — تنها فیلدی که worker مربوط به OCR می‌خواند.
+
+عمداً `mime_type`، `page_count`، `image_only_ratio`، `file_size_bytes` و `sampled_text_characters` در کلید نیستند: هیچ parseری آن‌ها را نمی‌خواند، با نسخهٔ `pypdf` نصب‌شده drift می‌کنند، و `mime_type` از رجیستری سیستم‌عامل خوانده می‌شود — گنجاندنشان یعنی یک ارتقای بی‌ربط entryهای parserهایی را هم دور بریزد که اصلاً pypdf لمس نمی‌کنند.
+
+نسخهٔ provider و الگوریتم داخل `identity()` هر parser است، نه در هش کلی inspection. هر adapter این متد اختیاری را پیاده می‌کند و در سه حالت `None` برمی‌گرداند — یعنی هرگز خوانده یا نوشته نمی‌شود:
+
+1. یک collaborator تزریق‌شده دارد (runner یا version resolver تست)؛
+2. نسخهٔ provider قابل‌تشخیص نیست (`"unknown"`)؛
+3. فینگرپرینت کد سازنده قابل‌محاسبه نیست.
+
+فینگرپرینت کد یعنی sha256 بایت‌های خودِ فایل‌های پایتونی که خروجی را می‌سازند (adapter + normalizer مربوطه)، نه یک رشتهٔ نسخهٔ دستی. تغییر نحوهٔ تبدیل blockهای MinerU به heading بدون این، کش را ساکت با نتیجهٔ کهنه پر می‌کرد.
+
+`local-ocr` در interpreter جدایی اجرا می‌شود (`THESISOUND_OCR_PYTHON`)، پس محاسبهٔ `identity()` نمی‌تواند نسخهٔ `paddleocr`/`PyMuPDF`/`Pillow` را از process فراخوان ببیند. به‌جایش همان interpreter با `python -m thesisound.ocr_runtime_probe` صدا زده می‌شود — ماژولی سبک که فقط metadata نصب را می‌خواند، نه خودِ کتابخانه‌ها را import می‌کند — و نتیجه در کلید می‌نشیند. اگر probe fail شود (timeout، خروجی نامعتبر، نبود دسترسی)، `identity()` بدون ابهام `None` برمی‌گرداند.
+
+### محل ذخیره
+
+```text
+artifacts/ingestion/_shared/parsed-documents/<cache_key>.json
+```
+
+مثل `workspaces/_shared/document-maps/`، این مسیر با `_shared` از هر `<project_id>` (که همیشه UUID است) قابل‌تشخیص است. نوشتن atomic است (فایل موقت با نام یکتا به ازای هر نویسنده، سپس `replace`؛ برخلاف کش نقشهٔ سند، نام موقت ثابت نیست چون دو درخواست وب می‌توانند هم‌زمان یک فایل را parse کنند)، و یک entry پس از نوشتن هرگز بازنویسی نمی‌شود.
+
+آنچه ذخیره **نمی‌شود**: `ParseReport` (کیفیت همیشه محلی و تازه محاسبه می‌شود، پس حتی روی hit نتیجهٔ quality gate را کدِ همین لحظه تعیین می‌کند، نه اجرای اول)، `raw_artifact_ref` (مسیر مطلقی به artifact tree پروژهٔ اولی که parse کرده — همان‌جا هم پس از rekey شدن منبع دیگر معتبر نیست)، و هیچ locator یا شناسهٔ پروژه‌ای.
+
+با `THESISOUND_PARSED_DOCUMENT_CACHE_ENABLED=false` می‌توان کش را کامل خاموش کرد — اولین قدم برای فهمیدن این‌که یک parse مشکوک از کش می‌آید یا خودِ parser.
+
+### مرز صادقانه
+
+وزن مدل‌های Docling و MinerU در این ریپو pin نشده؛ تغییر وزن مدل بدون تغییر نسخهٔ پکیج یا `model_source`، کش را invalidate نمی‌کند.
+
+کش content-addressed است: خواندن یک entry فقط با داشتن دقیقاً همان بایت‌هایی که کلیدش را ساخته‌اند ممکن است. این تنها مرزی است که بین دو کاربر وجود دارد — در کل این سیستم امروز هیچ مفهوم tenant یا مالکیت دیگری تعریف نشده.
+
 ## Artifact layout
 
 ```text

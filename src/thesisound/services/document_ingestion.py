@@ -6,10 +6,11 @@ from time import perf_counter
 
 from thesisound import tracing
 from thesisound.ingestion import IngestionResult, ParseAttempt, ParserRoute
-from thesisound.ports import DocumentParserPort
+from thesisound.ports import DocumentParserPort, ParsedDocument, ParserIdentityPort
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_inspector import inspect_document
 from thesisound.services.parse_quality import assess_parse_quality
+from thesisound.services.parsed_document_cache import ParsedDocumentCache, parse_cache_key
 from thesisound.services.parser_router import route_parser
 
 
@@ -23,6 +24,7 @@ def ingest_document(
     parsers: Mapping[str, DocumentParserPort],
     parser_name: str = "auto",
     artifact_writer: IngestionArtifactWriter | None = None,
+    parse_cache: ParsedDocumentCache | None = None,
 ) -> IngestionResult:
     with tracing.span(
         "ingestion.ingest_document", component="ingestion", kind="stage", subject_type="document"
@@ -72,9 +74,32 @@ def ingest_document(
                         artifact_writer.write_attempt(inspection, attempt)
                     continue
 
+                # Resolved here rather than above the loop on purpose: MineruParser
+                # .identity() shells out to `mineru --version`, and a .txt upload
+                # that never reaches mineru must never pay for it.
+                cache_key: str | None = None
+                identity: Mapping[str, str] | None = None
+                cached: ParsedDocument | None = None
+                if parse_cache is not None and isinstance(parser, ParserIdentityPort):
+                    identity = parser.identity()
+                    if identity is not None:
+                        cache_key = parse_cache_key(
+                            inspection, parser_name=name, identity=identity
+                        )
+                        cached = parse_cache.load(cache_key, parser_name=name)
+                        tracing.event(
+                            "cache.lookup",
+                            component="cache",
+                            cache="shared_parsed_document",
+                            result="hit" if cached is not None else "miss",
+                            subject_type="parser",
+                            subject_id=name,
+                            content_key=cache_key[:16],
+                        )
+
                 started = perf_counter()
                 try:
-                    parsed = parser.parse(path, inspection)
+                    parsed = cached if cached is not None else parser.parse(path, inspection)
                     with tracing.span("ingestion.quality_gate", component="ingestion") as gate:
                         quality = assess_parse_quality(inspection, parsed)
                         gate.set(
@@ -86,9 +111,25 @@ def ingest_document(
                         duration_seconds=perf_counter() - started,
                         parsed=parsed,
                         quality=quality,
+                        from_cache=cached is not None,
                     )
                     attempt_span.measure(block_count=len(parsed.blocks))
-                    attempt_span.set(verdict=quality.verdict)
+                    attempt_span.set(
+                        verdict=quality.verdict,
+                        source="shared_cache" if cached is not None else "parser",
+                    )
+                    # Not gated on quality.safe_for_claim_extraction: an
+                    # unsafe-but-successful parse is still a correct parse of
+                    # these bytes, and caching it is what stops the fallback
+                    # chain from re-running a slow parser that will fail the
+                    # same gate again.
+                    if cached is None and cache_key is not None and identity is not None:
+                        parse_cache.save(
+                            cache_key,
+                            parsed,
+                            source_sha256=inspection.sha256,
+                            identity=identity,
+                        )
                 except Exception as exc:  # adapters convert provider details to domain errors
                     attempt = ParseAttempt(
                         parser_name=name,

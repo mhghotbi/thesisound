@@ -1,0 +1,42 @@
+# Cost table for `thesisound cost <project-id>` / `thesisound observability-reprice`.
+#
+# `version` is a free-form label, not a schema number -- it is copied verbatim
+# onto every priced call as `pricing_version`, so a later export or CLI query
+# can tell "priced under the January table" apart from "priced after the price
+# change in August". Bump it whenever you edit the rows below.
+version = "unset"
+
+# No active rows by default, on purpose: a model with no matching row here
+# prices as "unknown" everywhere in the CLI, never as a silent, misleading
+# zero. Gemini's public per-token list prices change and vary by region and
+# commitment tier, and Okian is a bespoke provider this project has no public
+# pricing for at all -- so real numbers belong here only once you know your
+# own actual rate. Uncomment and edit the shape below to add one.
+#
+# Token rates are micros of currency per one million tokens (1_000_000 micros
+# = one unit of currency), matching the Google Cloud Billing convention, so
+# cost stays exact integer math with no floating-point drift. `operation`
+# must be one of: structured_text, google_search, url_context, tts, asr.
+# `effective_from` is a plain TOML date; the newest row with
+# `effective_from <= call.started_at` wins, so a price change only affects
+# calls made after it -- past calls keep the `cost_micros` already persisted
+# at call time unless you explicitly run `observability-reprice`.
+#
+# [[prices]]
+# provider = "gemini"
+# model = "gemini-3.1-flash"          # the resolved model string, not the profile name
+# operation = "structured_text"
+# effective_from = 2026-01-01
+# input_per_million_micros = 75_000    # $0.075 / 1M input tokens, as an example
+# output_per_million_micros = 300_000  # $0.30 / 1M output tokens, as an example
+# cached_per_million_micros = 18_750   # $0.01875 / 1M cached-context tokens, as an example
+#
+# A per-request rate (e.g. a flat TTS/ASR price) uses `per_call_micros`
+# instead of the per-token fields:
+#
+# [[prices]]
+# provider = "gemini"
+# model = "gemini-3.1-flash-tts-preview"
+# operation = "tts"
+# effective_from = 2026-01-01
+# per_call_micros = 4_000

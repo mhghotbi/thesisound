@@ -185,6 +185,8 @@ class CallSummary(BaseModel):
     error_message: str | None = None
     subject_type: str | None = None
     subject_id: str | None = None
+    cost_micros: int | None = None
+    pricing_version: str | None = None
 
 
 class CallDetail(BaseModel):
@@ -208,6 +210,10 @@ class CallDetail(BaseModel):
 
 
 class ProjectUsageSummary(BaseModel):
+    """``total_cost_micros`` sums only calls with a known price -- whenever
+    ``unpriced_succeeded_count`` is nonzero it is a lower bound, not the true
+    total, so callers must show both rather than a single number."""
+
     project_id: UUID
     call_count: int = 0
     succeeded_count: int = 0
@@ -220,6 +226,8 @@ class ProjectUsageSummary(BaseModel):
     cached_tokens: int = 0
     total_tokens: int = 0
     total_latency_ms: int = 0
+    total_cost_micros: int = 0
+    unpriced_succeeded_count: int = 0
 
 
 class SpanSummary(BaseModel):
@@ -281,14 +289,52 @@ class EventSummary(BaseModel):
     attributes: dict[str, Any] = Field(default_factory=dict)
 
 
-class StageSummary(BaseModel):
-    """Per-span-name rollup across every trace for a project.
+class CacheHitRateSummary(BaseModel):
+    """One row per distinct ``cache`` attribute seen on ``cache.lookup``
+    events -- the single ``GROUP BY`` the plan's cache attribute convention
+    was designed to make possible across every cache in the system at once.
+    """
 
-    ``total_ms`` counts each span's own duration including any children --
-    a basic breakdown by name. Splitting out ``self_ms`` (this span's time
-    minus its children's) needs a recursive query over the whole tree and is
-    a Phase 4 concern once cost joins the same rollup; this is deliberately
-    the simpler cut needed for `thesisound pipeline-summary` today.
+    cache: str
+    hits: int
+    misses: int
+
+    @property
+    def hit_rate(self) -> float:
+        total = self.hits + self.misses
+        return self.hits / total if total else 0.0
+
+
+class CostResult(BaseModel):
+    """What one model call cost, and against which pricing table version --
+    persisted once at ``succeed()`` time so it survives later price changes.
+    """
+
+    cost_micros: int = Field(ge=0)
+    pricing_version: str
+
+
+class CostBreakdownRow(BaseModel):
+    """Cost and token totals grouped by stage/provider/model for one
+    project -- ``unpriced_count`` flags groups where ``total_cost_micros``
+    understates the true total because some calls have no known price."""
+
+    stage: str
+    provider: str
+    model: str
+    call_count: int
+    unpriced_count: int
+    total_cost_micros: int
+    total_tokens: int
+
+
+class StageSummary(BaseModel):
+    """Per-span-name rollup across every trace for a project, ranked by self
+    time -- total minus children -- because that is where the wall clock
+    actually goes; a span that only orchestrates children should not outrank
+    the child doing the real work. ``total_ms`` (each span's own duration
+    including children) is kept alongside it for the "how long overall"
+    question ``self_ms`` does not answer.
     """
 
     name: str
@@ -296,6 +342,8 @@ class StageSummary(BaseModel):
     call_count: int
     total_ms: int
     avg_ms: int
+    self_total_ms: int
+    self_avg_ms: int
     error_count: int
 
 
@@ -314,6 +362,26 @@ class KeyPoolLike(Protocol):
     ) -> T: ...
 
 
+class CostPricer(Protocol):
+    """What ``ObservabilityLedger`` needs from a pricing table -- structural,
+    so the ledger stays a pure store with no import of (or dependency on)
+    ``services.model_pricing.CostCalculator``'s TOML-loading and effective-
+    date logic. ``None`` means "no known price for this model/operation",
+    which callers must render as unknown, never as a silent zero."""
+
+    def price(
+        self,
+        *,
+        provider: str,
+        model: str,
+        operation: str,
+        started_at: datetime,
+        input_tokens: int | None,
+        output_tokens: int | None,
+        cached_tokens: int | None,
+    ) -> CostResult | None: ...
+
+
 class ObservabilityLedger:
     """SQLite metadata ledger plus redacted request/response artifacts."""
 
@@ -323,10 +391,12 @@ class ObservabilityLedger:
         artifact_root: Path,
         *,
         store_payloads: bool = True,
+        cost_pricer: CostPricer | None = None,
     ) -> None:
         self.database_path = database_path.expanduser().resolve()
         self.artifact_root = artifact_root.expanduser().resolve()
         self.store_payloads = store_payloads
+        self.cost_pricer = cost_pricer
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
         self.artifact_root.mkdir(parents=True, exist_ok=True)
         self._lock = RLock()
@@ -482,12 +552,84 @@ class ObservabilityLedger:
         spec = self._spec_for_artifact(call_id)
         if self.store_payloads:
             path, digest = self._write_artifact(spec, "parsed-output.json", parsed_output)
+        cost_fields: dict[str, Any] = {}
+        if self.cost_pricer is not None:
+            priced = self._price_call(call_id, self.cost_pricer)
+            if priced is not None:
+                cost_fields = {
+                    "cost_micros": priced.cost_micros,
+                    "pricing_version": priced.pricing_version,
+                }
         self._finish(
             call_id,
             status="succeeded",
             parsed_output_artifact_path=path,
             parsed_output_sha256=digest,
+            **cost_fields,
         )
+
+    def _price_call(self, call_id: UUID, pricer: CostPricer) -> CostResult | None:
+        with self._lock, closing(self._connect()) as connection, connection:
+            row = connection.execute(
+                """
+                SELECT provider, requested_model, resolved_model, operation,
+                       started_at, input_tokens, output_tokens, cached_tokens
+                FROM model_calls WHERE call_id = ?
+                """,
+                (str(call_id),),
+            ).fetchone()
+        if row is None:
+            return None
+        return pricer.price(
+            provider=row[0],
+            model=row[2] or row[1],
+            operation=row[3],
+            started_at=_from_db_timestamp(row[4]),
+            input_tokens=row[5],
+            output_tokens=row[6],
+            cached_tokens=row[7],
+        )
+
+    def reprice(self, pricer: CostPricer, *, since: datetime | None = None) -> int:
+        """Recompute ``cost_micros``/``pricing_version`` for already-succeeded
+        calls against a (possibly updated) pricing table -- the "what-if"
+        number from ``thesisound observability-reprice``, distinct from the
+        audit number ``succeed()`` persists once at call time. Returns how
+        many calls got a price (calls still unpriced after this are simply
+        missing from the table, not touched)."""
+
+        clauses = ["status = 'succeeded'"]
+        params: list[Any] = []
+        if since is not None:
+            clauses.append("started_at >= ?")
+            params.append(_to_db_timestamp(since))
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                "SELECT call_id, provider, requested_model, resolved_model, operation, "
+                "started_at, input_tokens, output_tokens, cached_tokens FROM model_calls "
+                "WHERE " + " AND ".join(clauses),
+                params,
+            ).fetchall()
+            updated = 0
+            for row in rows:
+                priced = pricer.price(
+                    provider=row[1],
+                    model=row[3] or row[2],
+                    operation=row[4],
+                    started_at=_from_db_timestamp(row[5]),
+                    input_tokens=row[6],
+                    output_tokens=row[7],
+                    cached_tokens=row[8],
+                )
+                if priced is None:
+                    continue
+                connection.execute(
+                    "UPDATE model_calls SET cost_micros = ?, pricing_version = ? "
+                    "WHERE call_id = ?",
+                    (priced.cost_micros, priced.pricing_version, row[0]),
+                )
+                updated += 1
+        return updated
 
     def fail(
         self,
@@ -715,20 +857,29 @@ class ObservabilityLedger:
 
     def stage_summary(self, project_id: UUID) -> list[StageSummary]:
         """Per-span-name rollup across every trace recorded for a project,
-        ranked by total time -- the simple cut for `pipeline-summary`."""
+        ranked by self time -- see ``StageSummary`` for why."""
 
         with self._lock, closing(self._connect()) as connection, connection:
             rows = connection.execute(
                 """
-                SELECT name, component, COUNT(*),
-                       COALESCE(SUM(duration_ms), 0),
-                       COUNT(*) FILTER (WHERE status = 'error')
-                FROM pipeline_spans
-                WHERE project_id = ?
-                GROUP BY name, component
-                ORDER BY SUM(duration_ms) DESC
+                WITH child_time AS (
+                    SELECT parent_span_id AS parent, SUM(duration_ms) AS ms
+                      FROM pipeline_spans
+                     WHERE project_id = ? AND parent_span_id IS NOT NULL
+                     GROUP BY parent_span_id
+                )
+                SELECT s.name, s.component,
+                       COUNT(*),
+                       COALESCE(SUM(s.duration_ms), 0),
+                       MAX(0, COALESCE(SUM(s.duration_ms - COALESCE(c.ms, 0)), 0)),
+                       COUNT(*) FILTER (WHERE s.status = 'error')
+                  FROM pipeline_spans s
+                  LEFT JOIN child_time c ON c.parent = s.span_id
+                 WHERE s.project_id = ?
+                 GROUP BY s.name, s.component
+                 ORDER BY 5 DESC
                 """,
-                (str(project_id),),
+                (str(project_id), str(project_id)),
             ).fetchall()
         return [
             StageSummary(
@@ -737,7 +888,9 @@ class ObservabilityLedger:
                 call_count=row[2],
                 total_ms=row[3],
                 avg_ms=round(row[3] / row[2]) if row[2] else 0,
-                error_count=row[4],
+                self_total_ms=row[4],
+                self_avg_ms=round(row[4] / row[2]) if row[2] else 0,
+                error_count=row[5],
             )
             for row in rows
         ]
@@ -872,13 +1025,15 @@ class ObservabilityLedger:
                        COALESCE(SUM(thinking_tokens), 0),
                        COALESCE(SUM(cached_tokens), 0),
                        COALESCE(SUM(total_tokens), 0),
-                       COALESCE(SUM(latency_ms), 0)
+                       COALESCE(SUM(latency_ms), 0),
+                       COALESCE(SUM(cost_micros), 0),
+                       COUNT(*) FILTER (WHERE status = 'succeeded' AND cost_micros IS NULL)
                 FROM model_calls
                 WHERE project_id = ?
                 """,
                 (str(project_id),),
             ).fetchone()
-        values = row or (0,) * 11
+        values = row or (0,) * 13
         return ProjectUsageSummary(
             project_id=project_id,
             call_count=int(values[0] or 0),
@@ -892,7 +1047,67 @@ class ObservabilityLedger:
             cached_tokens=int(values[8] or 0),
             total_tokens=int(values[9] or 0),
             total_latency_ms=int(values[10] or 0),
+            total_cost_micros=int(values[11] or 0),
+            unpriced_succeeded_count=int(values[12] or 0),
         )
+
+    def cost_breakdown(self, project_id: UUID) -> list[CostBreakdownRow]:
+        """Cost and token totals grouped by stage/provider/model, ranked by
+        total cost -- the natural drill-down under ``project_summary()``'s
+        single total for `thesisound cost`."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                """
+                SELECT stage, provider, COALESCE(resolved_model, requested_model),
+                       COUNT(*),
+                       COUNT(*) FILTER (WHERE status = 'succeeded' AND cost_micros IS NULL),
+                       COALESCE(SUM(cost_micros), 0),
+                       COALESCE(SUM(total_tokens), 0)
+                FROM model_calls
+                WHERE project_id = ? AND status = 'succeeded'
+                GROUP BY stage, provider, COALESCE(resolved_model, requested_model)
+                ORDER BY SUM(cost_micros) DESC
+                """,
+                (str(project_id),),
+            ).fetchall()
+        return [
+            CostBreakdownRow(
+                stage=row[0],
+                provider=row[1],
+                model=row[2],
+                call_count=row[3],
+                unpriced_count=row[4],
+                total_cost_micros=row[5],
+                total_tokens=row[6],
+            )
+            for row in rows
+        ]
+
+    def cache_hit_rates(self, project_id: UUID) -> list[CacheHitRateSummary]:
+        """Hit/miss counts per ``cache`` attribute, across every ``cache.lookup``
+        event ever recorded for a project -- the single ``GROUP BY`` the
+        shared event-name-plus-attribute convention (see the plan's Phase 3.3)
+        was designed to make possible for every cache in the system at once."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                """
+                SELECT json_extract(attributes_json, '$.cache') AS cache,
+                       COUNT(*) FILTER (WHERE json_extract(attributes_json, '$.result') = 'hit'),
+                       COUNT(*) FILTER (WHERE json_extract(attributes_json, '$.result') = 'miss')
+                FROM pipeline_events
+                WHERE project_id = ? AND name = 'cache.lookup'
+                GROUP BY cache
+                ORDER BY cache
+                """,
+                (str(project_id),),
+            ).fetchall()
+        return [
+            CacheHitRateSummary(cache=row[0], hits=row[1], misses=row[2])
+            for row in rows
+            if row[0] is not None
+        ]
 
     def read_artifact(self, relative_path: str, *, max_characters: int = 200_000) -> str:
         path = (self.artifact_root.parent / relative_path).resolve()
@@ -1174,6 +1389,7 @@ def shared_observability_ledger(
     artifact_root: Path,
     *,
     store_payloads: bool = True,
+    cost_pricer: CostPricer | None = None,
 ) -> ObservabilityLedger:
     key = (
         str(database_path.expanduser().resolve()),
@@ -1187,6 +1403,7 @@ def shared_observability_ledger(
                 database_path,
                 artifact_root,
                 store_payloads=store_payloads,
+                cost_pricer=cost_pricer,
             )
             _SHARED_LEDGERS[key] = ledger
         return ledger
@@ -1197,10 +1414,15 @@ def ledger_from_settings(settings: Any | None = None) -> ObservabilityLedger:
         from thesisound.config import Settings
 
         settings = Settings()
+    # Local import: services.model_pricing imports CostResult from this module,
+    # so importing CostCalculator at module level here would be circular.
+    from thesisound.services.model_pricing import CostCalculator
+
     return shared_observability_ledger(
         settings.resolved_observability_database_path,
         settings.resolved_observability_artifact_root,
         store_payloads=settings.observability_store_payloads,
+        cost_pricer=CostCalculator(settings.pricing_file),
     )
 
 
@@ -1304,6 +1526,8 @@ def _summary_from_row(row: tuple[Any, ...]) -> CallSummary:
         error_message=row[20],
         subject_type=row[21],
         subject_id=row[22],
+        cost_micros=row[23],
+        pricing_version=row[24],
     )
 
 
@@ -1495,9 +1719,10 @@ call_id, trace_id, project_id, stage, operation, provider,
 requested_model, resolved_model, status, started_at, ended_at,
 latency_ms, provider_attempt_count, input_tokens, output_tokens,
 thinking_tokens, cached_tokens, total_tokens, finish_reason,
-error_type, error_message, subject_type, subject_id
+error_type, error_message, subject_type, subject_id,
+cost_micros, pricing_version
 """.replace("\n", " ").strip()
-_CALL_SUMMARY_FIELD_COUNT = 23
+_CALL_SUMMARY_FIELD_COUNT = 25
 _CALL_DETAIL_COLUMNS = (
     _CALL_SUMMARY_COLUMNS
     + ", prompt_id, prompt_version, workflow_run_id, parent_call_id, timeout_ms, "

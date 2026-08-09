@@ -14,11 +14,45 @@ from thesisound.ports import DocumentInspection, ParsedBlock, ParsedDocument
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_ingestion import ingest_document
 from thesisound.services.document_inspector import inspect_document
+from thesisound.services.parsed_document_cache import ParsedDocumentCache
 from thesisound.services.parser_benchmark import benchmark_document
 from thesisound.services.parser_router import route_parser
 
 
 class FakeParser:
+    """The default double: no identity() return value, so it is never shared
+    with the parsed-document cache regardless of whether one is passed in --
+    matching every ingest_document() call in this file that predates caching."""
+
+    def __init__(
+        self,
+        name: str,
+        parsed: ParsedDocument,
+        *,
+        identity: dict[str, str] | None = None,
+    ) -> None:
+        self.name = name
+        self.parsed = parsed
+        self.calls = 0
+        self._identity = identity
+
+    def supports(self, inspection: DocumentInspection) -> bool:
+        return not inspection.encrypted
+
+    def identity(self) -> dict[str, str] | None:
+        return self._identity
+
+    def parse(self, path: Path, inspection: DocumentInspection) -> ParsedDocument:
+        self.calls += 1
+        assert path.resolve() == inspection.path.resolve()
+        return self.parsed
+
+
+class NoIdentityParser:
+    """A parser with no identity() method at all -- distinct from FakeParser
+    returning None from identity(): isinstance(..., ParserIdentityPort) is
+    False for this one, so the cache is never even consulted."""
+
     def __init__(self, name: str, parsed: ParsedDocument) -> None:
         self.name = name
         self.parsed = parsed
@@ -29,11 +63,11 @@ class FakeParser:
 
     def parse(self, path: Path, inspection: DocumentInspection) -> ParsedDocument:
         self.calls += 1
-        assert path.resolve() == inspection.path.resolve()
         return self.parsed
 
 
 def _make_text_pdf(path: Path, *, pages: int = 2) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     pdf = canvas.Canvas(str(path))
     for page in range(1, pages + 1):
         pdf.setFont("Helvetica-Bold", 16)
@@ -347,3 +381,282 @@ def test_benchmark_recommends_safe_high_quality_parser(tmp_path: Path) -> None:
     assert metrics["mineru"].safe_for_claim_extraction
     assert metrics["mineru"].score > metrics["docling"].score
     assert metrics["mineru"].page_coverage == 1
+
+
+def _duplicate_bytes(source: Path, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(source.read_bytes())
+
+
+def test_a_shared_parse_cache_is_reused_across_two_ingestion_roots(tmp_path: Path) -> None:
+    """Standing in for two projects: two separate IngestionArtifactWriter roots
+    and byte-identical files at two paths, sharing one ParsedDocumentCache."""
+
+    cache = ParsedDocumentCache(tmp_path / "shared")
+    first_source = tmp_path / "project-a" / "paper.pdf"
+    _make_text_pdf(first_source, pages=1)
+    second_source = tmp_path / "project-b" / "paper.pdf"
+    _duplicate_bytes(first_source, second_source)
+
+    parser = FakeParser("native", _good_parse("native"), identity={"parser": "native", "impl": "x"})
+    writer_a = IngestionArtifactWriter(tmp_path / "artifacts-a")
+    result_a = ingest_document(
+        first_source,
+        parsers={"native": parser},
+        parser_name="auto",
+        artifact_writer=writer_a,
+        parse_cache=cache,
+    )
+    assert parser.calls == 1
+    assert result_a.selected_parser == "native"
+    assert result_a.attempts[0].from_cache is False
+
+    writer_b = IngestionArtifactWriter(tmp_path / "artifacts-b")
+    result_b = ingest_document(
+        second_source,
+        parsers={"native": parser},
+        parser_name="auto",
+        artifact_writer=writer_b,
+        parse_cache=cache,
+    )
+
+    assert parser.calls == 1  # the second ingest cost no parser call
+    assert result_b.selected_parser == "native"
+    assert result_b.attempts[0].from_cache is True
+    assert result_b.parsed is not None and result_a.parsed is not None
+    assert len(result_b.parsed.blocks) == len(result_a.parsed.blocks)
+    # Each project still keeps its own complete artifact tree -- the cache
+    # only short-circuits the parse() call, not artifact persistence.
+    assert (writer_b.document_dir(result_b.inspection) / "ingestion-result.json").exists()
+
+
+def test_a_parser_with_no_identity_method_is_never_shared(tmp_path: Path) -> None:
+    cache = ParsedDocumentCache(tmp_path / "shared")
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+    parser = NoIdentityParser("native", _good_parse("native"))
+
+    ingest_document(source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+    ingest_document(source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+
+    assert parser.calls == 2
+    assert not cache.root.exists()
+
+
+def test_a_parser_whose_identity_returns_none_is_never_shared(tmp_path: Path) -> None:
+    cache = ParsedDocumentCache(tmp_path / "shared")
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+    parser = FakeParser("native", _good_parse("native"))  # identity=None by default
+
+    ingest_document(source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+    ingest_document(source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+
+    assert parser.calls == 2
+    assert not cache.root.exists()
+
+
+def test_same_bytes_under_a_different_extension_are_not_shared(tmp_path: Path) -> None:
+    cache = ParsedDocumentCache(tmp_path / "shared")
+    pdf_source = tmp_path / "paper.pdf"
+    _make_text_pdf(pdf_source, pages=1)
+    txt_source = tmp_path / "paper.txt"
+    _duplicate_bytes(pdf_source, txt_source)
+
+    identity = {"parser": "native", "impl": "x"}
+    parser = FakeParser("native", _good_parse("native"), identity=identity)
+
+    ingest_document(pdf_source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+    ingest_document(txt_source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+
+    assert parser.calls == 2
+
+
+def test_a_parser_that_raises_is_never_cached(tmp_path: Path) -> None:
+    cache = ParsedDocumentCache(tmp_path / "shared")
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+
+    class FlakyParser:
+        name = "native"
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def supports(self, inspection: DocumentInspection) -> bool:
+            return True
+
+        def identity(self) -> dict[str, str] | None:
+            return {"parser": "native", "impl": "x"}
+
+        def parse(self, path: Path, inspection: DocumentInspection) -> ParsedDocument:
+            self.calls += 1
+            raise RuntimeError("boom")
+
+    parser = FlakyParser()
+
+    ingest_document(source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+    ingest_document(source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+
+    assert parser.calls == 2
+
+
+def test_quality_is_recomputed_on_a_cache_hit(tmp_path: Path) -> None:
+    """CachedParse has no field for a quality verdict, so a hit that still
+    produces a correct, safe IngestionResult proves assess_parse_quality ran
+    again against the reconstructed blocks rather than replaying a stored one."""
+
+    cache = ParsedDocumentCache(tmp_path / "shared")
+    first_source = tmp_path / "project-a" / "paper.pdf"
+    _make_text_pdf(first_source, pages=1)
+    second_source = tmp_path / "project-b" / "paper.pdf"
+    _duplicate_bytes(first_source, second_source)
+
+    identity = {"parser": "native", "impl": "x"}
+    parser = FakeParser("native", _good_parse("native"), identity=identity)
+
+    ingest_document(first_source, parsers={"native": parser}, parser_name="auto", parse_cache=cache)
+    result_b = ingest_document(
+        second_source, parsers={"native": parser}, parser_name="auto", parse_cache=cache
+    )
+
+    assert result_b.attempts[0].from_cache is True
+    assert result_b.quality is not None
+    assert result_b.quality.verdict == "pass"
+    assert result_b.safe_for_claim_extraction is True
+
+
+def test_a_missing_parse_cache_reproduces_ingestion_without_caching(tmp_path: Path) -> None:
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+    identity = {"parser": "native", "impl": "x"}
+    parser = FakeParser("native", _good_parse("native"), identity=identity)
+
+    ingest_document(source, parsers={"native": parser}, parser_name="auto", parse_cache=None)
+    ingest_document(source, parsers={"native": parser}, parser_name="auto", parse_cache=None)
+
+    assert parser.calls == 2
+
+
+def test_cache_lookup_events_are_recorded_as_miss_then_hit(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    cache = ParsedDocumentCache(tmp_path / "shared")
+    first_source = tmp_path / "project-a" / "paper.pdf"
+    _make_text_pdf(first_source, pages=1)
+    second_source = tmp_path / "project-b" / "paper.pdf"
+    _duplicate_bytes(first_source, second_source)
+
+    identity = {"parser": "native", "impl": "x"}
+    parser = FakeParser("native", _good_parse("native"), identity=identity)
+
+    ingest_document(
+        first_source, parsers={"native": parser}, parser_name="auto", parse_cache=cache
+    )
+    ingest_document(
+        second_source, parsers={"native": parser}, parser_name="auto", parse_cache=cache
+    )
+
+    cache_events = [
+        event for event in recording_tracer.sink.events if event.name == "cache.lookup"
+    ]
+    assert [event.attributes["result"] for event in cache_events] == ["miss", "hit"]
+    assert all(
+        event.attributes["cache"] == "shared_parsed_document" for event in cache_events
+    )
+
+
+def test_mineru_reuses_a_completed_run_for_the_same_fingerprint(tmp_path: Path) -> None:
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+    inspection = inspect_document(source)
+    output_root = tmp_path / "mineru-output"
+    run_count = 0
+
+    def runner(command, timeout_seconds, environment):
+        nonlocal run_count
+        run_count += 1
+        output = Path(command[command.index("-o") + 1]) / "paper" / "auto"
+        output.mkdir(parents=True)
+        (output / "paper_content_list.json").write_text(
+            json.dumps([{"type": "text", "text": "Body text. " * 20, "page_idx": 0}]),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(command, 0, stdout="ok", stderr="")
+
+    parser = MineruParser(output_root=output_root, runner=runner, version_resolver=lambda: "3.test")
+
+    first = parser.parse(source, inspection)
+    second = parser.parse(source, inspection)
+
+    assert run_count == 1
+    assert first.blocks and second.blocks
+
+
+def test_mineru_reruns_when_stale_output_exists_without_a_completion_marker(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+    inspection = inspect_document(source)
+    output_root = tmp_path / "mineru-output"
+    run_count = 0
+
+    def runner(command, timeout_seconds, environment):
+        nonlocal run_count
+        run_count += 1
+        output = Path(command[command.index("-o") + 1]) / "paper" / "auto"
+        output.mkdir(parents=True, exist_ok=True)
+        (output / "paper_content_list.json").write_text(
+            json.dumps([{"type": "text", "text": "Body text. " * 20, "page_idx": 0}]),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(command, 0, stdout="ok", stderr="")
+
+    parser = MineruParser(output_root=output_root, runner=runner, version_resolver=lambda: "3.test")
+    fingerprint = parser._output_fingerprint()
+    assert fingerprint is not None
+    # Simulate a run that died mid-way: structured output exists on disk, but
+    # no .mineru-complete marker was ever written. The old rglob-based probe
+    # would have silently treated this as done; the marker must not.
+    stale = output_root / inspection.sha256[:16] / fingerprint / "crashed" / "auto"
+    stale.mkdir(parents=True)
+    (stale / "paper_middle.json").write_text(
+        json.dumps({"pdf_info": [{"page_idx": 0, "para_blocks": []}]}), encoding="utf-8"
+    )
+
+    parsed = parser.parse(source, inspection)
+
+    assert run_count == 1
+    assert parsed.blocks
+
+
+def test_mineru_reruns_when_the_backend_changes(tmp_path: Path) -> None:
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+    inspection = inspect_document(source)
+    output_root = tmp_path / "mineru-output"
+    run_count = 0
+
+    def runner(command, timeout_seconds, environment):
+        nonlocal run_count
+        run_count += 1
+        output = Path(command[command.index("-o") + 1]) / "paper" / "auto"
+        output.mkdir(parents=True)
+        (output / "paper_content_list.json").write_text(
+            json.dumps([{"type": "text", "text": "Body text. " * 20, "page_idx": 0}]),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(command, 0, stdout="ok", stderr="")
+
+    default_backend = MineruParser(
+        output_root=output_root, runner=runner, version_resolver=lambda: "3.test"
+    )
+    other_backend = MineruParser(
+        output_root=output_root, runner=runner, version_resolver=lambda: "3.test", backend="vlm"
+    )
+
+    default_backend.parse(source, inspection)
+    other_backend.parse(source, inspection)
+
+    assert run_count == 2

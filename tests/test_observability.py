@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sqlite3
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
@@ -9,6 +11,7 @@ import pytest
 from thesisound import tracing
 from thesisound.modeling import ModelUsage
 from thesisound.observability import (
+    CostResult,
     ModelCallSpec,
     ObservabilityLedger,
     ObservedModelGateway,
@@ -284,3 +287,198 @@ def test_redaction_covers_phone_numbers_secrets_and_home_paths(tmp_path: Path) -
     assert "[REDACTED_SECRET]" in request
     assert "[HOME]" in request
     assert "[REDACTED]" in request
+
+
+class FakePricer:
+    """A ``CostPricer`` test double: prices anything named ``priced-model``
+    at a fixed per-token rate, and returns ``None`` for everything else --
+    the same "unknown, not zero" contract ``CostCalculator`` has to honor."""
+
+    def __init__(self, *, version: str = "test-2026-01") -> None:
+        self.version = version
+        self.calls: list[str] = []
+
+    def price(
+        self,
+        *,
+        provider,
+        model,
+        operation,
+        started_at,
+        input_tokens,
+        output_tokens,
+        cached_tokens,
+    ) -> CostResult | None:
+        self.calls.append(model)
+        if model != "priced-model":
+            return None
+        return CostResult(
+            cost_micros=(input_tokens or 0) * 10 + (output_tokens or 0) * 20,
+            pricing_version=self.version,
+        )
+
+
+def _succeed_a_call(ledger: ObservabilityLedger, *, model: str, started_at=None) -> ModelCallSpec:
+    spec = ModelCallSpec(
+        stage="document_map",
+        operation="structured_text",
+        provider="gemini",
+        requested_model=model,
+    )
+    ledger.begin_call(spec, {"prompt": "x"})
+    if started_at is not None:
+        connection = sqlite3.connect(ledger.database_path)
+        try:
+            connection.execute(
+                "UPDATE model_calls SET started_at = ? WHERE call_id = ?",
+                (started_at.astimezone(UTC).isoformat(), str(spec.call_id)),
+            )
+            connection.commit()
+        finally:
+            connection.close()
+    ledger.provider_succeeded(
+        spec.call_id,
+        response_payload={"text": "ok"},
+        usage=ModelUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+        provider_metadata=ProviderMetadata(),
+    )
+    ledger.succeed(spec.call_id, {"value": "ok"})
+    return spec
+
+
+def test_succeed_persists_cost_from_the_configured_pricer(tmp_path: Path) -> None:
+    pricer = FakePricer()
+    ledger = ObservabilityLedger(
+        tmp_path / "ledger.sqlite3", tmp_path / "artifacts", cost_pricer=pricer
+    )
+
+    spec = _succeed_a_call(ledger, model="priced-model")
+
+    detail = ledger.get_call(spec.call_id)
+    assert detail.call.cost_micros == 100 * 10 + 50 * 20
+    assert detail.call.pricing_version == "test-2026-01"
+
+
+def test_succeed_leaves_cost_unset_when_the_pricer_returns_none(tmp_path: Path) -> None:
+    """An unpriced model must render as unknown, never a silent 0 -- this is
+    the single most important behavior the whole cost feature promises."""
+
+    ledger = ObservabilityLedger(
+        tmp_path / "ledger.sqlite3", tmp_path / "artifacts", cost_pricer=FakePricer()
+    )
+
+    spec = _succeed_a_call(ledger, model="unpriced-model")
+
+    detail = ledger.get_call(spec.call_id)
+    assert detail.call.cost_micros is None
+    assert detail.call.pricing_version is None
+
+
+def test_succeed_leaves_cost_unset_with_no_pricer_configured(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)  # no cost_pricer at all
+
+    spec = _succeed_a_call(ledger, model="priced-model")
+
+    detail = ledger.get_call(spec.call_id)
+    assert detail.call.cost_micros is None
+
+
+def test_reprice_recomputes_cost_for_already_succeeded_calls(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)
+    spec = _succeed_a_call(ledger, model="priced-model")
+    assert ledger.get_call(spec.call_id).call.cost_micros is None
+
+    updated = ledger.reprice(FakePricer(version="retroactive-2026-02"))
+
+    assert updated == 1
+    detail = ledger.get_call(spec.call_id)
+    assert detail.call.cost_micros == 100 * 10 + 50 * 20
+    assert detail.call.pricing_version == "retroactive-2026-02"
+
+
+def test_reprice_skips_calls_the_pricer_still_does_not_know(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)
+    _succeed_a_call(ledger, model="still-unpriced")
+
+    updated = ledger.reprice(FakePricer())
+
+    assert updated == 0
+
+
+def test_reprice_only_touches_calls_on_or_after_since(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)
+    old = _succeed_a_call(
+        ledger, model="priced-model", started_at=datetime(2025, 1, 1, tzinfo=UTC)
+    )
+    recent = _succeed_a_call(
+        ledger, model="priced-model", started_at=datetime(2026, 6, 1, tzinfo=UTC)
+    )
+
+    updated = ledger.reprice(FakePricer(), since=datetime(2026, 1, 1, tzinfo=UTC))
+
+    assert updated == 1
+    assert ledger.get_call(old.call_id).call.cost_micros is None
+    assert ledger.get_call(recent.call_id).call.cost_micros is not None
+
+
+def test_cost_breakdown_groups_by_stage_provider_and_model(tmp_path: Path) -> None:
+    pricer = FakePricer()
+    ledger = ObservabilityLedger(
+        tmp_path / "ledger.sqlite3", tmp_path / "artifacts", cost_pricer=pricer
+    )
+    project_id = uuid4()
+    for _ in range(2):
+        spec = ModelCallSpec(
+            project_id=project_id,
+            stage="document_map",
+            operation="structured_text",
+            provider="gemini",
+            requested_model="priced-model",
+        )
+        ledger.begin_call(spec, {"prompt": "x"})
+        ledger.provider_succeeded(
+            spec.call_id,
+            response_payload={"text": "ok"},
+            usage=ModelUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+            provider_metadata=ProviderMetadata(),
+        )
+        ledger.succeed(spec.call_id, {"value": "ok"})
+
+    rows = ledger.cost_breakdown(project_id)
+
+    assert len(rows) == 1
+    row = rows[0]
+    assert (row.stage, row.provider, row.model) == ("document_map", "gemini", "priced-model")
+    assert row.call_count == 2
+    assert row.unpriced_count == 0
+    assert row.total_cost_micros == 2 * (100 * 10 + 50 * 20)
+    assert row.total_tokens == 2 * 150
+
+
+def test_project_summary_reports_cost_and_unpriced_count(tmp_path: Path) -> None:
+    pricer = FakePricer()
+    ledger = ObservabilityLedger(
+        tmp_path / "ledger.sqlite3", tmp_path / "artifacts", cost_pricer=pricer
+    )
+    project_id = uuid4()
+    for model in ("priced-model", "unpriced-model"):
+        spec = ModelCallSpec(
+            project_id=project_id,
+            stage="document_map",
+            operation="structured_text",
+            provider="gemini",
+            requested_model=model,
+        )
+        ledger.begin_call(spec, {"prompt": "x"})
+        ledger.provider_succeeded(
+            spec.call_id,
+            response_payload={"text": "ok"},
+            usage=ModelUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+            provider_metadata=ProviderMetadata(),
+        )
+        ledger.succeed(spec.call_id, {"value": "ok"})
+
+    summary = ledger.project_summary(project_id)
+
+    assert summary.total_cost_micros == 100 * 10 + 50 * 20  # only priced-model counted
+    assert summary.unpriced_succeeded_count == 1

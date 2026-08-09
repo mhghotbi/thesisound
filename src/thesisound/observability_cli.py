@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from datetime import UTC, datetime
 from uuid import UUID
 
 import typer
@@ -16,6 +17,12 @@ from thesisound.observability import (
     TraceNode,
     ledger_from_settings,
 )
+
+
+def _format_cost(micros: int | None) -> str:
+    if micros is None:
+        return "unknown"
+    return f"${micros / 1_000_000:,.4f}"
 
 
 def register_observability_commands(app: typer.Typer) -> None:
@@ -144,8 +151,9 @@ def register_observability_commands(app: typer.Typer) -> None:
 
     @app.command("pipeline-summary")
     def pipeline_summary(project_id: UUID) -> None:
-        """Rank every recorded span name by total time spent, across every
-        trace for a project -- where the wall clock actually goes."""
+        """Rank every recorded span name by self time (total minus children)
+        across every trace for a project -- where the wall clock actually
+        goes -- plus cache hit rates, the biggest cost lever in the system."""
 
         settings = Settings()
         ledger = ledger_from_settings(settings)
@@ -158,6 +166,7 @@ def register_observability_commands(app: typer.Typer) -> None:
         table.add_column("Name")
         table.add_column("Component")
         table.add_column("Calls", justify="right")
+        table.add_column("Self", justify="right")
         table.add_column("Total", justify="right")
         table.add_column("Avg", justify="right")
         table.add_column("Errors", justify="right")
@@ -166,11 +175,107 @@ def register_observability_commands(app: typer.Typer) -> None:
                 row.name,
                 row.component,
                 str(row.call_count),
+                f"{row.self_total_ms} ms",
                 f"{row.total_ms} ms",
                 f"{row.avg_ms} ms",
                 str(row.error_count) if row.error_count == 0 else f"[red]{row.error_count}[/red]",
             )
         console.print(table)
+
+        cache_rows = ledger.cache_hit_rates(project_id)
+        if cache_rows:
+            cache_table = Table(title="Cache hit rates")
+            cache_table.add_column("Cache")
+            cache_table.add_column("Hits", justify="right")
+            cache_table.add_column("Misses", justify="right")
+            cache_table.add_column("Hit rate", justify="right")
+            for cache_row in cache_rows:
+                cache_table.add_row(
+                    cache_row.cache,
+                    str(cache_row.hits),
+                    str(cache_row.misses),
+                    f"{cache_row.hit_rate:.0%}",
+                )
+            console.print(cache_table)
+
+    @app.command("cost")
+    def cost(project_id: UUID) -> None:
+        """Show total spend and a stage/provider/model breakdown for one
+        project. A model with no configured price shows as unknown, never
+        as a silent 0 -- see config/model-pricing.toml."""
+
+        settings = Settings()
+        ledger = ledger_from_settings(settings)
+        console = Console()
+        summary = ledger.project_summary(project_id)
+        if summary.call_count == 0:
+            console.print(f"[yellow]No recorded model calls for project {project_id}.[/yellow]")
+            return
+        priced_count = summary.succeeded_count - summary.unpriced_succeeded_count
+        caveat = ""
+        if summary.unpriced_succeeded_count:
+            caveat = (
+                f" [yellow]({summary.unpriced_succeeded_count} succeeded call(s) have no "
+                "configured price and are excluded from this total)[/yellow]"
+            )
+        # priced_count == 0 means every succeeded call is unpriced, so the sum is
+        # vacuously 0 -- show "unknown" rather than a number that looks like a real $0.
+        total_display = _format_cost(summary.total_cost_micros if priced_count else None)
+        console.print(
+            f"[bold]Project {project_id}[/bold] · total cost={total_display}{caveat}"
+        )
+        rows = ledger.cost_breakdown(project_id)
+        if not rows:
+            return
+        table = Table(title="Cost breakdown")
+        table.add_column("Stage")
+        table.add_column("Provider")
+        table.add_column("Model")
+        table.add_column("Calls", justify="right")
+        table.add_column("Tokens", justify="right")
+        table.add_column("Cost", justify="right")
+        for row in rows:
+            cost_cell = _format_cost(row.total_cost_micros) if row.total_cost_micros else "unknown"
+            if row.unpriced_count:
+                cost_cell += f" [yellow](+{row.unpriced_count} unpriced)[/yellow]"
+            table.add_row(
+                row.stage,
+                row.provider,
+                row.model,
+                str(row.call_count),
+                str(row.total_tokens),
+                cost_cell,
+            )
+        console.print(table)
+
+    @app.command("observability-reprice")
+    def observability_reprice(
+        since: str | None = typer.Option(
+            None,
+            help="Only recompute calls started on or after this UTC date, e.g. 2026-01-01.",
+        ),
+    ) -> None:
+        """Recompute cost_micros for already-succeeded calls against the
+        current config/model-pricing.toml -- the "what-if" number. Does not
+        change the audit number succeed() already persisted at call time
+        unless this is run; a price row added after a call still leaves
+        that call unpriced until you do."""
+
+        settings = Settings()
+        ledger = ledger_from_settings(settings)
+        console = Console()
+        assert ledger.cost_pricer is not None  # ledger_from_settings() always configures one
+        parsed_since = _parse_since(since) if since is not None else None
+        updated = ledger.reprice(ledger.cost_pricer, since=parsed_since)
+        console.print(f"Repriced {updated} call(s).")
+
+
+def _parse_since(value: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError as exc:
+        raise typer.BadParameter(f"Invalid date {value!r}, expected e.g. 2026-01-01.") from exc
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
 
 
 def _render_trace(console: Console, ledger: ObservabilityLedger, trace_id: UUID) -> None:

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -142,6 +143,21 @@ class DocumentParserPort(Protocol):
     def supports(self, inspection: DocumentInspection) -> bool: ...
 
     def parse(self, path: Path, inspection: DocumentInspection) -> ParsedDocument: ...
+
+
+@runtime_checkable
+class ParserIdentityPort(Protocol):
+    """A parser that can state, before parsing, what would produce its output.
+
+    Kept separate from DocumentParserPort on purpose: a parser is fully usable
+    without this, and a parser that cannot describe itself completely -- an
+    injected test runner, an unresolvable provider version -- returns None and is
+    simply never shared. Being cacheable is a capability, not a requirement.
+    """
+
+    name: str
+
+    def identity(self) -> Mapping[str, str] | None: ...
 
 
 class TtsPort(Protocol):

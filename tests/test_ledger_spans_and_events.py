@@ -388,3 +388,59 @@ def test_stage_summary_counts_errors_per_stage(ledger: ObservabilityLedger) -> N
     row = next(item for item in summary if item.name == "ingestion.parse")
     assert row.call_count == 3
     assert row.error_count == 2
+
+
+def test_stage_summary_ranks_by_self_time_not_total_time(ledger: ObservabilityLedger) -> None:
+    """A parent span's total_ms always includes everything nested inside it,
+    so a total-time ranking always puts the outermost span first regardless
+    of how little work it does itself. corpus.extract_evidence is where the
+    5 leaf calls' time actually went; self time is what reveals that."""
+
+    project_id = uuid4()
+    clock = {"now": 0.0}
+
+    def advancing_monotonic() -> float:
+        clock["now"] += 1
+        return clock["now"]
+
+    ledger_tracer = _ledger_tracer(ledger, monotonic=advancing_monotonic)
+    with (
+        ledger_tracer.span("corpus.run", kind="stage", project_id=project_id),
+        ledger_tracer.span("corpus.extract_evidence"),
+    ):
+        for _ in range(5):
+            with ledger_tracer.span("model_call_leaf"):
+                pass
+
+    rows = {row.name: row for row in ledger.stage_summary(project_id)}
+
+    assert rows["corpus.run"].total_ms > rows["corpus.extract_evidence"].total_ms
+    assert rows["corpus.extract_evidence"].self_total_ms > rows["corpus.run"].self_total_ms
+    ranked_by_self_time = [row.name for row in ledger.stage_summary(project_id)]
+    assert ranked_by_self_time[0] == "corpus.extract_evidence"
+
+
+def test_cache_hit_rates_groups_by_the_cache_attribute(ledger: ObservabilityLedger) -> None:
+    project_id = uuid4()
+    ledger_tracer = _ledger_tracer(ledger)
+    ledger_tracer.event(
+        "cache.lookup", project_id=project_id, cache="shared_document_map", result="hit"
+    )
+    ledger_tracer.event(
+        "cache.lookup", project_id=project_id, cache="shared_document_map", result="hit"
+    )
+    ledger_tracer.event(
+        "cache.lookup", project_id=project_id, cache="shared_document_map", result="miss"
+    )
+    ledger_tracer.event("cache.lookup", project_id=project_id, cache="episode_plan", result="miss")
+    ledger_tracer.event("project.state_changed", project_id=project_id, previous="a", current="b")
+
+    rows = {row.cache: row for row in ledger.cache_hit_rates(project_id)}
+
+    assert rows["shared_document_map"].hits == 2
+    assert rows["shared_document_map"].misses == 1
+    assert rows["shared_document_map"].hit_rate == pytest.approx(2 / 3)
+    assert rows["episode_plan"].hits == 0
+    assert rows["episode_plan"].misses == 1
+    assert rows["episode_plan"].hit_rate == 0.0
+    assert "project.state_changed" not in [row.cache for row in ledger.cache_hit_rates(project_id)]

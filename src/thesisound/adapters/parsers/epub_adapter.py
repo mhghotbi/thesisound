@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import platform
 import posixpath
 import re
+import sys
 from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 from xml.etree import ElementTree
 from zipfile import BadZipFile, ZipFile, ZipInfo
 
 from thesisound.ports import DocumentInspection, ParsedBlock, ParsedDocument
+from thesisound.services.parser_identity import module_fingerprint
 
 _EPUB_MIMETYPE = "application/epub+zip"
 _CONTAINER_PATH = "META-INF/container.xml"
@@ -40,6 +43,17 @@ class EpubDocumentParser:
 
     def supports(self, inspection: DocumentInspection) -> bool:
         return inspection.extension == ".epub" and not inspection.encrypted
+
+    def identity(self) -> dict[str, str] | None:
+        impl = module_fingerprint(sys.modules[__name__])
+        if impl is None:
+            return None
+        return {
+            "parser": "epub",
+            "version": "1",
+            "python": platform.python_version(),
+            "impl": impl,
+        }
 
     def parse(self, path: Path, inspection: DocumentInspection) -> ParsedDocument:
         resolved = path.expanduser().resolve()
