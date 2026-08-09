@@ -126,6 +126,40 @@ class SourceArtifactStore:
         path = self.source_dir(project_id, source_id) / "evidence" / "extractions"
         self._write_json(path / f"{_safe_id(record.block_id)}.json", record)
 
+    def block_extractions_dir(self, project_id: UUID, source_id: UUID) -> Path:
+        return self.source_dir(project_id, source_id) / "evidence" / "extractions"
+
+    def load_block_extractions(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+    ) -> list[BlockEvidenceExtraction]:
+        directory = self.block_extractions_dir(project_id, source_id)
+        if not directory.exists():
+            return []
+        records: list[BlockEvidenceExtraction] = []
+        for path in sorted(directory.glob("*.json")):
+            records.append(
+                BlockEvidenceExtraction.model_validate_json(
+                    path.read_text(encoding="utf-8")
+                )
+            )
+        return records
+
+    def prune_block_extractions(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        keep_block_ids: set[str],
+    ) -> None:
+        directory = self.block_extractions_dir(project_id, source_id)
+        if not directory.exists():
+            return
+        keep_names = {_safe_id(block_id) + ".json" for block_id in keep_block_ids}
+        for path in directory.glob("*.json"):
+            if path.name not in keep_names:
+                path.unlink(missing_ok=True)
+
     def save_evidence(
         self,
         project_id: UUID,

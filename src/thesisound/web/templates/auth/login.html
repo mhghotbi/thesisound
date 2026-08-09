@@ -12,15 +12,6 @@
     <h1 id="auth-story-title">از یک سؤال جدی، یک گفتار مستند بسازید.</h1>
     <p>منابع را خودتان انتخاب می‌کنید. هر مدعا تا شاهد و منبع قابل‌ردیابی می‌ماند و محصول جایی که شاهد کافی نیست، با صراحت متوقف می‌شود.</p>
   </div>
-  <div class="auth-story__note">
-    <strong>سه تم، یک ساختار ثابت</strong>
-    <p>رنگ فقط بیان بصری را عوض می‌کند؛ سلسله‌مراتب، دسترس‌پذیری و معنای وضعیت‌ها در هر سه تم یکسان است.</p>
-    <div class="form-actions" role="group" aria-label="انتخاب تم رنگی">
-      <button class="button button--small button--secondary" type="button" data-theme-value="cobalt">آبی کبالتی</button>
-      <button class="button button--small button--secondary" type="button" data-theme-value="wood">چوب سوخته</button>
-      <button class="button button--small button--secondary" type="button" data-theme-value="olive">زیتونی</button>
-    </div>
-  </div>
 </section>
 
 <section class="auth-card" aria-labelledby="login-title">
@@ -32,18 +23,16 @@
     <div class="notice notice--danger" role="alert">{{ error }}</div>
   {% endif %}
 
-  <form method="post" action="/login/request-code" class="form-sheet" novalidate>
+  <form method="post" action="/login/request-code" class="form-sheet" data-phone-form novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="next_path" value="{{ next_path }}">
     <label class="field">
       <span>شمارهٔ موبایل</span>
-      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" placeholder="09120000000" value="{{ phone or '' }}" required autofocus aria-describedby="phone-hint">
-      <small class="field-hint" id="phone-hint">با صفر ابتدایی و بدون فاصله وارد کنید.</small>
+      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="09[0-9]{9}" placeholder="09120000000" value="{{ phone or '' }}" required autofocus aria-describedby="phone-hint">
+      <small class="field-hint" id="phone-hint">۱۱ رقم به صورت 09xxxxxxxxx؛ ارقام فارسی خودکار به انگلیسی تبدیل می‌شوند.</small>
     </label>
-    <button class="button button--primary button--full" type="submit">ارسال کد ورود</button>
+    <button class="button button--primary button--full" type="submit" disabled>ارسال کد ورود</button>
   </form>
-
-  <p class="auth-card__footer">ورود شما یک نشست ۱۴روزه می‌سازد. خروج صریح، نشست و تنظیمات سمت سرور را پاک می‌کند.</p>
 
   {% if test_otp_enabled and environment != "production" %}
   <details class="dev-note operator-only">

@@ -109,7 +109,7 @@ def _extract_evidence(
     settings = Settings()
     service = _model_service(settings, _root(settings, workspace_root))
     try:
-        manifest = service.extract_evidence(
+        manifest, _warnings = service.extract_evidence(
             project_id,
             source_id,
             model=model or settings.model_fast,

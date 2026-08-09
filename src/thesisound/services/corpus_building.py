@@ -39,6 +39,7 @@ class CorpusSourceRun(CorpusSourceInput):
     stage: CorpusStage = "queued"
     claim_count: int = Field(default=0, ge=0)
     last_error: str | None = None
+    warnings: list[str] = Field(default_factory=list)
 
 
 class CorpusBuildRun(BaseModel):
@@ -306,6 +307,7 @@ class CorpusBuildingService:
     ) -> None:
         source.status = "running"
         source.last_error = None
+        source.warnings = []
         self._set_stage(run, source, "building_blocks")
         try:
             ingestion = self.source_store.load_ingestion(source.ingestion_path)
@@ -317,7 +319,10 @@ class CorpusBuildingService:
             if resolved_source_id != source.source_id:
                 raise ValueError("Source-analysis service changed the selected source ID.")
 
-            self._set_stage(run, source, "mapping_document")
+            if service.has_reusable_document_map(run.project_id, source.source_id):
+                self._set_stage(run, source, "extracting_evidence")
+            else:
+                self._set_stage(run, source, "mapping_document")
             service.map_document(
                 run.project_id,
                 source.source_id,
@@ -325,11 +330,12 @@ class CorpusBuildingService:
             )
 
             self._set_stage(run, source, "extracting_evidence")
-            service.extract_evidence(
+            _, extraction_warnings = service.extract_evidence(
                 run.project_id,
                 source.source_id,
                 model=self.fast_model,
             )
+            source.warnings.extend(extraction_warnings)
 
             self._set_stage(run, source, "building_claims")
             ledger, _ = service.build_claims(

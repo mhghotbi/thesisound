@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from time import perf_counter
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import ProxyHandler, Request, build_opener
 
 from pydantic import BaseModel, ValidationError
 
@@ -87,8 +87,10 @@ class OkianHttpClient:
                 "Accept": "application/json",
             },
         )
+        # Empty ProxyHandler disables env HTTP(S)_PROXY so Okian stays direct.
+        opener = build_opener(ProxyHandler({}))
         try:
-            with urlopen(request, timeout=timeout_seconds) as response:
+            with opener.open(request, timeout=timeout_seconds) as response:
                 status = int(getattr(response, "status", 200))
                 raw = response.read()
                 headers = {str(key).lower(): str(value) for key, value in response.headers.items()}

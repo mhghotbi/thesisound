@@ -171,6 +171,8 @@ class BlockEvidenceExtraction(BaseModel):
     source_id: UUID
     block_id: str = Field(min_length=1)
     extraction: EvidenceExtraction
+    status: Literal["extracted", "rejected"] = "extracted"
+    rejection_reason: str | None = None
 
 
 class ClaimDraft(BaseModel):

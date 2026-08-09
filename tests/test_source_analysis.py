@@ -9,6 +9,7 @@ from thesisound.domain import (
     ClaimType,
     DocumentMap,
     DocumentMapSection,
+    EvidenceExtraction,
     Locator,
     Project,
     ProjectState,
@@ -37,6 +38,7 @@ from thesisound.services.evidence_validator import validate_evidence_extraction
 from thesisound.services.source_analysis_service import SourceAnalysisService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
+    BlockEvidenceExtraction,
     ClaimDraft,
     ClaimReconciliationDraft,
     CrossSectionThreadDraft,
@@ -116,7 +118,16 @@ class FakeRunner:
         else:
             raise AssertionError(f"Unexpected output type: {output_type}")
         if validator is not None:
-            validator(output)
+            last_error: Exception | None = None
+            for _ in range(5):
+                try:
+                    validator(output)
+                    last_error = None
+                    break
+                except DeterministicValidationError as exc:
+                    last_error = exc
+            if last_error is not None:
+                raise last_error
         record = ModelRunRecord(
             project_id=project_id,
             stage=stage,
@@ -357,3 +368,262 @@ def test_complete_one_source_pipeline_writes_auditable_artifacts(
     assert (source_dir / "evidence-items.jsonl").exists()
     assert (source_dir / "claim-ledger.json").exists()
     assert list((source_dir / "evidence" / "extractions").glob("*.json"))
+
+
+class SalvagingFakeRunner(FakeRunner):
+    """Returns one bad claim and one good claim so final-attempt salvage can keep the good one."""
+
+    def run(self, *, project_id, stage, variables, output_type, model, validator=None, **_):
+        if output_type is not EvidenceExtractionDraft:
+            return super().run(
+                project_id=project_id,
+                stage=stage,
+                variables=variables,
+                output_type=output_type,
+                model=model,
+                validator=validator,
+            )
+        block = variables["block"]
+        assert isinstance(block, dict)
+        excerpt = str(block["text"]).split(".")[0].strip()
+        output = EvidenceExtractionDraft(
+            segment_function="argument",
+            claims=[
+                EvidenceClaimDraft(
+                    claim="Invented claim with a bad excerpt.",
+                    claim_type=ClaimType.AUTHOR_POSITION,
+                    supporting_excerpt="This sentence is invented and not in the block.",
+                    support_kind="direct",
+                    confidence=0.5,
+                ),
+                EvidenceClaimDraft(
+                    claim="Action occurs directly between persons.",
+                    claim_type=ClaimType.AUTHOR_POSITION,
+                    supporting_excerpt=excerpt,
+                    support_kind="direct",
+                    confidence=0.95,
+                ),
+            ],
+            must_not_be_lost=["The distinction from fabrication."],
+        )
+        if validator is not None:
+            last_error: Exception | None = None
+            for _ in range(5):
+                try:
+                    validator(output)
+                    last_error = None
+                    break
+                except DeterministicValidationError as exc:
+                    last_error = exc
+            if last_error is not None:
+                raise last_error
+        record = ModelRunRecord(
+            project_id=project_id,
+            stage=stage,
+            prompt_id=stage,
+            prompt_version="test",
+            prompt_hash="test",
+            input_hash="test",
+            provider="fake",
+            model=model,
+            output_model=output_type.__name__,
+            status="succeeded",
+        )
+        return ModelExecution(output=output, record=record)
+
+
+class AlwaysBadExcerptRunner(FakeRunner):
+    def run(self, *, project_id, stage, variables, output_type, model, validator=None, **_):
+        if output_type is not EvidenceExtractionDraft:
+            return super().run(
+                project_id=project_id,
+                stage=stage,
+                variables=variables,
+                output_type=output_type,
+                model=model,
+                validator=validator,
+            )
+        output = EvidenceExtractionDraft(
+            segment_function="argument",
+            claims=[
+                EvidenceClaimDraft(
+                    claim="Invented claim.",
+                    claim_type=ClaimType.AUTHOR_POSITION,
+                    supporting_excerpt="This sentence is invented and not in the block.",
+                    support_kind="direct",
+                    confidence=0.5,
+                )
+            ],
+        )
+        if validator is not None:
+            last_error: Exception | None = None
+            for _ in range(5):
+                try:
+                    validator(output)
+                    last_error = None
+                    break
+                except DeterministicValidationError as exc:
+                    last_error = exc
+            if last_error is not None:
+                raise last_error
+        record = ModelRunRecord(
+            project_id=project_id,
+            stage=stage,
+            prompt_id=stage,
+            prompt_version="test",
+            prompt_hash="test",
+            input_hash="test",
+            provider="fake",
+            model=model,
+            output_model=output_type.__name__,
+            status="succeeded",
+        )
+        return ModelExecution(output=output, record=record)
+
+
+def test_evidence_extractor_keeps_valid_claims_after_salvage() -> None:
+    source_id = uuid4()
+    block = BlockBuilder().build(_parsed_document(), source_id=source_id)[0][0]
+    mapper_runner = FakeRunner()
+    document_map, _ = DocumentMapperService(mapper_runner).map_document(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=[block],
+        model="fake",
+    )
+    records, _ = EvidenceExtractorService(SalvagingFakeRunner()).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=[block],
+        document_map=document_map,
+        model="fake",
+    )
+    assert len(records) == 1
+    assert records[0].status == "extracted"
+    assert len(records[0].extraction.claims) == 1
+    assert "Action occurs" in records[0].extraction.claims[0].claim
+
+
+def test_evidence_extractor_rejects_block_when_nothing_survives() -> None:
+    source_id = uuid4()
+    block = BlockBuilder().build(_parsed_document(), source_id=source_id)[0][0]
+    mapper_runner = FakeRunner()
+    document_map, _ = DocumentMapperService(mapper_runner).map_document(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=[block],
+        model="fake",
+    )
+    records, _ = EvidenceExtractorService(AlwaysBadExcerptRunner()).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=[block],
+        document_map=document_map,
+        model="fake",
+    )
+    assert len(records) == 1
+    assert records[0].status == "rejected"
+    assert records[0].extraction.claims == []
+    assert records[0].rejection_reason
+
+
+def test_extract_evidence_skips_extracted_and_reattempts_rejected(
+    tmp_path: Path,
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    workspace.save_project(project)
+    ingestion = _ingestion(Path("chapter.pdf"))
+    store = SourceArtifactStore(tmp_path / "workspaces")
+    runner = FakeRunner()
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=store,
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(runner),
+        evidence_extractor=EvidenceExtractorService(runner),
+        claim_reconciler=ClaimReconcilerService(runner),
+    )
+    source_id, blocks, _ = service.build_blocks(project.project_id, ingestion)
+    service.map_document(project.project_id, source_id, model="fake")
+    content = next(block for block in blocks if block.block_type != "front_matter")
+
+    store.save_block_extraction(
+        project.project_id,
+        source_id,
+        BlockEvidenceExtraction(
+            source_id=source_id,
+            block_id=content.block_id,
+            extraction=EvidenceExtraction(segment_function="argument", claims=[]),
+            status="rejected",
+            rejection_reason="supporting_excerpt must be copied from the supplied source block.",
+        ),
+    )
+
+    skip_snapshots: list[set[str]] = []
+    original = service.evidence_extractor.extract_source
+
+    def wrapped(**kwargs):
+        skip_snapshots.append(set(kwargs.get("skip_block_ids") or set()))
+        return original(**kwargs)
+
+    service.evidence_extractor.extract_source = wrapped  # type: ignore[method-assign]
+    manifest, _warnings = service.extract_evidence(
+        project.project_id,
+        source_id,
+        model="fake",
+    )
+    assert skip_snapshots[0] == set()
+    assert manifest.status == "evidence_ready"
+    assert manifest.evidence_count >= 1
+    saved = store.load_block_extractions(project.project_id, source_id)
+    assert any(item.status == "extracted" for item in saved)
+
+    service.extract_evidence(project.project_id, source_id, model="fake")
+    assert content.block_id in skip_snapshots[1]
+
+
+def test_reusable_document_map_skips_remap(tmp_path: Path) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    workspace.save_project(project)
+    ingestion = _ingestion(Path("chapter.pdf"))
+    store = SourceArtifactStore(tmp_path / "workspaces")
+    runner = FakeRunner()
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=store,
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(runner),
+        evidence_extractor=EvidenceExtractorService(runner),
+        claim_reconciler=ClaimReconcilerService(runner),
+    )
+    source_id, _, _ = service.build_blocks(project.project_id, ingestion)
+    first = service.map_document(project.project_id, source_id, model="fake")
+    assert service.has_reusable_document_map(project.project_id, source_id)
+    second = service.map_document(project.project_id, source_id, model="fake")
+    assert first.model_run_ids == second.model_run_ids
+
+
+def test_extract_evidence_fails_when_all_blocks_rejected(tmp_path: Path) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    workspace.save_project(project)
+    ingestion = _ingestion(Path("chapter.pdf"))
+    store = SourceArtifactStore(tmp_path / "workspaces")
+    map_runner = FakeRunner()
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=store,
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(map_runner),
+        evidence_extractor=EvidenceExtractorService(AlwaysBadExcerptRunner()),
+        claim_reconciler=ClaimReconcilerService(map_runner),
+    )
+    source_id, _, _ = service.build_blocks(project.project_id, ingestion)
+    service.map_document(project.project_id, source_id, model="fake")
+    with pytest.raises(ValueError, match="no claim-bearing evidence"):
+        service.extract_evidence(project.project_id, source_id, model="fake")
+    saved = store.load_block_extractions(project.project_id, source_id)
+    assert saved
+    assert all(item.status == "rejected" for item in saved)

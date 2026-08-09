@@ -7,6 +7,8 @@ from typing import Literal
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from thesisound.http_proxy import DEFAULT_HTTP_PROXY, configure_gemini_http_proxy
+
 
 class Settings(BaseSettings):
     """Runtime configuration loaded from environment variables."""
@@ -22,6 +24,10 @@ class Settings(BaseSettings):
     workspace_root: Path = Path("./workspaces")
     ingestion_artifact_root: Path = Path("./artifacts/ingestion")
     log_level: str = "INFO"
+
+    # Gemini-only proxy (local Xray HTTP inbound). Okian always connects directly.
+    # Set to "none" / empty to disable Gemini proxying.
+    http_proxy: str | None = DEFAULT_HTTP_PROXY
 
     model_fast: str = "gemini-3.5-flash-lite"
     model_strong: str = "gemini-3.6-flash"
@@ -134,6 +140,7 @@ class Settings(BaseSettings):
                 raise ValueError("A unique web session secret is required in production")
             if not self.web_secure_cookies:
                 raise ValueError("Secure cookies are required in production")
+        configure_gemini_http_proxy(self.http_proxy)
         return self
 
     def ensure_workspace_root(self) -> Path:

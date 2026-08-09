@@ -17,6 +17,7 @@ Promptهای اجرایی فعلی:
 prompts/research_brief/1.0.0/
 prompts/document_map/1.0.0/
 prompts/evidence_extraction/1.1.0/
+prompts/evidence_extraction/1.2.0/
 prompts/claim_reconciliation/1.0.0/
 prompts/coverage_audit/1.0.0/
 prompts/episode_plan/1.0.0/
@@ -28,6 +29,8 @@ prompts/script_reviser/1.0.0/
 ```
 
 `episode_plan/1.1.0` به Budget Report و Disagreement Graph وابسته است. نسخه `1.0.0` بدون تغییر حفظ شده تا runهای قدیمی reproducible بمانند.
+
+`evidence_extraction/1.2.0` سقف attempt را به ۳ می‌رساند تا repair برای excerpt/block validation یک دور بیشتر فرصت داشته باشد. نسخه `1.1.0` بدون تغییر حفظ شده تا runهای قدیمی reproducible بمانند.
 
 ## Contract
 

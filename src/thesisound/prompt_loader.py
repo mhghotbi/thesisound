@@ -55,13 +55,12 @@ class PromptLoader:
             )
         return matches[0].read_text(encoding="utf-8")
 
-    def load_bundle(
+    def load_contract(
         self,
         name: str,
-        variables: dict[str, Any],
         *,
         version: str | None = None,
-    ) -> PromptBundle:
+    ) -> PromptContract:
         version_dir = self._resolve_version_dir(name, version)
         contract_path = version_dir / "contract.json"
         try:
@@ -81,6 +80,17 @@ class PromptLoader:
                 f"Contract version {contract.version!r} does not match "
                 f"directory {version_dir.name!r}."
             )
+        return contract
+
+    def load_bundle(
+        self,
+        name: str,
+        variables: dict[str, Any],
+        *,
+        version: str | None = None,
+    ) -> PromptBundle:
+        version_dir = self._resolve_version_dir(name, version)
+        contract = self.load_contract(name, version=version)
 
         system_template = self._read_required(version_dir / contract.system_file)
         user_template = self._read_required(version_dir / contract.user_file)

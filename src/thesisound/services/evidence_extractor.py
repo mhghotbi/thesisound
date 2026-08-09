@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import re
 from collections.abc import Callable
-from functools import partial
 from uuid import UUID
 
 from thesisound.domain import (
@@ -13,12 +12,17 @@ from thesisound.domain import (
     ExtractedDefinition,
     ExtractedDistinction,
 )
-from thesisound.modeling import DeterministicValidationError, ModelRunRecord
+from thesisound.modeling import (
+    DeterministicValidationError,
+    ModelRunRecord,
+    StructuredOutputError,
+)
 from thesisound.services.evidence_validator import validate_evidence_extraction
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
     AnalysisProfile,
     BlockEvidenceExtraction,
+    EvidenceClaimDraft,
     EvidenceExtractionDraft,
     EvidenceExtractionPlan,
     SourceDocumentBlock,
@@ -26,6 +30,7 @@ from thesisound.source_analysis import (
 
 _WHITESPACE = re.compile(r"\s+")
 ExtractionCallback = Callable[[BlockEvidenceExtraction], None]
+_DEFAULT_MAX_ATTEMPTS = 3
 
 
 class EvidenceExtractorService:
@@ -43,6 +48,7 @@ class EvidenceExtractorService:
         plan: EvidenceExtractionPlan | None = None,
         prompt_version: str | None = None,
         on_extraction: ExtractionCallback | None = None,
+        skip_block_ids: set[str] | None = None,
     ) -> tuple[list[BlockEvidenceExtraction], list[ModelRunRecord]]:
         if document_map.source_id != source_id:
             raise ValueError("Document map belongs to a different source.")
@@ -55,6 +61,7 @@ class EvidenceExtractorService:
             if plan is not None
             else {block.block_id for block in blocks}
         )
+        skip_ids = skip_block_ids or set()
         section_by_block = {
             block_id: section
             for section in document_map.sections
@@ -63,9 +70,12 @@ class EvidenceExtractorService:
         index_by_id = {block.block_id: index for index, block in enumerate(blocks)}
         records: list[BlockEvidenceExtraction] = []
         runs: list[ModelRunRecord] = []
+        max_attempts = _evidence_max_attempts(self.model_runner, prompt_version)
 
         for block in blocks:
             if block.block_type == "front_matter" or block.block_id not in selected_ids:
+                continue
+            if block.block_id in skip_ids:
                 continue
             section = section_by_block.get(block.block_id)
             variables = {
@@ -83,34 +93,112 @@ class EvidenceExtractorService:
                     profile.neighbor_context_blocks,
                 ),
             }
-            execution = self.model_runner.run(
-                project_id=project_id,
-                stage="evidence_extraction",
-                prompt_name="evidence_extraction",
-                variables=variables,
-                output_type=EvidenceExtractionDraft,
-                model=model,
-                prompt_version=prompt_version,
-                validator=partial(_validate_draft, block=block, profile=profile),
-            )
-            extraction = _materialize_extraction(execution.output, block)
-            validate_evidence_extraction(extraction, block)
-            record = BlockEvidenceExtraction(
-                source_id=source_id,
-                block_id=block.block_id,
-                extraction=extraction,
-            )
+            attempt = {"n": 0}
+
+            def validator(
+                draft: EvidenceExtractionDraft,
+                *,
+                _block: SourceDocumentBlock = block,
+                _profile: AnalysisProfile = profile,
+                _attempt: dict[str, int] = attempt,
+                _max_attempts: int = max_attempts,
+            ) -> None:
+                _attempt["n"] += 1
+                try:
+                    _validate_draft(draft, block=_block, profile=_profile)
+                except DeterministicValidationError:
+                    if _attempt["n"] < _max_attempts:
+                        raise
+                    _salvage_draft_inplace(draft, block=_block, profile=_profile)
+
+            record: BlockEvidenceExtraction
+            run: ModelRunRecord | None = None
+            try:
+                execution = self.model_runner.run(
+                    project_id=project_id,
+                    stage="evidence_extraction",
+                    prompt_name="evidence_extraction",
+                    variables=variables,
+                    output_type=EvidenceExtractionDraft,
+                    model=model,
+                    prompt_version=prompt_version,
+                    validator=validator,
+                )
+                run = execution.record
+                extraction = _materialize_extraction(execution.output, block)
+                validate_evidence_extraction(extraction, block)
+                if not extraction.claims and not _has_auxiliary_content(extraction):
+                    record = BlockEvidenceExtraction(
+                        source_id=source_id,
+                        block_id=block.block_id,
+                        extraction=extraction,
+                        status="rejected",
+                        rejection_reason=(
+                            "No auditable evidence survived validation after retries."
+                        ),
+                    )
+                else:
+                    record = BlockEvidenceExtraction(
+                        source_id=source_id,
+                        block_id=block.block_id,
+                        extraction=extraction,
+                        status="extracted",
+                    )
+            except StructuredOutputError as exc:
+                record = BlockEvidenceExtraction(
+                    source_id=source_id,
+                    block_id=block.block_id,
+                    extraction=EvidenceExtraction(segment_function="rejected"),
+                    status="rejected",
+                    rejection_reason=str(exc)[:1_000] or type(exc).__name__,
+                )
             if on_extraction is not None:
                 on_extraction(record)
             records.append(record)
-            runs.append(execution.record)
+            if run is not None:
+                runs.append(run)
         return records, runs
+
+
+def _evidence_max_attempts(
+    model_runner: ModelRunner,
+    prompt_version: str | None,
+) -> int:
+    loader = getattr(model_runner, "prompt_loader", None)
+    if loader is None:
+        return _DEFAULT_MAX_ATTEMPTS
+    try:
+        contract = loader.load_contract("evidence_extraction", version=prompt_version)
+    except Exception:
+        return _DEFAULT_MAX_ATTEMPTS
+    return contract.max_attempts
 
 
 def _validate_draft(
     draft: EvidenceExtractionDraft,
     *,
     block: SourceDocumentBlock,
+    profile: AnalysisProfile,
+) -> None:
+    _validate_profile_budget(draft, profile)
+    normalized_source = _normalize(block.text)
+    seen_claims: set[str] = set()
+    for claim in draft.claims:
+        normalized_claim = _normalize(claim.claim).casefold()
+        if normalized_claim in seen_claims:
+            raise DeterministicValidationError(
+                f"Duplicate claim extracted from block {block.block_id}."
+            )
+        seen_claims.add(normalized_claim)
+        _validate_claim_excerpt(claim, normalized_source)
+        if claim.claim_type.value == "editorial_explanation":
+            raise DeterministicValidationError(
+                "Evidence extraction may not create editorial claims."
+            )
+
+
+def _validate_profile_budget(
+    draft: EvidenceExtractionDraft,
     profile: AnalysisProfile,
 ) -> None:
     if len(draft.claims) > profile.max_claims_per_block:
@@ -128,26 +216,48 @@ def _validate_draft(
             "This analysis profile does not allocate budget for objections or responses."
         )
 
+
+def _validate_claim_excerpt(claim: EvidenceClaimDraft, normalized_source: str) -> None:
+    excerpt = _normalize(claim.supporting_excerpt)
+    if len(excerpt) < 12:
+        raise DeterministicValidationError("supporting_excerpt is too short to audit.")
+    if excerpt not in normalized_source:
+        raise DeterministicValidationError(
+            "supporting_excerpt must be copied from the supplied source block."
+        )
+
+
+def _salvage_draft_inplace(
+    draft: EvidenceExtractionDraft,
+    *,
+    block: SourceDocumentBlock,
+    profile: AnalysisProfile,
+) -> None:
+    """Drop invalid claims/fields on the final attempt; keep the rest."""
+
     normalized_source = _normalize(block.text)
+    kept: list[EvidenceClaimDraft] = []
     seen_claims: set[str] = set()
     for claim in draft.claims:
+        if claim.claim_type.value == "editorial_explanation":
+            continue
         normalized_claim = _normalize(claim.claim).casefold()
         if normalized_claim in seen_claims:
-            raise DeterministicValidationError(
-                f"Duplicate claim extracted from block {block.block_id}."
-            )
+            continue
+        try:
+            _validate_claim_excerpt(claim, normalized_source)
+        except DeterministicValidationError:
+            continue
         seen_claims.add(normalized_claim)
-        excerpt = _normalize(claim.supporting_excerpt)
-        if len(excerpt) < 12:
-            raise DeterministicValidationError("supporting_excerpt is too short to audit.")
-        if excerpt not in normalized_source:
-            raise DeterministicValidationError(
-                "supporting_excerpt must be copied from the supplied source block."
-            )
-        if claim.claim_type.value == "editorial_explanation":
-            raise DeterministicValidationError(
-                "Evidence extraction may not create editorial claims."
-            )
+        kept.append(claim)
+        if len(kept) >= profile.max_claims_per_block:
+            break
+    draft.claims = kept
+    if not profile.include_examples:
+        draft.examples = []
+    if not profile.include_objections_and_responses:
+        draft.objections = []
+        draft.responses = []
 
 
 def _materialize_extraction(
@@ -195,6 +305,17 @@ def _materialize_extraction(
         references_to_other_sections=draft.references_to_other_sections,
         unresolved_context=draft.unresolved_context,
         must_not_be_lost=draft.must_not_be_lost,
+    )
+
+
+def _has_auxiliary_content(extraction: EvidenceExtraction) -> bool:
+    return bool(
+        extraction.definitions
+        or extraction.distinctions
+        or extraction.examples
+        or extraction.objections
+        or extraction.responses
+        or extraction.must_not_be_lost
     )
 
 

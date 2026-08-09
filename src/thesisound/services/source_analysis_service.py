@@ -6,6 +6,7 @@ from uuid import UUID, uuid5
 
 from thesisound.domain import (
     AuthorityClass,
+    DocumentMap,
     Project,
     ProjectState,
     SourceAccess,
@@ -94,6 +95,14 @@ class SourceAnalysisService:
         prompt_version: str | None = None,
     ) -> SourceAnalysisManifest:
         blocks = self.artifact_store.load_blocks(project_id, source_id)
+        existing = self._load_reusable_document_map(project_id, source_id, blocks)
+        if existing is not None:
+            manifest = self.artifact_store.load_manifest(project_id, source_id)
+            manifest.status = "document_mapped"
+            manifest.updated_at = datetime.now(UTC)
+            self.artifact_store.save_manifest(manifest)
+            return manifest
+
         document_map, run = self.document_mapper.map_document(
             project_id=project_id,
             source_id=source_id,
@@ -109,6 +118,10 @@ class SourceAnalysisService:
         self.artifact_store.save_manifest(manifest)
         return manifest
 
+    def has_reusable_document_map(self, project_id: UUID, source_id: UUID) -> bool:
+        blocks = self.artifact_store.load_blocks(project_id, source_id)
+        return self._load_reusable_document_map(project_id, source_id, blocks) is not None
+
     def extract_evidence(
         self,
         project_id: UUID,
@@ -116,14 +129,27 @@ class SourceAnalysisService:
         *,
         model: str,
         prompt_version: str | None = None,
-    ) -> SourceAnalysisManifest:
+    ) -> tuple[SourceAnalysisManifest, list[str]]:
         project = self.workspace_store.load_project(project_id)
         if project.brief is None:
             raise ValueError("ResearchBrief is required to plan evidence depth.")
         blocks = self.artifact_store.load_blocks(project_id, source_id)
         document_map = self.artifact_store.load_document_map(project_id, source_id)
+        # A changed brief can shift selected_block_ids between retry attempts.
         plan = plan_evidence_extraction(project.brief, document_map, blocks)
         self.artifact_store.save_extraction_plan(project_id, source_id, plan)
+
+        known_ids = {block.block_id for block in blocks}
+        self.artifact_store.prune_block_extractions(project_id, source_id, known_ids)
+        prior = [
+            record
+            for record in self.artifact_store.load_block_extractions(project_id, source_id)
+            if record.block_id in known_ids
+        ]
+        extracted_prior = [
+            record for record in prior if record.status == "extracted"
+        ]
+        skip_ids = {record.block_id for record in extracted_prior}
 
         def save_one(record: BlockEvidenceExtraction) -> None:
             self.artifact_store.save_block_extraction(
@@ -132,7 +158,7 @@ class SourceAnalysisService:
                 record,
             )
 
-        records, runs = self.evidence_extractor.extract_source(
+        new_records, runs = self.evidence_extractor.extract_source(
             project_id=project_id,
             source_id=source_id,
             blocks=blocks,
@@ -141,22 +167,65 @@ class SourceAnalysisService:
             plan=plan,
             prompt_version=prompt_version,
             on_extraction=save_one,
+            skip_block_ids=skip_ids,
         )
-        validate_evidence_collection(records, blocks)
+        by_id = {record.block_id: record for record in extracted_prior}
+        by_id.update({record.block_id: record for record in new_records})
+        records = [
+            by_id[block.block_id]
+            for block in blocks
+            if block.block_id in by_id
+        ]
+        validate_evidence_collection(
+            [record for record in records if record.status == "extracted"],
+            blocks,
+        )
         self.artifact_store.save_evidence(project_id, source_id, records)
+
+        kept_ids = {
+            record.block_id for record in records if record.status == "extracted"
+        }
+        kept_tokens = sum(
+            block.estimated_token_count
+            for block in blocks
+            if block.block_id in kept_ids and block.block_id in set(plan.selected_block_ids)
+        )
+        total_tokens = plan.total_source_tokens
+        kept_coverage = kept_tokens / total_tokens if total_tokens else 1.0
+        claim_count = sum(
+            len(record.extraction.claims)
+            for record in records
+            if record.status == "extracted"
+        )
+        rejected = [record for record in records if record.status == "rejected"]
+        warnings = [
+            f"Rejected evidence for {record.block_id}: {record.rejection_reason}"
+            for record in rejected
+            if record.rejection_reason
+        ]
+
         manifest = self.artifact_store.load_manifest(project_id, source_id)
         manifest.status = "evidence_ready"
         manifest.selected_block_count = len(plan.selected_block_ids)
         manifest.deferred_block_count = len(plan.deferred_block_ids)
         manifest.analysis_depth = plan.profile.depth
-        manifest.evidence_token_coverage = plan.achieved_token_coverage
-        manifest.evidence_count = sum(
-            len(record.extraction.claims) for record in records
-        )
+        manifest.evidence_token_coverage = min(1.0, kept_coverage)
+        manifest.evidence_count = claim_count
         manifest.model_run_ids.extend(run.run_id for run in runs)
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
-        return manifest
+
+        if claim_count == 0:
+            raise ValueError(
+                "Evidence extraction produced no claim-bearing evidence after retries."
+            )
+        if kept_coverage + 1e-9 < plan.profile.block_coverage_target:
+            raise ValueError(
+                "Evidence coverage collapsed to "
+                f"{kept_coverage:.0%} after block rejections; "
+                f"required coverage is {plan.profile.block_coverage_target:.0%}."
+            )
+        return manifest, warnings
 
     def build_claims(
         self,
@@ -167,7 +236,11 @@ class SourceAnalysisService:
         prompt_version: str | None = None,
         finalize_project: bool = True,
     ) -> tuple[ClaimLedger, SourceAnalysisManifest]:
-        extractions = self.artifact_store.load_extractions(project_id, source_id)
+        extractions = [
+            record
+            for record in self.artifact_store.load_extractions(project_id, source_id)
+            if record.status == "extracted"
+        ]
         ledger, run = self.claim_reconciler.reconcile(
             project_id=project_id,
             source_id=source_id,
@@ -239,6 +312,33 @@ class SourceAnalysisService:
             if resolved_source_id is not None:
                 self._mark_manifest_failed(project_id, resolved_source_id, str(exc))
             raise
+
+    def _load_reusable_document_map(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        blocks: list[SourceDocumentBlock],
+    ) -> DocumentMap | None:
+        try:
+            document_map = self.artifact_store.load_document_map(project_id, source_id)
+        except (FileNotFoundError, OSError):
+            return None
+        if document_map.source_id != source_id:
+            return None
+        known_ids = {block.block_id for block in blocks}
+        content_ids = {
+            block.block_id for block in blocks if block.block_type != "front_matter"
+        }
+        mapped: list[str] = []
+        for section in document_map.sections:
+            if set(section.source_block_ids) - known_ids:
+                return None
+            mapped.extend(section.source_block_ids)
+        mapped_content = set(mapped) & content_ids
+        coverage = len(mapped_content) / len(content_ids) if content_ids else 1.0
+        if coverage < 0.9:
+            return None
+        return document_map
 
     @staticmethod
     def _enter_corpus_building(project: Project) -> None:

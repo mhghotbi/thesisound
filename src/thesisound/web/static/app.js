@@ -55,10 +55,55 @@
 
   syncPressedStates();
 
+  const digitMap = {
+    "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4",
+    "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9",
+    "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
+    "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
+  };
+
+  const toAsciiDigits = (value) =>
+    Array.from(value, (character) => digitMap[character] ?? character).join("");
+
+  const normalizePhoneInput = (value) => {
+    let digits = "";
+    for (const character of toAsciiDigits(value)) {
+      if (character >= "0" && character <= "9") digits += character;
+    }
+    if (digits.startsWith("0098")) digits = `0${digits.slice(4)}`;
+    else if (digits.startsWith("98") && digits.length >= 12) digits = `0${digits.slice(2)}`;
+    else if (digits.startsWith("9")) digits = `0${digits}`;
+    return digits.slice(0, 11);
+  };
+
+  const isValidPhone = (value) => /^09\d{9}$/.test(value);
+
+  document.querySelectorAll("[data-phone-form]").forEach((form) => {
+    const input = form.querySelector('input[name="phone"]');
+    const submit = form.querySelector('button[type="submit"]');
+    if (!input || !submit) return;
+
+    const syncPhoneField = () => {
+      const normalized = normalizePhoneInput(input.value);
+      if (input.value !== normalized) input.value = normalized;
+      const valid = isValidPhone(normalized);
+      submit.disabled = !valid;
+      input.setCustomValidity(valid || !normalized ? "" : "شماره باید ۱۱ رقم و با 09 شروع شود.");
+    };
+
+    input.addEventListener("input", syncPhoneField);
+    input.addEventListener("blur", syncPhoneField);
+    form.addEventListener("submit", (event) => {
+      syncPhoneField();
+      if (!isValidPhone(input.value)) event.preventDefault();
+    });
+    syncPhoneField();
+  });
+
   const otp = document.querySelector(".otp-input");
   if (otp) {
     otp.addEventListener("input", () => {
-      otp.value = otp.value.replace(/[^\d۰-۹]/g, "").slice(0, 6);
+      otp.value = toAsciiDigits(otp.value).replace(/\D/g, "").slice(0, 6);
     });
   }
 

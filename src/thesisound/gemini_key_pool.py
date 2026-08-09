@@ -359,11 +359,18 @@ def _normalize_keys(api_keys: Sequence[str]) -> list[str]:
 def _default_client_factory(api_key: str) -> Any:
     try:
         from google import genai
+        from google.genai import types
     except ImportError as exc:
         raise ModelConfigurationError(
             "Install the Gemini extra with: uv sync --extra gemini"
         ) from exc
-    return genai.Client(api_key=api_key, vertexai=False)
+    from thesisound.http_proxy import gemini_http_options
+
+    kwargs: dict[str, Any] = {"api_key": api_key, "vertexai": False}
+    options = gemini_http_options()
+    if options is not None:
+        kwargs["http_options"] = types.HttpOptions(**options)
+    return genai.Client(**kwargs)
 
 
 def _default_adc_client_factory() -> Any:
@@ -371,6 +378,7 @@ def _default_adc_client_factory() -> Any:
         import google.auth
         from google import genai
         from google.auth.exceptions import DefaultCredentialsError
+        from google.genai import types
     except ImportError as exc:
         raise ModelConfigurationError(
             "Install the Gemini extra with: uv sync --extra gemini"
@@ -383,7 +391,13 @@ def _default_adc_client_factory() -> Any:
             "Application Default Credentials are unavailable. Configure OAuth/ADC with "
             "`gcloud auth application-default login` or another supported ADC source."
         ) from exc
-    return genai.Client(credentials=credentials, vertexai=False)
+    from thesisound.http_proxy import gemini_http_options
+
+    kwargs: dict[str, Any] = {"credentials": credentials, "vertexai": False}
+    options = gemini_http_options()
+    if options is not None:
+        kwargs["http_options"] = types.HttpOptions(**options)
+    return genai.Client(**kwargs)
 
 
 def _authentication_failure_message(

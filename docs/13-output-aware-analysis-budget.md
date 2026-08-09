@@ -196,6 +196,7 @@ src/thesisound/services/source_analysis_service.py
 src/thesisound/services/source_artifact_store.py
 src/thesisound/source_analysis.py
 prompts/evidence_extraction/1.1.0/
+prompts/evidence_extraction/1.2.0/
 ```
 
 `extract-evidence` و `analyze-source` profile را خودکار از Research Brief پروژه می‌سازند. CLI پارامتر duration جداگانه ندارد؛ منبع حقیقت همان `target_duration_minutes` در brief است تا دو تنظیم متناقض ایجاد نشود.

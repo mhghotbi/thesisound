@@ -43,10 +43,10 @@ def normalize_phone(value: str) -> str:
         digits = "0" + digits[4:]
     elif digits.startswith("98") and len(digits) >= 12:
         digits = "0" + digits[2:]
-    elif digits.startswith("9") and len(digits) in {9, 10}:
+    elif digits.startswith("9") and len(digits) == 10:
         digits = "0" + digits
 
-    if not 10 <= len(digits) <= 11 or not digits.startswith("09"):
+    if len(digits) != 11 or not digits.startswith("09"):
         raise OtpError("شماره موبایل معتبر نیست.")
     return digits
 

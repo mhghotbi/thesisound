@@ -59,15 +59,22 @@ class FakeAnalysisService:
             block_count=1,
         )
 
+    def has_reusable_document_map(self, project_id, source_id):
+        del project_id, source_id
+        return False
+
     def extract_evidence(self, project_id, source_id, *, model):
         del model
-        return SourceAnalysisManifest(
-            project_id=project_id,
-            source_id=source_id,
-            source_sha256="a" * 64,
-            status="evidence_ready",
-            block_count=1,
-            evidence_count=1,
+        return (
+            SourceAnalysisManifest(
+                project_id=project_id,
+                source_id=source_id,
+                source_sha256="a" * 64,
+                status="evidence_ready",
+                block_count=1,
+                evidence_count=1,
+            ),
+            [],
         )
 
     def build_claims(
