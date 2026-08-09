@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from thesisound import tracing
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.plan_approval import (
@@ -185,74 +186,92 @@ class ScriptBuildRunService:
         if run.status != "queued":
             raise ValueError(f"Cannot start script run with status {run.status}.")
 
-        try:
-            project = self.workspace_store.load_project(project_id)
-            approval = self.approval_store.require_current(project)
-            if approval.plan_hash != run.approved_plan_hash:
-                raise ValueError("Queued script run does not match the approved Episode Plan.")
-            if project.state in {
-                ProjectState.EPISODE_PLANNED,
-                ProjectState.FAILED_RETRYABLE,
-            }:
-                transition(project, ProjectState.SCRIPT_DRAFTING)
-                self.workspace_store.save_project(project)
-            elif project.state not in {
-                ProjectState.SCRIPT_DRAFTING,
-                ProjectState.SCRIPT_READY,
-                ProjectState.SCRIPT_VERIFYING,
-            }:
-                raise ValueError(f"Cannot build script from project state {project.state.value}.")
+        # new_root=True: runs from a BackgroundTasks callback after the request that
+        # queued it has already returned, so there is no live parent span to attach to.
+        with tracing.span(
+            "script.run",
+            component="script",
+            kind="stage",
+            new_root=True,
+            project_id=project_id,
+            workflow_run_id=run.run_id,
+        ) as root:
+            try:
+                project = self.workspace_store.load_project(project_id)
+                approval = self.approval_store.require_current(project)
+                if approval.plan_hash != run.approved_plan_hash:
+                    raise ValueError(
+                        "Queued script run does not match the approved Episode Plan."
+                    )
+                if project.state in {
+                    ProjectState.EPISODE_PLANNED,
+                    ProjectState.FAILED_RETRYABLE,
+                }:
+                    transition(project, ProjectState.SCRIPT_DRAFTING)
+                    self.workspace_store.save_project(project)
+                elif project.state not in {
+                    ProjectState.SCRIPT_DRAFTING,
+                    ProjectState.SCRIPT_READY,
+                    ProjectState.SCRIPT_VERIFYING,
+                }:
+                    raise ValueError(
+                        f"Cannot build script from project state {project.state.value}."
+                    )
 
-            run.status = "running"
-            run.started_at = datetime.now(UTC)
-            run.finished_at = None
-            run.last_error = None
-            self.run_store.save(run)
+                run.status = "running"
+                run.started_at = datetime.now(UTC)
+                run.finished_at = None
+                run.last_error = None
+                self.run_store.save(run)
 
-            pipeline = self.pipeline_factory(project_id)
-            pipeline.run(
-                project_id,
-                glossary_model=self.glossary_model,
-                writer_model=self.writer_model,
-                verifier_model=self.verifier_model,
-                reviser_model=self.reviser_model,
-                on_stage=lambda value: self._set_stage(run, value),
-            )
-            project = self.workspace_store.load_project(project_id)
-            if project.state != ProjectState.SCRIPT_VERIFIED:
-                raise ValueError("Script pipeline ended without reaching SCRIPT_VERIFIED.")
-            self._mark_succeeded(run)
-            return run
-        except Exception as exc:
-            message = str(exc)[:1_000] or type(exc).__name__
-            project = self.workspace_store.load_project(project_id)
-            if (
-                project.state == ProjectState.SCRIPT_VERIFIED
-                and self.script_store.has_verified_artifacts(
+                pipeline = self.pipeline_factory(project_id)
+                pipeline.run(
                     project_id,
-                    plan_hash=run.approved_plan_hash,
+                    glossary_model=self.glossary_model,
+                    writer_model=self.writer_model,
+                    verifier_model=self.verifier_model,
+                    reviser_model=self.reviser_model,
+                    on_stage=lambda value: self._set_stage(run, value),
                 )
-            ):
+                project = self.workspace_store.load_project(project_id)
+                if project.state != ProjectState.SCRIPT_VERIFIED:
+                    raise ValueError("Script pipeline ended without reaching SCRIPT_VERIFIED.")
                 self._mark_succeeded(run)
                 return run
-            if project.state in {
-                ProjectState.SCRIPT_DRAFTING,
-                ProjectState.SCRIPT_READY,
-                ProjectState.SCRIPT_VERIFYING,
-                ProjectState.SCRIPT_VERIFIED,
-            }:
-                mark_failed(project, message)
-                self.workspace_store.save_project(project)
-            elif project.state == ProjectState.FAILED_RETRYABLE:
-                project.last_error = message
-                project.updated_at = datetime.now(UTC)
-                self.workspace_store.save_project(project)
-            run.status = "failed"
-            run.stage = "failed"
-            run.last_error = message
-            run.finished_at = datetime.now(UTC)
-            self.run_store.save(run)
-            return run
+            except Exception as exc:
+                # run() always returns a ScriptBuildRun, never raises, so the span's
+                # own automatic exception handling never fires here.
+                root.mark("error", reason=type(exc).__name__)
+                message = str(exc)[:1_000] or type(exc).__name__
+                project = self.workspace_store.load_project(project_id)
+                if (
+                    project.state == ProjectState.SCRIPT_VERIFIED
+                    and self.script_store.has_verified_artifacts(
+                        project_id,
+                        plan_hash=run.approved_plan_hash,
+                    )
+                ):
+                    root.mark("ok")
+                    self._mark_succeeded(run)
+                    return run
+                if project.state in {
+                    ProjectState.SCRIPT_DRAFTING,
+                    ProjectState.SCRIPT_READY,
+                    ProjectState.SCRIPT_VERIFYING,
+                    ProjectState.SCRIPT_VERIFIED,
+                }:
+                    mark_failed(project, message)
+                    self.workspace_store.save_project(project)
+                elif project.state == ProjectState.FAILED_RETRYABLE:
+                    project.last_error = message
+                    project.updated_at = datetime.now(UTC)
+                    self.workspace_store.save_project(project)
+                run.status = "failed"
+                run.stage = "failed"
+                run.last_error = message
+                run.finished_at = datetime.now(UTC)
+                self.run_store.save(run)
+                return run
 
     def recover_interrupted_runs(self) -> list[UUID]:
         recovered: list[UUID] = []
@@ -335,8 +354,17 @@ class ScriptBuildRunService:
         }
         if value not in allowed:
             raise ValueError(f"Unknown script stage: {value}")
+        previous = run.stage
         run.stage = cast(ScriptBuildStage, value)
         self.run_store.save(run)
+        tracing.event(
+            "run.stage_changed",
+            component="script",
+            project_id=run.project_id,
+            workflow_run_id=run.run_id,
+            previous=previous,
+            current=value,
+        )
 
 
 def _atomic_write(path: Path, content: str) -> None:

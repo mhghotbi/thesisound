@@ -9,6 +9,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from thesisound import tracing
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore
 
@@ -65,63 +66,69 @@ class WorkflowRevisionService:
         actor: str,
         reason: str | None = None,
     ) -> WorkflowRevisionReceipt:
-        project = self.workspace.load_project(project_id)
-        project_dir = self.workspace.project_dir(project_id)
-        active = _active_run_labels(project_dir)
-        if active:
-            raise ValueError(
-                "تا وقتی اجرای فعال متوقف یا تمام نشده نمی‌توان مرحله را عقب برد. "
-                "اجرای فعال: " + "، ".join(active)
+        with tracing.span(
+            "project.rewind", component="project", kind="fs", project_id=project_id,
+            subject_type="target", subject_id=target,
+        ) as span:
+            project = self.workspace.load_project(project_id)
+            project_dir = self.workspace.project_dir(project_id)
+            active = _active_run_labels(project_dir)
+            if active:
+                raise ValueError(
+                    "تا وقتی اجرای فعال متوقف یا تمام نشده نمی‌توان مرحله را عقب برد. "
+                    "اجرای فعال: " + "، ".join(active)
+                )
+
+            if target == "sources" and project.state == ProjectState.BRIEF_READY:
+                raise ValueError("ابتدا برداشت پژوهش را تأیید کنید، سپس وارد منابع شوید.")
+
+            previous_state = project.state
+            archive_dir = _archive_directory(project_dir)
+            archived_paths = _archive_downstream(
+                project_dir,
+                archive_dir,
+                keep=_REUSABLE_ANALYSIS_PATHS,
             )
+            if target == "brief":
+                candidate_path = project_dir / "web-search-candidates.json"
+                if candidate_path.exists():
+                    archive_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(candidate_path), str(archive_dir / candidate_path.name))
+                    archived_paths.append(candidate_path.name)
+                _reset_selected_sources(project_dir)
+                project.state = ProjectState.BRIEF_READY
+            else:
+                project.state = (
+                    ProjectState.SOURCE_SELECTION_REQUIRED
+                    if _has_ready_source(project_dir)
+                    else ProjectState.SOURCES_COLLECTING
+                )
 
-        if target == "sources" and project.state == ProjectState.BRIEF_READY:
-            raise ValueError("ابتدا برداشت پژوهش را تأیید کنید، سپس وارد منابع شوید.")
+            project.sources = []
+            project.episode_plan = None
+            project.script = None
+            project.last_error = None
+            project.updated_at = datetime.now(UTC)
+            self.workspace.save_project(project)
 
-        previous_state = project.state
-        archive_dir = _archive_directory(project_dir)
-        archived_paths = _archive_downstream(
-            project_dir,
-            archive_dir,
-            keep=_REUSABLE_ANALYSIS_PATHS,
-        )
-        if target == "brief":
-            candidate_path = project_dir / "web-search-candidates.json"
-            if candidate_path.exists():
+            receipt = WorkflowRevisionReceipt(
+                project_id=project_id,
+                target=target,
+                actor=actor,
+                reason=reason.strip() if reason and reason.strip() else None,
+                previous_state=previous_state,
+                new_state=project.state,
+                archived_paths=archived_paths,
+            )
+            if archived_paths:
                 archive_dir.mkdir(parents=True, exist_ok=True)
-                shutil.move(str(candidate_path), str(archive_dir / candidate_path.name))
-                archived_paths.append(candidate_path.name)
-            _reset_selected_sources(project_dir)
-            project.state = ProjectState.BRIEF_READY
-        else:
-            project.state = (
-                ProjectState.SOURCE_SELECTION_REQUIRED
-                if _has_ready_source(project_dir)
-                else ProjectState.SOURCES_COLLECTING
-            )
-
-        project.sources = []
-        project.episode_plan = None
-        project.script = None
-        project.last_error = None
-        project.updated_at = datetime.now(UTC)
-        self.workspace.save_project(project)
-
-        receipt = WorkflowRevisionReceipt(
-            project_id=project_id,
-            target=target,
-            actor=actor,
-            reason=reason.strip() if reason and reason.strip() else None,
-            previous_state=previous_state,
-            new_state=project.state,
-            archived_paths=archived_paths,
-        )
-        if archived_paths:
-            archive_dir.mkdir(parents=True, exist_ok=True)
-            (archive_dir / "revision.json").write_text(
-                receipt.model_dump_json(indent=2),
-                encoding="utf-8",
-            )
-        return receipt
+                (archive_dir / "revision.json").write_text(
+                    receipt.model_dump_json(indent=2),
+                    encoding="utf-8",
+                )
+            span.set(previous_state=previous_state.value, new_state=project.state.value)
+            span.measure(archived_path_count=len(archived_paths))
+            return receipt
 
 
 def _active_run_labels(project_dir: Path) -> list[str]:

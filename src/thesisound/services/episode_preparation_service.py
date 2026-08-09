@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import (
     ClaimRecord,
     EpisodePlan,
@@ -86,6 +87,13 @@ class EpisodePreparationService:
         assert project.brief is not None
         key = self._planning_key(corpus, project.brief, include_duration=False)
         reused = self._reusable_coverage(project_id, key, project.brief)
+        tracing.event(
+            "cache.lookup",
+            component="cache",
+            project_id=project_id,
+            cache="coverage_audit",
+            result="hit" if reused is not None else "miss",
+        )
         if reused is not None:
             self._save_coverage_manifest(project_id, reused, corpus.source_ids)
             return reused
@@ -178,6 +186,13 @@ class EpisodePreparationService:
         key = self._planning_key(corpus, project.brief, include_duration=True)
         stored_inputs = self.episode_store.load_stage_inputs(project_id)
         plan = self._reusable_plan(project_id, stored_inputs, key)
+        tracing.event(
+            "cache.lookup",
+            component="cache",
+            project_id=project_id,
+            cache="episode_plan",
+            result="hit" if plan is not None else "miss",
+        )
         model_run_ids: list[UUID] = []
         if plan is None:
             coverage = self.episode_store.load_coverage(project_id)

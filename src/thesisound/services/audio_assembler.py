@@ -8,6 +8,8 @@ import wave
 from pathlib import Path
 from typing import Literal
 
+from thesisound import tracing
+
 
 class AudioAssembler:
     def __init__(
@@ -27,10 +29,16 @@ class AudioAssembler:
         command = shutil.which(self.ffmpeg_command)
         if command is None:
             raise RuntimeError("FFmpeg is required for final loudness normalization.")
-        with tempfile.TemporaryDirectory(prefix="thesisound-audio-") as directory:
+        with (
+            tempfile.TemporaryDirectory(prefix="thesisound-audio-") as directory,
+            tracing.span(
+                "audio.assemble.ffmpeg", component="audio", kind="subprocess"
+            ) as span,
+        ):
             source = Path(directory) / "raw.wav"
             output = Path(directory) / "normalized.wav"
             source.write_bytes(raw)
+            span.measure(input_bytes=len(raw))
             completed = subprocess.run(
                 [
                     command,
@@ -53,10 +61,14 @@ class AudioAssembler:
                 timeout=300,
                 check=False,
             )
+            span.set(exit_code=completed.returncode)
             if completed.returncode != 0 or not output.exists():
                 detail = completed.stderr.strip() or "FFmpeg did not create normalized audio."
+                span.set(stderr_tail=detail[:700])
                 raise RuntimeError(detail)
-            return output.read_bytes(), "ffmpeg_loudnorm"
+            output_bytes = output.read_bytes()
+            span.measure(output_bytes=len(output_bytes))
+            return output_bytes, "ffmpeg_loudnorm"
 
 
 def concatenate_wav(

@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid5
 
+from thesisound import tracing
 from thesisound.domain import (
     AuthorityClass,
     DocumentMap,
@@ -102,26 +103,56 @@ class SourceAnalysisService:
         model: str,
         prompt_version: str | None = None,
     ) -> SourceAnalysisManifest:
-        blocks = self.artifact_store.load_blocks(project_id, source_id)
-        if self._load_reusable_document_map(project_id, source_id, blocks) is not None:
-            return self._mark_document_mapped(project_id, source_id)
-
-        content_key = block_sequence_key(blocks)
-        shared = self.document_map_cache.load(content_key, blocks, source_id=source_id)
-        if shared is not None:
-            self.artifact_store.save_document_map(project_id, source_id, shared)
-            return self._mark_document_mapped(project_id, source_id)
-
-        document_map, run = self.document_mapper.map_document(
+        with tracing.span(
+            "corpus.map_document",
+            component="corpus",
             project_id=project_id,
-            source_id=source_id,
-            blocks=blocks,
-            model=model,
-            prompt_version=prompt_version,
-        )
-        self.artifact_store.save_document_map(project_id, source_id, document_map)
-        self.document_map_cache.save(content_key, blocks, document_map)
-        return self._mark_document_mapped(project_id, source_id, run_id=run.run_id)
+            subject_type="source",
+            subject_id=str(source_id),
+        ) as span:
+            blocks = self.artifact_store.load_blocks(project_id, source_id)
+            reusable = self._load_reusable_document_map(project_id, source_id, blocks)
+            tracing.event(
+                "cache.lookup",
+                component="cache",
+                project_id=project_id,
+                cache="project_document_map",
+                result="hit" if reusable is not None else "miss",
+                subject_type="source",
+                subject_id=str(source_id),
+            )
+            if reusable is not None:
+                span.set(source="project_reuse")
+                return self._mark_document_mapped(project_id, source_id)
+
+            content_key = block_sequence_key(blocks)
+            shared = self.document_map_cache.load(content_key, blocks, source_id=source_id)
+            tracing.event(
+                "cache.lookup",
+                component="cache",
+                project_id=project_id,
+                cache="shared_document_map",
+                result="hit" if shared is not None else "miss",
+                subject_type="source",
+                subject_id=str(source_id),
+                content_key=content_key[:16],
+            )
+            if shared is not None:
+                self.artifact_store.save_document_map(project_id, source_id, shared)
+                span.set(source="shared_cache")
+                return self._mark_document_mapped(project_id, source_id)
+
+            document_map, run = self.document_mapper.map_document(
+                project_id=project_id,
+                source_id=source_id,
+                blocks=blocks,
+                model=model,
+                prompt_version=prompt_version,
+            )
+            self.artifact_store.save_document_map(project_id, source_id, document_map)
+            self.document_map_cache.save(content_key, blocks, document_map)
+            span.set(source="model")
+            return self._mark_document_mapped(project_id, source_id, run_id=run.run_id)
 
     def has_reusable_document_map(self, project_id: UUID, source_id: UUID) -> bool:
         blocks = self.artifact_store.load_blocks(project_id, source_id)

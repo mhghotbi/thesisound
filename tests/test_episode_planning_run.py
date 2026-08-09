@@ -1,6 +1,7 @@
 from pathlib import Path
 from uuid import UUID, uuid4
 
+from thesisound import tracing
 from thesisound.domain import (
     EpisodePlan,
     EpisodeSegment,
@@ -176,6 +177,89 @@ def test_successful_run_stops_at_episode_review_gate(tmp_path: Path) -> None:
     ]
 
 
+def test_successful_run_produces_a_stage_span_per_step(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(raw_input="موضوع", state=ProjectState.CORPUS_READY, brief=_brief())
+    fake = FakePreparationService(workspace)
+    service = _service(tmp_path, project, fake)
+
+    service.queue(project.project_id)
+    run = service.run(project.project_id)
+
+    assert run.status == "succeeded"
+    root = recording_tracer.sink.one("episode.run")
+    assert root.status == "ok"
+    assert root.parent_span_id is None  # new_root: no ambient HTTP span was open
+
+    step_names = [
+        "episode.audit_coverage",
+        "episode.prioritize_claims",
+        "episode.estimate_budget",
+        "episode.build_disagreement_graph",
+        "episode.plan_episode",
+        "episode.build_evidence_packs",
+    ]
+    for name in step_names:
+        step = recording_tracer.sink.one(name)
+        assert step.parent_span_id == root.context.span_id
+        assert step.context.trace_id == root.context.trace_id
+        assert step.status == "ok"
+
+    stage_events = [
+        event.attributes["current"]
+        for event in recording_tracer.sink.events
+        if event.name == "run.stage_changed"
+    ]
+    assert stage_events == [
+        "auditing_coverage",
+        "prioritizing_claims",
+        "estimating_budget",
+        "building_disagreements",
+        "planning_episode",
+        "building_evidence_packs",
+    ]
+
+
+def test_blocked_run_marks_its_span_blocked_not_error(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(raw_input="موضوع", state=ProjectState.CORPUS_READY, brief=_brief(20))
+    fake = FakePreparationService(workspace, can_plan=False, supported_minutes=10)
+    service = _service(tmp_path, project, fake)
+
+    service.queue(project.project_id)
+    run = service.run(project.project_id)
+
+    assert run.status == "blocked"
+    root = recording_tracer.sink.one("episode.run")
+    assert root.status == "blocked"
+    assert root.attributes["status_reason"] == "coverage_insufficient"
+
+
+def test_failed_step_marks_the_run_span_as_error(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(raw_input="موضوع", state=ProjectState.CORPUS_READY, brief=_brief())
+    failing = FakePreparationService(workspace, fail_stage="priorities")
+    service = _service(tmp_path, project, failing)
+
+    service.queue(project.project_id)
+    run = service.run(project.project_id)
+
+    assert run.status == "failed"
+    root = recording_tracer.sink.one("episode.run")
+    assert root.status == "error"
+    assert root.attributes["status_reason"] == "ValueError"
+    # The failure surfaces first as the step span's own automatic error status.
+    step = recording_tracer.sink.one("episode.prioritize_claims")
+    assert step.status == "error"
+    assert step.error_type == "ValueError"
+
+
 def test_insufficient_coverage_blocks_without_marking_project_failed(
     tmp_path: Path,
 ) -> None:
@@ -196,6 +280,29 @@ def test_insufficient_coverage_blocks_without_marking_project_failed(
     assert run.material_gaps == ["Missing historical context"]
     assert workspace.load_project(project.project_id).state == ProjectState.EPISODE_PLANNING
     assert fake.calls == ["coverage"]
+
+
+def test_block_and_resolve_by_reducing_duration_emit_a_gate_pair(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    """gate.blocked and gate.resolved bracket real, currently-unmeasured human
+    wait time -- usually the largest slice of a project's end-to-end latency."""
+
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(raw_input="موضوع", state=ProjectState.CORPUS_READY, brief=_brief(20))
+    fake = FakePreparationService(workspace, can_plan=False, supported_minutes=10)
+    service = _service(tmp_path, project, fake)
+    service.queue(project.project_id)
+    service.run(project.project_id)
+
+    service.requeue_with_duration(project.project_id, 10)
+
+    blocked = [e for e in recording_tracer.sink.events if e.name == "gate.blocked"]
+    resolved = [e for e in recording_tracer.sink.events if e.name == "gate.resolved"]
+    assert len(blocked) == 1
+    assert len(resolved) == 1
+    assert resolved[0].attributes["resolution"] == "reduced_duration"
+    assert blocked[0].workflow_run_id == resolved[0].workflow_run_id
 
 
 def test_blocked_run_can_reduce_duration_in_a_new_attempt(tmp_path: Path) -> None:

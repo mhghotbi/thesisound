@@ -1060,6 +1060,15 @@ wheels = [
 ]
 
 [[package]]
+name = "kavenegar"
+version = "1.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/42/25/9720dfe67406500336b03b6e8ea7998f5580fe70d858470f26db1be24b80/kavenegar-1.1.2.tar.gz", hash = "sha256:37992560e93535b904ee908e26819713c5df28532edfc897767251f527b76f03", size = 3358, upload-time = "2018-05-04T08:30:59.406Z" }
+
+[[package]]
 name = "latex2mathml"
 version = "3.81.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2941,6 +2950,7 @@ name = "thesisound"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "kavenegar" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pypdf" },
@@ -2983,6 +2993,7 @@ requires-dist = [
     { name = "httpx", marker = "extra == 'web-ui'", specifier = ">=0.28,<1" },
     { name = "itsdangerous", marker = "extra == 'web-ui'", specifier = ">=2.2,<3" },
     { name = "jinja2", marker = "extra == 'web-ui'", specifier = ">=3.1,<4" },
+    { name = "kavenegar", specifier = ">=1.1.2" },
     { name = "mineru", extras = ["pipeline"], marker = "extra == 'parsers'", specifier = ">=2.0,<4" },
     { name = "numpy", marker = "extra == 'parsers'", specifier = ">=2.0,<2.2" },
     { name = "pydantic", specifier = ">=2.10,<3" },

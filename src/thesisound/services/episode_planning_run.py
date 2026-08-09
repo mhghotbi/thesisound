@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from thesisound import tracing
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
@@ -237,6 +238,14 @@ class EpisodePlanningRunService:
             target_duration_minutes=duration_minutes,
         )
         self.run_store.save(run)
+        if previous.status == "blocked":
+            tracing.event(
+                "gate.resolved",
+                component="episode",
+                project_id=project_id,
+                workflow_run_id=previous.run_id,
+                resolution="reduced_duration",
+            )
         return run
 
     def reopen_inputs(self, project_id: UUID, *, reason: str) -> None:
@@ -248,6 +257,13 @@ class EpisodePlanningRunService:
         transition(project, ProjectState.SOURCES_COLLECTING)
         self.workspace_store.save_project(project)
         self.run_store.mark_outputs_stale(project_id, reason)
+        tracing.event(
+            "gate.resolved",
+            component="episode",
+            project_id=project_id,
+            workflow_run_id=run.run_id,
+            resolution="reopened_inputs",
+        )
 
     def run(self, project_id: UUID) -> EpisodePlanningRun:
         run = self.run_store.load(project_id)
@@ -269,61 +285,87 @@ class EpisodePlanningRunService:
         run.last_error = None
         self.run_store.save(run)
 
-        try:
-            service = self.preparation_service_factory(project_id)
+        # new_root=True: runs from a BackgroundTasks callback after the request that
+        # queued it has already returned, so there is no live parent span to attach to.
+        with tracing.span(
+            "episode.run",
+            component="episode",
+            kind="stage",
+            new_root=True,
+            project_id=project_id,
+            workflow_run_id=run.run_id,
+        ) as root:
+            try:
+                service = self.preparation_service_factory(project_id)
 
-            self._set_stage(run, "auditing_coverage")
-            coverage = service.audit_coverage(project_id, model=self.coverage_model)
-            run.max_supported_minutes = coverage.max_supported_minutes
-            run.coverage_recommendation = coverage.recommendation
-            run.material_gaps = list(coverage.material_gaps)
-            self.run_store.save(run)
-            if not coverage.can_plan_episode:
-                return self._block(run, coverage.recommendation_reason)
+                self._set_stage(run, "auditing_coverage")
+                with tracing.span("episode.audit_coverage", component="episode") as span:
+                    coverage = service.audit_coverage(project_id, model=self.coverage_model)
+                    span.set(can_plan_episode=coverage.can_plan_episode)
+                run.max_supported_minutes = coverage.max_supported_minutes
+                run.coverage_recommendation = coverage.recommendation
+                run.material_gaps = list(coverage.material_gaps)
+                self.run_store.save(run)
+                if not coverage.can_plan_episode:
+                    root.mark("blocked", reason="coverage_insufficient")
+                    return self._block(run, coverage.recommendation_reason)
 
-            self._set_stage(run, "prioritizing_claims")
-            service.prioritize_claims(project_id)
+                self._set_stage(run, "prioritizing_claims")
+                with tracing.span("episode.prioritize_claims", component="episode"):
+                    service.prioritize_claims(project_id)
 
-            self._set_stage(run, "estimating_budget")
-            budget = service.estimate_budget(project_id)
-            run.effective_supported_minutes = budget.effective_supported_minutes
-            self.run_store.save(run)
-            if budget.effective_supported_minutes < budget.target_duration_minutes * 0.8:
-                return self._block(
-                    run,
-                    "مجموعه منابع برای مدت درخواستی محتوای مستند کافی ندارد.",
-                )
+                self._set_stage(run, "estimating_budget")
+                with tracing.span("episode.estimate_budget", component="episode") as span:
+                    budget = service.estimate_budget(project_id)
+                    span.set(
+                        effective_supported_minutes=budget.effective_supported_minutes,
+                        target_duration_minutes=budget.target_duration_minutes,
+                    )
+                run.effective_supported_minutes = budget.effective_supported_minutes
+                self.run_store.save(run)
+                if budget.effective_supported_minutes < budget.target_duration_minutes * 0.8:
+                    root.mark("blocked", reason="budget_insufficient")
+                    return self._block(
+                        run,
+                        "مجموعه منابع برای مدت درخواستی محتوای مستند کافی ندارد.",
+                    )
 
-            self._set_stage(run, "building_disagreements")
-            service.build_disagreement_graph(project_id)
+                self._set_stage(run, "building_disagreements")
+                with tracing.span("episode.build_disagreement_graph", component="episode"):
+                    service.build_disagreement_graph(project_id)
 
-            self._set_stage(run, "planning_episode")
-            service.plan_episode(project_id, model=self.planning_model)
+                self._set_stage(run, "planning_episode")
+                with tracing.span("episode.plan_episode", component="episode"):
+                    service.plan_episode(project_id, model=self.planning_model)
 
-            self._set_stage(run, "building_evidence_packs")
-            service.build_evidence_packs(project_id)
+                self._set_stage(run, "building_evidence_packs")
+                with tracing.span("episode.build_evidence_packs", component="episode"):
+                    service.build_evidence_packs(project_id)
 
-            run.status = "succeeded"
-            run.stage = "complete"
-            run.finished_at = datetime.now(UTC)
-            self.run_store.save(run)
-            return run
-        except Exception as exc:
-            message = str(exc)[:1_000] or type(exc).__name__
-            project = self.workspace_store.load_project(project_id)
-            if project.state != ProjectState.FAILED_RETRYABLE:
-                mark_failed(project, message)
-            else:
-                project.last_error = message
-                project.updated_at = datetime.now(UTC)
-            self.workspace_store.save_project(project)
-            self._mark_manifest_failed(project_id, message)
-            run.status = "failed"
-            run.stage = "failed"
-            run.last_error = message
-            run.finished_at = datetime.now(UTC)
-            self.run_store.save(run)
-            return run
+                run.status = "succeeded"
+                run.stage = "complete"
+                run.finished_at = datetime.now(UTC)
+                self.run_store.save(run)
+                return run
+            except Exception as exc:
+                # run() always returns an EpisodePlanningRun, never raises, so the
+                # span's own automatic exception handling never fires here.
+                root.mark("error", reason=type(exc).__name__)
+                message = str(exc)[:1_000] or type(exc).__name__
+                project = self.workspace_store.load_project(project_id)
+                if project.state != ProjectState.FAILED_RETRYABLE:
+                    mark_failed(project, message)
+                else:
+                    project.last_error = message
+                    project.updated_at = datetime.now(UTC)
+                self.workspace_store.save_project(project)
+                self._mark_manifest_failed(project_id, message)
+                run.status = "failed"
+                run.stage = "failed"
+                run.last_error = message
+                run.finished_at = datetime.now(UTC)
+                self.run_store.save(run)
+                return run
 
     def _block(self, run: EpisodePlanningRun, reason: str) -> EpisodePlanningRun:
         run.status = "blocked"
@@ -331,11 +373,30 @@ class EpisodePlanningRunService:
         run.last_error = reason
         run.finished_at = datetime.now(UTC)
         self.run_store.save(run)
+        # Paired with "gate.resolved" in requeue_with_duration()/reopen_inputs() --
+        # the time between the two is real, unmeasured-until-now human wait time,
+        # usually the largest slice of this project's end-to-end latency.
+        tracing.event(
+            "gate.blocked",
+            component="episode",
+            project_id=run.project_id,
+            workflow_run_id=run.run_id,
+            reason=reason,
+        )
         return run
 
     def _set_stage(self, run: EpisodePlanningRun, stage: EpisodePlanningStage) -> None:
+        previous = run.stage
         run.stage = stage
         self.run_store.save(run)
+        tracing.event(
+            "run.stage_changed",
+            component="episode",
+            project_id=run.project_id,
+            workflow_run_id=run.run_id,
+            previous=previous,
+            current=stage,
+        )
 
     def _mark_manifest_failed(self, project_id: UUID, message: str) -> None:
         try:

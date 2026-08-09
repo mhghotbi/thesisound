@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from thesisound import tracing
 from thesisound.audio import script_hash
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed
@@ -175,56 +176,70 @@ class AudioBuildRunService:
             return run
         if run.status != "queued":
             raise ValueError(f"Cannot start audio run with status {run.status}.")
-        try:
-            script = self.script_store.load_latest_script(project_id)
-            if not self.script_store.has_verified_artifacts(project_id):
-                raise ValueError("Verified script artifacts are missing or stale.")
-            if script_hash(script) != run.verified_script_hash:
-                raise ValueError("Queued audio run is bound to another script version.")
-            run.status = "running"
-            run.started_at = datetime.now(UTC)
-            run.finished_at = None
-            run.last_error = None
-            self.run_store.save(run)
-            # run.direction is only None for runs queued before this field existed.
-            direction = run.direction or self.default_direction
-            pipeline = self.pipeline_factory(project_id, direction)
-            pipeline.run(project_id, on_stage=lambda value: self._set_stage(run, value))
-            project = self.workspace_store.load_project(project_id)
-            if project.state != ProjectState.COMPLETE:
-                raise ValueError("Audio pipeline ended without reaching COMPLETE.")
-            if not self._has_verified_artifacts(project_id, run.verified_script_hash):
-                raise ValueError("Audio pipeline ended without verified artifacts.")
-            self._mark_succeeded(run)
-            return run
-        except Exception as exc:
-            message = str(exc)[:1_000] or type(exc).__name__
-            project = self.workspace_store.load_project(project_id)
-            if project.state == ProjectState.COMPLETE and self._has_verified_artifacts(
-                project_id,
-                run.verified_script_hash,
-            ):
+        # new_root=True: runs from a BackgroundTasks callback after the request that
+        # queued it has already returned, so there is no live parent span to attach to.
+        with tracing.span(
+            "audio.run",
+            component="audio",
+            kind="stage",
+            new_root=True,
+            project_id=project_id,
+            workflow_run_id=run.run_id,
+        ) as root:
+            try:
+                script = self.script_store.load_latest_script(project_id)
+                if not self.script_store.has_verified_artifacts(project_id):
+                    raise ValueError("Verified script artifacts are missing or stale.")
+                if script_hash(script) != run.verified_script_hash:
+                    raise ValueError("Queued audio run is bound to another script version.")
+                run.status = "running"
+                run.started_at = datetime.now(UTC)
+                run.finished_at = None
+                run.last_error = None
+                self.run_store.save(run)
+                # run.direction is only None for runs queued before this field existed.
+                direction = run.direction or self.default_direction
+                pipeline = self.pipeline_factory(project_id, direction)
+                pipeline.run(project_id, on_stage=lambda value: self._set_stage(run, value))
+                project = self.workspace_store.load_project(project_id)
+                if project.state != ProjectState.COMPLETE:
+                    raise ValueError("Audio pipeline ended without reaching COMPLETE.")
+                if not self._has_verified_artifacts(project_id, run.verified_script_hash):
+                    raise ValueError("Audio pipeline ended without verified artifacts.")
                 self._mark_succeeded(run)
                 return run
-            if project.state in {
-                ProjectState.SCRIPT_VERIFIED,
-                ProjectState.AUDIO_GENERATING,
-                ProjectState.AUDIO_READY,
-                ProjectState.AUDIO_VERIFYING,
-                ProjectState.COMPLETE,
-            }:
-                mark_failed(project, message)
-                self.workspace_store.save_project(project)
-            elif project.state == ProjectState.FAILED_RETRYABLE:
-                project.last_error = message
-                project.updated_at = datetime.now(UTC)
-                self.workspace_store.save_project(project)
-            run.status = "failed"
-            run.stage = "failed"
-            run.last_error = message
-            run.finished_at = datetime.now(UTC)
-            self.run_store.save(run)
-            return run
+            except Exception as exc:
+                # run() always returns an AudioBuildRun, never raises, so the span's
+                # own automatic exception handling never fires here.
+                root.mark("error", reason=type(exc).__name__)
+                message = str(exc)[:1_000] or type(exc).__name__
+                project = self.workspace_store.load_project(project_id)
+                if project.state == ProjectState.COMPLETE and self._has_verified_artifacts(
+                    project_id,
+                    run.verified_script_hash,
+                ):
+                    root.mark("ok")
+                    self._mark_succeeded(run)
+                    return run
+                if project.state in {
+                    ProjectState.SCRIPT_VERIFIED,
+                    ProjectState.AUDIO_GENERATING,
+                    ProjectState.AUDIO_READY,
+                    ProjectState.AUDIO_VERIFYING,
+                    ProjectState.COMPLETE,
+                }:
+                    mark_failed(project, message)
+                    self.workspace_store.save_project(project)
+                elif project.state == ProjectState.FAILED_RETRYABLE:
+                    project.last_error = message
+                    project.updated_at = datetime.now(UTC)
+                    self.workspace_store.save_project(project)
+                run.status = "failed"
+                run.stage = "failed"
+                run.last_error = message
+                run.finished_at = datetime.now(UTC)
+                self.run_store.save(run)
+                return run
 
     def recover_interrupted_runs(self) -> list[UUID]:
         recovered: list[UUID] = []
@@ -295,8 +310,17 @@ class AudioBuildRunService:
         }
         if value not in allowed:
             raise ValueError(f"Unknown audio stage: {value}")
+        previous = run.stage
         run.stage = cast(AudioBuildStage, value)
         self.run_store.save(run)
+        tracing.event(
+            "run.stage_changed",
+            component="audio",
+            project_id=run.project_id,
+            workflow_run_id=run.run_id,
+            previous=previous,
+            current=value,
+        )
 
 
 def _atomic_write(path: Path, content: str) -> None:

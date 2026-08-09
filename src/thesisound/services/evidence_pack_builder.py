@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import ClaimRecord, EpisodePlan, EpisodeSegment, EvidenceItem
 from thesisound.episode import RetrievalHit, SegmentEvidencePack
 from thesisound.modeling import DeterministicValidationError
@@ -63,95 +64,108 @@ class EvidencePackBuilder:
         blocks_by_source: dict[UUID, dict[str, SourceDocumentBlock]],
         neighbors_by_source: dict[UUID, int],
     ) -> SegmentEvidencePack:
-        claims = []
-        for claim_id in segment.claim_ids:
-            claim = claim_by_id.get(claim_id)
-            if claim is None:
-                raise DeterministicValidationError(
-                    f"Evidence pack requested unknown claim ID {claim_id}."
-                )
-            claims.append(claim)
-
-        evidence: list[EvidenceItem] = []
-        seen_evidence: set[str] = set()
-        for claim in claims:
-            for evidence_id in claim.evidence_ids:
-                item = evidence_by_id.get(evidence_id)
-                if item is None:
+        with tracing.span(
+            "episode.build_evidence_pack",
+            component="episode",
+            subject_type="segment",
+            subject_id=segment.segment_id,
+        ) as span:
+            claims = []
+            for claim_id in segment.claim_ids:
+                claim = claim_by_id.get(claim_id)
+                if claim is None:
                     raise DeterministicValidationError(
-                        f"Claim {claim.claim_id} references missing evidence {evidence_id}."
+                        f"Evidence pack requested unknown claim ID {claim_id}."
                     )
-                if evidence_id not in seen_evidence:
-                    evidence.append(item)
-                    seen_evidence.add(evidence_id)
+                claims.append(claim)
 
-        originals: list[SourceDocumentBlock] = []
-        seen_blocks: set[tuple[UUID, str]] = set()
-        for item in evidence:
-            key = (item.source_id, item.block_id)
-            block = block_by_key.get(key)
-            if block is None:
-                raise DeterministicValidationError(
-                    f"Evidence {item.evidence_id} references missing source block {item.block_id}."
-                )
-            if key not in seen_blocks:
-                originals.append(block)
-                seen_blocks.add(key)
+            evidence: list[EvidenceItem] = []
+            seen_evidence: set[str] = set()
+            for claim in claims:
+                for evidence_id in claim.evidence_ids:
+                    item = evidence_by_id.get(evidence_id)
+                    if item is None:
+                        raise DeterministicValidationError(
+                            f"Claim {claim.claim_id} references missing evidence {evidence_id}."
+                        )
+                    if evidence_id not in seen_evidence:
+                        evidence.append(item)
+                        seen_evidence.add(evidence_id)
 
-        token_budget = max(1_800, min(18_000, round(segment.estimated_minutes * 1_400)))
-        original_tokens = sum(block.estimated_token_count for block in originals)
-        warnings: list[str] = []
-        if original_tokens > token_budget:
-            warnings.append(
-                "Required evidence blocks exceed the nominal segment token budget; "
-                "grounding was preserved and context was omitted."
-            )
-
-        context: list[SourceDocumentBlock] = []
-        retrieval_hits: list[RetrievalHit] = []
-        context_seen = set(seen_blocks)
-        remaining = max(0, token_budget - original_tokens)
-        candidates = self._context_candidates(
-            originals,
-            blocks_by_source=blocks_by_source,
-            neighbors_by_source=neighbors_by_source,
-        )
-        for block in candidates:
-            remaining = _append_context(block, context, context_seen, remaining)
-
-        if self.retriever is not None and remaining > 0:
-            query = " ".join(
-                [
-                    segment.title,
-                    segment.purpose,
-                    segment.key_question,
-                    *(claim.claim for claim in claims),
-                ]
-            )
-            source_ids = {item.source_id for item in evidence}
-            for hit in self.retriever.search(query, limit=10, source_ids=source_ids):
-                block = block_by_key.get((hit.source_id, hit.block_id))
+            originals: list[SourceDocumentBlock] = []
+            seen_blocks: set[tuple[UUID, str]] = set()
+            for item in evidence:
+                key = (item.source_id, item.block_id)
+                block = block_by_key.get(key)
                 if block is None:
-                    continue
-                before = remaining
-                remaining = _append_context(block, context, context_seen, remaining)
-                if remaining < before:
-                    retrieval_hits.append(hit)
+                    raise DeterministicValidationError(
+                        f"Evidence {item.evidence_id} references missing source "
+                        f"block {item.block_id}."
+                    )
+                if key not in seen_blocks:
+                    originals.append(block)
+                    seen_blocks.add(key)
 
-        actual_tokens = original_tokens + sum(
-            block.estimated_token_count for block in context
-        )
-        return SegmentEvidencePack(
-            segment_id=segment.segment_id,
-            claim_ids=segment.claim_ids,
-            evidence_items=evidence,
-            original_blocks=originals,
-            context_blocks=context,
-            retrieval_hits=retrieval_hits,
-            token_budget=token_budget,
-            actual_tokens=actual_tokens,
-            warnings=warnings,
-        )
+            token_budget = max(1_800, min(18_000, round(segment.estimated_minutes * 1_400)))
+            original_tokens = sum(block.estimated_token_count for block in originals)
+            warnings: list[str] = []
+            if original_tokens > token_budget:
+                warnings.append(
+                    "Required evidence blocks exceed the nominal segment token budget; "
+                    "grounding was preserved and context was omitted."
+                )
+
+            context: list[SourceDocumentBlock] = []
+            retrieval_hits: list[RetrievalHit] = []
+            context_seen = set(seen_blocks)
+            remaining = max(0, token_budget - original_tokens)
+            candidates = self._context_candidates(
+                originals,
+                blocks_by_source=blocks_by_source,
+                neighbors_by_source=neighbors_by_source,
+            )
+            for block in candidates:
+                remaining = _append_context(block, context, context_seen, remaining)
+
+            if self.retriever is not None and remaining > 0:
+                query = " ".join(
+                    [
+                        segment.title,
+                        segment.purpose,
+                        segment.key_question,
+                        *(claim.claim for claim in claims),
+                    ]
+                )
+                source_ids = {item.source_id for item in evidence}
+                for hit in self.retriever.search(query, limit=10, source_ids=source_ids):
+                    block = block_by_key.get((hit.source_id, hit.block_id))
+                    if block is None:
+                        continue
+                    before = remaining
+                    remaining = _append_context(block, context, context_seen, remaining)
+                    if remaining < before:
+                        retrieval_hits.append(hit)
+
+            actual_tokens = original_tokens + sum(
+                block.estimated_token_count for block in context
+            )
+            span.measure(
+                evidence_count=len(evidence),
+                context_block_count=len(context),
+                retrieval_hit_count=len(retrieval_hits),
+                actual_tokens=actual_tokens,
+            )
+            return SegmentEvidencePack(
+                segment_id=segment.segment_id,
+                claim_ids=segment.claim_ids,
+                evidence_items=evidence,
+                original_blocks=originals,
+                context_blocks=context,
+                retrieval_hits=retrieval_hits,
+                token_budget=token_budget,
+                actual_tokens=actual_tokens,
+                warnings=warnings,
+            )
 
     @staticmethod
     def _context_candidates(

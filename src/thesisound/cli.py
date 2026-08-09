@@ -9,6 +9,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from thesisound import tracing
 from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.adapters.parsers.docling_adapter import DoclingParser
 from thesisound.adapters.parsers.epub_adapter import EpubDocumentParser
@@ -18,6 +19,7 @@ from thesisound.config import Settings
 from thesisound.domain import Project
 from thesisound.episode_cli import register_episode_commands
 from thesisound.modeling import ModelError
+from thesisound.observability import tracer_from_settings
 from thesisound.pipeline import WorkspaceStore
 from thesisound.ports import DocumentParserPort
 from thesisound.prompt_loader import PromptLoader
@@ -36,6 +38,16 @@ console = Console()
 register_source_commands(app)
 register_episode_commands(app)
 register_script_commands(app)
+
+
+@app.callback()
+def _install_observability() -> None:
+    """Install the ambient tracer once per CLI invocation, before any command
+    runs. The composition-root counterpart of tracing.install_tracer() in
+    web.app.create_app -- every thesisound/thesisound-web entry point gets
+    one, whichever process starts first."""
+
+    tracing.install_tracer(tracer_from_settings())
 
 WorkspaceRootOption = Annotated[
     Path | None,

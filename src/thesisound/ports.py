@@ -6,8 +6,19 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from thesisound import tracing
 from thesisound.domain import SearchQuery
 from thesisound.modeling import GroundingMode, StructuredModelResponse
+
+
+def _ambient_trace_id() -> UUID | None:
+    context = tracing.current_context()
+    return context.trace_id if context else None
+
+
+def _ambient_span_id() -> UUID | None:
+    context = tracing.current_context()
+    return context.span_id if context else None
 
 
 class RunMetadata(BaseModel):
@@ -23,6 +34,13 @@ class RunMetadata(BaseModel):
     call_id: UUID = Field(default_factory=uuid4)
     trace_id: UUID | None = None
     parent_call_id: UUID | None = None
+    # Populated from the ambient span (see thesisound.tracing) whenever a
+    # caller does not supply one explicitly. This is what lets a model call
+    # made from inside e.g. `with tracing.span("corpus.extract_evidence")`
+    # attach to that span without every call site having to read
+    # tracing.current_context() itself.
+    pipeline_trace_id: UUID | None = Field(default_factory=_ambient_trace_id)
+    parent_span_id: UUID | None = Field(default_factory=_ambient_span_id)
     project_id: UUID | None = None
     workflow_run_id: UUID | None = None
     operation: str = "structured_text"

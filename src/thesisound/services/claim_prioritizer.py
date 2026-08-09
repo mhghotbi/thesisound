@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import ClaimRecord, ClaimType, ResearchBrief, SupportStatus
 from thesisound.episode import ClaimPriorityRecord, ClaimPriorityReport, CoverageReport
 
@@ -30,74 +31,78 @@ class ClaimPrioritizer:
         claims: list[ClaimRecord],
         coverage: CoverageReport,
     ) -> ClaimPriorityReport:
-        if not claims:
-            raise ValueError("Claim prioritization requires at least one claim.")
-        central = set(coverage.central_question_claim_ids)
-        objective_hits: dict[str, int] = {}
-        for item in coverage.objective_coverage:
-            for claim_id in item.claim_ids:
-                objective_hits[claim_id] = objective_hits.get(claim_id, 0) + 1
+        with tracing.span(
+            "episode.prioritize_claims", component="episode", project_id=project_id
+        ) as span:
+            if not claims:
+                raise ValueError("Claim prioritization requires at least one claim.")
+            central = set(coverage.central_question_claim_ids)
+            objective_hits: dict[str, int] = {}
+            for item in coverage.objective_coverage:
+                for claim_id in item.claim_ids:
+                    objective_hits[claim_id] = objective_hits.get(claim_id, 0) + 1
 
-        scored = [
-            (
-                claim,
-                self._score(claim, brief, central, objective_hits),
-                self._estimate_seconds(claim),
-            )
-            for claim in claims
-        ]
-        scored.sort(key=lambda item: (-item[1], item[0].claim_id))
-
-        must_count = max(1, min(len(scored), round(brief.target_duration_minutes / 10)))
-        supporting_count = max(
-            1,
-            min(len(scored) - must_count, round(brief.target_duration_minutes / 6)),
-        )
-        optional_count = max(
-            0,
-            min(
-                len(scored) - must_count - supporting_count,
-                round(brief.target_duration_minutes / 8),
-            ),
-        )
-
-        priorities: list[ClaimPriorityRecord] = []
-        for index, (claim, score, seconds) in enumerate(scored):
-            if index < must_count:
-                level = "must_include"
-            elif index < must_count + supporting_count:
-                level = "supporting"
-            elif index < must_count + supporting_count + optional_count:
-                level = "optional"
-            else:
-                level = "deferred"
-            priorities.append(
-                ClaimPriorityRecord(
-                    claim_id=claim.claim_id,
-                    level=level,
-                    score=score,
-                    reasons=self._reasons(
-                        claim,
-                        central=central,
-                        objective_hits=objective_hits,
-                        brief=brief,
-                    ),
-                    estimated_explanation_seconds=seconds,
+            scored = [
+                (
+                    claim,
+                    self._score(claim, brief, central, objective_hits),
+                    self._estimate_seconds(claim),
                 )
+                for claim in claims
+            ]
+            scored.sort(key=lambda item: (-item[1], item[0].claim_id))
+
+            must_count = max(1, min(len(scored), round(brief.target_duration_minutes / 10)))
+            supporting_count = max(
+                1,
+                min(len(scored) - must_count, round(brief.target_duration_minutes / 6)),
+            )
+            optional_count = max(
+                0,
+                min(
+                    len(scored) - must_count - supporting_count,
+                    round(brief.target_duration_minutes / 8),
+                ),
             )
 
-        selected_seconds = sum(
-            item.estimated_explanation_seconds
-            for item in priorities
-            if item.level in {"must_include", "supporting"}
-        )
-        return ClaimPriorityReport(
-            project_id=project_id,
-            target_duration_minutes=brief.target_duration_minutes,
-            priorities=priorities,
-            available_content_seconds=coverage.max_supported_minutes * 60,
-            estimated_selected_seconds=selected_seconds,
-        )
+            priorities: list[ClaimPriorityRecord] = []
+            for index, (claim, score, seconds) in enumerate(scored):
+                if index < must_count:
+                    level = "must_include"
+                elif index < must_count + supporting_count:
+                    level = "supporting"
+                elif index < must_count + supporting_count + optional_count:
+                    level = "optional"
+                else:
+                    level = "deferred"
+                priorities.append(
+                    ClaimPriorityRecord(
+                        claim_id=claim.claim_id,
+                        level=level,
+                        score=score,
+                        reasons=self._reasons(
+                            claim,
+                            central=central,
+                            objective_hits=objective_hits,
+                            brief=brief,
+                        ),
+                        estimated_explanation_seconds=seconds,
+                    )
+                )
+
+            selected_seconds = sum(
+                item.estimated_explanation_seconds
+                for item in priorities
+                if item.level in {"must_include", "supporting"}
+            )
+            span.measure(claim_count=len(claims), must_include_count=must_count)
+            return ClaimPriorityReport(
+                project_id=project_id,
+                target_duration_minutes=brief.target_duration_minutes,
+                priorities=priorities,
+                available_content_seconds=coverage.max_supported_minutes * 60,
+                estimated_selected_seconds=selected_seconds,
+            )
 
     @staticmethod
     def _score(

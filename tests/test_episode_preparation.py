@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from thesisound import tracing
 from thesisound.domain import (
     ClaimRecord,
     ClaimType,
@@ -355,6 +356,27 @@ def test_replanning_an_unchanged_corpus_reuses_both_model_stages(tmp_path: Path)
     assert WorkspaceStore(root).load_project(project.project_id).state == (
         ProjectState.EPISODE_PLANNED
     )
+
+
+def test_replanning_an_unchanged_corpus_emits_cache_hits_on_the_second_pass(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    root = tmp_path / "workspaces"
+    project = _prepared_project(root)
+    runner = FakeEpisodeRunner()
+
+    _prepare(root, project.project_id, runner)
+    _prepare(root, project.project_id, runner)
+
+    def outcomes(cache_name: str) -> list[str]:
+        return [
+            event.attributes["result"]
+            for event in recording_tracer.sink.events
+            if event.name == "cache.lookup" and event.attributes.get("cache") == cache_name
+        ]
+
+    assert outcomes("coverage_audit") == ["miss", "hit"]
+    assert outcomes("episode_plan") == ["miss", "hit"]
 
 
 def test_retrying_after_a_planning_failure_reuses_the_coverage_audit(tmp_path: Path) -> None:

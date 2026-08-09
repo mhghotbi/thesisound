@@ -98,13 +98,19 @@ class OtpService:
             if self._allow_test_otp and phone == self._test_phone
             else f"{secrets.randbelow(1_000_000):06d}"
         )
-        self._challenges[phone] = OtpChallenge(
+        challenge = OtpChallenge(
             phone=phone,
             code_digest=self._digest(phone, code),
             expires_at=current_time + self._ttl,
             requested_at=current_time,
         )
-        self._sender.send(phone, code)
+        try:
+            self._sender.send(phone, code)
+        except OtpError:
+            raise
+        except Exception as exc:
+            raise OtpError("ارسال کد ورود ناموفق بود. دوباره تلاش کنید.") from exc
+        self._challenges[phone] = challenge
         return phone
 
     def verify(self, raw_phone: str, raw_code: str, *, now: datetime | None = None) -> bool:

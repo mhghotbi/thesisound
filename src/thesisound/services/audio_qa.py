@@ -4,6 +4,7 @@ import re
 from collections import Counter
 from difflib import SequenceMatcher
 
+from thesisound import tracing
 from thesisound.audio import AsrTranscript, AudioChunk, AudioSegmentQa
 
 _PERSIAN_DIACRITICS = re.compile(r"[\u064b-\u065f\u0670]")
@@ -20,62 +21,73 @@ class AudioQaService:
         self.review_threshold = review_threshold
 
     def compare(self, chunk: AudioChunk, transcript: AsrTranscript) -> AudioSegmentQa:
-        expected = _normalize(chunk.text)
-        actual = _normalize(transcript.text)
-        # autojunk=True treats frequent Persian letters as junk and collapses
-        # near-identical transcripts to ~0.02 similarity.
-        ratio = (
-            SequenceMatcher(None, expected, actual, autojunk=False).ratio()
-            if expected and actual
-            else 0
-        )
-        missing = [
-            sentence
-            for sentence in _sentences(chunk.text)
-            if _sentence_similarity(sentence, transcript.text) < 0.6
-        ]
-        repeated = _repeated_phrases(transcript.text)
-        truncated = _is_truncated(expected, actual)
-        speaker_error = transcript.speaker is not None and transcript.speaker != chunk.speaker
+        with tracing.span(
+            "audio.qa", component="audio", subject_type="chunk", subject_id=chunk.chunk_id
+        ) as span:
+            expected = _normalize(chunk.text)
+            actual = _normalize(transcript.text)
+            # autojunk=True treats frequent Persian letters as junk and collapses
+            # near-identical transcripts to ~0.02 similarity.
+            ratio = (
+                SequenceMatcher(None, expected, actual, autojunk=False).ratio()
+                if expected and actual
+                else 0
+            )
+            missing = [
+                sentence
+                for sentence in _sentences(chunk.text)
+                if _sentence_similarity(sentence, transcript.text) < 0.6
+            ]
+            repeated = _repeated_phrases(transcript.text)
+            truncated = _is_truncated(expected, actual)
+            speaker_error = (
+                transcript.speaker is not None and transcript.speaker != chunk.speaker
+            )
 
-        if (
-            ratio >= self.pass_threshold
-            and not missing
-            and not repeated
-            and not truncated
-            and not speaker_error
-        ):
-            verdict = "pass"
-            instruction = None
-        elif ratio >= self.review_threshold and not truncated and not speaker_error:
-            verdict = "manual_review"
-            instruction = "رونویسی نزدیک است اما برای اطمینان نیاز به بازبینی شنیداری دارد."
-        else:
-            verdict = "regenerate"
-            reasons: list[str] = []
-            if missing:
-                reasons.append("جمله‌های افتاده را کامل بخوان")
-            if repeated:
-                reasons.append("بخش‌های تکراری را حذف کن")
-            if truncated:
-                reasons.append("پایان متن را کامل و بدون قطع‌شدن بخوان")
-            if speaker_error:
-                reasons.append(f"فقط با صدای گوینده {chunk.speaker} اجرا کن")
-            instruction = "؛ ".join(reasons) or "متن را دقیق‌تر و بدون تغییر بازتولید کن"
+            if (
+                ratio >= self.pass_threshold
+                and not missing
+                and not repeated
+                and not truncated
+                and not speaker_error
+            ):
+                verdict = "pass"
+                instruction = None
+            elif ratio >= self.review_threshold and not truncated and not speaker_error:
+                verdict = "manual_review"
+                instruction = "رونویسی نزدیک است اما برای اطمینان نیاز به بازبینی شنیداری دارد."
+            else:
+                verdict = "regenerate"
+                reasons: list[str] = []
+                if missing:
+                    reasons.append("جمله‌های افتاده را کامل بخوان")
+                if repeated:
+                    reasons.append("بخش‌های تکراری را حذف کن")
+                if truncated:
+                    reasons.append("پایان متن را کامل و بدون قطع‌شدن بخوان")
+                if speaker_error:
+                    reasons.append(f"فقط با صدای گوینده {chunk.speaker} اجرا کن")
+                instruction = "؛ ".join(reasons) or "متن را دقیق‌تر و بدون تغییر بازتولید کن"
 
-        return AudioSegmentQa(
-            chunk_id=chunk.chunk_id,
-            chunk_hash=chunk.content_hash,
-            wav_sha256=transcript.wav_sha256,
-            verdict=verdict,
-            similarity_ratio=ratio,
-            expected_text=chunk.text,
-            transcript_text=transcript.text,
-            missing_sentences=missing,
-            repeated_phrases=repeated,
-            truncated=truncated,
-            regeneration_instruction=instruction,
-        )
+            span.set(verdict=verdict)
+            span.measure(
+                similarity_ratio=round(ratio, 4),
+                missing_sentence_count=len(missing),
+                repeated_phrase_count=len(repeated),
+            )
+            return AudioSegmentQa(
+                chunk_id=chunk.chunk_id,
+                chunk_hash=chunk.content_hash,
+                wav_sha256=transcript.wav_sha256,
+                verdict=verdict,
+                similarity_ratio=ratio,
+                expected_text=chunk.text,
+                transcript_text=transcript.text,
+                missing_sentences=missing,
+                repeated_phrases=repeated,
+                truncated=truncated,
+                regeneration_instruction=instruction,
+            )
 
 
 def _normalize(text: str) -> str:

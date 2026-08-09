@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import (
     EpisodePlan,
     EpisodeSegment,
@@ -110,6 +111,50 @@ def test_approval_queues_exact_plan_and_successful_run(tmp_path: Path) -> None:
     assert completed.stage == "complete"
     assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_VERIFIED
     assert pipeline.calls == 1
+
+
+def test_successful_run_emits_a_root_span_and_stage_changed_events(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    pipeline = FakePipeline(workspace)
+    service = _service(tmp_path, project, pipeline)
+    service.approve_and_queue(project.project_id, approved_by="09120000000")
+
+    run = service.run(project.project_id)
+
+    assert run.status == "succeeded"
+    root = recording_tracer.sink.one("script.run")
+    assert root.status == "ok"
+    assert root.parent_span_id is None  # new_root: no ambient HTTP span was open
+
+    # FakePipeline.run() calls on_stage("building_glossary") then
+    # on_stage("writing_segments") directly -- this is the on_stage callback
+    # wiring itself under test, not ScriptPipelineService's own instrumentation.
+    stage_events = [
+        event.attributes["current"]
+        for event in recording_tracer.sink.events
+        if event.name == "run.stage_changed"
+    ]
+    assert stage_events == ["building_glossary", "writing_segments"]
+
+
+def test_failed_run_marks_its_span_as_error(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    failing = FakePipeline(workspace, fail=True)
+    service = _service(tmp_path, project, failing)
+    service.approve_and_queue(project.project_id, approved_by="operator")
+
+    run = service.run(project.project_id)
+
+    assert run.status == "failed"
+    root = recording_tracer.sink.one("script.run")
+    assert root.status == "error"
+    assert root.attributes["status_reason"] == "ValueError"
 
 
 def test_changed_plan_invalidates_queued_approval(tmp_path: Path) -> None:

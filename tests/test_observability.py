@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import pytest
 
+from thesisound import tracing
 from thesisound.modeling import ModelUsage
 from thesisound.observability import (
     ModelCallSpec,
@@ -188,7 +189,98 @@ def test_rejected_call_remains_linked_to_trace(tmp_path: Path) -> None:
     assert detail.call.error_type == "ValueError"
 
 
+def test_model_call_spec_picks_up_the_ambient_span_by_default(
+    recording_tracer: tracing.Tracer,
+) -> None:
+    with tracing.span("corpus.extract_evidence") as span:
+        spec = ModelCallSpec(
+            stage="evidence_extraction",
+            operation="structured_text",
+            provider="gemini",
+            requested_model="gemini-test",
+        )
+
+    assert spec.pipeline_trace_id == span.context.trace_id
+    assert spec.parent_span_id == span.context.span_id
+
+
+def test_model_call_spec_has_no_ambient_ids_outside_any_span() -> None:
+    spec = ModelCallSpec(
+        stage="evidence_extraction",
+        operation="structured_text",
+        provider="gemini",
+        requested_model="gemini-test",
+    )
+
+    assert spec.pipeline_trace_id is None
+    assert spec.parent_span_id is None
+
+
+def test_model_call_spec_explicit_ids_override_the_ambient_span(
+    recording_tracer: tracing.Tracer,
+) -> None:
+    explicit_trace = uuid4()
+    with tracing.span("corpus.extract_evidence"):
+        spec = ModelCallSpec(
+            stage="evidence_extraction",
+            operation="structured_text",
+            provider="gemini",
+            requested_model="gemini-test",
+            pipeline_trace_id=explicit_trace,
+        )
+
+    assert spec.pipeline_trace_id == explicit_trace
+
+
+def test_ledger_persists_and_returns_the_pipeline_trace_join(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    ledger = _ledger(tmp_path)
+    with tracing.span("corpus.extract_evidence") as span:
+        spec = ModelCallSpec(
+            stage="evidence_extraction",
+            operation="structured_text",
+            provider="gemini",
+            requested_model="gemini-test",
+        )
+        ledger.begin_call(spec, {"prompt": "x"})
+
+    detail = ledger.get_call(spec.call_id)
+    assert detail.pipeline_trace_id == span.context.trace_id
+    assert detail.parent_span_id == span.context.span_id
+
+
 def test_artifact_path_cannot_escape_root(tmp_path: Path) -> None:
     ledger = _ledger(tmp_path)
     with pytest.raises(ValueError):
         ledger.read_artifact("../../etc/passwd")
+
+
+def test_redaction_covers_phone_numbers_secrets_and_home_paths(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)
+    spec = ModelCallSpec(
+        stage="web_source_capture",
+        operation="url_context",
+        provider="gemini",
+        requested_model="gemini-test",
+    )
+    ledger.begin_call(
+        spec,
+        {
+            "user_phone": "09120000000",
+            "note": "caller is 0912 000 0000-free text: 09121234567",
+            "generic_token": "sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "path": r"C:\Users\mhghotbi\Documents\Git\thesisound\workspaces\p\file.pdf",
+            "web_session_secret": "development-only-session-key",
+        },
+    )
+    request = ledger.read_artifact(ledger.get_call(spec.call_id).request_artifact_path or "")
+    assert "09120000000" not in request
+    assert "09121234567" not in request
+    assert "sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ" not in request
+    assert r"Users\mhghotbi" not in request
+    assert "development-only-session-key" not in request
+    assert "[REDACTED_PHONE]" in request
+    assert "[REDACTED_SECRET]" in request
+    assert "[HOME]" in request
+    assert "[REDACTED]" in request

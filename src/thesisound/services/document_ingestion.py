@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from time import perf_counter
 
+from thesisound import tracing
 from thesisound.ingestion import IngestionResult, ParseAttempt, ParserRoute
 from thesisound.ports import DocumentParserPort
 from thesisound.services.artifact_writer import IngestionArtifactWriter
@@ -23,90 +24,117 @@ def ingest_document(
     parser_name: str = "auto",
     artifact_writer: IngestionArtifactWriter | None = None,
 ) -> IngestionResult:
-    inspection = inspect_document(path)
-    if artifact_writer is not None:
-        artifact_writer.write_inspection(inspection)
-
-    route = _resolve_route(inspection, parsers, parser_name)
-    attempts: list[ParseAttempt] = []
-    selected_attempt: ParseAttempt | None = None
-
-    for name in route.ordered_parsers:
-        parser = parsers.get(name)
-        if parser is None:
-            attempt = ParseAttempt(
-                parser_name=name,
-                status="skipped",
-                duration_seconds=0,
-                error_type="ParserNotConfigured",
-                error_message=f"Parser '{name}' is not configured.",
-            )
-            attempts.append(attempt)
-            if artifact_writer is not None:
-                artifact_writer.write_attempt(inspection, attempt)
-            continue
-        if not parser.supports(inspection):
-            attempt = ParseAttempt(
-                parser_name=name,
-                status="skipped",
-                duration_seconds=0,
-                error_type="UnsupportedDocument",
-                error_message=f"Parser '{name}' does not support this document.",
-            )
-            attempts.append(attempt)
-            if artifact_writer is not None:
-                artifact_writer.write_attempt(inspection, attempt)
-            continue
-
-        started = perf_counter()
-        try:
-            parsed = parser.parse(path, inspection)
-            quality = assess_parse_quality(inspection, parsed)
-            attempt = ParseAttempt(
-                parser_name=name,
-                status="success",
-                duration_seconds=perf_counter() - started,
-                parsed=parsed,
-                quality=quality,
-            )
-        except Exception as exc:  # adapters convert provider details to domain errors
-            attempt = ParseAttempt(
-                parser_name=name,
-                status="error",
-                duration_seconds=perf_counter() - started,
-                error_type=type(exc).__name__,
-                error_message=str(exc)[:1_000],
-            )
-
-        attempts.append(attempt)
+    with tracing.span(
+        "ingestion.ingest_document", component="ingestion", kind="stage", subject_type="document"
+    ) as ingest:
+        with tracing.span("ingestion.inspect", component="ingestion"):
+            inspection = inspect_document(path)
+        ingest.set(extension=inspection.extension, encrypted=inspection.encrypted)
+        ingest.measure(page_count=inspection.page_count or 0)
         if artifact_writer is not None:
-            artifact_writer.write_attempt(inspection, attempt)
+            artifact_writer.write_inspection(inspection)
 
-        if attempt.quality is not None and attempt.quality.safe_for_claim_extraction:
-            selected_attempt = attempt
-            break
+        with tracing.span("ingestion.route", component="ingestion") as routing:
+            route = _resolve_route(inspection, parsers, parser_name)
+            routing.set(primary=route.primary, ordered=list(route.ordered_parsers))
+        attempts: list[ParseAttempt] = []
+        selected_attempt: ParseAttempt | None = None
 
-    if selected_attempt is None:
-        successful = [attempt for attempt in attempts if attempt.parsed is not None]
-        if successful:
-            selected_attempt = max(successful, key=_attempt_rank)
+        for name in route.ordered_parsers:
+            with tracing.span(
+                "ingestion.parse", component="ingestion", subject_type="parser", subject_id=name
+            ) as attempt_span:
+                parser = parsers.get(name)
+                if parser is None:
+                    attempt = ParseAttempt(
+                        parser_name=name,
+                        status="skipped",
+                        duration_seconds=0,
+                        error_type="ParserNotConfigured",
+                        error_message=f"Parser '{name}' is not configured.",
+                    )
+                    attempts.append(attempt)
+                    attempt_span.mark("skipped", reason="ParserNotConfigured")
+                    if artifact_writer is not None:
+                        artifact_writer.write_attempt(inspection, attempt)
+                    continue
+                if not parser.supports(inspection):
+                    attempt = ParseAttempt(
+                        parser_name=name,
+                        status="skipped",
+                        duration_seconds=0,
+                        error_type="UnsupportedDocument",
+                        error_message=f"Parser '{name}' does not support this document.",
+                    )
+                    attempts.append(attempt)
+                    attempt_span.mark("skipped", reason="UnsupportedDocument")
+                    if artifact_writer is not None:
+                        artifact_writer.write_attempt(inspection, attempt)
+                    continue
 
-    result = IngestionResult(
-        inspection=inspection,
-        route=route,
-        attempts=attempts,
-        selected_parser=selected_attempt.parser_name if selected_attempt else None,
-        parsed=selected_attempt.parsed if selected_attempt else None,
-        quality=selected_attempt.quality if selected_attempt else None,
-        safe_for_claim_extraction=bool(
-            selected_attempt
-            and selected_attempt.quality
-            and selected_attempt.quality.safe_for_claim_extraction
-        ),
-    )
-    if artifact_writer is not None:
-        artifact_writer.write_result(result)
-    return result
+                started = perf_counter()
+                try:
+                    parsed = parser.parse(path, inspection)
+                    with tracing.span("ingestion.quality_gate", component="ingestion") as gate:
+                        quality = assess_parse_quality(inspection, parsed)
+                        gate.set(
+                            verdict=quality.verdict, safe=quality.safe_for_claim_extraction
+                        )
+                    attempt = ParseAttempt(
+                        parser_name=name,
+                        status="success",
+                        duration_seconds=perf_counter() - started,
+                        parsed=parsed,
+                        quality=quality,
+                    )
+                    attempt_span.measure(block_count=len(parsed.blocks))
+                    attempt_span.set(verdict=quality.verdict)
+                except Exception as exc:  # adapters convert provider details to domain errors
+                    attempt = ParseAttempt(
+                        parser_name=name,
+                        status="error",
+                        duration_seconds=perf_counter() - started,
+                        error_type=type(exc).__name__,
+                        error_message=str(exc)[:1_000],
+                    )
+                    # The loop deliberately continues to the next parser rather than
+                    # aborting, so mark() rather than letting the exception propagate
+                    # and end the whole ingest_document span early.
+                    attempt_span.mark("error", reason=type(exc).__name__)
+
+                attempts.append(attempt)
+                if artifact_writer is not None:
+                    artifact_writer.write_attempt(inspection, attempt)
+
+                if attempt.quality is not None and attempt.quality.safe_for_claim_extraction:
+                    selected_attempt = attempt
+                    break
+
+        if selected_attempt is None:
+            successful = [attempt for attempt in attempts if attempt.parsed is not None]
+            if successful:
+                selected_attempt = max(successful, key=_attempt_rank)
+
+        result = IngestionResult(
+            inspection=inspection,
+            route=route,
+            attempts=attempts,
+            selected_parser=selected_attempt.parser_name if selected_attempt else None,
+            parsed=selected_attempt.parsed if selected_attempt else None,
+            quality=selected_attempt.quality if selected_attempt else None,
+            safe_for_claim_extraction=bool(
+                selected_attempt
+                and selected_attempt.quality
+                and selected_attempt.quality.safe_for_claim_extraction
+            ),
+        )
+        ingest.set(
+            selected_parser=result.selected_parser,
+            safe=result.safe_for_claim_extraction,
+        )
+        if artifact_writer is not None:
+            artifact_writer.write_result(result)
+        return result
 
 
 def _resolve_route(

@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pytest
+
+from thesisound import tracing
 from thesisound.audio import AsrTranscript
 from thesisound.audio_ports import TtsRequest, TtsResponse
 from thesisound.domain import Project, ProjectState, Script, ScriptTurn
@@ -139,3 +142,78 @@ def test_audio_pipeline_regenerates_only_failed_chunk_once(tmp_path: Path) -> No
     assert manifest.regenerated_chunk_ids == ["audio-0001"]
     assert len(tts.calls) == 2
     assert asr.calls == 2
+
+
+def _run_tolerating_missing_ffmpeg(service, project_id) -> None:
+    """Segmenting/synthesizing/transcribing are pure Python; only the final
+    assembly step needs a real ffmpeg binary (see write_final_mp3_from_wav in
+    audio_artifact_store.py). Tests that only care about the earlier stages
+    run this instead of service.run() directly so they pass whether or not
+    ffmpeg happens to be installed on the machine running them -- the two
+    tests above already carry this exact, pre-existing environment
+    dependency for the happy path this helper does not need to assert on.
+    """
+
+    try:
+        service.run(project_id)
+    except RuntimeError as exc:
+        if "FFmpeg" not in str(exc):
+            raise
+
+
+def test_pipeline_stages_produce_spans_with_useful_measurements(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace, project, service, store, tts, asr = _service(tmp_path)
+
+    _run_tolerating_missing_ffmpeg(service, project.project_id)
+
+    segmenting = recording_tracer.sink.one("audio.segmenting")
+    assert segmenting.metrics["chunk_count"] == 1
+    synthesizing = recording_tracer.sink.one("audio.synthesizing")
+    assert synthesizing.metrics == {"chunk_count": 1, "synthesized_count": 1}
+    transcribing = recording_tracer.sink.one("audio.transcribing")
+    assert transcribing.metrics == {"chunk_count": 1, "regenerated_count": 0}
+    assert recording_tracer.sink.find("audio.regenerating") == []
+
+
+def test_regeneration_produces_a_nested_verbose_span_per_chunk(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    recording_tracer.detail = "verbose"  # audio.regenerating is per-chunk, verbose-gated
+    workspace, project, service, _, tts, asr = _service(tmp_path, fail_first=True)
+
+    _run_tolerating_missing_ffmpeg(service, project.project_id)
+
+    transcribing = recording_tracer.sink.one("audio.transcribing")
+    assert transcribing.metrics == {"chunk_count": 1, "regenerated_count": 1}
+    regeneration = recording_tracer.sink.one("audio.regenerating")
+    assert regeneration.subject_id == "audio-0001"
+    assert regeneration.parent_span_id == transcribing.context.span_id
+    assert regeneration.status == "ok"
+
+
+class _FailingAssembler:
+    """Raises inside assemble() itself, before the real ffmpeg-dependent
+    save_final_audio() is ever reached -- so unlike the tests above, this one
+    exercises a genuine assembly failure regardless of whether ffmpeg happens
+    to be installed on the machine running it."""
+
+    def assemble(self, wav_segments):
+        raise RuntimeError("synthetic assembly failure")
+
+
+def test_assembly_failure_marks_only_the_assembling_span_as_error(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace, project, service, _, tts, asr = _service(tmp_path)
+    service.assembler = _FailingAssembler()  # type: ignore[assignment]
+
+    with pytest.raises(RuntimeError, match="synthetic assembly failure"):
+        service.run(project.project_id)
+
+    assert recording_tracer.sink.one("audio.segmenting").status == "ok"
+    assert recording_tracer.sink.one("audio.synthesizing").status == "ok"
+    assert recording_tracer.sink.one("audio.transcribing").status == "ok"
+    assert recording_tracer.sink.one("audio.assembling").status == "error"
+    assert asr.calls == 1

@@ -5,6 +5,7 @@ from json import dumps
 from pathlib import Path
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import Project, ProjectState
 
 ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
@@ -93,13 +94,29 @@ def transition(project: Project, target: ProjectState) -> Project:
     """Move a project to a valid next state and update its timestamp."""
 
     allowed = ALLOWED_TRANSITIONS[project.state]
+    previous = project.state
     if target not in allowed:
+        tracing.event(
+            "project.transition_rejected",
+            component="pipeline",
+            level="warn",
+            project_id=project.project_id,
+            previous=previous.value,
+            attempted=target.value,
+        )
         raise InvalidTransitionError(f"Cannot transition from {project.state} to {target}")
 
     project.state = target
     project.updated_at = datetime.now(UTC)
     if target not in {ProjectState.FAILED_RETRYABLE, ProjectState.FAILED_PERMANENT}:
         project.last_error = None
+    tracing.event(
+        "project.state_changed",
+        component="pipeline",
+        project_id=project.project_id,
+        previous=previous.value,
+        current=target.value,
+    )
     return project
 
 

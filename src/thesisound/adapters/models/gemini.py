@@ -140,6 +140,8 @@ class GeminiStructuredModel:
             call_id=metadata.call_id,
             trace_id=metadata.trace_id,
             parent_call_id=metadata.parent_call_id,
+            pipeline_trace_id=metadata.pipeline_trace_id,
+            parent_span_id=metadata.parent_span_id,
             project_id=metadata.project_id,
             workflow_run_id=metadata.workflow_run_id,
             stage=metadata.stage,

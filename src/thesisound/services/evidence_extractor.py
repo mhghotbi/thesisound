@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import (
     DocumentMap,
     DocumentMapSection,
@@ -93,19 +94,26 @@ class EvidenceExtractorService:
         handover = Lock()
 
         def work(block: SourceDocumentBlock) -> None:
-            outcome = self._extract_block(
-                project_id=project_id,
-                source_id=source_id,
-                block=block,
-                section=section_by_block.get(block.block_id),
-                blocks=blocks,
-                index_by_id=index_by_id,
-                document_map=document_map,
-                profile=profile,
-                model=model,
-                prompt_version=prompt_version,
-                max_attempts=max_attempts,
-            )
+            with tracing.span(
+                "corpus.extract_evidence",
+                component="corpus",
+                subject_type="block",
+                subject_id=block.block_id,
+                detail="verbose",
+            ):
+                outcome = self._extract_block(
+                    project_id=project_id,
+                    source_id=source_id,
+                    block=block,
+                    section=section_by_block.get(block.block_id),
+                    blocks=blocks,
+                    index_by_id=index_by_id,
+                    document_map=document_map,
+                    profile=profile,
+                    model=model,
+                    prompt_version=prompt_version,
+                    max_attempts=max_attempts,
+                )
             with handover:
                 results[block.block_id] = outcome
                 if on_extraction is not None:
@@ -116,8 +124,15 @@ class EvidenceExtractorService:
             for block in pending:
                 work(block)
         else:
+            # concurrent.futures.ThreadPoolExecutor does NOT copy contextvars
+            # into the worker thread (unlike anyio's run_in_threadpool), so
+            # every span opened inside work() would otherwise be orphaned at
+            # the trace root instead of nesting under whatever span is open
+            # on the submitting thread (e.g. corpus.source). bind_context
+            # re-attaches that context inside each worker.
+            bound_work = tracing.bind_context(work)
             with ThreadPoolExecutor(max_workers=workers) as pool:
-                futures = [pool.submit(work, block) for block in pending]
+                futures = [pool.submit(bound_work, block) for block in pending]
                 try:
                     for future in as_completed(futures):
                         future.result()

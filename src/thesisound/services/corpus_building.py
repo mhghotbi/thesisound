@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from thesisound import tracing
 from thesisound.domain import Project, ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.corpus_reuse import reusable_claim_ledger
@@ -327,43 +328,75 @@ class CorpusBuildingService:
         run.last_error = None
         self.run_store.save(run)
 
-        try:
-            service: SourceAnalysisService | None = None
-            for source in run.sources:
-                if source.status in SETTLED_SOURCE_STATUSES:
-                    continue
-                if service is None:
-                    service = self.analysis_service_factory()
-                self._run_source(service, run, source)
+        # new_root=True: this runs from a FastAPI BackgroundTasks callback, so the
+        # HTTP request that queued it has already returned and its span (if any)
+        # has already closed. Attaching to it would nest a long-running child under
+        # a parent whose lifetime already ended.
+        with tracing.span(
+            "corpus.run",
+            component="corpus",
+            kind="stage",
+            new_root=True,
+            project_id=project_id,
+            workflow_run_id=run.run_id,
+            source_count=len(run.sources),
+        ) as root:
+            try:
+                service: SourceAnalysisService | None = None
+                for source in run.sources:
+                    if source.status in SETTLED_SOURCE_STATUSES:
+                        continue
+                    if service is None:
+                        service = self.analysis_service_factory()
+                    with tracing.span(
+                        "corpus.source",
+                        component="corpus",
+                        kind="stage",
+                        subject_type="source",
+                        subject_id=str(source.source_id),
+                    ) as source_span:
+                        self._run_source(service, run, source)
+                        source_span.set(
+                            status=source.status, carried_forward=source.carried_forward
+                        )
+                        source_span.measure(claim_count=source.claim_count)
 
-            if not any(source.status == "succeeded" for source in run.sources):
-                raise ValueError("Every selected source was dropped; the corpus is empty.")
+                if not any(source.status == "succeeded" for source in run.sources):
+                    raise ValueError("Every selected source was dropped; the corpus is empty.")
 
-            project = self.workspace_store.load_project(project_id)
-            if project.state != ProjectState.CORPUS_BUILDING:
-                raise ValueError(
-                    "Project left CORPUS_BUILDING before every selected source completed."
+                project = self.workspace_store.load_project(project_id)
+                if project.state != ProjectState.CORPUS_BUILDING:
+                    raise ValueError(
+                        "Project left CORPUS_BUILDING before every selected source completed."
+                    )
+                transition(project, ProjectState.CORPUS_READY)
+                self.workspace_store.save_project(project)
+                run.status = "succeeded"
+                run.finished_at = datetime.now(UTC)
+                self.run_store.save(run)
+                root.measure(
+                    succeeded=run.completed_source_count,
+                    skipped=run.skipped_source_count,
                 )
-            transition(project, ProjectState.CORPUS_READY)
-            self.workspace_store.save_project(project)
-            run.status = "succeeded"
-            run.finished_at = datetime.now(UTC)
-            self.run_store.save(run)
-            return run
-        except Exception as exc:
-            message = str(exc)[:1_000] or type(exc).__name__
-            project = self.workspace_store.load_project(project_id)
-            if project.state != ProjectState.FAILED_RETRYABLE:
-                mark_failed(project, message)
-            else:
-                project.last_error = message
-                project.updated_at = datetime.now(UTC)
-            self.workspace_store.save_project(project)
-            run.status = "failed"
-            run.last_error = message
-            run.finished_at = datetime.now(UTC)
-            self.run_store.save(run)
-            return run
+                return run
+            except Exception as exc:
+                # The exception is deliberately swallowed below (run() always
+                # returns a CorpusBuildRun, never raises), so the span's own
+                # automatic exception handling never fires -- mark it explicitly.
+                root.mark("error", reason=type(exc).__name__)
+                message = str(exc)[:1_000] or type(exc).__name__
+                project = self.workspace_store.load_project(project_id)
+                if project.state != ProjectState.FAILED_RETRYABLE:
+                    mark_failed(project, message)
+                else:
+                    project.last_error = message
+                    project.updated_at = datetime.now(UTC)
+                self.workspace_store.save_project(project)
+                run.status = "failed"
+                run.last_error = message
+                run.finished_at = datetime.now(UTC)
+                self.run_store.save(run)
+                return run
 
     def _confirmed_source(
         self,
@@ -379,6 +412,15 @@ class CorpusBuildingService:
             source_id=source.source_id,
             ingestion_path=source.ingestion_path,
             brief=project.brief,
+        )
+        tracing.event(
+            "cache.lookup",
+            component="cache",
+            project_id=project.project_id,
+            cache="claim_ledger",
+            result="hit" if ledger is not None else "miss",
+            subject_type="source",
+            subject_id=str(source.source_id),
         )
         if ledger is None:
             return queued
@@ -450,8 +492,19 @@ class CorpusBuildingService:
         source: CorpusSourceRun,
         stage: CorpusStage,
     ) -> None:
+        previous = source.stage
         source.stage = stage
         self.run_store.save(run)
+        tracing.event(
+            "run.stage_changed",
+            component="corpus",
+            project_id=run.project_id,
+            workflow_run_id=run.run_id,
+            subject_type="source",
+            subject_id=str(source.source_id),
+            previous=previous,
+            current=stage,
+        )
 
 
 def _next_attempt_sources(

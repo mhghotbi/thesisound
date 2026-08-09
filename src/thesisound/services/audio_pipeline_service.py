@@ -5,6 +5,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.audio import (
     AudioPipelineManifest,
     AudioSegmentRecord,
@@ -85,19 +86,21 @@ class AudioPipelineService:
             self.workspace_store.save_project(project)
 
         stage("segmenting")
-        desired_chunks = self.segmenter.segment(
-            script,
-            script_hash=current_script_hash,
-            model=self.tts_model,
-            voices=self.voices,
-            style_prompts=self.style_prompts,
-        )
-        chunks = self.audio_store.load_chunks_optional(project_id)
-        if chunks is None or [item.content_hash for item in chunks] != [
-            item.content_hash for item in desired_chunks
-        ]:
-            chunks = desired_chunks
-            self.audio_store.save_chunks(project_id, chunks)
+        with tracing.span("audio.segmenting", component="audio") as span:
+            desired_chunks = self.segmenter.segment(
+                script,
+                script_hash=current_script_hash,
+                model=self.tts_model,
+                voices=self.voices,
+                style_prompts=self.style_prompts,
+            )
+            chunks = self.audio_store.load_chunks_optional(project_id)
+            if chunks is None or [item.content_hash for item in chunks] != [
+                item.content_hash for item in desired_chunks
+            ]:
+                chunks = desired_chunks
+                self.audio_store.save_chunks(project_id, chunks)
+            span.measure(chunk_count=len(chunks))
         manifest = AudioPipelineManifest(
             project_id=project_id,
             script_hash=current_script_hash,
@@ -107,14 +110,18 @@ class AudioPipelineService:
         self.audio_store.save_manifest(manifest)
 
         stage("synthesizing")
-        for chunk in chunks:
-            existing = self.audio_store.load_segment_optional(
-                project_id,
-                chunk.chunk_id,
-                chunk.content_hash,
-            )
-            if existing is None:
-                self._synthesize(project_id, chunk, attempts=1)
+        with tracing.span("audio.synthesizing", component="audio") as span:
+            synthesized = 0
+            for chunk in chunks:
+                existing = self.audio_store.load_segment_optional(
+                    project_id,
+                    chunk.chunk_id,
+                    chunk.content_hash,
+                )
+                if existing is None:
+                    self._synthesize(project_id, chunk, attempts=1)
+                    synthesized += 1
+            span.measure(chunk_count=len(chunks), synthesized_count=synthesized)
         manifest.status = "segments_ready"
         manifest.updated_at = datetime.now(UTC)
         self.audio_store.save_manifest(manifest)
@@ -128,24 +135,34 @@ class AudioPipelineService:
             self.workspace_store.save_project(project)
 
         stage("transcribing")
-        qa_reports = []
-        regenerated: list[str] = []
-        for chunk in chunks:
-            report = self._transcribe_and_check(project_id, chunk)
-            if self._needs_regeneration(report.verdict) and self.max_regeneration_attempts > 0:
-                stage("regenerating")
-                instruction = report.regeneration_instruction or (
-                    "متن را دقیق و کامل بازتولید کن"
+        with tracing.span("audio.transcribing", component="audio") as span:
+            qa_reports = []
+            regenerated: list[str] = []
+            for chunk in chunks:
+                report = self._transcribe_and_check(project_id, chunk)
+                needs_regen = (
+                    self._needs_regeneration(report.verdict)
+                    and self.max_regeneration_attempts > 0
                 )
-                self._synthesize(
-                    project_id,
-                    chunk,
-                    attempts=2,
-                    additional_instruction=instruction,
-                )
-                report = self._transcribe_and_check(project_id, chunk, force=True)
-                regenerated.append(chunk.chunk_id)
-            qa_reports.append(report)
+                if needs_regen:
+                    stage("regenerating")
+                    instruction = report.regeneration_instruction or (
+                        "متن را دقیق و کامل بازتولید کن"
+                    )
+                    with tracing.span(
+                        "audio.regenerating", component="audio",
+                        subject_type="chunk", subject_id=chunk.chunk_id, detail="verbose",
+                    ):
+                        self._synthesize(
+                            project_id,
+                            chunk,
+                            attempts=2,
+                            additional_instruction=instruction,
+                        )
+                        report = self._transcribe_and_check(project_id, chunk, force=True)
+                    regenerated.append(chunk.chunk_id)
+                qa_reports.append(report)
+            span.measure(chunk_count=len(chunks), regenerated_count=len(regenerated))
 
         manifest.status = "qa_ready"
         manifest.regenerated_chunk_ids = regenerated
@@ -158,17 +175,19 @@ class AudioPipelineService:
             raise ValueError(f"Audio QA did not pass for all chunks: {detail}")
 
         stage("assembling")
-        wav_segments = [
-            self.audio_store.load_segment(project_id, chunk.chunk_id)[1]
-            for chunk in chunks
-        ]
-        final_wav, normalization = self.assembler.assemble(wav_segments)
-        final_validation = self.validator.validate(final_wav)
-        if final_validation.verdict != "pass":
-            raise ValueError(
-                "Final audio validation failed: " + "; ".join(final_validation.issues)
-            )
-        final_ref, final_sha = self.audio_store.save_final_audio(project_id, final_wav)
+        with tracing.span("audio.assembling", component="audio") as span:
+            wav_segments = [
+                self.audio_store.load_segment(project_id, chunk.chunk_id)[1]
+                for chunk in chunks
+            ]
+            final_wav, normalization = self.assembler.assemble(wav_segments)
+            final_validation = self.validator.validate(final_wav)
+            if final_validation.verdict != "pass":
+                raise ValueError(
+                    "Final audio validation failed: " + "; ".join(final_validation.issues)
+                )
+            final_ref, final_sha = self.audio_store.save_final_audio(project_id, final_wav)
+            span.measure(duration_seconds=final_validation.duration_seconds or 0)
         manifest.status = "verified"
         manifest.final_audio_ref = final_ref
         manifest.final_audio_sha256 = final_sha

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Literal
 from uuid import uuid4
 
+from thesisound import tracing
 from thesisound.config import Settings
 from thesisound.model_routing import load_model_router
 from thesisound.modeling import ModelConfigurationError
@@ -77,6 +78,19 @@ class RuntimePreflight:
             checks.append(self._ffmpeg())
         if scope == "full":
             checks.extend(self._parser_checks())
+        failed = [check.code for check in checks if check.blocking]
+        if failed:
+            # A span for every call would be noise on the (overwhelming) happy
+            # path -- this runs on every gated request. Only the interesting
+            # case, a block that will redirect the user to /system-check, is
+            # worth a record.
+            tracing.event(
+                "preflight.blocked",
+                component="preflight",
+                level="warn",
+                scope=scope,
+                failed_checks=failed,
+            )
         return checks
 
     def require(self, scope: PreflightScope) -> None:

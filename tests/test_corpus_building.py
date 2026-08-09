@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from thesisound import tracing
 from thesisound.domain import (
     ClaimType,
     DocumentMap,
@@ -285,6 +286,75 @@ def test_multi_source_run_promotes_only_after_every_source(tmp_path: Path) -> No
     assert [item.run_id for item in service.run_store.load_history(project.project_id)] == [
         run.run_id
     ]
+
+
+def test_run_produces_a_stage_span_and_a_source_span_per_source(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(raw_input="topic", state=ProjectState.CORPUS_BUILDING)
+    fake = FakeAnalysisService(workspace)
+    service = _service(tmp_path, project, fake)
+    source_ids = [uuid4(), uuid4()]
+
+    service.queue(
+        project.project_id,
+        [
+            _source_input(tmp_path, source_id, f"source-{index}")
+            for index, source_id in enumerate(source_ids)
+        ],
+    )
+    run = service.run(project.project_id)
+
+    assert run.status == "succeeded"
+    root = recording_tracer.sink.one("corpus.run")
+    assert root.kind == "stage"
+    assert root.status == "ok"
+    assert root.context.project_id == project.project_id
+    # new_root=True: no ambient HTTP span was open, so this is its own trace root.
+    assert root.parent_span_id is None
+
+    source_spans = recording_tracer.sink.find("corpus.source")
+    assert len(source_spans) == 2
+    assert {span.subject_id for span in source_spans} == {str(sid) for sid in source_ids}
+    assert all(span.parent_span_id == root.context.span_id for span in source_spans)
+    assert all(span.context.trace_id == root.context.trace_id for span in source_spans)
+    assert all(span.status == "ok" for span in source_spans)
+    assert all(span.attributes["status"] == "succeeded" for span in source_spans)
+
+    stage_events = [
+        event for event in recording_tracer.sink.events if event.name == "run.stage_changed"
+    ]
+    stages_per_source: dict[str, list[str]] = {}
+    for event in stage_events:
+        stages_per_source.setdefault(event.subject_id, []).append(event.attributes["current"])
+    for source_id in source_ids:
+        assert stages_per_source[str(source_id)] == [
+            "building_blocks",
+            "mapping_document",
+            "extracting_evidence",
+            "building_claims",
+        ]
+
+
+def test_a_failed_run_marks_its_stage_span_as_error(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(raw_input="topic", state=ProjectState.CORPUS_BUILDING)
+    source_id = uuid4()
+    fake = FakeAnalysisService(workspace, fail_source=source_id)
+    service = _service(tmp_path, project, fake)
+
+    service.queue(project.project_id, [_source_input(tmp_path, source_id, "source-1")])
+    run = service.run(project.project_id)
+
+    assert run.status == "failed"
+    root = recording_tracer.sink.one("corpus.run")
+    assert root.status == "error"
+    assert root.attributes["status_reason"] == "ValueError"
+    source_span = recording_tracer.sink.one("corpus.source")
+    assert source_span.status == "error"
 
 
 def test_failed_source_keeps_completed_source_and_creates_new_retry_attempt(

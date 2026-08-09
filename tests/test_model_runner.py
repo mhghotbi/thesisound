@@ -7,6 +7,7 @@ from uuid import uuid4
 import pytest
 from pydantic import BaseModel
 
+from thesisound import tracing
 from thesisound.modeling import (
     DeterministicValidationError,
     ModelSafetyError,
@@ -30,6 +31,7 @@ class FakeModel:
     def __init__(self, results: list[object]) -> None:
         self.results = results
         self.prompts: list[str] = []
+        self.metadata_seen: list[RunMetadata] = []
 
     def generate_structured(
         self,
@@ -40,8 +42,9 @@ class FakeModel:
         model: str,
         metadata: RunMetadata,
     ) -> StructuredModelResponse[ExampleOutput]:
-        _ = system_prompt, output_type, model, metadata
+        _ = system_prompt, output_type, model
         self.prompts.append(user_prompt)
+        self.metadata_seen.append(metadata)
         result = self.results.pop(0)
         if isinstance(result, Exception):
             raise result
@@ -118,6 +121,32 @@ def test_model_runner_persists_validated_output_without_raw_prompts(tmp_path: Pa
     request = json.loads((run_dir / "request.json").read_text(encoding="utf-8"))
     assert request["variable_names"] == ["context", "topic"]
     assert "Arendt" not in json.dumps(request)
+
+
+def test_model_runner_carries_the_ambient_span_into_run_metadata(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    """The step spans added around corpus/episode/script/audio work (e.g.
+    corpus.extract_evidence) are only useful if the model call they wrap
+    actually attaches to them -- this is that join, one level up from the
+    ModelCallSpec-level tests in test_observability.py."""
+
+    model = FakeModel([ExampleOutput(value="ok")])
+
+    with tracing.span("corpus.extract_evidence", subject_id="block-1") as span:
+        _runner(tmp_path, model).run(
+            project_id=uuid4(),
+            stage="example",
+            prompt_name="example",
+            variables={"context": "safe", "topic": "Arendt"},
+            output_type=ExampleOutput,
+            model="fake-model",
+        )
+
+    assert len(model.metadata_seen) == 1
+    metadata = model.metadata_seen[0]
+    assert metadata.pipeline_trace_id == span.context.trace_id
+    assert metadata.parent_span_id == span.context.span_id
 
 
 def test_model_runner_retries_transient_error_with_backoff(tmp_path: Path) -> None:

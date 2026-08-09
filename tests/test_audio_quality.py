@@ -1,8 +1,13 @@
 import io
+import subprocess
 import wave
+from pathlib import Path
 
+import pytest
+
+from thesisound import tracing
 from thesisound.audio import AsrTranscript, AudioChunk
-from thesisound.services.audio_assembler import concatenate_wav
+from thesisound.services.audio_assembler import AudioAssembler, concatenate_wav
 from thesisound.services.audio_qa import AudioQaService
 from thesisound.services.audio_validator import AudioValidator
 
@@ -93,3 +98,73 @@ def test_audio_qa_passes_near_identical_persian_despite_zwnj_and_punctuation() -
     assert report.similarity_ratio >= 0.9
     assert report.verdict == "pass"
     assert not report.missing_sentences
+
+
+def test_audio_qa_records_the_verdict_and_similarity_as_a_span(
+    recording_tracer: tracing.Tracer,
+) -> None:
+    chunk = _chunk("این جمله باید کامل خوانده شود. پایان مهم متن نیز نباید حذف شود.")
+    transcript = AsrTranscript(
+        chunk_id=chunk.chunk_id,
+        chunk_hash=chunk.content_hash,
+        wav_sha256="b" * 64,
+        text="این جمله باید کامل خوانده شود.",
+        speaker="A",
+        provider="fake",
+        model="fake",
+    )
+
+    AudioQaService().compare(chunk, transcript)
+
+    span = recording_tracer.sink.one("audio.qa")
+    assert span.subject_id == "audio-0001"
+    assert span.attributes["verdict"] == "regenerate"
+    assert 0 <= span.metrics["similarity_ratio"] <= 1
+    assert span.metrics["missing_sentence_count"] >= 0
+
+
+def test_audio_assembler_records_a_successful_ffmpeg_span(
+    monkeypatch: pytest.MonkeyPatch, recording_tracer: tracing.Tracer
+) -> None:
+    """AudioAssembler.assemble() had no test coverage before this instrumentation
+    -- neither the ffmpeg call nor its failure path was exercised anywhere."""
+
+    monkeypatch.setattr(
+        "thesisound.services.audio_assembler.shutil.which", lambda _: "/usr/bin/ffmpeg"
+    )
+
+    def fake_run(command, **kwargs):
+        Path(command[-1]).write_bytes(_wav(seconds=0.5))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr("thesisound.services.audio_assembler.subprocess.run", fake_run)
+
+    AudioAssembler().assemble([_wav(), _wav()])
+
+    span = recording_tracer.sink.one("audio.assemble.ffmpeg")
+    assert span.kind == "subprocess"
+    assert span.status == "ok"
+    assert span.attributes["exit_code"] == 0
+    assert span.metrics["input_bytes"] > 0
+    assert span.metrics["output_bytes"] > 0
+
+
+def test_audio_assembler_records_a_failed_ffmpeg_span(
+    monkeypatch: pytest.MonkeyPatch, recording_tracer: tracing.Tracer
+) -> None:
+    monkeypatch.setattr(
+        "thesisound.services.audio_assembler.shutil.which", lambda _: "/usr/bin/ffmpeg"
+    )
+
+    def failing_run(command, **kwargs):
+        return subprocess.CompletedProcess(command, 1, stdout="", stderr="loudnorm failed\n")
+
+    monkeypatch.setattr("thesisound.services.audio_assembler.subprocess.run", failing_run)
+
+    with pytest.raises(RuntimeError, match="loudnorm failed"):
+        AudioAssembler().assemble([_wav()])
+
+    span = recording_tracer.sink.one("audio.assemble.ffmpeg")
+    assert span.status == "error"
+    assert span.attributes["exit_code"] == 1
+    assert span.attributes["stderr_tail"] == "loudnorm failed"

@@ -6,8 +6,9 @@ import re
 import sqlite3
 import time
 from collections.abc import Callable, Mapping
+from contextlib import closing
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import RLock
 from typing import Any, Literal, Protocol, TypeVar
@@ -15,7 +16,9 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from thesisound import tracing
 from thesisound.modeling import GroundingMode, ModelUsage
+from thesisound.tracing import EventRecord, SpanRecord, Tracer
 
 CallStatus = Literal[
     "running",
@@ -46,14 +49,75 @@ _SENSITIVE_KEYS = {
     "refresh_token",
     "session",
     "session_id",
+    "phone",
+    "phone_number",
+    "user_phone",
+    "msisdn",
+    "otp_code",
+    "csrf_token",
+    "web_session_secret",
+    "token",
+    "credential",
 }
 _GEMINI_KEY_PATTERN = re.compile(r"AIza[0-9A-Za-z_-]{20,}")
+_GENERIC_SECRET_KEY_PATTERN = re.compile(r"sk-[A-Za-z0-9_-]{20,}")
+_IRAN_PHONE_PATTERN = re.compile(r"(?:\+98|0098|0)9\d{9}")
+_HOME_PATH_PATTERNS = (
+    re.compile(r"[A-Za-z]:\\Users\\[^\\/\s]+"),
+    re.compile(r"/home/[^/\s]+"),
+)
+
+
+def _relativize(path: Path, roots: tuple[Path, ...]) -> str:
+    """Render a filesystem path relative to a known root, never absolute.
+
+    Absolute paths embed the OS username (``C:\\Users\\<name>\\...``), which is
+    real PII once a trace or log line is exported. Callers that only have a
+    workspace-relative concept (project id, call id) should prefer that; this
+    helper exists for the remaining cases where an absolute path is the only
+    identifier available (e.g. an uploaded file before it has a project home).
+    """
+
+    resolved = path.expanduser().resolve()
+    for root in roots:
+        try:
+            return resolved.relative_to(root.expanduser().resolve()).as_posix()
+        except ValueError:
+            continue
+    return redact_text(resolved.as_posix())
+
+
+def redact_text(value: str) -> str:
+    """Scrub known secret and PII patterns out of a free-text string."""
+
+    value = _GEMINI_KEY_PATTERN.sub("[REDACTED_GEMINI_KEY]", value)
+    value = _GENERIC_SECRET_KEY_PATTERN.sub("[REDACTED_SECRET]", value)
+    value = _IRAN_PHONE_PATTERN.sub("[REDACTED_PHONE]", value)
+    for pattern in _HOME_PATH_PATTERNS:
+        value = pattern.sub("[HOME]", value)
+    return value
+
+
+def _ambient_trace_id() -> UUID | None:
+    context = tracing.current_context()
+    return context.trace_id if context else None
+
+
+def _ambient_span_id() -> UUID | None:
+    context = tracing.current_context()
+    return context.span_id if context else None
 
 
 class ModelCallSpec(BaseModel):
     call_id: UUID = Field(default_factory=uuid4)
     trace_id: UUID | None = None
     parent_call_id: UUID | None = None
+    # Populated from the ambient span whenever a caller does not supply one
+    # explicitly -- the same mechanism as RunMetadata in ports.py, and the
+    # only mechanism at all for the TTS/ASR adapters, which construct a
+    # ModelCallSpec directly without a RunMetadata in between.
+    pipeline_trace_id: UUID | None = Field(default_factory=_ambient_trace_id)
+    parent_span_id: UUID | None = Field(default_factory=_ambient_span_id)
     project_id: UUID | None = None
     workflow_run_id: UUID | None = None
     stage: str = Field(min_length=1)
@@ -139,6 +203,8 @@ class CallDetail(BaseModel):
     raw_response_artifact_path: str | None = None
     parsed_output_artifact_path: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
+    pipeline_trace_id: UUID | None = None
+    parent_span_id: UUID | None = None
 
 
 class ProjectUsageSummary(BaseModel):
@@ -154,6 +220,83 @@ class ProjectUsageSummary(BaseModel):
     cached_tokens: int = 0
     total_tokens: int = 0
     total_latency_ms: int = 0
+
+
+class SpanSummary(BaseModel):
+    span_id: UUID
+    trace_id: UUID
+    parent_span_id: UUID | None = None
+    project_id: UUID | None = None
+    workflow_run_id: UUID | None = None
+    name: str
+    component: str
+    kind: str
+    subject_type: str | None = None
+    subject_id: str | None = None
+    status: str
+    started_at: datetime
+    ended_at: datetime | None = None
+    duration_ms: int | None = None
+    process: str | None = None
+    error_type: str | None = None
+    error_message: str | None = None
+    attributes: dict[str, Any] = Field(default_factory=dict)
+    metrics: dict[str, float] = Field(default_factory=dict)
+
+
+class TraceNode(BaseModel):
+    """One node in a trace tree -- either a pipeline span or a model call,
+    via the ``trace_nodes`` view that unions ``pipeline_spans`` and
+    ``model_calls`` so a single query renders the whole tree regardless of
+    which table a given node actually lives in."""
+
+    node_id: UUID
+    trace_id: UUID
+    parent_id: UUID | None = None
+    project_id: UUID | None = None
+    name: str
+    component: str
+    kind: str
+    status: str
+    started_at: datetime
+    ended_at: datetime | None = None
+    duration_ms: int | None = None
+    subject_type: str | None = None
+    subject_id: str | None = None
+    node_source: Literal["span", "model_call"]
+
+
+class EventSummary(BaseModel):
+    event_id: UUID
+    trace_id: UUID | None = None
+    span_id: UUID | None = None
+    project_id: UUID | None = None
+    workflow_run_id: UUID | None = None
+    occurred_at: datetime
+    name: str
+    component: str
+    level: str
+    subject_type: str | None = None
+    subject_id: str | None = None
+    attributes: dict[str, Any] = Field(default_factory=dict)
+
+
+class StageSummary(BaseModel):
+    """Per-span-name rollup across every trace for a project.
+
+    ``total_ms`` counts each span's own duration including any children --
+    a basic breakdown by name. Splitting out ``self_ms`` (this span's time
+    minus its children's) needs a recursive query over the whole tree and is
+    a Phase 4 concern once cost joins the same rollup; this is deliberately
+    the simpler cut needed for `thesisound pipeline-summary` today.
+    """
+
+    name: str
+    component: str
+    call_count: int
+    total_ms: int
+    avg_ms: int
+    error_count: int
 
 
 @dataclass(frozen=True)
@@ -199,21 +342,26 @@ class ObservabilityLedger:
                 "request.json",
                 request_payload,
             )
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             connection.execute(
                 """
                 INSERT OR IGNORE INTO model_calls(
-                    call_id, trace_id, parent_call_id, project_id, workflow_run_id,
+                    call_id, trace_id, parent_call_id, pipeline_trace_id, parent_span_id,
+                    project_id, workflow_run_id,
                     stage, operation, provider, requested_model, prompt_id,
                     prompt_version, subject_type, subject_id, logical_attempt,
                     status, started_at, timeout_ms, grounding_mode,
                     request_artifact_path, request_sha256, metadata_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?, ?, ?)
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?, ?, ?
+                )
                 """,
                 (
                     str(spec.call_id),
                     _uuid_text(spec.trace_id),
                     _uuid_text(spec.parent_call_id),
+                    _uuid_text(spec.pipeline_trace_id),
+                    _uuid_text(spec.parent_span_id),
                     _uuid_text(spec.project_id),
                     _uuid_text(spec.workflow_run_id),
                     spec.stage,
@@ -225,7 +373,7 @@ class ObservabilityLedger:
                     spec.subject_type,
                     spec.subject_id,
                     spec.logical_attempt,
-                    started.isoformat(),
+                    _to_db_timestamp(started),
                     spec.timeout_ms,
                     spec.grounding_mode,
                     request_path,
@@ -248,7 +396,7 @@ class ObservabilityLedger:
         started_at = _coerce_datetime(event.get("started_at")) or _now()
         ended_at = _coerce_datetime(event.get("ended_at")) or started_at
         latency_ms = _nonnegative_int(event.get("latency_ms")) or 0
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             connection.execute(
                 """
                 INSERT INTO model_attempts(
@@ -266,8 +414,8 @@ class ObservabilityLedger:
                     _optional_text(event.get("key_fingerprint")),
                     _optional_text(event.get("credential_type")),
                     _optional_text(event.get("status")) or "unknown",
-                    started_at.isoformat(),
-                    ended_at.isoformat(),
+                    _to_db_timestamp(started_at),
+                    _to_db_timestamp(ended_at),
                     latency_ms,
                     _optional_int(event.get("http_status")),
                     int(retryable),
@@ -301,7 +449,7 @@ class ObservabilityLedger:
         spec = self._spec_for_artifact(call_id)
         if self.store_payloads:
             path, digest = self._write_artifact(spec, "raw-response.json", response_payload)
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             connection.execute(
                 """
                 UPDATE model_calls
@@ -371,7 +519,7 @@ class ObservabilityLedger:
         reason: str,
         backoff_ms: int,
     ) -> None:
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             connection.execute(
                 """
                 UPDATE model_calls
@@ -380,6 +528,266 @@ class ObservabilityLedger:
                 """,
                 (reason, max(0, backoff_ms), str(call_id)),
             )
+
+    def start_span(self, record: SpanRecord) -> None:
+        """Insert a span as ``running``. Writes through immediately (no
+        buffering) so any open span -- not just long-running stages -- can
+        be found and reaped after a crash."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO pipeline_spans(
+                    span_id, trace_id, parent_span_id, project_id, workflow_run_id,
+                    name, component, kind, subject_type, subject_id, status,
+                    started_at, process, pid, attributes_json, metrics_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(record.context.span_id),
+                    str(record.context.trace_id),
+                    _uuid_text(record.parent_span_id),
+                    _uuid_text(record.context.project_id),
+                    _uuid_text(record.context.workflow_run_id),
+                    record.name,
+                    record.component,
+                    record.kind,
+                    record.subject_type,
+                    record.subject_id,
+                    _to_db_timestamp(record.started_at),
+                    record.process,
+                    record.pid,
+                    _json(redact_value(record.attributes)),
+                    _json(record.metrics),
+                ),
+            )
+
+    def end_span(self, record: SpanRecord) -> None:
+        """Update a span with its terminal status, duration, and final
+        attributes/metrics. A no-op if the span row is missing (e.g. tracing
+        was enabled mid-span, or the ledger was pruned)."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            connection.execute(
+                """
+                UPDATE pipeline_spans
+                SET status = ?, ended_at = ?, duration_ms = ?, error_type = ?,
+                    error_message = ?, attributes_json = ?, metrics_json = ?
+                WHERE span_id = ?
+                """,
+                (
+                    record.status,
+                    _to_db_timestamp(record.ended_at) if record.ended_at else None,
+                    record.duration_ms,
+                    record.error_type,
+                    _truncate(record.error_message),
+                    _json(redact_value(record.attributes)),
+                    _json(record.metrics),
+                    str(record.context.span_id),
+                ),
+            )
+
+    def record_event(self, record: EventRecord) -> None:
+        """Insert one append-only event row. Events are never updated after
+        the fact -- that is what fixes run records being mutated in place."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO pipeline_events(
+                    event_id, trace_id, span_id, project_id, workflow_run_id,
+                    occurred_at, name, component, level, subject_type, subject_id,
+                    attributes_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(record.event_id),
+                    _uuid_text(record.trace_id),
+                    _uuid_text(record.span_id),
+                    _uuid_text(record.project_id),
+                    _uuid_text(record.workflow_run_id),
+                    _to_db_timestamp(record.occurred_at),
+                    record.name,
+                    record.component,
+                    record.level,
+                    record.subject_type,
+                    record.subject_id,
+                    _json(redact_value(record.attributes)),
+                ),
+            )
+
+    def reap_orphaned_spans(
+        self,
+        *,
+        older_than_minutes: int = 60,
+        process: str | None = None,
+    ) -> int:
+        """Close spans a crashed process left ``running``.
+
+        Called from the same composition-root path that already calls
+        ``recover_interrupted_runs()`` on each stage's run service. Marks
+        every stale ``running`` span ``interrupted`` and records one
+        ``run.recovered`` event per span, so crash recovery -- previously
+        silent -- becomes visible in the trace.
+        """
+
+        cutoff = _to_db_timestamp(_now() - timedelta(minutes=older_than_minutes))
+        with self._lock, closing(self._connect()) as connection, connection:
+            clauses = ["status = 'running'", "started_at < ?"]
+            params: list[Any] = [cutoff]
+            if process is not None:
+                clauses.append("process = ?")
+                params.append(process)
+            stale = connection.execute(
+                f"SELECT span_id, trace_id, project_id, workflow_run_id, name "  # noqa: S608
+                f"FROM pipeline_spans WHERE {' AND '.join(clauses)}",
+                params,
+            ).fetchall()
+            if not stale:
+                return 0
+            now = _now()
+            connection.executemany(
+                "UPDATE pipeline_spans SET status = 'interrupted', ended_at = ? "
+                "WHERE span_id = ?",
+                [(_to_db_timestamp(now), row[0]) for row in stale],
+            )
+            connection.executemany(
+                """
+                INSERT INTO pipeline_events(
+                    event_id, trace_id, span_id, project_id, workflow_run_id,
+                    occurred_at, name, component, level, attributes_json
+                ) VALUES (?, ?, ?, ?, ?, ?, 'run.recovered', 'observability', 'warn', ?)
+                """,
+                [
+                    (
+                        str(uuid4()),
+                        row[1],
+                        row[0],
+                        row[2],
+                        row[3],
+                        _to_db_timestamp(now),
+                        _json({"span_name": row[4], "reason": "interrupted_by_restart"}),
+                    )
+                    for row in stale
+                ],
+            )
+        return len(stale)
+
+    def get_span(self, span_id: UUID) -> SpanSummary:
+        with self._lock, closing(self._connect()) as connection, connection:
+            row = connection.execute(
+                "SELECT " + _SPAN_COLUMNS + " FROM pipeline_spans WHERE span_id = ?",
+                (str(span_id),),
+            ).fetchone()
+        if row is None:
+            raise FileNotFoundError(f"Span not found: {span_id}")
+        return _span_from_row(row)
+
+    def list_spans(self, trace_id: UUID) -> list[SpanSummary]:
+        """Every span in one trace, in start order -- the tree is implicit
+        in each row's ``parent_span_id``."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                "SELECT " + _SPAN_COLUMNS + " FROM pipeline_spans "
+                "WHERE trace_id = ? ORDER BY started_at",
+                (str(trace_id),),
+            ).fetchall()
+        return [_span_from_row(row) for row in rows]
+
+    def list_recent_traces(self, project_id: UUID, *, limit: int = 20) -> list[UUID]:
+        """The most recent distinct trace IDs for a project, newest first --
+        the natural starting point for "show me the latest run"."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                """
+                SELECT trace_id, MAX(started_at) AS latest
+                FROM pipeline_spans
+                WHERE project_id = ? AND parent_span_id IS NULL
+                GROUP BY trace_id
+                ORDER BY latest DESC
+                LIMIT ?
+                """,
+                (str(project_id), max(1, min(limit, 500))),
+            ).fetchall()
+        return [UUID(row[0]) for row in rows]
+
+    def stage_summary(self, project_id: UUID) -> list[StageSummary]:
+        """Per-span-name rollup across every trace recorded for a project,
+        ranked by total time -- the simple cut for `pipeline-summary`."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                """
+                SELECT name, component, COUNT(*),
+                       COALESCE(SUM(duration_ms), 0),
+                       COUNT(*) FILTER (WHERE status = 'error')
+                FROM pipeline_spans
+                WHERE project_id = ?
+                GROUP BY name, component
+                ORDER BY SUM(duration_ms) DESC
+                """,
+                (str(project_id),),
+            ).fetchall()
+        return [
+            StageSummary(
+                name=row[0],
+                component=row[1],
+                call_count=row[2],
+                total_ms=row[3],
+                avg_ms=round(row[3] / row[2]) if row[2] else 0,
+                error_count=row[4],
+            )
+            for row in rows
+        ]
+
+    def list_events(self, trace_id: UUID) -> list[EventSummary]:
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                "SELECT " + _EVENT_COLUMNS + " FROM pipeline_events "
+                "WHERE trace_id = ? ORDER BY occurred_at",
+                (str(trace_id),),
+            ).fetchall()
+        return [_event_from_row(row) for row in rows]
+
+    def get_trace(self, trace_id: UUID) -> list[TraceNode]:
+        """Every node in one trace -- spans and model calls together, via
+        the ``trace_nodes`` view -- in start order. The tree is implicit in
+        each row's ``parent_id``, same as ``list_spans``."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                """
+                SELECT node_id, trace_id, parent_id, project_id, name, component,
+                       kind, status, started_at, ended_at, duration_ms,
+                       subject_type, subject_id, node_source
+                FROM trace_nodes
+                WHERE trace_id = ?
+                ORDER BY started_at
+                """,
+                (str(trace_id),),
+            ).fetchall()
+        return [_trace_node_from_row(row) for row in rows]
+
+    def list_events_by_project(
+        self, project_id: UUID, *, limit: int = 200
+    ) -> list[EventSummary]:
+        """Every event for a project, newest first, regardless of trace.
+
+        Unlike ``list_events``, this also surfaces events recorded with no
+        ambient span at all -- state transitions from ``pipeline.transition``
+        are the common case, since most of that module runs outside any
+        span today.
+        """
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                "SELECT " + _EVENT_COLUMNS + " FROM pipeline_events "
+                "WHERE project_id = ? ORDER BY occurred_at DESC LIMIT ?",
+                (str(project_id), max(1, min(limit, 2_000))),
+            ).fetchall()
+        return [_event_from_row(row) for row in rows]
 
     def list_calls(
         self,
@@ -403,12 +811,12 @@ class ObservabilityLedger:
             + " AND ".join(clauses)
             + " ORDER BY started_at DESC LIMIT ?"
         )
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             rows = connection.execute(query, params).fetchall()
         return [_summary_from_row(row) for row in rows]
 
     def get_call(self, call_id: UUID) -> CallDetail:
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             row = connection.execute(
                 "SELECT " + _CALL_DETAIL_COLUMNS + " FROM model_calls WHERE call_id = ?",
                 (str(call_id),),
@@ -445,17 +853,19 @@ class ObservabilityLedger:
             raw_response_artifact_path=row[offset + 10],
             parsed_output_artifact_path=row[offset + 11],
             metadata=metadata,
+            pipeline_trace_id=_optional_uuid(row[offset + 13]),
+            parent_span_id=_optional_uuid(row[offset + 14]),
             attempts=[_attempt_from_row(item) for item in attempts],
         )
 
     def project_summary(self, project_id: UUID) -> ProjectUsageSummary:
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             row = connection.execute(
                 """
                 SELECT COUNT(*),
-                       SUM(status = 'succeeded'),
-                       SUM(status = 'failed'),
-                       SUM(status = 'rejected'),
+                       COUNT(*) FILTER (WHERE status = 'succeeded'),
+                       COUNT(*) FILTER (WHERE status = 'failed'),
+                       COUNT(*) FILTER (WHERE status = 'rejected'),
                        COALESCE(SUM(provider_attempt_count), 0),
                        COALESCE(SUM(input_tokens), 0),
                        COALESCE(SUM(output_tokens), 0),
@@ -495,19 +905,19 @@ class ObservabilityLedger:
     def _finish(self, call_id: UUID, *, status: CallStatus, **fields: Any) -> None:
         ended = _now()
         assignments = ["status = ?", "ended_at = ?"]
-        params: list[Any] = [status, ended.isoformat()]
+        params: list[Any] = [status, _to_db_timestamp(ended)]
         for name, value in fields.items():
             assignments.append(f"{name} = ?")
             params.append(value)
         params.append(str(call_id))
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             started_row = connection.execute(
                 "SELECT started_at FROM model_calls WHERE call_id = ?",
                 (str(call_id),),
             ).fetchone()
             if started_row is None:
                 return
-            started = datetime.fromisoformat(started_row[0])
+            started = _from_db_timestamp(started_row[0])
             assignments.append("latency_ms = ?")
             params.insert(-1, max(0, round((ended - started).total_seconds() * 1000)))
             connection.execute(
@@ -516,7 +926,7 @@ class ObservabilityLedger:
             )
 
     def _spec_for_artifact(self, call_id: UUID) -> ModelCallSpec:
-        with self._connect() as connection:
+        with self._lock, closing(self._connect()) as connection, connection:
             row = connection.execute(
                 """
                 SELECT trace_id, parent_call_id, project_id, workflow_run_id,
@@ -559,7 +969,7 @@ class ObservabilityLedger:
         directory = self.artifact_root / project_segment / str(spec.call_id)
         directory.mkdir(parents=True, exist_ok=True)
         path = directory / filename
-        serialized = _json(_redact(_jsonable(payload))) + "\n"
+        serialized = _json(redact_value(_jsonable(payload))) + "\n"
         temporary = path.with_suffix(path.suffix + ".tmp")
         temporary.write_text(serialized, encoding="utf-8")
         temporary.replace(path)
@@ -568,15 +978,64 @@ class ObservabilityLedger:
         return relative, digest
 
     def _initialize(self) -> None:
-        with self._connect() as connection:
-            connection.executescript(_SCHEMA)
+        with self._lock, closing(self._connect()) as connection, connection:
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS schema_meta("
+                "  key TEXT PRIMARY KEY, value TEXT NOT NULL)"
+            )
+            row = connection.execute(
+                "SELECT value FROM schema_meta WHERE key = 'schema_version'"
+            ).fetchone()
+            current = int(row[0]) if row else 0
+            if current > len(_MIGRATIONS):
+                raise RuntimeError(
+                    f"Ledger schema v{current} is newer than this build supports "
+                    f"(v{len(_MIGRATIONS)}). Upgrade Thesisound or point at another ledger."
+                )
+            for index in range(current, len(_MIGRATIONS)):
+                migration = _MIGRATIONS[index]
+                if callable(migration):
+                    migration(connection)
+                else:
+                    connection.executescript(migration)
+                connection.execute(
+                    "INSERT INTO schema_meta(key, value) VALUES('schema_version', ?) "
+                    "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                    (str(index + 1),),
+                )
 
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.database_path, timeout=30)
         connection.execute("PRAGMA journal_mode=WAL")
         connection.execute("PRAGMA foreign_keys=ON")
         connection.execute("PRAGMA busy_timeout=30000")
+        connection.execute("PRAGMA synchronous=NORMAL")
         return connection
+
+
+class LedgerSpanSink:
+    """Adapts :class:`ObservabilityLedger` to ``tracing.SpanSink``.
+
+    Writes every span and event through immediately -- the same
+    INSERT-then-UPDATE shape the ``model_calls`` table already uses for
+    ``begin_call``/``_finish`` -- rather than batching in memory. Simpler
+    and safer than a buffered writer, at the cost of one SQL statement per
+    span; ``Settings.tracing_detail`` is the primary lever for keeping
+    volume down (see ``Tracer.span(detail=...)``), and batching remains a
+    reasonable follow-up if measured write volume ever demands it.
+    """
+
+    def __init__(self, ledger: ObservabilityLedger) -> None:
+        self.ledger = ledger
+
+    def begin(self, record: SpanRecord) -> None:
+        self.ledger.start_span(record)
+
+    def end(self, record: SpanRecord) -> None:
+        self.ledger.end_span(record)
+
+    def event(self, record: EventRecord) -> None:
+        self.ledger.record_event(record)
 
 
 T = TypeVar("T")
@@ -745,19 +1204,48 @@ def ledger_from_settings(settings: Any | None = None) -> ObservabilityLedger:
     )
 
 
-def _redact(value: Any) -> Any:
+def tracer_from_settings(settings: Any | None = None) -> Tracer:
+    """The composition-root factory for the ambient tracer, matching
+    ``ledger_from_settings``'s pattern. Returns a disabled ``Tracer`` (not a
+    ``NullTracer`` -- there is only one ``Tracer`` class; disabling it makes
+    every span/event call a cheap no-op) when
+    ``Settings.tracing_enabled`` is false, so callers can install the result
+    unconditionally without an if/else at every call site."""
+
+    if settings is None:
+        from thesisound.config import Settings
+
+        settings = Settings()
+    ledger = ledger_from_settings(settings)
+    return Tracer(
+        LedgerSpanSink(ledger),
+        enabled=settings.tracing_enabled,
+        detail=settings.tracing_detail,
+    )
+
+
+def is_sensitive_key(name: str) -> bool:
+    """Whether a field/attribute name is a known secret carrier by name
+    alone (``password``, ``api_key``, ...), independent of what its value
+    looks like. Shared by dict-shaped redaction (``redact_value``) and
+    attribute-shaped redaction (``logging_setup.RedactingFilter``, for
+    ``logger.info(..., extra={...})`` fields)."""
+
+    return str(name).casefold().replace("-", "_") in _SENSITIVE_KEYS
+
+
+def redact_value(value: Any) -> Any:
     if isinstance(value, dict):
-        result: dict[str, Any] = {}
-        for key, item in value.items():
-            normalized = str(key).casefold().replace("-", "_")
-            result[str(key)] = "[REDACTED]" if normalized in _SENSITIVE_KEYS else _redact(item)
-        return result
+        return {
+            str(key): "[REDACTED]" if is_sensitive_key(key) else redact_value(item)
+            for key, item in value.items()
+        }
     if isinstance(value, list):
-        return [_redact(item) for item in value]
+        return [redact_value(item) for item in value]
     if isinstance(value, tuple):
-        return [_redact(item) for item in value]
+        return [redact_value(item) for item in value]
     if isinstance(value, str):
-        return _GEMINI_KEY_PATTERN.sub("[REDACTED_GEMINI_KEY]", value)
+        return redact_text(value)
     return value
 
 
@@ -802,8 +1290,8 @@ def _summary_from_row(row: tuple[Any, ...]) -> CallSummary:
         requested_model=row[6],
         resolved_model=row[7],
         status=row[8],
-        started_at=datetime.fromisoformat(row[9]),
-        ended_at=datetime.fromisoformat(row[10]) if row[10] else None,
+        started_at=_from_db_timestamp(row[9]),
+        ended_at=_from_db_timestamp(row[10]) if row[10] else None,
         latency_ms=row[11],
         provider_attempt_count=row[12] or 0,
         input_tokens=row[13],
@@ -829,8 +1317,8 @@ def _attempt_from_row(row: tuple[Any, ...]) -> AttemptRecord:
         key_fingerprint=row[5],
         credential_type=row[6],
         status=row[7],
-        started_at=datetime.fromisoformat(row[8]),
-        ended_at=datetime.fromisoformat(row[9]),
+        started_at=_from_db_timestamp(row[8]),
+        ended_at=_from_db_timestamp(row[9]),
         latency_ms=row[10],
         http_status=row[11],
         retryable=bool(row[12]),
@@ -841,8 +1329,93 @@ def _attempt_from_row(row: tuple[Any, ...]) -> AttemptRecord:
     )
 
 
+_SPAN_COLUMNS = """
+span_id, trace_id, parent_span_id, project_id, workflow_run_id, name,
+component, kind, subject_type, subject_id, status, started_at, ended_at,
+duration_ms, process, error_type, error_message, attributes_json, metrics_json
+""".replace("\n", " ").strip()
+
+_EVENT_COLUMNS = """
+event_id, trace_id, span_id, project_id, workflow_run_id, occurred_at,
+name, component, level, subject_type, subject_id, attributes_json
+""".replace("\n", " ").strip()
+
+
+def _span_from_row(row: tuple[Any, ...]) -> SpanSummary:
+    return SpanSummary(
+        span_id=UUID(row[0]),
+        trace_id=UUID(row[1]),
+        parent_span_id=_optional_uuid(row[2]),
+        project_id=_optional_uuid(row[3]),
+        workflow_run_id=_optional_uuid(row[4]),
+        name=row[5],
+        component=row[6],
+        kind=row[7],
+        subject_type=row[8],
+        subject_id=row[9],
+        status=row[10],
+        started_at=_from_db_timestamp(row[11]),
+        ended_at=_from_db_timestamp(row[12]) if row[12] else None,
+        duration_ms=row[13],
+        process=row[14],
+        error_type=row[15],
+        error_message=row[16],
+        attributes=json.loads(row[17] or "{}"),
+        metrics=json.loads(row[18] or "{}"),
+    )
+
+
+def _event_from_row(row: tuple[Any, ...]) -> EventSummary:
+    return EventSummary(
+        event_id=UUID(row[0]),
+        trace_id=_optional_uuid(row[1]),
+        span_id=_optional_uuid(row[2]),
+        project_id=_optional_uuid(row[3]),
+        workflow_run_id=_optional_uuid(row[4]),
+        occurred_at=_from_db_timestamp(row[5]),
+        name=row[6],
+        component=row[7],
+        level=row[8],
+        subject_type=row[9],
+        subject_id=row[10],
+        attributes=json.loads(row[11] or "{}"),
+    )
+
+
+def _trace_node_from_row(row: tuple[Any, ...]) -> TraceNode:
+    return TraceNode(
+        node_id=UUID(row[0]),
+        trace_id=UUID(row[1]),
+        parent_id=_optional_uuid(row[2]),
+        project_id=_optional_uuid(row[3]),
+        name=row[4],
+        component=row[5],
+        kind=row[6],
+        status=row[7],
+        started_at=_from_db_timestamp(row[8]),
+        ended_at=_from_db_timestamp(row[9]) if row[9] else None,
+        duration_ms=row[10],
+        subject_type=row[11],
+        subject_id=row[12],
+        node_source=row[13],
+    )
+
+
 def _now() -> datetime:
     return datetime.now(UTC)
+
+
+def _to_db_timestamp(value: datetime) -> str:
+    """Render a datetime for storage. One function so a later engine swap
+    (e.g. to a native TIMESTAMPTZ column) touches only this pair."""
+
+    return value.astimezone(UTC).isoformat()
+
+
+def _from_db_timestamp(value: str) -> datetime:
+    """Parse a timestamp column value written by ``_to_db_timestamp``."""
+
+    return datetime.fromisoformat(value)
 
 
 def _elapsed_ms(started: datetime, ended: datetime) -> int:
@@ -930,10 +1503,10 @@ _CALL_DETAIL_COLUMNS = (
     + ", prompt_id, prompt_version, workflow_run_id, parent_call_id, timeout_ms, "
     "grounding_mode, retry_scheduled, retry_reason, backoff_ms, "
     "request_artifact_path, raw_response_artifact_path, parsed_output_artifact_path, "
-    "metadata_json"
+    "metadata_json, pipeline_trace_id, parent_span_id"
 )
 
-_SCHEMA = """
+_SCHEMA_V1 = """
 CREATE TABLE IF NOT EXISTS model_calls(
     call_id TEXT PRIMARY KEY,
     trace_id TEXT,
@@ -1008,3 +1581,118 @@ CREATE TABLE IF NOT EXISTS model_attempts(
 CREATE INDEX IF NOT EXISTS idx_model_attempts_call
     ON model_attempts(call_id, provider_attempt);
 """
+
+_SCHEMA_V2_SPANS_AND_EVENTS = """
+CREATE TABLE IF NOT EXISTS pipeline_spans(
+    span_id         TEXT PRIMARY KEY,
+    trace_id        TEXT NOT NULL,
+    parent_span_id  TEXT,
+    project_id      TEXT,
+    workflow_run_id TEXT,
+    name            TEXT NOT NULL,
+    component       TEXT NOT NULL,
+    kind            TEXT NOT NULL DEFAULT 'internal',
+    subject_type    TEXT,
+    subject_id      TEXT,
+    status          TEXT NOT NULL,
+    started_at      TEXT NOT NULL,
+    ended_at        TEXT,
+    duration_ms     INTEGER,
+    process         TEXT,
+    pid             INTEGER,
+    error_type      TEXT,
+    error_message   TEXT,
+    attributes_json TEXT NOT NULL DEFAULT '{}',
+    metrics_json    TEXT NOT NULL DEFAULT '{}'
+);
+CREATE INDEX IF NOT EXISTS idx_spans_trace
+    ON pipeline_spans(trace_id, started_at);
+CREATE INDEX IF NOT EXISTS idx_spans_project_start
+    ON pipeline_spans(project_id, started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_spans_parent
+    ON pipeline_spans(parent_span_id);
+CREATE INDEX IF NOT EXISTS idx_spans_open
+    ON pipeline_spans(started_at) WHERE ended_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS pipeline_events(
+    event_id        TEXT PRIMARY KEY,
+    trace_id        TEXT,
+    span_id         TEXT,
+    project_id      TEXT,
+    workflow_run_id TEXT,
+    occurred_at     TEXT NOT NULL,
+    name            TEXT NOT NULL,
+    component       TEXT NOT NULL,
+    level           TEXT NOT NULL DEFAULT 'info',
+    subject_type    TEXT,
+    subject_id      TEXT,
+    attributes_json TEXT NOT NULL DEFAULT '{}'
+);
+CREATE INDEX IF NOT EXISTS idx_events_project_time
+    ON pipeline_events(project_id, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_events_trace
+    ON pipeline_events(trace_id, occurred_at);
+CREATE INDEX IF NOT EXISTS idx_events_name_time
+    ON pipeline_events(name, occurred_at DESC);
+"""
+
+# One row per node in the tree view: a pipeline span or a model call, keyed
+# so a single recursive query can walk the whole trace regardless of which
+# table a given node actually lives in.
+_SCHEMA_V2_TRACE_NODES_VIEW = """
+CREATE VIEW IF NOT EXISTS trace_nodes AS
+    SELECT span_id AS node_id, trace_id, parent_span_id AS parent_id, project_id,
+           name, component, kind, status, started_at, ended_at, duration_ms,
+           subject_type, subject_id, 'span' AS node_source
+      FROM pipeline_spans
+    UNION ALL
+    SELECT call_id AS node_id, pipeline_trace_id AS trace_id, parent_span_id AS parent_id,
+           project_id, stage || '/' || operation AS name, 'model' AS component,
+           'model' AS kind, status, started_at, ended_at, latency_ms AS duration_ms,
+           subject_type, subject_id, 'model_call' AS node_source
+      FROM model_calls;
+"""
+
+# New model_calls columns added by migration 2. `trace_id` already existed
+# (meaning "one ModelRunRecord") before this migration and keeps that
+# meaning unchanged; `pipeline_trace_id` is the new, distinct concept of
+# "one pipeline_spans tree", added rather than repurposing the existing
+# column so historical queries and docs/29-model-observability.md stay
+# correct on both sides of the migration boundary.
+_MODEL_CALLS_V2_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("pipeline_trace_id", "pipeline_trace_id TEXT"),
+    ("parent_span_id", "parent_span_id TEXT"),
+    ("cost_micros", "cost_micros INTEGER"),
+    ("pricing_version", "pricing_version TEXT"),
+)
+
+
+def _ensure_column(connection: sqlite3.Connection, table: str, column: str, ddl: str) -> None:
+    """Add a column if it is not already there. ``ALTER TABLE ADD COLUMN``
+    has no ``IF NOT EXISTS`` form in SQLite, so migrations that add columns
+    must guard it themselves to stay idempotent."""
+
+    existing = {row[1] for row in connection.execute(f"PRAGMA table_info({table})")}
+    if column not in existing:
+        connection.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
+
+
+def _migrate_v2_pipeline_spans_and_events(connection: sqlite3.Connection) -> None:
+    for column, ddl in _MODEL_CALLS_V2_COLUMNS:
+        _ensure_column(connection, "model_calls", column, ddl)
+    connection.executescript(_SCHEMA_V2_SPANS_AND_EVENTS)
+    connection.executescript(_SCHEMA_V2_TRACE_NODES_VIEW)
+
+
+# Ordered, append-only migration history. Every entry must be idempotent
+# (CREATE TABLE/INDEX ... IF NOT EXISTS; guarded ALTER TABLE via
+# _ensure_column) because sqlite3's executescript() issues an implicit
+# COMMIT before it runs, so a migration is not atomic across its own
+# statements -- re-running a half-applied migration must be a safe no-op.
+# Never edit a migration that has shipped; add a new one instead. An entry
+# may be either a raw SQL script (executed via executescript) or a callable
+# taking the connection, for migrations that need conditional logic.
+_MIGRATIONS: tuple[str | Callable[[sqlite3.Connection], None], ...] = (
+    _SCHEMA_V1,
+    _migrate_v2_pipeline_spans_and_events,
+)

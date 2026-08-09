@@ -100,4 +100,20 @@ def test_production_rejects_test_otp(tmp_path: Path) -> None:
             ui_demo_mode=False,
             web_secure_cookies=True,
             web_session_secret="unique-production-secret",
+            **{
+                "KAVENEGAR_API_KEY": "prod-key",
+                "KAVENEGAR_TEMPLATE_NAME": "aist",
+            },
+        )
+
+
+def test_production_requires_kavenegar(tmp_path: Path) -> None:
+    with pytest.raises(ValidationError, match="KAVENEGAR_API_KEY"):
+        _settings(
+            tmp_path,
+            environment="production",
+            allow_test_otp=False,
+            ui_demo_mode=False,
+            web_secure_cookies=True,
+            web_session_secret="unique-production-secret",
         )

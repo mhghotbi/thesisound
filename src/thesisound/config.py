@@ -65,6 +65,27 @@ class Settings(BaseSettings):
 
     observability_store_payloads: bool = True
     observability_database_path: Path | None = None
+    observability_retention_days: int = Field(default=90, ge=1)
+
+    # Pipeline-wide tracing: spans and events for every operation, not just
+    # model calls. See src/thesisound/tracing.py. Off entirely disables span
+    # recording; "detail" controls how fine-grained the recorded spans are
+    # once tracing is on -- "stage" records only the coarse per-stage spans,
+    # "operation" (the default) adds the step-level spans this codebase's
+    # services open directly, "verbose" additionally allows per-block/
+    # per-page/per-segment spans that can reach into the thousands on a
+    # large corpus.
+    tracing_enabled: bool = True
+    tracing_detail: Literal["stage", "operation", "verbose"] = "operation"
+
+    # Structured logging. Activates the log_level setting above, which
+    # otherwise nothing reads. "json" is one JSON object per line, suitable
+    # for machine ingestion; "text" is the human-readable default for local
+    # development.
+    log_format: Literal["text", "json"] = "text"
+    log_file: Path | None = None
+
+    pricing_file: Path = Path("./config/model-pricing.toml")
     observability_artifact_root: Path | None = None
 
     tts_voice_a: str = "Kore"
@@ -109,6 +130,18 @@ class Settings(BaseSettings):
     otp_ttl_seconds: int = Field(default=300, ge=60, le=900)
     otp_resend_cooldown_seconds: int = Field(default=30, ge=5, le=300)
     otp_max_attempts: int = Field(default=5, ge=1, le=10)
+
+    kavenegar_api_key: str | None = Field(
+        default=None,
+        validation_alias="KAVENEGAR_API_KEY",
+        exclude=True,
+        repr=False,
+    )
+    kavenegar_otp_template: str | None = Field(
+        default=None,
+        validation_alias="KAVENEGAR_TEMPLATE_NAME",
+    )
+
     ui_demo_mode: bool = True
 
     @property
@@ -146,6 +179,10 @@ class Settings(BaseSettings):
                 raise ValueError("A unique web session secret is required in production")
             if not self.web_secure_cookies:
                 raise ValueError("Secure cookies are required in production")
+            if not (self.kavenegar_api_key and self.kavenegar_api_key.strip()):
+                raise ValueError("KAVENEGAR_API_KEY is required in production")
+            if not (self.kavenegar_otp_template and self.kavenegar_otp_template.strip()):
+                raise ValueError("KAVENEGAR_TEMPLATE_NAME is required in production")
         configure_gemini_http_proxy(self.http_proxy)
         return self
 

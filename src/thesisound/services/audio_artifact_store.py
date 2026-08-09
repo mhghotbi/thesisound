@@ -10,6 +10,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from thesisound import tracing
 from thesisound.audio import (
     AsrTranscript,
     AudioChunk,
@@ -190,38 +191,45 @@ class AudioArtifactStore:
         if command is None:
             raise RuntimeError("FFmpeg is required to build the streamable MP3.")
         temporary = mp3_path.with_name(mp3_path.name + ".partial")
-        completed = subprocess.run(
-            [
-                command,
-                "-hide_banner",
-                "-loglevel",
-                "error",
-                "-y",
-                "-i",
-                str(wav_path),
-                "-codec:a",
-                "libmp3lame",
-                "-qscale:a",
-                "4",
-                "-ar",
-                "24000",
-                "-ac",
-                "1",
-                "-f",
-                "mp3",
-                str(temporary),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=300,
-            check=False,
-        )
-        if completed.returncode != 0 or not temporary.exists():
-            temporary.unlink(missing_ok=True)
-            detail = completed.stderr.strip() or "FFmpeg did not create streamable MP3."
-            raise RuntimeError(detail)
-        temporary.replace(mp3_path)
-        return mp3_path
+        with tracing.span(
+            "audio.transcode_mp3.ffmpeg", component="audio", kind="subprocess",
+            project_id=project_id,
+        ) as span:
+            completed = subprocess.run(
+                [
+                    command,
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-y",
+                    "-i",
+                    str(wav_path),
+                    "-codec:a",
+                    "libmp3lame",
+                    "-qscale:a",
+                    "4",
+                    "-ar",
+                    "24000",
+                    "-ac",
+                    "1",
+                    "-f",
+                    "mp3",
+                    str(temporary),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=300,
+                check=False,
+            )
+            span.set(exit_code=completed.returncode)
+            if completed.returncode != 0 or not temporary.exists():
+                temporary.unlink(missing_ok=True)
+                detail = completed.stderr.strip() or "FFmpeg did not create streamable MP3."
+                span.set(stderr_tail=detail[:700])
+                raise RuntimeError(detail)
+            temporary.replace(mp3_path)
+            span.measure(output_bytes=mp3_path.stat().st_size)
+            return mp3_path
 
     def has_verified_artifacts(
         self,

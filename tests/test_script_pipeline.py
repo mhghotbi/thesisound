@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from thesisound import tracing
 from thesisound.domain import (
     ClaimRecord,
     ClaimType,
@@ -341,6 +342,82 @@ def test_script_pipeline_revises_only_flagged_turn_and_verifies(tmp_path: Path) 
     assert (script_dir / "script-revised.json").exists()
     assert (script_dir / "checks-revised.json").exists()
     assert (script_dir / "verification-revised.json").exists()
+
+
+def test_full_run_produces_a_span_per_stage_and_a_revision_cycle(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
+    runner = FakeScriptRunner()
+
+    with tracing.span("script.run", kind="stage", project_id=project_id) as parent:
+        _service(root, runner).run(
+            project_id,
+            glossary_model="fake",
+            writer_model="fake",
+            verifier_model="fake",
+            reviser_model="fake",
+        )
+
+    # The fake verifier fails once then passes, so this run takes the full
+    # revise -> recheck -> reverify path, not just the happy path.
+    step_names = [
+        "script.building_glossary",
+        "script.writing_segments",
+        "script.checking_draft",
+        "script.verifying_draft",
+        "script.revising",
+        "script.checking_revision",
+        "script.verifying_revision",
+    ]
+    for name in step_names:
+        step = recording_tracer.sink.one(name)
+        assert step.parent_span_id == parent.context.span_id
+        assert step.status == "ok"
+
+    verify_span = recording_tracer.sink.one("script.verifying_draft")
+    assert verify_span.attributes["verdict"] == "revise"
+    reverify_span = recording_tracer.sink.one("script.verifying_revision")
+    assert reverify_span.attributes["verdict"] == "pass"
+    # run.stage_changed events come from ScriptBuildRunService's on_stage
+    # callback (see test_script_run.py), not from ScriptPipelineService
+    # itself -- this test exercises the pipeline service in isolation, the
+    # same way the rest of this file does, so none are expected here.
+
+
+def test_resumed_run_emits_a_cache_hit_instead_of_a_glossary_span(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    """A prior attempt already built the glossary (a common resume shape
+    after a mid-pipeline crash/retry): run() must skip rebuilding it and
+    record that as a cache hit rather than silently doing nothing."""
+
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
+    runner = FakeScriptRunner()
+    service = _service(root, runner)
+    service.build_glossary(project_id, model="fake")
+
+    service.run(
+        project_id,
+        glossary_model="fake",
+        writer_model="fake",
+        verifier_model="fake",
+        reviser_model="fake",
+    )
+
+    assert recording_tracer.sink.find("script.building_glossary") == []
+    cache_hits = [
+        event
+        for event in recording_tracer.sink.events
+        if event.name == "cache.lookup" and event.attributes.get("cache") == "script_glossary"
+    ]
+    assert len(cache_hits) == 1
+    assert cache_hits[0].attributes["result"] == "hit"
+    assert runner.segment_calls > 0  # the rest of the run proceeded past the glossary step
 
 
 def test_script_pipeline_requires_current_explicit_plan_approval(tmp_path: Path) -> None:

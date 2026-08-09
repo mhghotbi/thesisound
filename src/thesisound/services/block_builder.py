@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass, field
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import Locator
 from thesisound.ports import ParsedBlock, ParsedDocument
 from thesisound.services.repeated_margin_cleaner import remove_repeated_margins
@@ -54,60 +55,71 @@ class BlockBuilder:
         *,
         source_id: UUID,
     ) -> tuple[list[SourceDocumentBlock], BlockBuildReport]:
-        cleaned, removed = remove_repeated_margins(parsed.blocks)
-        expanded: list[ParsedBlock] = []
-        split_keys: list[str] = []
-        for block in cleaned:
-            if block.kind.casefold() in _HEADING_KINDS:
-                continue
-            pieces = self._split_oversized(block)
-            expanded.extend(pieces)
-            if len(pieces) > 1:
-                split_keys.append(block.source_block_key)
+        with tracing.span(
+            "corpus.build_blocks",
+            component="corpus",
+            subject_type="source",
+            subject_id=str(source_id),
+        ) as span:
+            cleaned, removed = remove_repeated_margins(parsed.blocks)
+            expanded: list[ParsedBlock] = []
+            split_keys: list[str] = []
+            for block in cleaned:
+                if block.kind.casefold() in _HEADING_KINDS:
+                    continue
+                pieces = self._split_oversized(block)
+                expanded.extend(pieces)
+                if len(pieces) > 1:
+                    split_keys.append(block.source_block_key)
 
-        output: list[SourceDocumentBlock] = []
-        accumulator = _Accumulator()
-        for block in expanded:
-            kind = _block_type(block.kind)
-            block_tokens = estimate_tokens(block.text)
-            standalone = block.kind.casefold() in _STANDALONE_KINDS
-            heading_changed = bool(
-                accumulator.blocks and accumulator.heading_path != block.heading_path
-            )
-            would_exceed = bool(
-                accumulator.blocks
-                and accumulator.estimated_tokens + block_tokens > self.maximum_tokens
-            )
+            output: list[SourceDocumentBlock] = []
+            accumulator = _Accumulator()
+            for block in expanded:
+                kind = _block_type(block.kind)
+                block_tokens = estimate_tokens(block.text)
+                standalone = block.kind.casefold() in _STANDALONE_KINDS
+                heading_changed = bool(
+                    accumulator.blocks and accumulator.heading_path != block.heading_path
+                )
+                would_exceed = bool(
+                    accumulator.blocks
+                    and accumulator.estimated_tokens + block_tokens > self.maximum_tokens
+                )
 
-            if heading_changed or would_exceed or standalone:
-                self._flush(accumulator, output, source_id)
-            if standalone:
+                if heading_changed or would_exceed or standalone:
+                    self._flush(accumulator, output, source_id)
+                if standalone:
+                    self._add(accumulator, block, kind)
+                    self._flush(accumulator, output, source_id)
+                    continue
+
                 self._add(accumulator, block, kind)
-                self._flush(accumulator, output, source_id)
-                continue
+                if accumulator.estimated_tokens >= self.target_tokens:
+                    self._flush(accumulator, output, source_id)
 
-            self._add(accumulator, block, kind)
-            if accumulator.estimated_tokens >= self.target_tokens:
-                self._flush(accumulator, output, source_id)
+            self._flush(accumulator, output, source_id)
+            output = self._merge_small_neighbors(output)
+            _link_neighbors(output)
 
-        self._flush(accumulator, output, source_id)
-        output = self._merge_small_neighbors(output)
-        _link_neighbors(output)
-
-        warnings: list[str] = []
-        if not output:
-            warnings.append("No semantic blocks were produced from the parsed document.")
-        if removed:
-            warnings.append(f"Removed {len(removed)} repeated margin blocks.")
-        report = BlockBuildReport(
-            source_id=source_id,
-            input_block_count=len(parsed.blocks),
-            output_block_count=len(output),
-            removed_margin_block_keys=removed,
-            split_source_block_keys=split_keys,
-            warnings=warnings,
-        )
-        return output, report
+            warnings: list[str] = []
+            if not output:
+                warnings.append("No semantic blocks were produced from the parsed document.")
+            if removed:
+                warnings.append(f"Removed {len(removed)} repeated margin blocks.")
+            report = BlockBuildReport(
+                source_id=source_id,
+                input_block_count=len(parsed.blocks),
+                output_block_count=len(output),
+                removed_margin_block_keys=removed,
+                split_source_block_keys=split_keys,
+                warnings=warnings,
+            )
+            span.measure(
+                input_block_count=report.input_block_count,
+                output_block_count=report.output_block_count,
+                removed_margin_count=len(removed),
+            )
+            return output, report
 
     def _split_oversized(self, block: ParsedBlock) -> list[ParsedBlock]:
         if estimate_tokens(block.text) <= self.maximum_tokens:

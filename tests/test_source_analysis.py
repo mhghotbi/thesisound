@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from thesisound import tracing
 from thesisound.domain import (
     ClaimType,
     DocumentMap,
@@ -300,6 +301,23 @@ def test_extraction_plan_spends_more_source_tokens_for_long_episode() -> None:
     assert short.deferred_block_ids
     assert not long.deferred_block_ids
     assert long.achieved_token_coverage == 1.0
+
+
+def test_extraction_plan_measures_selected_vs_deferred_blocks(
+    recording_tracer: tracing.Tracer,
+) -> None:
+    """The single most direct cost lever in the corpus stage: every block not
+    selected here is a model call that never happens."""
+
+    _, blocks, document_map = _planning_fixture()
+
+    plan = plan_evidence_extraction(_brief(5), document_map, blocks)
+
+    span = recording_tracer.sink.one("corpus.plan_extraction")
+    assert span.metrics["selected_count"] == len(plan.selected_block_ids)
+    assert span.metrics["deferred_count"] == len(plan.deferred_block_ids)
+    assert span.metrics["deferred_count"] > 0
+    assert 0 <= span.metrics["achieved_token_coverage"] <= 1
 
 
 def test_block_builder_removes_margin_and_preserves_traceability() -> None:
@@ -630,6 +648,36 @@ def test_reusable_document_map_skips_remap(tmp_path: Path) -> None:
     assert first.model_run_ids == second.model_run_ids
 
 
+def test_reusable_document_map_emits_a_project_cache_hit_event(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    workspace.save_project(project)
+    ingestion = _ingestion(Path("chapter.pdf"))
+    store = SourceArtifactStore(tmp_path / "workspaces")
+    runner = FakeRunner()
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=store,
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(runner),
+        evidence_extractor=EvidenceExtractorService(runner),
+        claim_reconciler=ClaimReconcilerService(runner),
+    )
+    source_id, _, _ = service.build_blocks(project.project_id, ingestion)
+
+    service.map_document(project.project_id, source_id, model="fake")
+    service.map_document(project.project_id, source_id, model="fake")
+
+    cache_events = [
+        event
+        for event in recording_tracer.sink.events
+        if event.name == "cache.lookup" and event.attributes.get("cache") == "project_document_map"
+    ]
+    assert [event.attributes["result"] for event in cache_events] == ["miss", "hit"]
+
+
 def test_document_map_is_shared_between_sources_with_the_same_text(tmp_path: Path) -> None:
     root = tmp_path / "workspaces"
     workspace = WorkspaceStore(root)
@@ -678,6 +726,43 @@ def test_document_map_is_shared_between_sources_with_the_same_text(tmp_path: Pat
     assert all(
         block_id.startswith(f"blk-{str(second_source)[:8]}") for block_id in reused_blocks
     )
+
+
+def test_shared_document_map_reuse_emits_a_cache_hit_event(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    root = tmp_path / "workspaces"
+    workspace = WorkspaceStore(root)
+    first_project, second_project = _project(), _project()
+    workspace.save_project(first_project)
+    workspace.save_project(second_project)
+    ingestion = _ingestion(Path("chapter.pdf"))
+    runner = FakeRunner()
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=SourceArtifactStore(root),
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(runner),
+        evidence_extractor=EvidenceExtractorService(runner),
+        claim_reconciler=ClaimReconcilerService(runner),
+    )
+    first_source, _, _ = service.build_blocks(first_project.project_id, ingestion)
+    service.map_document(first_project.project_id, first_source, model="fake")
+
+    second_source, _, _ = service.build_blocks(second_project.project_id, ingestion)
+    service.map_document(second_project.project_id, second_source, model="fake")
+
+    shared_cache_events = [
+        event
+        for event in recording_tracer.sink.events
+        if event.name == "cache.lookup" and event.attributes.get("cache") == "shared_document_map"
+    ]
+    # First source: no project-level reuse, no shared cache entry yet -> miss.
+    # Second source: different project, but the same text -> shared cache hit.
+    assert [event.attributes["result"] for event in shared_cache_events] == ["miss", "hit"]
+
+    map_document_spans = recording_tracer.sink.find("corpus.map_document")
+    assert [span.attributes["source"] for span in map_document_spans] == ["model", "shared_cache"]
 
 
 def test_changed_body_text_does_not_reuse_a_shared_map(tmp_path: Path) -> None:
@@ -1039,6 +1124,38 @@ def test_evidence_extraction_runs_blocks_concurrently() -> None:
 
     # Order follows the document, not whichever call happened to finish first.
     assert [record.block_id for record in records] == [block.block_id for block in blocks]
+
+
+def test_concurrent_extraction_spans_nest_under_the_submitting_thread(
+    recording_tracer: tracing.Tracer,
+) -> None:
+    """Regression test for the ThreadPoolExecutor context-propagation trap:
+    without tracing.bind_context() at the pool.submit() call site, every
+    per-block span opened inside a worker thread is silently orphaned at
+    the trace root instead of nesting under the caller's span."""
+
+    recording_tracer.detail = "verbose"  # corpus.extract_evidence is per-block, verbose-gated
+    source_id = uuid4()
+    blocks, _ = BlockBuilder().build(_multi_section_document(), source_id=source_id)
+    assert len(blocks) == 4
+    document_map = _map_for(blocks, source_id)
+    runner = _BarrierRunner(parties=len(blocks))
+
+    with tracing.span("corpus.source", kind="stage", subject_id=str(source_id)):
+        EvidenceExtractorService(runner, max_workers=4).extract_source(
+            project_id=uuid4(),
+            source_id=source_id,
+            blocks=blocks,
+            document_map=document_map,
+            model="fake",
+        )
+
+    parent_span = recording_tracer.sink.one("corpus.source")
+    children = recording_tracer.sink.find("corpus.extract_evidence")
+    assert len(children) == 4
+    assert all(child.parent_span_id == parent_span.context.span_id for child in children)
+    assert all(child.context.trace_id == parent_span.context.trace_id for child in children)
+    assert {child.subject_id for child in children} == {block.block_id for block in blocks}
 
 
 def test_concurrent_extraction_saves_every_block_exactly_once() -> None:

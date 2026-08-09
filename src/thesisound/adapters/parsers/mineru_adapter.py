@@ -8,6 +8,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
+from thesisound import tracing
 from thesisound.ports import DocumentInspection, ParsedDocument
 from thesisound.services.mineru_normalizer import MineruOutputError, normalize_mineru_output
 
@@ -107,24 +108,36 @@ class MineruParser:
         if self.model_source:
             environment["MINERU_MODEL_SOURCE"] = self.model_source
 
-        runner = self._runner or _default_runner
-        try:
-            completed = runner(command, self.timeout_seconds, environment)
-        except FileNotFoundError as exc:
-            raise MineruUnavailableError(
-                "MinerU CLI was not found. Install with `uv sync --extra parsers` and ensure 'mineru' is on PATH."
-            ) from exc
-        except subprocess.TimeoutExpired as exc:
-            raise MineruParseError(
-                f"MinerU exceeded the {self.timeout_seconds}-second timeout."
-            ) from exc
+        # Every branch below either succeeds or raises -- unlike
+        # document_ingestion.py's parser fallback loop, nothing here catches
+        # and continues, so the span's own automatic exception handling
+        # (status="error", error_type/error_message from the real exception)
+        # is sufficient without a manual mark().
+        with tracing.span(
+            "ingestion.parse.mineru", component="ingestion", kind="subprocess"
+        ) as span:
+            span.set(timeout_seconds=self.timeout_seconds)
+            runner = self._runner or _default_runner
+            try:
+                completed = runner(command, self.timeout_seconds, environment)
+            except FileNotFoundError as exc:
+                raise MineruUnavailableError(
+                    "MinerU CLI was not found. Install with `uv sync --extra parsers` "
+                    "and ensure 'mineru' is on PATH."
+                ) from exc
+            except subprocess.TimeoutExpired as exc:
+                raise MineruParseError(
+                    f"MinerU exceeded the {self.timeout_seconds}-second timeout."
+                ) from exc
 
-        if completed.returncode != 0:
-            message = _last_non_empty_line(completed.stderr) or _last_non_empty_line(
-                completed.stdout
-            )
-            detail = f": {message}" if message else ""
-            raise MineruParseError(f"MinerU exited with code {completed.returncode}{detail}")
+            span.set(exit_code=completed.returncode)
+            if completed.returncode != 0:
+                message = _last_non_empty_line(completed.stderr) or _last_non_empty_line(
+                    completed.stdout
+                )
+                detail = f": {message}" if message else ""
+                span.set(stderr_tail=message or "")
+                raise MineruParseError(f"MinerU exited with code {completed.returncode}{detail}")
 
     def _version(self) -> str:
         if self._version_resolver is not None:

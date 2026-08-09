@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import html
+import logging
 import secrets
 from collections.abc import Callable
 from datetime import date, datetime
@@ -14,13 +16,17 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 
+from thesisound import logging_setup, tracing
 from thesisound.audio_runtime import create_audio_builder
 from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState, ResearchBrief, TopicType
+from thesisound.observability import ledger_from_settings, tracer_from_settings
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
 from thesisound.web.audio_routes import register_audio_routes
-from thesisound.web.auth import NullOtpSender, OtpError, OtpService
+from thesisound.adapters.sms import KavenegarOtpSender
+from thesisound.adapters.sms import KavenegarOtpSender
+from thesisound.web.auth import NullOtpSender, OtpError, OtpSenderPort, OtpService, OtpSenderPort
 from thesisound.web.corpus_runtime import create_corpus_builder
 from thesisound.web.episode_routes import register_episode_routes
 from thesisound.web.episode_runtime import create_episode_planner
@@ -33,6 +39,13 @@ from thesisound.web.source_routes import register_source_routes
 _WEB_ROOT = Path(__file__).parent
 _TEMPLATES_ROOT = _WEB_ROOT / "templates"
 _STATIC_ROOT = _WEB_ROOT / "static"
+_logger = logging.getLogger(__name__)
+# The four /live HTMX fragments poll every 2s (see static/app.js) -- tracing
+# them would add roughly 1,800 http.request spans per hour per open tab,
+# swamping the table for the requests that actually matter. Excluded by
+# name rather than sampled, since a sampled-out request is still a wasted
+# random draw and still pollutes the count.
+_UNTRACED_PATH_SUFFIXES = ("/live",)
 _EDITABLE_BRIEF_STATES = {
     ProjectState.BRIEF_READY,
     ProjectState.SOURCES_COLLECTING,
@@ -165,6 +178,62 @@ def _user_error_filter(value: object, action: str = "generic") -> str:
     return user_facing_error(value if isinstance(value, BaseException) else str(value), action=action)
 
 
+def _unhandled_error_page(message: str, request_id: str | None) -> str:
+    """A minimal, dependency-free error page for the global exception
+    handler. Deliberately does not go through Jinja2Templates: that
+    machinery expects request-scoped context (CSRF token, current user,
+    project state) that may not be safely available when an unexpected
+    exception has already occurred somewhere upstream, and a second
+    exception raised while rendering the error page for the first would
+    defeat the whole point of this handler."""
+
+    safe_message = html.escape(message)
+    id_line = (
+        f'<p class="request-id">شناسه پیگیری: <code>{html.escape(request_id)}</code></p>'
+        if request_id
+        else ""
+    )
+    return f"""<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خطا - مقال</title>
+<style>
+  body {{
+    font-family: Tahoma, Vazirmatn, sans-serif;
+    background: #1c1f16;
+    color: #e8e6df;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }}
+  .card {{
+    max-width: 32rem;
+    padding: 2rem;
+    background: #262a1e;
+    border-radius: 0.75rem;
+    text-align: center;
+  }}
+  .request-id code {{
+    background: #33372a;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.3rem;
+  }}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>خطایی رخ داد</h1>
+    <p>{safe_message}</p>
+    {id_line}
+  </div>
+</body>
+</html>"""
+
+
 def _preflight_scope(request: Request) -> PreflightScope | None:
     if request.method != "POST":
         return None
@@ -172,6 +241,14 @@ def _preflight_scope(request: Request) -> PreflightScope | None:
         if request.url.path.endswith(suffix):
             return scope
     return None
+
+
+def _build_otp_sender(runtime: Settings) -> OtpSenderPort:
+    api_key = (runtime.kavenegar_api_key or "").strip()
+    template = (runtime.kavenegar_otp_template or "").strip()
+    if not api_key or not template:
+        return NullOtpSender()
+    return KavenegarOtpSender(api_key=api_key, template=template)
 
 
 def create_app(
@@ -183,6 +260,12 @@ def create_app(
     audio_executor: Callable[[UUID], None] | None = None,
 ) -> FastAPI:
     runtime = settings or Settings()
+    # Close any span a previous process left "running" before this one takes
+    # over -- the same crash-recovery moment as the four recover_interrupted_runs()
+    # calls below, just for spans rather than run records. One call here (not one
+    # per create_*() factory) since it scans the whole ledger, not one run store.
+    ledger_from_settings(runtime).reap_orphaned_spans()
+    tracing.install_tracer(tracer_from_settings(runtime))
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
     preflight = RuntimePreflight(runtime)
     corpus_builder = create_corpus_builder(runtime, workspace)
@@ -219,6 +302,57 @@ def create_app(
             )
         return await call_next(request)
 
+    # Added after guard_live_runs: Starlette runs the most-recently-added
+    # middleware outermost, so this wraps the preflight guard and its
+    # redirects too -- the http.request span covers the whole request no
+    # matter which branch above handles it.
+    @app.middleware("http")
+    async def request_trace(request: Request, call_next: Callable) -> Response:
+        if request.url.path.endswith(_UNTRACED_PATH_SUFFIXES):
+            return await call_next(request)
+        with tracing.span(
+            "http.request",
+            component="web",
+            kind="http",
+            new_root=True,
+            method=request.method,
+            route=request.url.path,  # path only -- never the query string
+        ) as span:
+            request.state.request_id = str(span.context.span_id)
+            response = await call_next(request)
+            span.set(status_code=response.status_code)
+            response.headers["X-Request-Id"] = request.state.request_id
+            return response
+
+    @app.exception_handler(Exception)
+    async def unhandled_error(request: Request, exc: Exception) -> Response:
+        """The last line of defense: today an unhandled route exception
+        produces a bare Starlette 500 recorded nowhere at all. This logs it,
+        records it as a trace event, and shows the same Persian error
+        phrasing the rest of the app uses, with a request ID an operator can
+        hand to `thesisound observability` support tooling."""
+
+        request_id = getattr(request.state, "request_id", None)
+        _logger.exception(
+            "Unhandled request error",
+            extra={"route": request.url.path, "request_id": request_id},
+        )
+        tracing.event(
+            "web.unhandled_error",
+            component="web",
+            level="error",
+            route=request.url.path,
+            error_type=type(exc).__name__,
+        )
+        message = user_facing_error(exc, action="generic")
+        error_response = HTMLResponse(_unhandled_error_page(message, request_id), status_code=500)
+        # request_trace normally sets this after call_next() returns, but an
+        # exception here means call_next() raised instead of returning -- this
+        # handler is the only place left to still carry the ID on the response.
+        if request_id:
+            error_response.headers["X-Request-Id"] = request_id
+        return error_response
+
     from fastapi.templating import Jinja2Templates
 
     templates = Jinja2Templates(directory=_TEMPLATES_ROOT)
@@ -230,7 +364,7 @@ def create_app(
 
     otp = OtpService(
         secret=runtime.web_session_secret,
-        sender=NullOtpSender(),
+        sender=_build_otp_sender(runtime),
         ttl_seconds=runtime.otp_ttl_seconds,
         resend_cooldown_seconds=runtime.otp_resend_cooldown_seconds,
         max_attempts=runtime.otp_max_attempts,
@@ -627,9 +761,15 @@ app = create_app()
 
 
 def main() -> None:
+    # Logging setup is a process-level concern -- done once here, for the
+    # real server, rather than inside create_app() which tests call many
+    # times per process and would otherwise repeatedly reconfigure the root
+    # logger out from under each other.
+    logging_setup.configure_logging(Settings())
     uvicorn.run(
         "thesisound.web.app:app",
         host="127.0.0.1",
         port=8000,
         reload=False,
+        log_config=logging_setup.uvicorn_log_config(Settings()),
     )

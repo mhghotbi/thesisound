@@ -4,6 +4,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import ClaimRecord, Project, ProjectState, Script, ScriptTurn
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
@@ -276,29 +277,43 @@ class ScriptPipelineService:
             glossary = self.script_store.load_glossary_optional(project_id)
             if glossary is None:
                 stage("building_glossary")
-                glossary = self.build_glossary(
-                    project_id,
-                    model=glossary_model,
-                    prompt_version=prompt_version,
+                with tracing.span("script.building_glossary", component="script"):
+                    glossary = self.build_glossary(
+                        project_id,
+                        model=glossary_model,
+                        prompt_version=prompt_version,
+                    )
+            else:
+                tracing.event(
+                    "cache.lookup", component="cache", project_id=project_id,
+                    cache="script_glossary", result="hit",
                 )
 
             script = self.script_store.load_script_optional(project_id)
             if script is None:
                 stage("writing_segments")
                 self._ensure_script_drafting(project_id)
-                script = self.write_script(
-                    project_id,
-                    model=writer_model,
-                    prompt_version=prompt_version,
-                )
+                with tracing.span("script.writing_segments", component="script") as span:
+                    script = self.write_script(
+                        project_id,
+                        model=writer_model,
+                        prompt_version=prompt_version,
+                    )
+                    span.measure(turn_count=len(script.turns))
             else:
                 self._ensure_script_ready(project_id, script)
+                tracing.event(
+                    "cache.lookup", component="cache", project_id=project_id,
+                    cache="script_draft", result="hit",
+                )
 
             checks = self.script_store.load_checks_optional(project_id)
             if checks is None:
                 stage("checking_draft")
                 self._ensure_script_ready(project_id, script)
-                checks = self.run_checks(project_id)
+                with tracing.span("script.checking_draft", component="script") as span:
+                    checks = self.run_checks(project_id)
+                    span.set(verdict=checks.verdict)
 
             verification = self.script_store.load_verification_optional(project_id)
             if verification is None:
@@ -313,22 +328,25 @@ class ScriptPipelineService:
                 else:
                     stage("verifying_draft")
                     self._ensure_script_ready(project_id, script)
-                    verification = self.verify_script(
-                        project_id,
-                        model=verifier_model,
-                        prompt_version=prompt_version,
-                    )
+                    with tracing.span("script.verifying_draft", component="script") as span:
+                        verification = self.verify_script(
+                            project_id,
+                            model=verifier_model,
+                            prompt_version=prompt_version,
+                        )
+                        span.set(verdict=verification.verdict)
 
             if checks.verdict != "pass" or verification.verdict != "pass":
                 revised = self.script_store.load_script_optional(project_id, revised=True)
                 if revised is None:
                     stage("revising")
                     self._ensure_script_verifying(project_id, script)
-                    revised = self.revise_script(
-                        project_id,
-                        model=reviser_model,
-                        prompt_version=prompt_version,
-                    )
+                    with tracing.span("script.revising", component="script"):
+                        revised = self.revise_script(
+                            project_id,
+                            model=reviser_model,
+                            prompt_version=prompt_version,
+                        )
                 else:
                     self._ensure_script_ready(project_id, revised)
 
@@ -339,7 +357,9 @@ class ScriptPipelineService:
                 if revised_checks is None:
                     stage("checking_revision")
                     self._ensure_script_ready(project_id, revised)
-                    revised_checks = self.run_checks(project_id, revised=True)
+                    with tracing.span("script.checking_revision", component="script") as span:
+                        revised_checks = self.run_checks(project_id, revised=True)
+                        span.set(verdict=revised_checks.verdict)
                 if revised_checks.verdict != "pass":
                     raise ValueError("Revised script failed deterministic checks.")
 
@@ -350,12 +370,14 @@ class ScriptPipelineService:
                 if revised_verification is None:
                     stage("verifying_revision")
                     self._ensure_script_ready(project_id, revised)
-                    revised_verification = self.verify_script(
-                        project_id,
-                        model=verifier_model,
-                        revised=True,
-                        prompt_version=prompt_version,
-                    )
+                    with tracing.span("script.verifying_revision", component="script") as span:
+                        revised_verification = self.verify_script(
+                            project_id,
+                            model=verifier_model,
+                            revised=True,
+                            prompt_version=prompt_version,
+                        )
+                        span.set(verdict=revised_verification.verdict)
                 script = revised
                 checks = revised_checks
                 verification = revised_verification

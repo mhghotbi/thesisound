@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import re
 
+from thesisound import tracing
 from thesisound.domain import DocumentMap, ResearchBrief
 from thesisound.source_analysis import (
     AnalysisProfile,
@@ -109,81 +110,98 @@ def plan_evidence_extraction(
     document_map: DocumentMap,
     blocks: list[SourceDocumentBlock],
 ) -> EvidenceExtractionPlan:
-    profile = build_analysis_profile(brief)
-    content_blocks = [block for block in blocks if block.block_type != "front_matter"]
-    if not content_blocks:
+    with tracing.span(
+        "corpus.plan_extraction", component="corpus", subject_type="source",
+        subject_id=str(document_map.source_id),
+    ) as span:
+        profile = build_analysis_profile(brief)
+        content_blocks = [block for block in blocks if block.block_type != "front_matter"]
+        if not content_blocks:
+            span.measure(selected_count=0, deferred_count=0)
+            return EvidenceExtractionPlan(
+                source_id=document_map.source_id,
+                profile=profile,
+                selected_block_ids=[],
+                deferred_block_ids=[],
+                selected_source_tokens=0,
+                total_source_tokens=0,
+                achieved_token_coverage=1.0,
+            )
+
+        eligible = [block for block in content_blocks if not _is_note_like(block)]
+        if not eligible:
+            eligible = content_blocks  # never filter a source down to nothing
+
+        block_by_id = {block.block_id: block for block in eligible}
+        index_by_id = {block.block_id: index for index, block in enumerate(eligible)}
+        section_by_block = {
+            block_id: section
+            for section in document_map.sections
+            for block_id in section.source_block_ids
+            if block_id in block_by_id
+        }
+        total_tokens = sum(block.estimated_token_count for block in eligible)
+        coverage_tokens = math.ceil(
+            total_tokens * profile.block_coverage_target * (1 + _SELECTION_HEADROOM)
+        )
+        target_tokens = min(total_tokens, coverage_tokens, profile.evidence_input_token_budget)
+
+        selected: set[str] = set()
+        required_sections = [
+            section
+            for section in document_map.sections
+            if section.required_for_global_understanding
+        ]
+        for section in required_sections:
+            first = next(
+                (block_id for block_id in section.source_block_ids if block_id in block_by_id),
+                None,
+            )
+            if first is not None:
+                selected.add(first)
+
+        ranked = sorted(
+            eligible,
+            key=lambda block: (
+                -_block_score(block.block_id, section_by_block, brief),
+                index_by_id[block.block_id],
+            ),
+        )
+        selected_tokens = sum(
+            block_by_id[block_id].estimated_token_count for block_id in selected
+        )
+        for block in ranked:
+            if selected_tokens >= target_tokens and selected:
+                break
+            if block.block_id in selected:
+                continue
+            selected.add(block.block_id)
+            selected_tokens += block.estimated_token_count
+
+        selected_ids = [
+            block.block_id for block in content_blocks if block.block_id in selected
+        ]
+        deferred_ids = [
+            block.block_id for block in content_blocks if block.block_id not in selected
+        ]
+        achieved = selected_tokens / total_tokens if total_tokens else 1.0
+        # The single most direct cost lever in the corpus stage: every block NOT
+        # selected here is a model call that never happens.
+        span.measure(
+            selected_count=len(selected_ids),
+            deferred_count=len(deferred_ids),
+            achieved_token_coverage=round(min(1.0, achieved), 4),
+        )
+        span.set(depth=profile.depth)
         return EvidenceExtractionPlan(
             source_id=document_map.source_id,
             profile=profile,
-            selected_block_ids=[],
-            deferred_block_ids=[],
-            selected_source_tokens=0,
-            total_source_tokens=0,
-            achieved_token_coverage=1.0,
+            selected_block_ids=selected_ids,
+            deferred_block_ids=deferred_ids,
+            selected_source_tokens=selected_tokens,
+            total_source_tokens=total_tokens,
+            achieved_token_coverage=min(1.0, achieved),
         )
-
-    eligible = [block for block in content_blocks if not _is_note_like(block)]
-    if not eligible:
-        eligible = content_blocks  # never filter a source down to nothing
-
-    block_by_id = {block.block_id: block for block in eligible}
-    index_by_id = {block.block_id: index for index, block in enumerate(eligible)}
-    section_by_block = {
-        block_id: section
-        for section in document_map.sections
-        for block_id in section.source_block_ids
-        if block_id in block_by_id
-    }
-    total_tokens = sum(block.estimated_token_count for block in eligible)
-    coverage_tokens = math.ceil(
-        total_tokens * profile.block_coverage_target * (1 + _SELECTION_HEADROOM)
-    )
-    target_tokens = min(total_tokens, coverage_tokens, profile.evidence_input_token_budget)
-
-    selected: set[str] = set()
-    required_sections = [
-        section
-        for section in document_map.sections
-        if section.required_for_global_understanding
-    ]
-    for section in required_sections:
-        first = next(
-            (block_id for block_id in section.source_block_ids if block_id in block_by_id),
-            None,
-        )
-        if first is not None:
-            selected.add(first)
-
-    ranked = sorted(
-        eligible,
-        key=lambda block: (
-            -_block_score(block.block_id, section_by_block, brief),
-            index_by_id[block.block_id],
-        ),
-    )
-    selected_tokens = sum(block_by_id[block_id].estimated_token_count for block_id in selected)
-    for block in ranked:
-        if selected_tokens >= target_tokens and selected:
-            break
-        if block.block_id in selected:
-            continue
-        selected.add(block.block_id)
-        selected_tokens += block.estimated_token_count
-
-    selected_ids = [block.block_id for block in content_blocks if block.block_id in selected]
-    deferred_ids = [
-        block.block_id for block in content_blocks if block.block_id not in selected
-    ]
-    achieved = selected_tokens / total_tokens if total_tokens else 1.0
-    return EvidenceExtractionPlan(
-        source_id=document_map.source_id,
-        profile=profile,
-        selected_block_ids=selected_ids,
-        deferred_block_ids=deferred_ids,
-        selected_source_tokens=selected_tokens,
-        total_source_tokens=total_tokens,
-        achieved_token_coverage=min(1.0, achieved),
-    )
 
 
 def _is_note_like(block: SourceDocumentBlock) -> bool:

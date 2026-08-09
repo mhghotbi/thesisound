@@ -4,9 +4,11 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
 from reportlab.pdfgen import canvas
 
-from thesisound.adapters.parsers.mineru_adapter import MineruParser
+from thesisound import tracing
+from thesisound.adapters.parsers.mineru_adapter import MineruParseError, MineruParser
 from thesisound.ingestion import ParserRoute
 from thesisound.ports import DocumentInspection, ParsedBlock, ParsedDocument
 from thesisound.services.artifact_writer import IngestionArtifactWriter
@@ -192,6 +194,57 @@ def test_mineru_adapter_runs_cli_and_normalizes_content_list(tmp_path: Path) -> 
     assert parsed.raw_artifact_ref is not None
 
 
+def test_mineru_adapter_records_a_subprocess_span(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+    inspection = inspect_document(source)
+    output_root = tmp_path / "mineru-output"
+
+    def runner(command, timeout_seconds, environment):
+        output = Path(command[command.index("-o") + 1]) / "paper" / "auto"
+        output.mkdir(parents=True)
+        (output / "paper_content_list.json").write_text(
+            json.dumps([{"type": "text", "text": "Body text. " * 20, "page_idx": 0}]),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(command, 0, stdout="ok", stderr="")
+
+    MineruParser(
+        timeout_seconds=60, output_root=output_root, runner=runner,
+        version_resolver=lambda: "3.test",
+    ).parse(source, inspection)
+
+    span = recording_tracer.sink.one("ingestion.parse.mineru")
+    assert span.kind == "subprocess"
+    assert span.status == "ok"
+    assert span.attributes["exit_code"] == 0
+    assert span.attributes["timeout_seconds"] == 60
+
+
+def test_mineru_adapter_records_nonzero_exit_as_an_error_span(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source, pages=1)
+    inspection = inspect_document(source)
+
+    def failing_runner(command, timeout_seconds, environment):
+        return subprocess.CompletedProcess(command, 1, stdout="", stderr="boom\n")
+
+    parser = MineruParser(
+        timeout_seconds=60, output_root=tmp_path / "out", runner=failing_runner
+    )
+    with pytest.raises(MineruParseError):
+        parser.parse(source, inspection)
+
+    span = recording_tracer.sink.one("ingestion.parse.mineru")
+    assert span.status == "error"
+    assert span.attributes["exit_code"] == 1
+    assert span.attributes["stderr_tail"] == "boom"
+
+
 def test_ingestion_falls_back_when_primary_parse_is_unsafe(tmp_path: Path) -> None:
     source = tmp_path / "paper.pdf"
     _make_text_pdf(source)
@@ -215,6 +268,66 @@ def test_ingestion_falls_back_when_primary_parse_is_unsafe(tmp_path: Path) -> No
     assert result.selected_parser == "mineru"
     assert result.safe_for_claim_extraction
     assert (writer.document_dir(result.inspection) / "ingestion-result.json").exists()
+
+
+def test_ingestion_fallback_produces_a_span_per_parser_attempt(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    source = tmp_path / "paper.pdf"
+    _make_text_pdf(source)
+    docling = FakeParser("docling", _poor_parse())
+    mineru = FakeParser("mineru", _good_parse())
+
+    ingest_document(source, parsers={"docling": docling, "mineru": mineru}, parser_name="auto")
+
+    ingest_span = recording_tracer.sink.one("ingestion.ingest_document")
+    assert ingest_span.status == "ok"
+    assert ingest_span.attributes["selected_parser"] == "mineru"
+
+    inspect_span = recording_tracer.sink.one("ingestion.inspect")
+    route_span = recording_tracer.sink.one("ingestion.route")
+    assert inspect_span.parent_span_id == ingest_span.context.span_id
+    assert route_span.parent_span_id == ingest_span.context.span_id
+
+    parse_spans = {span.subject_id: span for span in recording_tracer.sink.find("ingestion.parse")}
+    assert set(parse_spans) == {"docling", "mineru"}
+    assert all(span.parent_span_id == ingest_span.context.span_id for span in parse_spans.values())
+    # docling's parse "succeeded" technically, but its output failed the
+    # quality gate, which is why the loop moved on to mineru -- the span
+    # status for docling should still read "ok" (the parse call itself
+    # didn't raise); the quality verdict is a separate attribute.
+    assert parse_spans["docling"].status == "ok"
+    assert parse_spans["docling"].attributes["verdict"] != "pass"
+    assert parse_spans["mineru"].attributes["verdict"] == "pass"
+
+    gates = recording_tracer.sink.find("ingestion.quality_gate")
+    assert len(gates) == 2  # one per parser that actually produced output
+
+
+def test_ingestion_marks_unsupported_parser_spans_skipped(
+    tmp_path: Path, recording_tracer: tracing.Tracer
+) -> None:
+    source = tmp_path / "scan.pdf"
+    _make_image_only_like_pdf(source)
+
+    class NeverSupportsParser(FakeParser):
+        def supports(self, inspection: DocumentInspection) -> bool:
+            return False
+
+    ingest_document(
+        source,
+        parsers={
+            "docling": FakeParser("docling", _good_parse()),
+            "mineru": NeverSupportsParser("mineru", _good_parse()),
+        },
+        parser_name="auto",
+    )
+
+    parse_spans = {
+        span.subject_id: span for span in recording_tracer.sink.find("ingestion.parse")
+    }
+    assert parse_spans["mineru"].status == "skipped"
+    assert parse_spans["mineru"].attributes["status_reason"] == "UnsupportedDocument"
 
 
 def test_benchmark_recommends_safe_high_quality_parser(tmp_path: Path) -> None:
