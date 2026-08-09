@@ -251,6 +251,8 @@ def test_failed_project_can_rewind_to_sources_and_edit_again(
     current = workspace.load_project(project_id)
     assert current.state == ProjectState.SOURCES_COLLECTING
     assert current.last_error is None
-    assert not (workspace.project_dir(project_id) / "sources").exists()
+    # Per-source analysis survives for a validated rebuild; the corpus run does not.
+    assert (workspace.project_dir(project_id) / "sources" / "stale.json").exists()
+    assert not (workspace.project_dir(project_id) / "corpus-build-run.json").exists()
     archive_root = workspace.project_dir(project_id) / "archive" / "revisions"
-    assert any((item / "sources" / "stale.json").exists() for item in archive_root.iterdir())
+    assert any((item / "corpus-build-run.json").exists() for item in archive_root.iterdir())

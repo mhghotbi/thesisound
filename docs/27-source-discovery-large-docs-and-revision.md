@@ -53,11 +53,13 @@ Editing an upstream stage is a destructive semantic change, so it is implemented
 Rewind to Sources or Brief:
 
 - rejects genuinely active queued/running work;
-- archives downstream source-analysis, episode, script, audio, run, and model-run artifacts;
+- archives downstream episode, script, audio, run, and model-run artifacts;
 - clears `Project.sources`, `episode_plan`, `script`, and `last_error`;
 - preserves uploaded files and ingestion artifacts;
 - resets source selection when returning to Brief;
 - writes `archive/revisions/<timestamp>/revision.json` with actor, reason, previous/new state, and archived paths.
+
+Rewind to Sources additionally keeps `sources/`, the per-source analysis of each source. This is what lets an edited selection be re-confirmed without paying again for the sources the user kept. Reuse is never assumed: the corpus builder re-validates each one against the file hash and the current brief before carrying it forward — see [22](22-web-corpus-building.md). Rewind to Brief archives `sources/` as well, because the brief is the input the analysis was planned against.
 
 This guarantees that a revised Brief or corpus cannot reuse a stale Episode Plan, script, or audio artifact.
 

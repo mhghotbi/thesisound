@@ -208,6 +208,9 @@ def test_skipping_a_stopped_source_continues_without_reconfirming(tmp_path: Path
             data={"csrf_token": _csrf(processing.text)},
             follow_redirects=False,
         )
+        after = client.get(f"/projects/{project_id}/processing")
+        assert "کنار گذاشته شد" in after.text
+        assert skip_action not in after.text
 
     assert response.status_code == 303
     assert response.headers["location"] == f"/projects/{project_id}/processing"

@@ -424,6 +424,47 @@ def test_skipping_a_stopped_source_continues_the_remaining_selection(
     assert fake.built.count(stopped) == 1  # only the attempt that failed
 
 
+def test_skipping_the_only_stopped_source_completes_the_corpus(tmp_path: Path) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    first, stopped = uuid4(), uuid4()
+    project = Project(raw_input="topic", state=ProjectState.CORPUS_BUILDING)
+    project.sources = [
+        _confirmed_source(first, "first.txt"),
+        _confirmed_source(stopped, "second.txt"),
+    ]
+    fake = FakeAnalysisService(workspace, fail_source=stopped)
+    factory_calls: list[int] = []
+
+    def factory() -> FakeAnalysisService:
+        factory_calls.append(1)
+        return fake
+
+    service = CorpusBuildingService(
+        workspace_store=workspace,
+        run_store=CorpusBuildRunStore(workspace.root),
+        source_store=FakeSourceStore(workspace.root),
+        analysis_service_factory=factory,  # type: ignore[arg-type]
+        fast_model="fake-fast",
+        strong_model="fake-strong",
+    )
+    workspace.save_project(project)
+    service.queue(
+        project.project_id,
+        [
+            _source_input(tmp_path, first, "first"),
+            _source_input(tmp_path, stopped, "second"),
+        ],
+    )
+    service.run(project.project_id)
+    service.skip_source(project.project_id, stopped)
+
+    completed = service.run(project.project_id)
+
+    assert completed.status == "succeeded"
+    assert workspace.load_project(project.project_id).state == ProjectState.CORPUS_READY
+    assert factory_calls == [1]  # nothing left to build, so no model client is opened
+
+
 def test_skip_refuses_a_finished_source_and_an_unknown_source(tmp_path: Path) -> None:
     workspace = WorkspaceStore(tmp_path / "workspaces")
     first, stopped = uuid4(), uuid4()
