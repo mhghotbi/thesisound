@@ -11,17 +11,17 @@ model_setting = "model_fast"
 provider = "gemini"
 model_setting = "model_strong"
 
+# Okian is available as an OpenAI-compatible provider. Grounded stages must stay
+# on Gemini (Google Search / URL Context). Requires OKIAN_BASE_URL and
+# OKIAN_API_KEY.
+
 [profiles.okian_qwen]
 provider = "okian"
 model = "qwen3.6-35"
 
-# Okian is available as an OpenAI-compatible provider. Grounded stages must stay
-# on Gemini (Google Search / URL Context). Requires OKIAN_BASE_URL and
-# OKIAN_API_KEY.
-#
-# [profiles.okian_gemma]
-# provider = "okian"
-# model = "gemma4-31"
+[profiles.okian_gemma]
+provider = "okian"
+model = "gemma4-31"
 
 [routes]
 # Grounded: keep on Gemini
@@ -29,13 +29,13 @@ research_brief = "gemini_fast"
 glossary = "gemini_strong"
 web_source_capture = "gemini_fast"
 
-# Text-only stages: Okian Qwen
-document_map = "okian_qwen"
-document_map_merge = "okian_qwen"
-evidence_extraction = "okian_qwen"
-claim_reconciliation = "okian_qwen"
-coverage_audit = "okian_qwen"
-episode_plan = "okian_qwen"
-persian_script_segment = "okian_qwen"
-script_verifier = "okian_qwen"
-script_reviser = "okian_qwen"
+# Text-only stages: Gemini Fast/Strong as in reference file
+document_map = "gemini_fast"
+document_map_merge = "gemini_fast"
+evidence_extraction = "gemini_fast"
+claim_reconciliation = "gemini_strong"
+coverage_audit = "gemini_strong"
+episode_plan = "gemini_strong"
+persian_script_segment = "gemini_strong"
+script_verifier = "gemini_strong"
+script_reviser = "gemini_strong"
