@@ -31,6 +31,10 @@
     <button class="button button--primary button--full" type="submit" disabled>ارسال کد ورود</button>
   </form>
 
+  <div class="form-actions auth-card__footer">
+    <a class="button button--secondary button--full" href="/login/password?next={{ next_path | urlencode }}">ورود با رمز عبور</a>
+  </div>
+
   {% if test_otp_enabled and environment != "production" %}
   <details class="dev-note operator-only">
     <summary>ورود آزمایشی محیط توسعه</summary>

@@ -1,3 +1,4 @@
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -117,3 +118,93 @@ def test_production_requires_kavenegar(tmp_path: Path) -> None:
             web_secure_cookies=True,
             web_session_secret="unique-production-secret",
         )
+
+
+def _login_with_password(
+    client: TestClient,
+    username: str,
+    password: str,
+    *,
+    next_path: str = "/projects",
+):
+    page = client.get(f"/login/password?next={next_path}")
+    return client.post(
+        "/login/password",
+        data={
+            "username": username,
+            "password": password,
+            "csrf_token": _csrf(page.text),
+            "next_path": next_path,
+        },
+        follow_redirects=False,
+    )
+
+
+def test_password_login_succeeds(tmp_path: Path) -> None:
+    app = create_app(_settings(tmp_path))
+    app.state.accounts.create_password_user("operator", "correct-password")
+
+    with TestClient(app) as client:
+        response = _login_with_password(client, "operator", "correct-password")
+        projects = client.get("/projects")
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/projects"
+    assert projects.status_code == 200
+    assert "operator" in projects.text
+
+
+def test_password_login_rejects_wrong_password(tmp_path: Path) -> None:
+    app = create_app(_settings(tmp_path))
+    app.state.accounts.create_password_user("operator", "correct-password")
+
+    with TestClient(app) as client:
+        response = _login_with_password(client, "operator", "wrong-password")
+
+    assert response.status_code == 422
+    assert "نام کاربری یا رمز عبور درست نیست" in response.text
+
+
+def test_password_login_locks_after_configured_attempts(tmp_path: Path) -> None:
+    app = create_app(
+        _settings(
+            tmp_path,
+            password_login_max_attempts=2,
+            password_login_lockout_seconds=60,
+        )
+    )
+    app.state.accounts.create_password_user("operator", "correct-password")
+
+    with TestClient(app) as client:
+        first = _login_with_password(client, "operator", "wrong-password")
+        second = _login_with_password(client, "operator", "wrong-password")
+        correct_during_lockout = _login_with_password(
+            client,
+            "operator",
+            "correct-password",
+        )
+
+    assert first.status_code == 422
+    assert "نام کاربری یا رمز عبور درست نیست" in first.text
+    assert second.status_code == 422
+    assert "تعداد تلاش‌ها بیش از حد مجاز است" in second.text
+    assert correct_during_lockout.status_code == 422
+    assert "تعداد تلاش‌ها بیش از حد مجاز است" in correct_during_lockout.text
+
+
+def test_otp_login_auto_provisions_one_member_account(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+
+    with TestClient(create_app(settings)) as client:
+        _login(client)
+
+    with TestClient(create_app(settings)) as client:
+        _login(client)
+
+    with sqlite3.connect(settings.resolved_accounts_database_path) as connection:
+        rows = connection.execute(
+            "SELECT role, phone FROM users WHERE phone = ?",
+            ("09120000000",),
+        ).fetchall()
+
+    assert rows == [("member", "09120000000")]

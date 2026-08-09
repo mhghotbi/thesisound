@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     observability_store_payloads: bool = True
     observability_database_path: Path | None = None
     observability_retention_days: int = Field(default=90, ge=1)
+    accounts_database_path: Path | None = None
+    password_login_max_attempts: int = Field(default=5, ge=1, le=20)
+    password_login_lockout_seconds: int = Field(default=900, ge=60, le=3_600)
 
     # Pipeline-wide tracing: spans and events for every operation, not just
     # model calls. See src/thesisound/tracing.py. Off entirely disables span
@@ -164,6 +167,11 @@ class Settings(BaseSettings):
     def resolved_observability_artifact_root(self) -> Path:
         configured = self.observability_artifact_root
         return configured or self.workspace_root / "_observability" / "artifacts"
+
+    @property
+    def resolved_accounts_database_path(self) -> Path:
+        configured = self.accounts_database_path
+        return configured or self.workspace_root / "_accounts" / "accounts.sqlite3"
 
     @model_validator(mode="after")
     def validate_runtime(self) -> Settings:

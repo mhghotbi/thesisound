@@ -16,6 +16,7 @@ from thesisound.web.error_messages import user_facing_error
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
+ProjectRedirect = Callable[[Request, UUID], RedirectResponse | None]
 ValidateCsrf = Callable[[Request, str], None]
 
 
@@ -27,6 +28,7 @@ def register_episode_routes(
     execute: Callable[[UUID], None],
     render: Render,
     login_redirect: LoginRedirect,
+    project_redirect: ProjectRedirect,
     validate_csrf: ValidateCsrf,
 ) -> None:
     episode_store = EpisodeArtifactStore(workspace.root)
@@ -53,11 +55,15 @@ def register_episode_routes(
     def episode_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         return render(request, "projects/episode.html", episode_context(project_id))
 
     @app.get("/projects/{project_id}/episode/live", response_class=HTMLResponse)
     def episode_live(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         context = episode_context(project_id)
         response = render(request, "projects/_episode_live.html", context)
@@ -73,6 +79,8 @@ def register_episode_routes(
         csrf_token: Annotated[str, Form()],
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         try:
             validate_csrf(request, csrf_token)
@@ -98,6 +106,8 @@ def register_episode_routes(
         csrf_token: Annotated[str, Form()],
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         try:
             validate_csrf(request, csrf_token)
@@ -125,6 +135,8 @@ def register_episode_routes(
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         try:
             validate_csrf(request, csrf_token)
             planner.requeue_with_duration(project_id, duration_minutes)
@@ -149,6 +161,8 @@ def register_episode_routes(
         action: Annotated[str, Form()],
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         destination = f"/projects/{project_id}/sources"
         try:

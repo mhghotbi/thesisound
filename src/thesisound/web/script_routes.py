@@ -10,7 +10,6 @@ from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound.domain import Locator, Project, ProjectState, Script
 from thesisound.pipeline import WorkspaceStore
-from thesisound.web.error_messages import user_facing_error
 from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
     episode_plan_hash,
@@ -18,9 +17,11 @@ from thesisound.services.plan_approval import (
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_run import ScriptBuildRunService
 from thesisound.services.source_artifact_store import SourceArtifactStore
+from thesisound.web.error_messages import user_facing_error
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
+ProjectRedirect = Callable[[Request, UUID], RedirectResponse | None]
 ValidateCsrf = Callable[[Request, str], None]
 
 
@@ -32,6 +33,7 @@ def register_script_routes(
     execute: Callable[[UUID], None],
     render: Render,
     login_redirect: LoginRedirect,
+    project_redirect: ProjectRedirect,
     validate_csrf: ValidateCsrf,
 ) -> None:
     script_store = ScriptArtifactStore(workspace.root)
@@ -41,6 +43,8 @@ def register_script_routes(
     @app.get("/projects/{project_id}/script", response_class=HTMLResponse)
     def script_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         return _render_script_page(
             request,
@@ -56,6 +60,8 @@ def register_script_routes(
     @app.get("/projects/{project_id}/script/live", response_class=HTMLResponse)
     def script_live(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         response = _render_script_page(
             request,
@@ -82,11 +88,11 @@ def register_script_routes(
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         try:
             validate_csrf(request, csrf_token)
-            actor = str(request.session.get("user_phone") or "").strip()
-            if not actor:
-                raise ValueError("Approval actor is missing from the authenticated session.")
+            actor = request.state.account.label
             builder.approve_and_queue(project_id, approved_by=actor)
             background_tasks.add_task(execute, project_id)
         except (OSError, RuntimeError, ValueError) as error:
@@ -112,6 +118,8 @@ def register_script_routes(
         csrf_token: Annotated[str, Form()],
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         try:
             validate_csrf(request, csrf_token)

@@ -44,6 +44,7 @@ _SENSITIVE_KEYS = {
     "set-cookie",
     "otp",
     "password",
+    "password_hash",
     "secret",
     "access_token",
     "refresh_token",
