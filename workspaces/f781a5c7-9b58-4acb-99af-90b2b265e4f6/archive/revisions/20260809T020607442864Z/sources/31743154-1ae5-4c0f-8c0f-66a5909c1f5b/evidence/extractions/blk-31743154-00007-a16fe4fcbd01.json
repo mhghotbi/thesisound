@@ -1,0 +1,22 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00007-a16fe4fcbd01",
+  "extraction": {
+    "segment_function": "The target block contains encoded or corrupted text with numerical character references and non-standard symbols, rendering it unreadable as prose or substantive claims.",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The target semantic block consists entirely of encoded strings (such as 1uFEDE, 2u969C, etc.) preventing semantic extraction."
+    ],
+    "must_not_be_lost": [
+      "Block content is encoded or corrupted and cannot be interpreted reliably."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

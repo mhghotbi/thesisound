@@ -1,0 +1,63 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00052-1aaeca94df80",
+  "extraction": {
+    "segment_function": "Analyze the worldlessness of pain and labor, the nature of bodily sensation, and how private property and the modern process of wealth accumulation relate to the life process and world-alienation.",
+    "claims": [
+      {
+        "evidence_id": "ev-3f76fbf254e581ec",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00052-1aaeca94df80",
+        "claim": "Pain and the experience of release from pain are uniquely independent from the world because they contain no experience of any worldly object.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "In any event, pain and the concomitant experience of release from pain are the only sense experiences that are so independent from the world that they do not contain the experience of any worldly object.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-e60b78e31817b3db",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00052-1aaeca94df80",
+        "claim": "Laboring is the only activity that corresponds strictly to worldlessness or the loss of world found in pain, as the body remains imprisoned in its metabolism with nature.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The only activity which corresponds strictly to the experience of worldlessness, or rather to the loss of world that occurs in pain, is laboring, where the human body, its activity notwithstanding, is also thrown back upon itself, concentrates upon nothing but its own being alive, and remains imprisoned in its metabolism with nature without ever transcending or freeing itself from the recurring cycle of its own functioning.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Pain and tickling as extreme examples used by modern philosophy to doubt the senses.",
+      "Locke's concept of private property as an enclosure from the common that mitigates labor's unrelatedness to the world.",
+      "The shift toward infinite accumulation and the socialized mankind where individual life-spans and property limits are superseded by the species life process."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

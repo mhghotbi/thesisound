@@ -1,0 +1,293 @@
+{
+  "cross_section_threads": [
+    {
+      "description": "Traces the consequences of finding an external standpoint in the universe from its inception with Galileo through universal science to its contemporary technical and biological manifestations.",
+      "label": "The Archimedean Point and Science",
+      "section_ids": [
+        "sec-004",
+        "sec-005",
+        "sec-012"
+      ]
+    },
+    {
+      "description": "Examines the multiple facets of modern alienation: world alienation, innerworldly asceticism, earth alienation, and self-alienation.",
+      "label": "Alienation Forms",
+      "section_ids": [
+        "sec-002",
+        "sec-003",
+        "sec-004"
+      ]
+    },
+    {
+      "description": "Follows the initial elevation of making and tool-making in the modern age to its eventual eclipse by the process concept and the animal laborans.",
+      "label": "The Ascent and Fall of Homo Faber",
+      "section_ids": [
+        "sec-008",
+        "sec-009",
+        "sec-010"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "depends_on_section_ids": [],
+      "function": "front_matter",
+      "key_concepts": [
+        "Acknowledgments",
+        "Publisher Note"
+      ],
+      "required_for_global_understanding": false,
+      "section_id": "sec-001",
+      "source_block_ids": [
+        "blk-98863830-00141-62b0d7197557",
+        "blk-98863830-00142-56991480d620"
+      ],
+      "title": "Front Matter and Acknowledgments",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [],
+      "function": "argument",
+      "key_concepts": [
+        "World alienation",
+        "Discovery of America",
+        "Reformation",
+        "Invention of the telescope",
+        "Shrinkage of the globe"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-002",
+      "source_block_ids": [
+        "blk-98863830-00108-efae252f4a34",
+        "blk-98863830-00109-ae67b5bf1953"
+      ],
+      "title": "World Alienation and the Threshold of the Modern Age",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-002"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Expropriation",
+        "Capital accumulation",
+        "Labor power",
+        "Waste economy",
+        "Rise of society"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-003",
+      "source_block_ids": [
+        "blk-98863830-00110-0d18ebd7d848",
+        "blk-98863830-00111-27537ce4c519"
+      ],
+      "title": "Expropriation, Capital Accumulation, and the Life Process of Society",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-002"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Archimedean point",
+        "Telescope",
+        "Galileo",
+        "Earth alienation",
+        "Universal science",
+        "Cartesian doubt"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-004",
+      "source_block_ids": [
+        "blk-98863830-00112-cb2bca930cf3",
+        "blk-98863830-00113-417abc62e5b6",
+        "blk-98863830-00114-654d87180d12"
+      ],
+      "title": "The Discovery of the Archimedean Point and Earth Alienation",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-004"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Algebra",
+        "Reduction of spatiality",
+        "Universal science",
+        "Experiment",
+        "Creation of new elements"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-005",
+      "source_block_ids": [
+        "blk-98863830-00115-520a34af2a29",
+        "blk-98863830-00116-7b2921816395",
+        "blk-98863830-00117-45539534398f"
+      ],
+      "title": "Mathematization of Physics and Universal Science Versus Natural Science",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-004"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Cartesian doubt",
+        "Descartes",
+        "Loss of self-evidence",
+        "Dieu trompeur",
+        "Certainty versus truth"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-006",
+      "source_block_ids": [
+        "blk-98863830-00118-93e67b6e862a",
+        "blk-98863830-00119-dee662b404b0",
+        "blk-98863830-00120-40586928a3b9"
+      ],
+      "title": "The Rise of Cartesian Doubt and Modern Philosophy",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-006"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Introspection",
+        "Cogito ergo sum",
+        "Theodicies",
+        "Common sense in retreat",
+        "Reason as reckoning"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-007",
+      "source_block_ids": [
+        "blk-98863830-00121-bdc0b69e5c27",
+        "blk-98863830-00122-0e31a023eddc",
+        "blk-98863830-00123-1ba98cb0a683"
+      ],
+      "title": "Introspection, the Loss of Common Sense, and the Cogito",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-004",
+        "sec-006"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Reversal of contemplation and action",
+        "Primacy of doing",
+        "Elimination of contemplation",
+        "Philosophical tradition"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-008",
+      "source_block_ids": [
+        "blk-98863830-00124-77699a827341",
+        "blk-98863830-00125-4ff44c65eecb",
+        "blk-98863830-00126-cad89b43c457",
+        "blk-98863830-00127-2d0d6e2910bc"
+      ],
+      "title": "The Reversal of Contemplation and Action",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-008"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Homo faber",
+        "Process over substance",
+        "Historical consciousness",
+        "Hobbes and the artificial commonwealth",
+        "Socratic and Platonic contemplation"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-009",
+      "source_block_ids": [
+        "blk-98863830-00128-797bccbff6e0",
+        "blk-98863830-00129-4f168757eb8e",
+        "blk-98863830-00130-efb120fbbe4a",
+        "blk-98863830-00131-77f4034108ec"
+      ],
+      "title": "The Victory of Homo Faber and the Introduction of Process",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-009"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Defeat of homo faber",
+        "Utility principle",
+        "Greatest happiness principle",
+        "Pain and pleasure calculus",
+        "Life as supreme standard"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-010",
+      "source_block_ids": [
+        "blk-98863830-00132-196015dfbff9",
+        "blk-98863830-00133-650a8d0f2b33",
+        "blk-98863830-00134-87566bcfe622",
+        "blk-98863830-00135-3b8e656bcdf4"
+      ],
+      "title": "The Defeat of Homo Faber and the Principle of Happiness and Life",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-010"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Christianity",
+        "Sacredness of life",
+        "Immortality of individual life",
+        "Decline of politics",
+        "Survival as duty"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-011",
+      "source_block_ids": [
+        "blk-98863830-00136-d1b9e86b28aa",
+        "blk-98863830-00137-c98ace9011b5",
+        "blk-98863830-00138-655c319689f1"
+      ],
+      "title": "Christianity, the Sacredness of Life, and the Modern Reversal",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-010",
+        "sec-011"
+      ],
+      "function": "conclusion",
+      "key_concepts": [
+        "Animal laborans",
+        "Society of jobholders",
+        "Behaviorism",
+        "Action by scientists",
+        "Vulnerability of thought"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-012",
+      "source_block_ids": [
+        "blk-98863830-00139-7e259826d30c",
+        "blk-98863830-00140-0355bab509cf"
+      ],
+      "title": "The Victory of the Animal Laborans and Concluding Reflections",
+      "unresolved_context": []
+    }
+  ],
+  "warnings": [],
+  "working_thesis": "The modern age is defined by three foundational events—world alienation through geographical and economic developments, the discovery of the Archimedean point via the telescope and the rise of universal science, and the subsequent reversal of contemplation and action culminating in the victory of the animal laborans and life as the highest good."
+}

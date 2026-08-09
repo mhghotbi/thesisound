@@ -1,0 +1,92 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00041-45a9fcc0206f",
+  "extraction": {
+    "segment_function": "Introduction to the chapter on labor, addressing the author's departure from Marx, introducing the unusual distinction between labor and work grounded in etymological evidence across European languages, and explaining the historical contempt for laboring in ancient thought.",
+    "claims": [
+      {
+        "evidence_id": "ev-432176176ec1b5bb",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00041-45a9fcc0206f",
+        "claim": "The distinction between labor and work proposed by the author is unusual and lacks substantial precedent in either pre-modern political tradition or modern labor theories.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The distinction between labor and work which I propose is unusual. The phenomenal evidence in its favor is too striking to be ignored, and yet historically it is a fact that apart from a few scattered remarks, which moreover were never developed even in the theories of their authors, there is hardly anything in either the pre-modern tradition of political thought or in the large body of modern labor theories to support it.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-22a71033131bee0c",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00041-45a9fcc0206f",
+        "claim": "Every European language, both ancient and modern, contains two etymologically unrelated words for what has come to be thought of as the same activity.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Against this scarcity of historical evidence, however, stands one very articulate and obstinate testimony, namely, the simple fact that every European language, ancient and modern, contains two etymologically unrelated words for what we have to come to think of as the same activity, and retains them in the face of their persistent synonymous usage.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "banausoi",
+        "definition": "A later term for artisans whose chief interest is their craft and not the market place.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Labor",
+        "item_b": "Work",
+        "distinction": "Every European language contains two etymologically unrelated words for these activities, and the noun form of labor never designates a finished product while the product itself is invariably derived from the word for work.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Discussion of Karl Marx to follow in the chapter.",
+      "Specific etymological linguistic details regarding Locke, Greek terminology, and historical shifts in the polis."
+    ],
+    "must_not_be_lost": [
+      "The distinction between labor and work is etymologically preserved across European languages despite synonymous usage.",
+      "Contempt for laboring historically arose from a striving for freedom from necessity and effort that left no permanent monument."
+    ]
+  }
+}

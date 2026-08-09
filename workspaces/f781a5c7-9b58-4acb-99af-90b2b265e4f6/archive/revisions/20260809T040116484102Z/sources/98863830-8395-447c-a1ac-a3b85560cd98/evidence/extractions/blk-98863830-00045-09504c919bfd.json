@@ -1,0 +1,106 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00045-09504c919bfd",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-a82b88c022f8a162",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00045-09504c919bfd",
+        "claim": "The distinction between labor and work becomes merely a difference in degree if the worldly character, location, function, and length of stay of the produced thing are ignored.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "It seems that the distinction between labor and work, which our theorists have so obstinately neglected and our languages so stubbornly preserved, indeed becomes merely a difference in degree if the worldly character of the produced thing—its location, function, and length of stay in the world—is not taken into account.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "conditioned on whether the worldly character of the produced thing is taken into account"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-66ca6b57ff101243",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00045-09504c919bfd",
+        "claim": "Language and fundamental human experiences teach us that world things are of very different natures and produced by quite different activities, contrasting with subjective human-oriented theories.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "It is language, and the fundamental human experiences underlying it, rather than theory, that teaches us that the things of the world, among which the vita activa spends itself, are of a very different nature and produced by quite different kinds of activities.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Consumer goods",
+        "definition": "Things needed by our bodies and produced by laboring that lack stability, appear and disappear for incessant consumption, and are used by life to assure the means of its own survival.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Use objects",
+        "definition": "Durable things in the world that are not consumed but used, to which men become accustomed, and which give rise to the familiarity of the world and its customs.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Consumer goods",
+        "item_b": "Use objects",
+        "distinction": "Consumer goods are needed by our bodies, produced by laboring, lack stability, and are incessantly consumed and disappear, whereas use objects belong to an environment of things that are not consumed but used, providing worldly stability and familiarity.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Products of work guarantee permanence and durability necessary for a world.",
+      "Products of action and speech depend entirely upon human plurality and must be reified into things to remain in the world."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

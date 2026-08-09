@@ -1,0 +1,20 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00007-a16fe4fcbd01",
+  "extraction": {
+    "segment_function": "text with mixed unicode and Arabic character entities representing bibliographic or textual data",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The target block consists of encoded Unicode and Arabic script sequences that resemble bibliographic notes, citations, or references, precluding substantive claim extraction under the given rules."
+    ],
+    "must_not_be_lost": []
+  },
+  "status": "rejected",
+  "rejection_reason": "No auditable evidence survived validation after retries."
+}

@@ -1,0 +1,37 @@
+{
+  "central_question_claim_ids": [
+    "clm-27d7960629cc8d70",
+    "clm-cdfd1f19002d9de1",
+    "clm-3a561b777e44ce86",
+    "clm-43c898a10d267e4a",
+    "clm-69fe45bd8b92b783",
+    "clm-12d66b0d3864127f",
+    "clm-f2514de064072149",
+    "clm-177abafe0237f1e2",
+    "clm-42387f05124f8d6c"
+  ],
+  "central_question_status": "well_covered",
+  "material_gaps": [],
+  "max_supported_minutes": 10,
+  "objective_coverage": [
+    {
+      "claim_ids": [
+        "clm-27d7960629cc8d70",
+        "clm-cdfd1f19002d9de1",
+        "clm-3a561b777e44ce86",
+        "clm-43c898a10d267e4a",
+        "clm-69fe45bd8b92b783",
+        "clm-12d66b0d3864127f",
+        "clm-f2514de064072149",
+        "clm-177abafe0237f1e2",
+        "clm-42387f05124f8d6c",
+        "clm-469d428f8dd902ee"
+      ],
+      "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+      "rationale": "The corpus provides comprehensive grounded claims detailing the core architecture of Arendt's The Human Condition, including the threefold distinction of human activities (labor, work, action), public and private realms, world and earth alienation, natality, and the critique of modernity.",
+      "status": "well_covered"
+    }
+  ],
+  "recommendation": "continue",
+  "recommendation_reason": "The corpus contains ample grounded claims explaining the core thesis, main concepts, and theoretical framework of Hannah Arendt's The Human Condition to fully support a 10-minute explanatory audio outline without padding."
+}

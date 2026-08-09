@@ -1,0 +1,25 @@
+{
+  "claims": [
+    {
+      "claim": "The target block contains bibliographic notes, references, and citations rather than continuous prose, so no substantive claims are extracted from the reference section.",
+      "claim_type": "scholarly_interpretation",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "Arendt Hann ah (1973) the origins of totalitarianism, published by Harcourt Brace."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "The text block terminates with a bibliographic reference list."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "conclusion",
+  "unresolved_context": [
+    "The block includes extensive bibliographic references and notes associated with a conclusion section."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "bibliographic_notes_and_copyright_information",
+  "unresolved_context": [
+    "Target block consists entirely of copyright notices, publication data, cataloging-in-publication data, and bibliographic metadata."
+  ]
+}

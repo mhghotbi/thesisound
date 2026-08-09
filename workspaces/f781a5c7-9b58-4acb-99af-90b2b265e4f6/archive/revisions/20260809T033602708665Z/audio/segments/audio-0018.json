@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0018",
+    "segment_id": "seg-003",
+    "speaker": "B",
+    "source_turn_ids": [
+      "seg-003-turn-005"
+    ],
+    "text": "علاوه بر بیگانگی از جهان، آرنت از مرحله دیگری هم در مدرنیته یاد می‌کند که به زمین مربوط می‌شود. این مرحله دوم چیست و چه ارتباطی با نوع فعالیت‌های انسانی دارد؟",
+    "sequence": 17,
+    "voice_name": "Puck",
+    "content_hash": "fc1b836d2fb2d1963894c611b6b3f0ba0a5f60028e9ed0a2220717452971babd",
+    "expected_duration_seconds": 13.777777777777779
+  },
+  "wav_ref": "audio/segments/audio-0018.wav",
+  "wav_sha256": "5f43a7a33122574a9b6022edc77fddc61cfa0272a9335d09f9192bbb8258cd4c",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:54:15.530109Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 15.8,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 379200,
+    "peak_ratio": 0.8174382763145848,
+    "issues": []
+  },
+  "generation_attempts": 1
+}

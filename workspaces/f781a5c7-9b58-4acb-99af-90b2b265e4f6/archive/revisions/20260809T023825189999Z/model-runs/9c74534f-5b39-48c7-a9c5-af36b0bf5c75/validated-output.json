@@ -1,0 +1,33 @@
+{
+  "claims": [
+    {
+      "claim": "The cumulative effect of mundane adaptations might intensify human isolation or alienation from the earth in its givenness, cutting people off from awareness of their earthbound limitations.",
+      "claim_type": "author_position",
+      "confidence": 0.95,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "Another possibility is that, even if these adaptations are small-scale and\nmundane, their cumulative effect might be to intensify the isolation or alien-\nation of human beings from the earth in its givenness, cutting people off from\na vital source of awareness of their own earthbound limitations, which is nec-\nessary to keep the activity of world building from running amok."
+    },
+    {
+      "claim": "Modern science interposes humanly made technologies of observation and measurement between us and the world, cutting humans off from reality.",
+      "claim_type": "scholarly_interpretation",
+      "confidence": 0.9,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "insofar as modern science interposes\nhumanly made technologies of observation and measurement between us\nand the world, it cuts human beings off from the “reality” to which it prom-\nised reliable access."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "The risk of reading all three types of adaptation solely through the problem of mediation and immediacy."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "evaluation of alternative interpretations of Arendt regarding technology, mediation, and adaptation",
+  "unresolved_context": [
+    "Discussion of footnote references to Benjamin Lazier and Waseem Yaqoob, and Arendt's citation of Heisenberg in The Human Condition."
+  ]
+}

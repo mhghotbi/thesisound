@@ -1,0 +1,91 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00101-19f60938cfbd",
+  "extraction": {
+    "segment_function": "Discusses the endurance, unpredictability, and irreversibility of action, critiquing the traditional confusion of freedom with sovereignty and identifying plurality as the condition that precludes human sovereignty.",
+    "claims": [
+      {
+        "evidence_id": "ev-2d2b5a519b403df4",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00101-19f60938cfbd",
+        "claim": "Action possesses an enormous capacity for endurance and an unlimited process that can grow while consequences multiply, unlike the strength of the production process which is absorbed in its end product.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "While the strength of the production process is entirely absorbed in and exhausted by the end product, the strength of the action process is never exhausted in a single deed but, on the contrary, can grow while its consequences multiply; what endures in the realm of human affairs are these processes, and their endurance is as unlimited, as independent of the perishability of material and the mortality of men as the endurance of humanity itself.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-ba21e6f4a5687ee2",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00101-19f60938cfbd",
+        "claim": "The traditional identification of sovereignty with freedom is erroneous because sovereignty, conceived as uncompromising self-sufficiency and mastership, contradicts the human condition of plurality.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "If it were true that sovereignty and freedom are the same, then indeed no man could be free, because sovereignty, the ideal of uncompromising self-sufficiency and mastership, is contradictory to the very condition of plurality.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Sovereignty",
+        "definition": "The ideal of uncompromising self-sufficiency and mastership.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Sovereignty",
+        "item_b": "Freedom",
+        "distinction": "Sovereignty is an ideal of self-sufficiency and mastership that contradicts plurality, whereas freedom operates within the condition of human plurality and the realm of action.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Action has no end and its consequences are irreversible and unpredictable.",
+      "Tradition mistakenly equates sovereignty with freedom, leading to recommendations of non-acting or withdrawal (like Stoicism)."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

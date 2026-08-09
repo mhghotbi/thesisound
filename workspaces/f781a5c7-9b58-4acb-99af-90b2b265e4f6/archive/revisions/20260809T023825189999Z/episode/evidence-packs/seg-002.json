@@ -1,0 +1,125 @@
+{
+  "segment_id": "seg-002",
+  "claim_ids": [
+    "clm-3a561b777e44ce86",
+    "clm-43c898a10d267e4a",
+    "clm-177abafe0237f1e2"
+  ],
+  "evidence_items": [
+    {
+      "evidence_id": "ev-4f993bc0a932bbe3",
+      "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+      "block_id": "blk-187a0ac0-00003-72bb2365b274",
+      "claim": "Homo faber represents the sphere of work as a tool-making agent who creates lasting things and constitutes the human world, serving as the dwelling place for human plurality.",
+      "claim_type": "scholarly_interpretation",
+      "supporting_excerpt": "The next level of human existence is the sphere of work. Homo faber is a tool-mak-\ning and tool-using agent who is capable to create lasting and durable things (Arendt\n1958: 136–137). The differentia specifica of human existence is owned by homo faber ;\nhe is the creator of human world which is the home and dwelling place for the plural -\nity of human beings.",
+      "locator": {
+        "page_start": 4,
+        "page_end": 4,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "support_kind": "direct",
+      "qualifications": [],
+      "confidence": 1.0
+    },
+    {
+      "evidence_id": "ev-032db8a3f0f647d1",
+      "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+      "block_id": "blk-187a0ac0-00003-72bb2365b274",
+      "claim": "Action is regarded as the highest and most specifically human activity in Arendt's ontology, where to act and to be free are identical, and it requires plurality and speech.",
+      "claim_type": "scholarly_interpretation",
+      "supporting_excerpt": "The third and highest stage of human existence, in the ontology of Arendt, is the\nlevel of action taking place in the world of things created by homo faber . Action is the\nmost specifically human activity; to act and to be free is the same, Arendt concludes.",
+      "locator": {
+        "page_start": 4,
+        "page_end": 4,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "support_kind": "direct",
+      "qualifications": [
+        "taking place in the world of things created by homo faber"
+      ],
+      "confidence": 1.0
+    },
+    {
+      "evidence_id": "ev-05df2133fc3d7c66",
+      "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+      "block_id": "blk-c354e702-00008-a158be02ffc4",
+      "claim": "Arendt regards action, plurality, and natality as foundational starting points in her theory of the public realm.",
+      "claim_type": "author_position",
+      "supporting_excerpt": "در واﻗﻊ\n»ﺗﮑﺜﺮ«و»زاﯾﻨﺪﮔﯽ« ﮐـﺎر  ﺑـﻪ  ﻋﻤﻮﻣﯽ آرﻧـﺖ  ﮥﻋﺮﺻ ﮥآﻏﺎز در ﻧﻈﺮﯾﻪ ﻋﻨﻮان ﻧﻘﻄ ﺑﻪ\nدﻫﺪ ﮐﻪ ﺗﻌﺪاد زﯾﺎدي آدم ﻣﺘﻤـﺎﯾﺰ و ﻣﺨﺘﻠـﻒ    وﺳﯿﻠﻪ ﺗﮑﺜﺮ ﺗﻮﺿﯿﺢ ﻣﯽ آرﻧﺖ ﺑﻪ . دﺷﻮ ﺑﺮده ﻣﯽ",
+      "locator": {
+        "page_start": 19,
+        "page_end": 21,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "support_kind": "direct",
+      "qualifications": [],
+      "confidence": 0.95
+    }
+  ],
+  "original_blocks": [
+    {
+      "block_id": "blk-187a0ac0-00003-72bb2365b274",
+      "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+      "locator": {
+        "page_start": 4,
+        "page_end": 4,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "heading_path": [],
+      "block_type": "other",
+      "text": "96\nGábor Kovács.   H. Arendt’s  Interpretation  of Natural and Artificial  in the Political  ...\nof animal laborans, is one of the animal races, but undeniable that it is the most dan -\ngerous one of all. Labor , summarizing this train of thought, is a mere animal activity\nin the ontology of Arendt.\nThe next level of human existence is the sphere of work. Homo faber is a tool-mak-\ning and tool-using agent who is capable to create lasting and durable things (Arendt\n1958: 136–137). The differentia specifica of human existence is owned by homo faber ;\nhe is the creator of human world which is the home and dwelling place for the plural -\nity of human beings. (In this paper I am not going to use a gender-neutral terminol -\nogy. Speaking on Arendt it would be anachronistic.) Human person, as homo faber ,\nis really an individual and not an anonymous element of human race. The activity of\nwork results in creation of things and institutions. They constitute the human world\nwhich is the “in-between” relates and separates human beings at the same time. Homo\nfaber is a creator of artificial things and the world created by his hands is the terrain\nof human artifice.\nThe third and highest stage of human existence, in the ontology of Arendt, is the\nlevel of action taking place in the world of things created by homo faber . Action is the\nmost specifically human activity; to act and to be free is the same, Arendt concludes.\nIn opposition to labor and work, it is not possible to act lonely. A lone human being is\ncapable to satisfy his biological needs and he is even able to create things, but only ac -\ntion constitutes the plurality of human beings. Action is unimaginable without speech\n(Arendt 1958: 176). Action without speech ends in violence and ceases to be real hu -\nman action which creates and maintains the web of inter-subjective plurality. Human\ncondition is consummated by action which makes human being, to some extend, simi -\nlar to God who creates from nothing.\nArendt has frequently been accused with spatial essentialism ; i.e. different activi -\nties, in her theory, must strictly be restricted to different places. Human condition, in\nher argumentation, is rooted in labor, work and action. Labor is conditioned by life,\nwork is conditioned by world and action is conditioned by human plurality. These\ntriads are supplemented by antithetical notion-pairs. The field of human existence is\ndivided into private realm and public realm which must be divided from each other.\nPrivate realm is the terrain of life-sustaining labor while public realm is that of action.\nWorld-creating work is in an intermediate position; homo faber works in the private\nrealm but the fruits of his activity enrich the public realm, our common and shared\nworld.\nWhat has to do the Arendtian ontology explained above briefly with our main topic\nconcerning the relation of natural and artificial realms? Many, we can say. In the triad\nof labor–work–action are embedded two antithetical notion-pairs: necessity–liberty\nand social–political. These dichotomies are related to each other: necessity stands as a\nsynonym for the social, liberty stands as a synonym for the political. This static ana -\nlytical framework has been enlarged by Arendt with an historical approach extending\nfrom the Greeks to the rise of modernity.\nThe notion of the social, in The Human Condition, is one of the central categories.\nIt appears in the unit 7 (Arendt 1958: 38–50) and remains an important reference point",
+      "estimated_token_count": 998,
+      "source_block_keys": [
+        "page-4-block-4"
+      ],
+      "previous_block_id": "blk-187a0ac0-00002-31b1a9859865",
+      "next_block_id": "blk-187a0ac0-00004-dfa8bda206e5"
+    },
+    {
+      "block_id": "blk-c354e702-00008-a158be02ffc4",
+      "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+      "locator": {
+        "page_start": 19,
+        "page_end": 21,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "heading_path": [],
+      "block_type": "other",
+      "text": "1. Theseus\n\n326/ ﭘﮋوﻫﺶ\n1400\nﺧﻮد\nﮐـﺎﻓﯽ  ، ﺻﺮف ﻗﺎﺑﻠﯿﺖ ﺷﻨﯿﺪن و ﭘﺪﯾﺪاري. ﻋﻤﻮﻣﯽ ﺑﺴﺘﮕﯽ دارد ﮥﺑﻪ ﻧﻤﻮد ﻓﻌﺎل او در ﻋﺮﺻ،\nﺻـﺮاﺣﺖ   او ﺑﺎﯾـﺪ ﺑـﻪ  . دﻫـﺪ ﮐﺎري اﻧﺠـﺎم  ، ﺟﻬﺎن ﻣﺸﺘﺮكاو ﺑﺎﯾﺪ در ، ﺑﺮاي اﯾﺠﺎد ﻓﺮدﯾﺖ. ﻧﯿﺴﺖ\n) آﺷﮑﺎر ﺳﺎزد ﺧﻮد را در ﻋﻤﻞ ﺑﺎ دﯾﮕﺮان Doss\na, 1989: 103 .(\nآرﻧﺖ\nﺑﯿﻨﺪ و ﻣﻌﺘﻘﺪ اﺳﺖ ﮐـﻪ ﺳـﺨﻦ اﺳـﺖ ﮐـﻪ ﺳـﻮژﮔﯽ       ﻋﻤﻞ را در ﭘﯿﻮﻧﺪ ﺑﺎ ﺳﺨﻦ ﻣﯽ،\nﺑﺎ ﺳﺨﻦ و ﺑﺎ ارﺗﺒـﺎط ﭘﯿﻮﻧـﺪ ﺧـﻮرده    ، در واﻗﻊ ﺷﻬﺮوﻧﺪي ﺑﺮاي آرﻧﺖ. ﺳﺎزد اﻧﺴﺎن را ﻋﯿﺎن ﻣﯽ\nدر اﻧـﺰوا ﺑـﻮدن   . ﮔﺎه در اﻧﺰوا ﻣﻤﮑﻦ ﻧﯿﺴـﺖ  ﻫﯿﭻ، ﻋﻤﻞ ﺑﺮﺧﻼف ﺳﺎﺧﺘﻦ ﮐﻪ ﮔﻮﯾﺪ او ﻣﯽ. اﺳﺖ\nﺗﻮدرﺗـﻮي اﻋﻤـﺎل و   ﻪ ﻣﺤﺎط در ﺷـﺒﮑ ، ﻋﻤﻞ و ﺳﺨﻦ. ﯾﻌﻨﯽ ﻣﺤﺮوﻣﯿﺖ از ﻗﺎﺑﻠﯿﺖ ﻋﻤﻞ ﮐﺮدن\nﻋﻤﻠـﯽ را اﻧﺠـﺎم   ، ﺷـﻬﺮوﻧﺪ آرﻧـﺖ  . اﻧﺪ و در ارﺗﺒﺎط ﻣﺴﺘﻤﺮ ﺑﺎ آن ﻗـﺮار دارﻧـﺪ   ﺳﺨﻨﺎن دﯾﮕﺮان\nو ﺑﺎﻧﯽ ﻋﻤـﻞ    ﯾﮑﯽ آﻏﺎزﯾﺪن ﺷﺨﺼﯽ واﺣﺪ اﺳﺖ ﮐﻪ ﺑﺎﻋﺚ: ﺑﺨﺶ اﺳﺎﺳﯽ دارددﻫﺪ ﮐﻪ دو  ﻣﯽ\nﺑﻪ اﻧﺠﺎم رﺳﺎﻧﺪﻧﯽ اﺳﺖ ﮐﻪ ﺷﺨﺺ واﺣﺪ در ﺗﻌﺎﻣﻞ ﺑﺎ اﺷـﺨﺎص واﺣـﺪ دﯾﮕـﺮي     اﺳﺖ و دﯾﮕﺮ\n) دﻫﺪ اﻧﺠﺎم ﻣﯽ Arendt,\n1958: 182-189 .(\nرﻧﺖ\nﺷـﻮﯾﻢ و   از ﺿﺮورﯾﺎت زﻧﺪﮔﯽ دور ﻣـﯽ ، ﺳﻮي ﮐﺎر ﻣﺎ ﺑﺎ ﺣﺮﮐﺖ از زﺣﻤﺖ ﺑﻪ، در اﻧﺪﯾﺸﻪ آ\nاﻧﺴﺎن ﺳﺎزﻧﺪه از وﺿـﻌﯿﺖ ﺗـﮏ  . ﻋﻨﻮان ﯾﮏ ﻫﺴﺘﯽ ﻣﺠﺰا ﻋﺮﺿﻪ ﮐﻨﯿﻢ ﺑﻪﮐﻮﺷﯿﻢ ﮐﻪ ﺧﻮد را  ﻣﯽ -\nه ﺳـﻮي ﯾـﮏ ﺣـﻮز    ﺑﻪ ، دور ﮔﺸﺘﻪ، ﺷﻮد ﺑﻮدﮔﯽ ﺗﻌﺮﯾﻒ ﻣﯽﻫﻤﺎﻧﻨﺪي و ﻫﻢﻪ وﺳﯿﻠ اﻓﺘﺎدﮔﯽ ﮐﻪ ﺑﻪ\nﺧﺼﻮﺻـﯽ را  ه ﺣـﻮز  در ﻣﻘﺎﺑﻞ زﺣﻤـﺖ و ﮐـﺎر ﮐـﻪ در ﻣﺠﻤـﻮع    . ﮐﻨﺪ ﺗﻌﺎﻣﻠﯽ ﺟﻬﺎﻧﯽ ﺣﺮﮐﺖ ﻣﯽ\nدر ﻣﻘﺎﺑـﻞ ﺑـﺎ زﺣﻤـﺖ و ﮐـﺎر ﺑـﻪ      ﻋﻤـﻞ  . ﻋﻤﻮﻣﯽ اﺳـﺖ  ةﻋﻤﻞ ﻣﺘﻌﻠﻖ ﺑﻪ ﺣﻮز، ﺪدﻫ ﺗﺸﮑﯿﻞ ﻣﯽ\nﻣﻼﺣﻈﺎت ﺿﺮوري و اﺑﺰاري ﻣﺤﺪود ﻧﺸﺪه اﺳﺖ و ﺑﻪ ﻣﻌﻨﺎي ﺑﺮوز ﺷﺨﺺ در ﯾﮕﺎﻧﮕﯽ ﺧـﻮﯾﺶ و\n؛ ﺗﮑﺜﺮ اﺳـﺖ  ةﻋﻤﻞ ﺑﺮاﺑﺮ ﺑﺎ ﺣﻮز ةدر واﻗﻊ ﺣﻮز. ﺟﺎي ﭼﯿﺴﺘﯽ اوﺳﺖ ﺑﺮوز و ﻇﻬﻮر ﮐﯿﺴﺘﯽ ﻓﺮد ﺑﻪ\n) دﻫﯿﻢ ﺟﺎﯾﯽ ﮐﻪ ﻣﺎ ﺧﻮدﻣﺎن را در ﺗﻌﺎﻣﻞ ﺑﺎ دﯾﮕﺮان ﻇﻬﻮر و ﺑﺮوز ﻣﯽ Buck\nler, 2011: 86-89 .(\n» ﺑﻦ ﺣﺒﯿﺐ\nﺳﯿﻼ«: ﮔﻮﯾﺪ ﻣﯽ در اﯾﻦ راﺑﻄﻪ »ﺳـﻮي ﻫﻤﺒﺴـﺘﮕﯽ ﻣﺜﺒـﺖ ﻧـﻮع      ﻗﺪم ﻧﻬﺎدن ﺑﻪ\nﺗﻮاﻧﺪ ﺑـﻪ   ﺗﻮﺳﻂ ﺷﻬﺮوﻧﺪان اﺳﺖ ﮐﻪ اﯾﻦ ﻣﯽ ﻧﯿﺎزﻣﻨﺪ ﺑﻪ ﻋﻬﺪه ﮔﺮﻓﺘﻦ ﻣﺴﺌﻮﻟﯿﺖ ﺳﯿﺎﺳﯽ، ﺑﺸﺮ\nدو ﺷﮑﻞ ﻣﺘﻔﺎوت از »ﺷﻬﺮﮔﺮاﯾﯽ ﺟﻬﺎن «  اوﻟﯿﻦ ﺷﮑﻠﯽ ﮐﻪ ﻣﻄﺮح اﺳﺖ و آرﻧـﺖ آن را  . ﻇﺎﻫﺮ ﺷﻮد\nﻣﺒﺘﻨـﯽ ﺧﻮاﻫـﺪ ﺑـﻮد و ﻣﺴـﺘﻠﺰم ﺗﺼـﻮري از       ﺑـﺮ ﯾـﮏ ﻣﻔﻬـﻮم ﺟﺰﻣـﯽ از ﺣﻘﯿﻘـﺖ     ، ﮐﻨﺪ رد ﻣﯽ\nﻋﻨـﻮان ﻣـﻮاﻧﻌﯽ    ﻓﺮﻫﻨﮕﯽ و ﺗﺎرﯾﺨﯽ را ﺑﻪ، ﺷﻬﺮوﻧﺪي ﺟﻬﺎﻧﯽ اﺳﺖ ﮐﻪ ﺗﻨﻮﻋﺎت و ﺗﻤﺎﯾﺰات ﺳﯿﺎﺳﯽ\nﻗﺎﺋـﻞ ﺑـﻪ ﯾـﮏ    ، ﻣﺴـﯿﺮ دوم . ﺑﯿﻨـﺪ  ﻣﯽ ﺳﻮي ﯾﮏ وﺣﺪت ﺳﻄﺤﯽ و ﻫﻮﻟﻨﺎك در ﻣﺴﯿﺮ ﺣﺮﮐﺖ ﺑﻪ\nﺧﯿﺮ ﺑـﺮاي  ه و ﯾﮏ اراد ارﺗﺒﺎط ﻣﯿﺎن ﺗﻤﺎم ﺣﻘﺎﯾﻖارﺗﺒﺎط اﻓﻘﯽ اﺳﺖ و ﻣﺴﺘﻠﺰم اﯾﻤﺎن ﺑﻪ ﺑﺮﻗﺮاري\nﺑﺴـﺘﮕﯽ و ﮐﺸـﻒ ﻫﻤﮕﻨـﺎن در ارﺗﺒـﺎط ﺑـﺎ      ﺑﻪ اﯾﺠﺎد ﻫﻢ اﯾﻦ ﻣﺴﯿﺮ. آﺷﮑﺎر ﺷﺪن و ﺷﻨﯿﺪن اﺳﺖ\n\n»ﺷﻬﺮوﻧﺪي«\nﻣﺜﺎﺑﻪ ﺑﺪﯾﻠﯽ ﺑﺮاي  ﺑﻪ »/ﻫﻤﮑﺎرو  آزاده ﺷﻌﺒﺎﻧﯽ؛  ...ﺟﻬﺎن از 327\nﻤﺎن\nﺎي ﮐﻠﯿﺪي اﯾﻦ وﺿﻌﯿﺖ را ﮐـﻪ  ﻫ ﻗﺎدر ﺧﻮاﻫﺪ ﺑﻮد و ﻫﻤﭽﻨﯿﻦ وﯾﮋﮔﯽ وﺿﻌﯿﺖ اﻧﺴﺎﻧﯽ ﻣﺸﺘﺮﮐ\nﮐﻨﺪ ﻧﯿﺰ ﺣﻔﻆ ﻣﯽ ﺗﻨﻮع و ﺗﻔﺎوت، ﮐﺜﺮت ﻨﺪ ازﻋﺒﺎرﺗ « )Benh\nabib, 2010: 167-168(  .\nدر واﻗﻊ\n»ﺗﮑﺜﺮ«و»زاﯾﻨﺪﮔﯽ« ﮐـﺎر  ﺑـﻪ  ﻋﻤﻮﻣﯽ آرﻧـﺖ  ﮥﻋﺮﺻ ﮥآﻏﺎز در ﻧﻈﺮﯾﻪ ﻋﻨﻮان ﻧﻘﻄ ﺑﻪ\nدﻫﺪ ﮐﻪ ﺗﻌﺪاد زﯾﺎدي آدم ﻣﺘﻤـﺎﯾﺰ و ﻣﺨﺘﻠـﻒ    وﺳﯿﻠﻪ ﺗﮑﺜﺮ ﺗﻮﺿﯿﺢ ﻣﯽ آرﻧﺖ ﺑﻪ . دﺷﻮ ﺑﺮده ﻣﯽ\nﻃـﻮر    ﺑـﻪ  ﻫـﺎﯾﯽ ﻧـﻮ   دﻫﺪ ﮐﻪ ﻫﻢ ﻫﺴﺘﯽ زادﮔﯽ ﺗﻮﺿﯿﺢ ﻣﯽﻪ وﺳﯿﻠ و ﺑﻪ در زﻣﯿﻦ ﺳﮑﻮﻧﺖ دارﻧﺪ\nﮐـﻪ   آﻧﺠﺎ از. دﻫﺪ آﻏﺎز و ﺑﺪاﯾﺘﯽ ﻧﻮ را ﻣﯽ ةوﻋﺪ، ﺷﻮﻧﺪ و ﻫﻢ اﯾﻨﮑﻪ ﻫﺮ زاﯾﺶ ﻧﻮ ﻣﺪاوم زاده ﻣﯽ\nﺑﻪ ارﺗﺒـﺎط ﺑـﺎ ﯾﮑـﺪﯾﮕﺮ اﺣﺴـﺎس      آﻧﻬﺎ، وﻟﯽ ﯾﮑﺴﺎن و ﻫﻤﺎﻧﻨﺪ ﻧﯿﺴﺘﻨﺪ، ﻫﺎ ﻣﺸﺎﺑﻪ ﻫﺴﺘﻨﺪ اﻧﺴﺎن\nاو ﻫﻤـﻮاره ﺑـﻪ ﮔﻔـﺘﻦ و    ، ﻓﺮد ﺧﻮد را دارد ﺑﻪﻣﺸﯽ ﻣﻨﺤﺼﺮ، ﮐﻪ ﻫﺮ اﻧﺴﺎﻧﯽ آﻧﺠﺎ و از ﻧﯿﺎز دارﻧﺪ\n) دادن ﭼﯿﺰي ﺟﺪﯾﺪ و ﻏﯿﺮﻣﻨﺘﻈﺮه ﻗﺎدر ﺧﻮاﻫﺪ ﺑﻮد اﻧﺠﺎم Dossa\n, 1989: 74-76(.\nﺳﯽ\nﭘﺪﯾﺪارﺷﻨﺎ»ﺑﻮدن در ﺟﻬﺎن«  ،\nاز ﯾﮏ ﻓﺮﻫﻨﮓ ﺟﺪﯾﺪ و ﻣﺒﺘﻨﯽ ﺑـﺮ ﻣﺸـﯽ ﻋﻤـﻮﻣﯽ\nاز ﻃﺮﯾـﻖ ﺗﻌﻬـﺪ ﺑـﻪ ﯾـﮏ اﺟﺘﻤـﺎع ﻋﻤـﻮﻣﯽ       ، رﺿﺎﯾﺖ از زﻧﺪﮔﯽ اﻧﺴﺎﻧﯽ. ﮐﻨﺪ ﺣﻤﺎﯾﺖ ﻣﯽ زﻧﺪﮔﯽ\nﻫـﺎي   و ﻏﯿﺮرﺳـﻤﯽ را در ﺗﻤـﺎم زﻣﯿﻨـﻪ    آﯾﺪ ﮐﻪ اﻋﻀﺎﯾﺶ ﻣﺸﺘﺎﻗﺎﻧﻪ ﻓﻀﺎﻫﺎي ﻋﻤـﻮﻣﯽ رﺳـﻤﯽ   ﻣﯽ\n) ﮐﻨﻨـﺪ  ﺟـﻮ و ﻓـﺮاﻫﻢ ﻣـﯽ   وﺟﺴﺖ زﻧﺪﮔﯽ Bern\nauer, 1987: 4ﻨـﺪ\nﻗﻠﻤـﺮو  ، ﻧﻈـﺎم ﺣﻘـﻮﻗﯽ   ﻫﺮﭼ\nﮐـﻪ آن   ﻣﺸﺎرﮐﺖ ﻃﺒﯿﻌﯽ ﺷﻬﺮوﻧﺪان اﺳﺖ، ﮐﻨﺪ ﮐﻨﺪ و از آن ﻣﺤﺎﻓﻈﺖ ﻣﯽ ﻋﻤﻮﻣﯽ را ﺗﺜﺒﯿﺖ ﻣﯽ\nﭘﻨﺪاﺷﺖ ﮐـﻪ در   ﻣﯽاو . آزادي ﺣﻘﯿﻘﯽ ﺑﻮدﮥﻋﺮﺻ، ﺑﺮاي آرﻧﺖ ﻋﻤﻮﻣﯽ ﮥﻋﺮﺻ. دارد را زﻧﺪه ﻧﮕﻪ ﻣﯽ\n) ﺳﯿﺎﺳﯽ ﻣﻨﺤﺼﺮ ﺷﺪه ﺑﻮدﻪ واﻗﻌﺎً در ﻋﺮﺻ آزادي، ﭘﻮﻟﯿﺲ ﯾﻮﻧﺎن Vil\nla, 2006: 185ﺖ\nﻣﺪل آرﻧـ\nو   ﮐـﻪ ﺑـﻪ ﻓﻌـﻞ     ﺣﺪيﺗﺎ؛ ﺖﺑﺼﺮي و ﺟﺎﻣﻊ اﺳ، ﺟﺎي آﻧﮑﻪ ﺳﻤﻌﯽ ﺑﺎﺷﺪ ﺑﻪ، ﻗﻠﻤﺮو ﻋﻤﻮﻣﯽه درﺑﺎر\nﻓﻘـﺪان ﺣﻀـﻮر ﻓﯿﺰﯾﮑـﯽ در ﻗﻠﻤـﺮو     . ﻧﯿـﺎز دارد  اﻧﻔﻌﺎﻻت ﭼﻬﺮه ﺑﻪ ﭼﻬـﺮه در ﻣﯿـﺎن ﺷـﻬﺮوﻧﺪان\n) زوال ﻗﺪرت و ﻓﺮوﭘﺎﺷﯽ ﺳﯿﺎﺳﯽ اﺳﺖ ﮥﻧﺸﺎﻧ، ﻋﻤﻮﻣﯽ Kal\nyvas, 2008: 263(.\nع ﺳﯿﺎﺳﯽ\nاذﻋﺎن ﺑﻪ ﺑﺮاﺑﺮي ﺷﻬﺮوﻧﺪان و ﺑﻪ رﺳﻤﯿﺖ ﺷـﻨﺎﺧﺘﻦ  ه دﻫﻨﺪ ﻧﺸﺎن ﺗﻌﻬﺪ ﺑﻪ اﺟﺘﻤﺎ\nﭼﻨـﯿﻦ  ه ﺛﻤـﺮ . ﺑﺮ ﻣﻨﺎﻓﻊ ﺧﺼﻮﺻﯽ اﺳـﺖ  ﻣﺰﯾﺖ و ارﺟﺤﯿﺖ ﻣﺮاﻗﺒﺖ از ﺟﻬﺎن و رﻓﺎه اﺟﺘﻤﺎﻋﯽ\nﺑـﺮاي  . آزادي و ﻣﻌﻨﺎﺑﺮاي زﻧﺪﮔﯽ ﺑﺸـﺮ اﺳـﺖ  ، دﺳﺘﯿﺎﺑﯽ ﺑﻪ اﺷﮑﺎل ﻋﻤﻮﻣﯽ ﺧﺮﺳﻨﺪي، ﺗﻌﻬﺪي\nﻪ ﻋﻨﻮان رﺿﺎﯾﺖ ﻣـﺎدي در ﯾـﮏ ﺟﺎﻣﻌـ    ﺧﺮﺳﻨﺪي ﺑﺸﺮ ﺑﻪ ﺧﺎﻃﺮ ﮔﺮاﯾﺶ ﺑﻪ درك آن ﺑﻪ، آرﻧﺖ\nﺿـﺮورﺗﺎً ﺑﺎﯾـﺪ ﺑـﺎ دﺳـﺘﯿﺎﺑﯽ ﺑـﻪ آزادي       ﺧﺮﺳﻨﺪي اﺻﯿﻞ ﺑﺸﺮ زﯾﺮا؛ ﻣﺼﺮﻓﯽ از ﺑﯿﻦ رﻓﺘﻪ اﺳﺖ\nﯿﺮون رﻓﺘﻦ ﺑﻪ ﺑ، اﺳﺖ ﮐﻪ او را ﺑﻪ ﺣﺮﮐﺖ ﮐﺮدن  وﺿﻌﯿﺖ اﻧﺴﺎﻧﯽ، آزادي. ﺗﻌﺮﯾﻒ ﺷﻮد ﻋﻤﻮﻣﯽ",
+      "estimated_token_count": 1205,
+      "source_block_keys": [
+        "page-19-block-37",
+        "page-20-block-38",
+        "page-21-block-39"
+      ],
+      "previous_block_id": "blk-c354e702-00007-afa7f80a67dc",
+      "next_block_id": "blk-c354e702-00009-509113281924"
+    }
+  ],
+  "context_blocks": [],
+  "retrieval_hits": [],
+  "token_budget": 4200,
+  "actual_tokens": 2203,
+  "warnings": []
+}

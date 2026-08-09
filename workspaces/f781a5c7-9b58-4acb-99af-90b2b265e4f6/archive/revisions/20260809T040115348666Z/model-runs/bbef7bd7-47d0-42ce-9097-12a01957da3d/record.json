@@ -1,0 +1,59 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "81daf70f-3c3d-4e35-9dbe-c94b4e2a9e1d",
+      "error_message": "Blocks may belong to only one map section: blk-98863830-00145-4f7835c33d22, blk-98863830-00147-79079d9f5094.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 10308,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T03:37:32.259452Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "f2dfc54a-bcb1-44c2-a967-f05328ff4712",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 5646,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T03:37:37.906869Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": 77102,
+        "input_tokens": 82976,
+        "output_tokens": 2010,
+        "thinking_tokens": null,
+        "total_tokens": 84986
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T03:37:37.906897Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "ffcc3c407b819c7b8c2de74adf2cfecb0ab707360e889a49211a872cd930926b",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "bf943fe14dd09bd8207dee9380a6b9e67a6c50abba5afc4c0d69b51bd94de01e",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "bbef7bd7-47d0-42ce-9097-12a01957da3d",
+  "stage": "document_map_part",
+  "started_at": "2026-08-09T03:37:21.946356Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

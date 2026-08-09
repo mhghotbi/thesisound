@@ -1,0 +1,93 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00133-650a8d0f2b33",
+  "extraction": {
+    "segment_function": "Discussing the defeat of homo faber through the rise of utility, the principle of process, and the ultimate victory of animal laborans driven by pain, pleasure, and the pain and pleasure calculus.",
+    "claims": [
+      {
+        "evidence_id": "ev-c4656b685acfefdb",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00133-650a8d0f2b33",
+        "claim": "Homo faber was deprived of permanent measures preceding and outlasting the fabrication process due to the great revolution of modernity.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Homo faber , in other words, as he arose from the great revolution of modernity, though he was to acquire an undreamed-of ingenuity in devising instruments to measure the infinitely large and the infinitely small, was deprived of those permanent measures that precede and outlast the fabrication process and form an authentic and reliable absolute with respect to the fabricating activity.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "arose from the great revolution of modernity",
+          "acquired undreamed-of ingenuity in devising instruments"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-211986a4d3a4ebaf",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00133-650a8d0f2b33",
+        "claim": "The principle of utility was superseded by the greatest happiness of the greatest number, reflecting the ultimate failure of homo faber to assert himself.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Nothing perhaps indicates clearer the ultimate failure of homo faber to assert himself than the rapidity with which the principle of utility, the very quintessence of his world view, was found wanting and was superseded by the principle of “the greatest happiness of the greatest number.”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "happiness",
+        "definition": "The sum total of pleasures minus pains, residing entirely on introspection as an inner sense.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "pleasure",
+        "item_b": "pain",
+        "distinction": "Pleasure enjoys something besides itself, whereas pain is completely independent of any object and makes one sense only oneself.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The transition from homo faber and utility to animal laborans and the pain-and-pleasure calculus."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

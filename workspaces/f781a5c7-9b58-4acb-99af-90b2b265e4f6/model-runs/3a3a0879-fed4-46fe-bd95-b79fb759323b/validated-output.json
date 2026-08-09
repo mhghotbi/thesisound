@@ -1,0 +1,49 @@
+{
+  "claims": [
+    {
+      "claim": "The public realm signifies the common world of human artifacts and affairs that both relates and separates human beings.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "distinguished from our privately owned place",
+        "not identical with the earth or with nature"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "Second, the term “public” signifies the world itself, in so far as it is common to all of us and distinguished from our privately owned place in it. This world, however, is not identical with the earth or with nature, as the limited space for the movement of men and the general condition of organic life. It is related, rather, to the human artifact, the fabrication of human hands, as well as to affairs which go on among those who inhabit the man-made world together."
+    },
+    {
+      "claim": "Mass society becomes difficult to bear because the common world has lost its power to gather people together and to relate and separate them.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "not primarily the number of people involved"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "What makes mass society so difficult to bear is not the number of people involved, or at least not primarily, but the fact that the world between them has lost its power to gather them together, to relate and to separate them."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "The world itself in so far as it is common to all of us and distinguished from our privately owned place in it, related to human artifacts and shared human affairs.",
+      "term": "public"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "The world is not identical with the earth or with nature as the limited space for movement and general condition of organic life, but is instead related to human artifacts and shared affairs.",
+      "item_a": "the world (as human artifact and public realm)",
+      "item_b": "the earth or nature"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "Definition of the public realm as the common world of human things that relates and separates people.",
+    "The characterization of mass society's loss of the intervening world.",
+    "Augustine's principle of charity and its relation to worldlessness and familial or unpolitical structures."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Examines the definition of the public realm as the common world of human artifacts, discusses mass society and worldlessness, and analyzes historical responses such as Christian charity and monastic rules.",
+  "unresolved_context": []
+}

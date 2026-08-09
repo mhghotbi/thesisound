@@ -1,0 +1,22 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00006-fc18f0c4f349",
+  "extraction": {
+    "segment_function": "text",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The target block consists of heavily encoded or corrupted text containing unicode-like token strings and unrendered characters, preventing substantive semantic analysis."
+    ],
+    "must_not_be_lost": [
+      "The block contains unrendered tokenized text strings that could not be parsed into meaningful claims."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,22 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00010-dd00e102f2f5",
+  "extraction": {
+    "segment_function": "The target block contains heavily corrupted or encoded textual data and bibliographic references with unrendered glyph sequences, preventing reliable extraction of prose arguments or definitive scholarly claims.",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The block text is dominated by unrendered character sequences and potential encoding artifacts (e.g., 2uFEB62uFEEB...), making semantic interpretation and claim extraction impossible without proper decoding."
+    ],
+    "must_not_be_lost": [
+      "Preserve note that the block consists of encoded strings and numbers rather than standard readable prose."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,76 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00112-cb2bca930cf3",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-95ae2d17f8498c6f",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00112-cb2bca930cf3",
+        "claim": "Galileo's use of the telescope and his demonstration of the laws of falling bodies set the stage for a new world view that amalgamated terrestrial and heavenly bodies under the same exterior force.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Except for the numerically small, politically inconsequential milieu of learned men—astronomers, philosophers, and theologians—the telescope created no great excitement; public attention was drawn, rather, to Galileo’s dramatic demonstration of the laws of falling bodies, taken to be the beginning of modern natural science",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-c372d641bdd2eaf0",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00112-cb2bca930cf3",
+        "claim": "Galileo achieved what philosophers and astronomers could not by using the telescope to deliver the secrets of the universe to human cognition with the certainty of sense-perception.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "What Galileo did and what nobody had done before was to use the telescope in such a way that the secrets of the universe were delivered to human cognition “with the certainty of sense-perception”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "item_a": "Ideas",
+        "item_b": "Events",
+        "distinction": "In the realm of ideas there are only originality and depth without absolute objective novelty, whereas actual events and factual confirmation introduce unprecedented real-world change.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Distinction between speculative/imaginative astronomical theories prior to Galileo and the factual, sensory confirmation brought by Galileo's telescope."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,120 @@
+{
+  "terms": [
+    {
+      "first_use_form": "زحمت (Labor)",
+      "must_not_confuse_with": [
+        "Work (کار)",
+        "Action (کنش)"
+      ],
+      "preferred_persian": "زحمت",
+      "pronunciation_hint": null,
+      "source_term": "Labor",
+      "subsequent_use_form": "زحمت",
+      "translation_status": "standard"
+    },
+    {
+      "first_use_form": "کار (Work)",
+      "must_not_confuse_with": [
+        "Labor (زحمت)",
+        "Action (کنش)"
+      ],
+      "preferred_persian": "کار",
+      "pronunciation_hint": null,
+      "source_term": "Work",
+      "subsequent_use_form": "کار",
+      "translation_status": "standard"
+    },
+    {
+      "first_use_form": "کنش (Action)",
+      "must_not_confuse_with": [
+        "Labor (زحمت)",
+        "Work (کار)",
+        "Behavior (رفتار)"
+      ],
+      "preferred_persian": "کنش",
+      "pronunciation_hint": null,
+      "source_term": "Action",
+      "subsequent_use_form": "کنش",
+      "translation_status": "standard"
+    },
+    {
+      "first_use_form": "حیوان زحمت‌کش (Animal Laborans)",
+      "must_not_confuse_with": [
+        "Homo Faber (انسان سازنده)"
+      ],
+      "preferred_persian": "حیوان زحمت‌کش",
+      "pronunciation_hint": "آنیمال لَبورَنز",
+      "source_term": "Animal Laborans",
+      "subsequent_use_form": "حیوان زحمت‌کش",
+      "translation_status": "standard"
+    },
+    {
+      "first_use_form": "انسان سازنده (Homo Faber)",
+      "must_not_confuse_with": [
+        "Animal Laborans (حیوان زحمت‌کش)"
+      ],
+      "preferred_persian": "انسان سازنده",
+      "pronunciation_hint": "هومو فابِر",
+      "source_term": "Homo Faber",
+      "subsequent_use_form": "انسان سازنده",
+      "translation_status": "standard"
+    },
+    {
+      "first_use_form": "تکثر (Plurality)",
+      "must_not_confuse_with": [
+        "Multiplicity (تعدد)"
+      ],
+      "preferred_persian": "تکثر",
+      "pronunciation_hint": null,
+      "source_term": "Plurality",
+      "subsequent_use_form": "تکثر",
+      "translation_status": "standard"
+    },
+    {
+      "first_use_form": "زادمندی (Natality)",
+      "must_not_confuse_with": [
+        "Mortality (مرگ‌آگاهی)"
+      ],
+      "preferred_persian": "زادمندی",
+      "pronunciation_hint": null,
+      "source_term": "Natality",
+      "subsequent_use_form": "زادمندی",
+      "translation_status": "contextual"
+    },
+    {
+      "first_use_form": "بیگانگی از جهان (World Alienation)",
+      "must_not_confuse_with": [
+        "Earth Alienation (بیگانگی از زمین)",
+        "Self-Alienation (خودبیگانگی)"
+      ],
+      "preferred_persian": "بیگانگی از جهان",
+      "pronunciation_hint": null,
+      "source_term": "World Alienation",
+      "subsequent_use_form": "بیگانگی از جهان",
+      "translation_status": "standard"
+    },
+    {
+      "first_use_form": "بیگانگی از زمین (Earth Alienation)",
+      "must_not_confuse_with": [
+        "World Alienation (بیگانگی از جهان)"
+      ],
+      "preferred_persian": "بیگانگی از زمین",
+      "pronunciation_hint": null,
+      "source_term": "Earth Alienation",
+      "subsequent_use_form": "بیگانگی از زمین",
+      "translation_status": "standard"
+    },
+    {
+      "first_use_form": "حیات فعال (Vita Activa)",
+      "must_not_confuse_with": [
+        "Vita Contemplativa (حیات نظری)"
+      ],
+      "preferred_persian": "حیات فعال",
+      "pronunciation_hint": "ویتا آکتیوا",
+      "source_term": "Vita Activa",
+      "subsequent_use_form": "حیات فعال",
+      "translation_status": "standard"
+    }
+  ],
+  "warnings": []
+}

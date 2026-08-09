@@ -1,0 +1,27 @@
+{
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+  "source_sha256": "b3b6d79eae823717ee16cf359f8ef7f7ac71e8823eee491d80a2ca865ed7461a",
+  "status": "claims_ready",
+  "block_count": 19,
+  "selected_block_count": 8,
+  "deferred_block_count": 11,
+  "analysis_depth": "brief",
+  "evidence_token_coverage": 0.36314270339024507,
+  "evidence_count": 12,
+  "claim_count": 12,
+  "model_run_ids": [
+    "021bcaf4-35c1-4ce7-a6c3-d1060c656951",
+    "2345e9de-7f24-4c0d-b120-e51c738b9cb0",
+    "38b2d4e3-093a-430c-bf51-a531f177060c",
+    "2bd857f8-23a5-4498-94d1-84fabda207a8",
+    "b89927e6-3d06-4b82-aff5-dfa46d53babb",
+    "9c74534f-5b39-48c7-a9c5-af36b0bf5c75",
+    "f335a2c3-8b7d-42c6-a88b-e26e01024d1b",
+    "d10369fe-ae6a-4478-94e6-de73b77bd303",
+    "fd2f1a73-2439-43ac-8927-783b293f7c77",
+    "ab9f5690-6e2f-4130-bf5a-f299ce7c8e60"
+  ],
+  "updated_at": "2026-08-09T02:07:13.947995Z",
+  "last_error": null
+}

@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0024",
+    "segment_id": "seg-004",
+    "speaker": "B",
+    "source_turn_ids": [
+      "seg-004-turn-005"
+    ],
+    "text": "این نگاه نهایی به ما کمک می‌کند تا بفهمیم که پیام اصلی اندیشه آرنت، بازبازیابی شهروندی برای مقابله با بیگانگی از جهان است.",
+    "sequence": 23,
+    "voice_name": "Puck",
+    "content_hash": "0709ffcfe5aad666a2696a9d9f57fca7dd57e96df95170a51ddce72da4288594",
+    "expected_duration_seconds": 10.222222222222221
+  },
+  "wav_ref": "audio/segments/audio-0024.wav",
+  "wav_sha256": "d2c1ed05f896fdc83a9f80293f0f0baba29fb71d040908aaea7c518e08379ac2",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:55:58.366235Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 13.24,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 317760,
+    "peak_ratio": 0.8333689382610553,
+    "issues": []
+  },
+  "generation_attempts": 1
+}

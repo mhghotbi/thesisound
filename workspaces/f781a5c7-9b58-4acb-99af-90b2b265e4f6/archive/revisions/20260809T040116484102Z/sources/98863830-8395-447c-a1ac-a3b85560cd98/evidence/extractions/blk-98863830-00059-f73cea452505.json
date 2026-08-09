@@ -1,0 +1,61 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00059-f73cea452505",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-7f5ab5d7bff2b292",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00059-f73cea452505",
+        "claim": "The danger of future automation is that human productivity will be consumed by an intensified biological life process rather than simply mechanizing natural life.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The danger of future automation is less the much deplored mechanization and artificialization of natural life than that, its artificiality notwithstanding, all human productivity would be sucked into an enormously intensified life process and would follow automatically, without pain or effort, its ever-recurrent natural cycle.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-534196f37043fdea",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00059-f73cea452505",
+        "claim": "Universal unhappiness in modern society stems from a labor society that lacks sufficient laboring to maintain the balance required for animal laborans happiness.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The universal demand for happiness and the widespread unhappiness in our society (and these are but two sides of the same coin) are among the most persuasive signs that we have begun to live in a labor society which lacks enough laboring to keep it contented.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "only the animal laborans demands happiness"
+        ],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

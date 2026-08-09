@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "8ac36fd1-895e-4563-ab7e-a99a8a44bbd2",
+      "error_message": "Internal Server Error",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 432,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T00:39:56.391551Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "705f2543-9753-459d-9b9e-5f93572c6275",
+      "error_message": "Internal Server Error",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 406,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T00:39:57.798300Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "error_message": "Internal Server Error",
+  "error_type": "ModelProviderError"
+}

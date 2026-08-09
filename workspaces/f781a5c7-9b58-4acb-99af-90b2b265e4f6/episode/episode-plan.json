@@ -1,0 +1,85 @@
+{
+  "title": "مفهوم «وضع بشر» و حیات فعال در اندیشه هانا آرنت",
+  "listener_outcome": "دانشجویان علوم انسانی با سه ساحت حیات فعال (زحمت، کار، و عمل) و شرایط بنیادین بشر در دیدگاه هانا آرنت آشنا می‌شوند.",
+  "estimated_duration_minutes": 10.0,
+  "segments": [
+    {
+      "segment_id": "seg-001",
+      "title": "معرفی حیات فعال و ساحت‌های سه‌گانه",
+      "purpose": "تبيين مفهوم کلی Vita Activa و معرفی فعالیت‌های سه‌گانه انسان شامل زحمت، کار و عمل.",
+      "estimated_minutes": 2.5,
+      "claim_ids": [
+        "clm-d47c35b404043ad8"
+      ],
+      "prerequisite_claim_ids": [],
+      "key_question": "مفهوم «حیات فعال» در اندیشه هانا آرنت به چه معناست و چه ساحت‌هایی دارد؟",
+      "speaker_dynamic": "explanation"
+    },
+    {
+      "segment_id": "seg-002",
+      "title": "تفکیک زحمت و کار: انسان زحمت‌کش در برابر انسان سازنده",
+      "purpose": "بررسی تفاوت ساختاری میان زحمت (ارتباط با چرخه زیستی) و کار (ساخت اشیای ماندگار).",
+      "estimated_minutes": 3.5,
+      "claim_ids": [
+        "clm-6c69a449ae6362e9",
+        "clm-0b10619fef07de50"
+      ],
+      "prerequisite_claim_ids": [
+        "clm-d47c35b404043ad8"
+      ],
+      "key_question": "تفاوت بنیادین میان زحمت (Labor) و کار (Work) از نظر آرنت چیست؟",
+      "speaker_dynamic": "comparison"
+    },
+    {
+      "segment_id": "seg-003",
+      "title": "عمل، گفتار و تکثر انسانی",
+      "purpose": "تحلیل «عمل» به عنوان عالی‌ترین ساحت حیات سیاسی و پیوند آن با شرط تکثر.",
+      "estimated_minutes": 2.5,
+      "claim_ids": [
+        "clm-443edcc199fc184b",
+        "clm-8df3154d31d3151c"
+      ],
+      "prerequisite_claim_ids": [
+        "clm-d47c35b404043ad8"
+      ],
+      "key_question": "چرا «عمل» تنها ساحتی است که مستقیماً به تکثر و سیاست مرتبط است؟",
+      "speaker_dynamic": "explanation"
+    },
+    {
+      "segment_id": "seg-004",
+      "title": "جمع‌بندی و زوال مرز عمومی و خصوصی",
+      "purpose": "مرور ایده‌های اصلی و اشاره به دگرگونی حوزه عمومی و خصوصی در عصر مدرن.",
+      "estimated_minutes": 1.5,
+      "claim_ids": [
+        "clm-aca0fe068f941e3d"
+      ],
+      "prerequisite_claim_ids": [
+        "clm-443edcc199fc184b"
+      ],
+      "key_question": "برآمدن جامعه مدرن چگونه مرز میان حوزه عمومی و خصوصی را تار کرده است؟",
+      "speaker_dynamic": "recap"
+    }
+  ],
+  "deliberately_omitted_claims": [
+    {
+      "claim_id": "clm-d4f47e5a01a1d054",
+      "reason": "Deferred claim regarding the historical threshold events of modernity omitted to maintain focus on core concepts within the 10-minute limit."
+    },
+    {
+      "claim_id": "clm-f39996b8e235a6d7",
+      "reason": "Deferred claim on medieval translation shifts omitted to keep the discussion focused and accessible for an introductory audience."
+    },
+    {
+      "claim_id": "clm-0102728343c75916",
+      "reason": "Deferred claim detailing the specific physical nature of the public realm omitted due to strict duration constraints."
+    },
+    {
+      "claim_id": "clm-06aece88b458322c",
+      "reason": "Deferred claim discussing the originality of Arendt's labor-work distinction omitted to stay within target time budget."
+    }
+  ],
+  "follow_up_topics": [
+    "تفاوت نقد هانا آرنت از مارکس با سایر متفکران سیاسی",
+    "بررسی تاریخی پیدایش بیگانه شدن از جهان در عصر جدید"
+  ]
+}

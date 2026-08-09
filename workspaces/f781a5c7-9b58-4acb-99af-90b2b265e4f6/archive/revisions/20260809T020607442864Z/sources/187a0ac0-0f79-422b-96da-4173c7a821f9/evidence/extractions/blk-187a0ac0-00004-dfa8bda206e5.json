@@ -1,0 +1,108 @@
+{
+  "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+  "block_id": "blk-187a0ac0-00004-dfa8bda206e5",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-d11e49a2f0450605",
+        "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+        "block_id": "blk-187a0ac0-00004-dfa8bda206e5",
+        "claim": "Process is the antithesis of action, functioning as a sequence of changes predetermined by an inner impersonal law that creates a terrain of necessity.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Process is the antithesis of action which needs free, undetermined human individuals being able to initiate new beginnings in the world. Process is the sequence of changes predetermined by an inner impersonal law regulating the order of these changes. The ensuing events of a process are links in a cause–effect chain where the later states of temporal development are casually determined by the former ones. The realm of processes is a terrain of necessity.",
+        "locator": {
+          "page_start": 5,
+          "page_end": 5,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-b7298157e889d80f",
+        "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+        "block_id": "blk-187a0ac0-00004-dfa8bda206e5",
+        "claim": "Modernity in its first phase is characterized by the victory of homo faber using means-end rationality to produce artificial things, with fabrication inherently entailing violence against nature.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Modernity, at least in its first phase, for her, means the victory of homo faber who, under the guidance of means-end rationality , began, in ever-increasing amount and speed, to produce large variety of artificial things. Homo faber seemed to become the master of the Earth who continuously expands the reach of his power over his environment. The activity of fabrication inherently entails the element of violence directed against lifeless and living nature.",
+        "locator": {
+          "page_start": 5,
+          "page_end": 5,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Process",
+        "definition": "The sequence of changes predetermined by an inner impersonal law regulating their order, serving as the antithesis of action and embodying the realm of necessity.",
+        "locator": {
+          "page_start": 5,
+          "page_end": 5,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Process",
+        "item_b": "Action",
+        "distinction": "Process is a sequence of changes predetermined by impersonal law and necessity, whereas action requires free, undetermined human individuals able to initiate new beginnings.",
+        "locator": {
+          "page_start": 5,
+          "page_end": 5,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "item_a": "Process",
+        "item_b": "Artificial world",
+        "distinction": "Process involves fluidity, ephemerality, and futility, standing in opposition to the durability, endurance, and lastingness of the man-created artificial world.",
+        "locator": {
+          "page_start": 5,
+          "page_end": 5,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [
+      "The chapter III (Arendt 1958: 79–136)",
+      "It is the chapter IV of the book (Arendt 1958: 79–175)"
+    ],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The association of the social with the natural and the political with the artificial.",
+      "The characterization of process as a metaphor covering the negative side of modernity and endangering the spatial economy of human existence."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,91 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00042-f7aa919f145a",
+  "extraction": {
+    "segment_function": "Examine ancient and modern views on slavery, necessity, labor, and the vita activa, explaining how antiquity justified slavery through the slavish nature of necessity and how the modern age elevated labor without clearly distinguishing between animal laborans and homo faber.",
+    "claims": [
+      {
+        "evidence_id": "ev-aae6ee9929dc112c",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00042-f7aa919f145a",
+        "claim": "The modern historians' opinion that labor and work were despised in antiquity merely because only slaves were engaged in them is a prejudice, as the ancients actually reasoned that slaves were necessary because of the slavish nature of all occupations serving the maintenance of life.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The opinion that labor and work were despised in antiquity because only slaves were engaged in them is a prejudice of modern historians. The ancients reasoned the other way around and felt it necessary to possess slaves because of the slavish nature of all occupations that served the needs for the maintenance of life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-803cbb5b8ee85cef",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00042-f7aa919f145a",
+        "claim": "The institution of slavery in antiquity functioned as an attempt to exclude labor from human life rather than as a device for cheap labor or profit exploitation.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The institution of slavery in antiquity, though not in later times, was not a device for cheap labor or an instrument of exploitation for profit but rather the attempt to exclude labor from the conditions of man’s life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "animal laborans",
+        "definition": "The human as a member of an animal species characterized by laboring and bodily needs, fully justified in bearing the term animal.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "private household",
+        "item_b": "public political realm",
+        "distinction": "The distinction between the private household inmate as a slave and the household head as a citizen, and between activities hidden in privacy versus those worthy of being seen, heard, and remembered, overshadowed other distinctions in classical antiquity.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Antiquity justified slavery through the slavish nature of labor and necessity, not vice versa.",
+      "The modern age elevated labor and the animal laborans while failing to clearly distinguish between animal laborans and homo faber."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

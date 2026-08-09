@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "34991eef-1f0f-493c-b8cd-6d2750631a30",
+      "error_message": "All configured Gemini API keys are temporarily quota-blocked; retry in approximately 47 seconds.",
+      "error_type": "ModelRateLimitError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 17,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T04:01:47.401816Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "81fe0885-7aee-48f3-9ba4-b73484c3df5e",
+      "error_message": "All configured Gemini API keys are temporarily quota-blocked; retry in approximately 46 seconds.",
+      "error_type": "ModelRateLimitError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 22,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T04:01:48.424490Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "error_message": "All configured Gemini API keys are temporarily quota-blocked; retry in approximately 46 seconds.",
+  "error_type": "ModelRateLimitError"
+}

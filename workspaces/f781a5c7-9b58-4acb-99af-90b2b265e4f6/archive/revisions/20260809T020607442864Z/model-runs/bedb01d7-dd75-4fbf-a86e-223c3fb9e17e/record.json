@@ -1,0 +1,76 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "44a7069b-7a70-4e17-a379-166fe81ddaa9",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 2229,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T01:57:26.908710Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "154a0db2-d005-41ee-ac42-9cd7faabea01",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 2275,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T01:57:29.187758Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 3,
+      "call_id": "61155fa8-19de-4ada-8ce1-b0400018c8fe",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 2628,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T01:57:31.818334Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 2811,
+        "output_tokens": 605,
+        "thinking_tokens": null,
+        "total_tokens": 3416
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T01:57:31.818350Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [
+    "https://doi.org/10.1017/S0034670524000226\\nPublished"
+  ],
+  "input_hash": "9ce522e3c5b3a584b80dd0b21bfaeaaf1dd2297d30b37f7575ce3a5e3723f03d",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "EvidenceExtractionDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "92fbcf858765c4ea51853eb6793e4ddded97e586f5526e13c261f6d5b334e088",
+  "prompt_id": "evidence_extraction",
+  "prompt_version": "1.2.0",
+  "provider": "gemini",
+  "run_id": "bedb01d7-dd75-4fbf-a86e-223c3fb9e17e",
+  "stage": "evidence_extraction",
+  "started_at": "2026-08-09T01:57:24.676052Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

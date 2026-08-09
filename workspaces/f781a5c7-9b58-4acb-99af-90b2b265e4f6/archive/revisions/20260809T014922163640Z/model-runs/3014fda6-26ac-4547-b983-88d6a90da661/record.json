@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "5f3d84e7-3b5c-4050-81c6-719a9a30c4cc",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 1578,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T01:16:47.576525Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 256,
+        "output_tokens": 63,
+        "thinking_tokens": null,
+        "total_tokens": 319
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T01:16:47.576538Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "ae75f1eb343176f0f9b0ce9d4961b46c8e44487378a2039f8490a7c44421a32f",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapMergeDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "e996d9a63dfcba9f5a2c0f79f3f067aad9ca6034aeb7dd2a462edb6cb97fd7ee",
+  "prompt_id": "document_map_merge",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "3014fda6-26ac-4547-b983-88d6a90da661",
+  "stage": "document_map_merge",
+  "started_at": "2026-08-09T01:16:45.996965Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "c841fd11-f253-40d8-b906-ff2dd401869e",
+      "error_message": "Document map referenced unknown blocks: blk-98863830-0005-9503519b95b8.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 7926,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T01:55:22.100898Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "aa6c6ab2-7fb8-4273-b42b-f9e2443e3ff6",
+      "error_message": "Document map referenced unknown blocks: blk-98863830-00041-45a9fcc0206f.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 7994,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T01:55:30.097459Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "error_message": "Document map referenced unknown blocks: blk-98863830-00041-45a9fcc0206f.",
+  "error_type": "DeterministicValidationError"
+}

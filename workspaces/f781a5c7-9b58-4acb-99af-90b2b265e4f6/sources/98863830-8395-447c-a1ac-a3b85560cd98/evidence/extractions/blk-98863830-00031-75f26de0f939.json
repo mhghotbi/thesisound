@@ -1,0 +1,97 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00031-75f26de0f939",
+  "extraction": {
+    "segment_function": "Examines the definition of the public realm as the common world of human artifacts, discusses mass society and worldlessness, and analyzes historical responses such as Christian charity and monastic rules.",
+    "claims": [
+      {
+        "evidence_id": "ev-5e33c5625359f6a6",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00031-75f26de0f939",
+        "claim": "The public realm signifies the common world of human artifacts and affairs that both relates and separates human beings.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Second, the term “public” signifies the world itself, in so far as it is common to all of us and distinguished from our privately owned place in it. This world, however, is not identical with the earth or with nature, as the limited space for the movement of men and the general condition of organic life. It is related, rather, to the human artifact, the fabrication of human hands, as well as to affairs which go on among those who inhabit the man-made world together.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 09 ch2",
+          "section": "9780226924571 09 ch2",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "distinguished from our privately owned place",
+          "not identical with the earth or with nature"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-0c96c57fb4373610",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00031-75f26de0f939",
+        "claim": "Mass society becomes difficult to bear because the common world has lost its power to gather people together and to relate and separate them.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "What makes mass society so difficult to bear is not the number of people involved, or at least not primarily, but the fact that the world between them has lost its power to gather them together, to relate and to separate them.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 09 ch2",
+          "section": "9780226924571 09 ch2",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "not primarily the number of people involved"
+        ],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "public",
+        "definition": "The world itself in so far as it is common to all of us and distinguished from our privately owned place in it, related to human artifacts and shared human affairs.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 09 ch2",
+          "section": "9780226924571 09 ch2",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "the world (as human artifact and public realm)",
+        "item_b": "the earth or nature",
+        "distinction": "The world is not identical with the earth or with nature as the limited space for movement and general condition of organic life, but is instead related to human artifacts and shared affairs.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 09 ch2",
+          "section": "9780226924571 09 ch2",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Definition of the public realm as the common world of human things that relates and separates people.",
+      "The characterization of mass society's loss of the intervening world.",
+      "Augustine's principle of charity and its relation to worldlessness and familial or unpolitical structures."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

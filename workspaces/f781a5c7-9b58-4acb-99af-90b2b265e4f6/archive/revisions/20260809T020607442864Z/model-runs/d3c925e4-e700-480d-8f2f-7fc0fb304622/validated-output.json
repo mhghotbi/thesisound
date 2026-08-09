@@ -1,0 +1,14 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "bibliographic notes or reference list",
+  "unresolved_context": [
+    "The target block consists entirely of bibliographic codes, citations, or references rather than prose, preventing the extraction of substantive author claims."
+  ]
+}

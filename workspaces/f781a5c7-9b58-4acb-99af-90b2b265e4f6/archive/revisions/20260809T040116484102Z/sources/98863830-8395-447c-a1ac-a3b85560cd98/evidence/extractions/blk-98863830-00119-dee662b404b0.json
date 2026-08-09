@@ -1,0 +1,64 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00119-dee662b404b0",
+  "extraction": {
+    "segment_function": "The author examines the origins and universal scope of Cartesian doubt as a foundational pivot in modern philosophy, replacing ancient wonder with radical questioning in response to changing scientific realities and the separation of Being and Appearance.",
+    "claims": [
+      {
+        "evidence_id": "ev-9ba58cd5678b7f74",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00119-dee662b404b0",
+        "claim": "Modern philosophy began with Descartes' universal doubt, which occupies a central position equivalent to the ancient Greek wonder at everything that is.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Modern philosophy began with Descartes’ de omnibus dubitandum est , with doubt, but with doubt not as an inherent control of the human mind to guard against deceptions of thought and illusions of sense, not as skepticism against the morals and prejudices of men and times, not even as a critical method in scientific inquiry and philosophic speculation.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-6b18638c845af658",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00119-dee662b404b0",
+        "claim": "Cartesian doubt emerged as a response to a new reality where man-made instruments like the telescope altered the physical world view and demonstrated that reality and truth are not simply given to human senses or reason.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Cartesian doubt, in its radical and universal significance, was originally the response to a new reality, a reality no less real for its being restricted for centuries to the small and politically insignificant circle of scholars and learned men.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Footnote references in the source text such as 31, 31a, 32, and 33 require external bibliographic context."
+    ],
+    "must_not_be_lost": [
+      "Cartesian doubt as the foundational motor of modern philosophy replacing ancient wonder.",
+      "The separation of Being and Appearance as the basic assumption of modern science originating from instrument-based discovery rather than pure contemplation."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

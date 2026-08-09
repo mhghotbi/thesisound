@@ -1,0 +1,46 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "38de24e8-1d03-41ea-a0a5-73ad4f381427",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 15266,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T02:48:20.664745Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 53223,
+        "output_tokens": 20,
+        "thinking_tokens": 3757,
+        "total_tokens": 57000
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T02:48:20.664758Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [
+    "http://www.tandfonline.com/Tlim\\nLimes:"
+  ],
+  "input_hash": "6d4ba735184f7e11b1346d302c48b256b34eab33cd89f907531799e7cea5114b",
+  "model": "gemini-3.6-flash",
+  "output_model": "VerificationDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "ad526f74250e338ab0a9a39ef40e9f82a711d7a292f2f21700a2e07096176cf5",
+  "prompt_id": "script_verifier",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "5ed8e3e2-09ce-4423-b206-f77c5976f3f1",
+  "stage": "script_verifier",
+  "started_at": "2026-08-09T02:48:05.397965Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

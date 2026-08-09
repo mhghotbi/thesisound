@@ -1,0 +1,43 @@
+{
+  "claims": [
+    {
+      "claim": "The emergence of nineteenth-century evolution and development theories shared a common foundational concept of process across sciences like economics, history, biology, and geology, which was virtually unknown before the modern age.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "What all these theories in the various sciences—economics, history, biology, geology—have in common is the concept of process, which was virtually unknown prior to the modern age."
+    },
+    {
+      "claim": "A mass society of laborers, or socialized mankind, consists of worldless specimens of the human species who are oblivious to the world due to labor's exclusive concentration on life and its maintenance.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "A mass society of laborers, such as Marx had in mind when he spoke of “socialized mankind,” consists of worldless specimens of the species mankind, whether they are household slaves, driven into their predicament by the violence of others, or free, performing their functions willingly."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "The human condition characterized by being driven by bodily needs, concentrating exclusively on life and its maintenance, and remaining oblivious of the world to the point of worldlessness.",
+      "term": "animal laborans"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "The later life philosophies lost sight of the only activity necessary to sustain the life process, which was present in earlier labor theories.",
+      "item_a": "earlier labor theories",
+      "item_b": "later life philosophies"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "The connection between the modern concept of process, introspection, and the biological life process as a model for labor.",
+    "Marx's prediction of the withering away of the public realm and the restriction of socialized men's freedom to hobbies."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "To analyze how nineteenth-century evolution and life philosophies centered on the concept of process, linking the biological life process to labor, and to argue that neither material abundance nor socialization can overcome the intrinsic privacy and worldlessness of the animal laborans.",
+  "unresolved_context": []
+}

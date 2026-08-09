@@ -1,0 +1,31 @@
+{
+  "claims": [
+    {
+      "claim": "The break with contemplation in modernity was consummated by introducing the concept of process into making rather than merely reversing contemplation and action or elevating homo faber.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The break with contemplation was consummated not with the elevation of man the maker to the position formerly held by man the contemplator, but with the introduction of the concept of process into making."
+    },
+    {
+      "claim": "Contemplation and fabrication share an inner affinity because beholding an idea or model is an inherent element of craftsmanship.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "at least in Greek philosophy"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "the philosophically much more compelling one that contemplation and fabrication ( theōria and poiēsis ) have an inner affinity and do not stand in the same unequivocal opposition to each other as contemplation and action. The decisive point of similarity, at least in Greek philosophy, was that contemplation, the beholding of something, was considered to be an inherent ele ment in fabrication as well, inasmuch as the work of the craftsman was guided by the “idea,” the model beheld by him before the fabrication process had started as well as after it had ended"
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": []
+}

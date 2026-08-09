@@ -1,0 +1,21 @@
+{
+  "run_id": "511e2d9b-fc10-43b9-8232-15e31eb7ff87",
+  "previous_run_id": "72d4882c-add4-43fb-8381-bef6336721ae",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "failed",
+  "sources": [
+    {
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "filename": "Hannah Arendt - The Human Condition.epub",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/98863830-8395-447c-a1ac-a3b85560cd98/Hannah-Arendt---The-Human-Condition-9612445f8cd558e5/ingestion-result.json",
+      "status": "failed",
+      "stage": "failed",
+      "claim_count": 0,
+      "last_error": "Corpus building was interrupted by a service restart. Retry to continue."
+    }
+  ],
+  "started_at": "2026-08-09T00:57:50.895642Z",
+  "updated_at": "2026-08-09T01:15:27.925983Z",
+  "finished_at": "2026-08-09T01:15:27.925971Z",
+  "last_error": "Corpus building was interrupted by a service restart. Retry to continue."
+}

@@ -1,0 +1,61 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "8d32acf9-544b-45ef-b6d5-1166ded3fd76",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 2250,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T01:57:12.731830Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "90134a97-a943-44ff-a743-34f0dd4e9760",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 2156,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T01:57:14.888475Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 2140,
+        "output_tokens": 516,
+        "thinking_tokens": null,
+        "total_tokens": 2656
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T01:57:14.888496Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [
+    "https://doi.org/10.1017/S0034670524000226\\nPublished"
+  ],
+  "input_hash": "ecee1ff16c49d4c0cb47b3aead61c7d3b78739d8e55ca1f272bada8cbf08c5f4",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "EvidenceExtractionDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "92fbcf858765c4ea51853eb6793e4ddded97e586f5526e13c261f6d5b334e088",
+  "prompt_id": "evidence_extraction",
+  "prompt_version": "1.2.0",
+  "provider": "gemini",
+  "run_id": "a3bc0b0b-98a0-4a56-9eda-71df6884b6df",
+  "stage": "evidence_extraction",
+  "started_at": "2026-08-09T01:57:10.476525Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

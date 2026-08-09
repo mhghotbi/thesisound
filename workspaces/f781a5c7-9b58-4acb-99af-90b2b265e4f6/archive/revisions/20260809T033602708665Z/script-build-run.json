@@ -1,0 +1,13 @@
+{
+  "run_id": "b87a7bf4-3971-44a7-aa87-ff3e99ce5514",
+  "previous_run_id": null,
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "approved_plan_hash": "13894dab06605685e77c6c0bbe00589fbd6db03e11f27cf0d724551553922162",
+  "approved_by": "09120000000",
+  "status": "succeeded",
+  "stage": "complete",
+  "started_at": "2026-08-09T02:46:27.057294Z",
+  "updated_at": "2026-08-09T02:48:20.672827Z",
+  "finished_at": "2026-08-09T02:48:20.672822Z",
+  "last_error": null
+}

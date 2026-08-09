@@ -1,0 +1,16 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "Index block entries covering topics like action, animal laborans, and Aristotle."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "The target block is an index section for a book, listing terms and page number ranges related to concepts such as action, animal laborans, Aquinas, Aristotle, and related figures and subjects.",
+  "unresolved_context": [
+    "The target block contains bibliographic or index entries mapping terms to page numbers and does not provide discursive prose or authorial arguments."
+  ]
+}

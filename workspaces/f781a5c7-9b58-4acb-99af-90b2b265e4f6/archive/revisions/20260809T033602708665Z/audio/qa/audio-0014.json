@@ -1,0 +1,14 @@
+{
+  "chunk_id": "audio-0014",
+  "chunk_hash": "0dbc6b4c0d1c241766cb1b6ac7145995cc2823376240c6d0ae35949c10cdaec9",
+  "wav_sha256": "eb6932a8bf5effc64939707a340eb51037f425c21d993c9e9afd7ceff235b27f",
+  "verdict": "pass",
+  "similarity_ratio": 1.0,
+  "expected_text": "تا اینجا درباره انواع فعالیت‌های حیات فعال صحبت کردیم. اما نقد آرنت به مدرنیته و مسئله بیگانگی چیست؟ مدرنیته دقیقاً چگونه رابطه انسان را با جهان و طبیعت تغییر می‌دهد؟",
+  "transcript_text": "تا اینجا درباره انواع فعالیت‌های حیات فعال صحبت کردیم. اما نقد آرنت به مدرنیته و مسئله بیگانگی چیست؟ مدرنیته دقیقاً چگونه رابطه انسان را با جهان و طبیعت تغییر می‌دهد؟",
+  "missing_sentences": [],
+  "repeated_phrases": [],
+  "truncated": false,
+  "pronunciation_review": [],
+  "regeneration_instruction": null
+}

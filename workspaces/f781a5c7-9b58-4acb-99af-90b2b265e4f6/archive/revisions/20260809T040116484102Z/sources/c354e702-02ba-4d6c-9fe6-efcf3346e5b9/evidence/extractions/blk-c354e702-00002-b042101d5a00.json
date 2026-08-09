@@ -1,0 +1,57 @@
+{
+  "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+  "block_id": "blk-c354e702-00002-b042101d5a00",
+  "extraction": {
+    "segment_function": "Research question and critical theoretical approach regarding human alienation and Arendtian citizenship",
+    "claims": [
+      {
+        "evidence_id": "ev-822245bc9ee2235d",
+        "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+        "block_id": "blk-c354e702-00002-b042101d5a00",
+        "claim": "The concept of citizenship in Hannah Arendt's thought can be employed as an alternative to counter the current crisis of human world-alienation.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "ﺗﻮان از اﯾﻦ ﻣﻔﻬﻮم ﺑﻪ ﻋﻨﻮان ﯾﮏ آﻟﺘﺮﻧـﺎﺗﯿﻮ در ﻣﻘﺎﺑـﻞ  ﻣﯽ  ﻧﺸﺎن داد ﮐﻪ، در اداﻣﻪ ﺧﻮاﻫﺪ آﻣﺪ  در ﺧﻮاﻧﺸـﯽ اﻧﺘﻘـﺎدي از ﻣﻔﻬـﻮم  . ﺑﻬﺮه ﺟﺴﺖ، اﺳﺖﺑﺤﺮان ﺣﺎﺿﺮ ﮐﻪ از ﺟﻬﺎن ﺑﯿﮕﺎﻧﮕﯽ ﺑﺸﺮ  ﮐﻮﺷﺶ ﺷﺪ ﺗﺎ وﺟﻮه ﮔﻮﻧﺎﮔﻮن اﯾﻦ ﻧﻮع ﺷﻬﺮوﻧﺪي ، ﺷﻬﺮوﻧﺪي و از ﻣﯿﺎن ﻣﺘﻮن ﮔﻮﻧﺎﮔﻮن آرﻧﺖ",
+        "locator": {
+          "page_start": 3,
+          "page_end": 5,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "Through a critical reading of Arendt's texts and her interpreters"
+        ],
+        "confidence": 0.95
+      }
+    ],
+    "definitions": [
+      {
+        "term": "ﺷﻬﺮوﻧﺪي",
+        "definition": "ﺗﺮﮐﯿﺒـﯽ از ﺣﻘـﻮق و وﻇـﺎﯾﻒ ﻣـﺪﻧﯽ و ﺳﯿﺎﺳـﯽ  و  ﺟﺎﻣﻌـﻪ   يﺗﻤـﺎﻣﯽ اﻋﻀـﺎ   ﺑﻪﺷﺄن و ﻋﻀﻮﯾﺖ اﺟﺘﻤﺎﻋﯽ ، ﻣﺜﺎﺑﻪ ﻧﻮﻋﯽ ﭘﺎﯾﮕﺎه اﺟﺘﻤﺎﻋﯽ اﺳﺖ",
+        "locator": {
+          "page_start": 3,
+          "page_end": 5,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Arendt's perspective on modern human alienation and the normative alternative of citizenship."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

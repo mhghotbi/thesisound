@@ -1,0 +1,56 @@
+{
+  "run_id": "3d4be8a1-f5f1-4896-b589-d8f4f23626f0",
+  "previous_run_id": "2f478a34-f38f-47e2-b9a5-2e84e63da16e",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "succeeded",
+  "sources": [
+    {
+      "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+      "filename": "EN-1-The-Outdoor-Condition-Reading-Arendt.pdf",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/376ff90d-27ef-4dc8-9582-9448300bda9d/EN-1-The-Outdoor-Condition-Reading-Arendt-b3b6d79eae823717/ingestion-result.json",
+      "status": "succeeded",
+      "stage": "complete",
+      "claim_count": 12,
+      "last_error": null,
+      "warnings": [],
+      "carried_forward": true
+    },
+    {
+      "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+      "filename": "EN-2-Arendt-Natural-and-Artificial.pdf",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/187a0ac0-0f79-422b-96da-4173c7a821f9/EN-2-Arendt-Natural-and-Artificial-4f58e8011265b02e/ingestion-result.json",
+      "status": "succeeded",
+      "stage": "complete",
+      "claim_count": 14,
+      "last_error": null,
+      "warnings": [],
+      "carried_forward": true
+    },
+    {
+      "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+      "filename": "FA-1-Politics-and-Existentialism-Arendt-Action.pdf",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/31743154-1ae5-4c0f-8c0f-66a5909c1f5b/FA-1-Politics-and-Existentialism-Arendt-Action-5fbe3118803d47c6/ingestion-result.json",
+      "status": "skipped",
+      "stage": "skipped",
+      "claim_count": 0,
+      "last_error": "Evidence extraction produced no claim-bearing evidence after retries.",
+      "warnings": [],
+      "carried_forward": false
+    },
+    {
+      "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+      "filename": "FA-2-Citizenship-as-Alternative-to-World-Alienation.pdf",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/c354e702-02ba-4d6c-9fe6-efcf3346e5b9/FA-2-Citizenship-as-Alternative-to-World-Alienation-7f1a6b6bc22f06d8/ingestion-result.json",
+      "status": "succeeded",
+      "stage": "complete",
+      "claim_count": 10,
+      "last_error": null,
+      "warnings": [],
+      "carried_forward": true
+    }
+  ],
+  "started_at": "2026-08-09T02:40:06.896589Z",
+  "updated_at": "2026-08-09T02:40:06.898319Z",
+  "finished_at": "2026-08-09T02:40:06.898315Z",
+  "last_error": null
+}

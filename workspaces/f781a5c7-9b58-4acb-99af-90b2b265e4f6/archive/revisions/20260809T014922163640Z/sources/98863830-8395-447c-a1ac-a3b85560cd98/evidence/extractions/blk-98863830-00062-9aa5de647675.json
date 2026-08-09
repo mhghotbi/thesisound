@@ -1,0 +1,93 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00062-9aa5de647675",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-7198da4ce0a39a70",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00062-9aa5de647675",
+        "claim": "Fabrication by homo faber involves reification, which inherently entails a violation and destruction of nature by removing materials from their natural locations.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Fabrication, the work of homo faber , consists in reification. Solidity, inherent in all, even the most fragile, things, comes from the material worked upon, but this material itself is not simply given and there, like the fruits of field and trees which we may gather or leave alone without changing the household of nature. Material is already a product of human hands which have removed it from its natural location, either killing a life process, as in the case of the tree which must be destroyed in order to provide wood, or interrupting one of nature’s slower processes, as in the case of iron, stone, or marble torn out of the womb of the earth. This element of violation and violence is present in all fabrication, and homo faber , the creator of the human artifice, has always been a destroyer of nature.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "applies to fabrication and homo faber"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-76c21da08f7dc7f6",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00062-9aa5de647675",
+        "claim": "Human productivity modeled after a Creator-God necessarily results in a Promethean revolt because it builds a man-made world by destroying part of God-created nature.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Since his productivity was seen in the image of a Creator-God, so that where God creates ex nihilo , man creates out of given substance, human productivity was by definition bound to result in a Promethean revolt because it could erect a man-made world only after destroying part of God-created nature.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Fabrication",
+        "definition": "The work of homo faber that consists in reification and involves the violation and destruction of nature.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "animal laborans",
+        "item_b": "homo faber",
+        "distinction": "The animal laborans remains the servant of nature and the earth, whereas homo faber conducts himself as lord and master of the whole earth.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Distinction between labor (tilled soil needing repeated labor) and true reification/fabrication.",
+      "The inherent violence and destruction of nature in human fabrication."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

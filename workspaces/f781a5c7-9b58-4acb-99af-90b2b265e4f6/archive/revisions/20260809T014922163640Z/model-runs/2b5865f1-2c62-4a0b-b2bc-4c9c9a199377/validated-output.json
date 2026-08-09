@@ -1,0 +1,52 @@
+{
+  "claims": [
+    {
+      "claim": "The transformation of our economy into a waste economy, where goods are rapidly devoured and discarded, serves as an obvious danger sign indicating we are moving toward the ideal of the animal laborans.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "One of the obvious danger signs that we may be on our way to bring into existence the ideal of the animal laborans is the extent to which our whole economy has become a waste economy, in which things must be almost as quickly devoured and discarded as they have appeared in the world, if the process itself is not to come to a sudden catastrophic end."
+    },
+    {
+      "claim": "The human world is composed not of consumed items, but of things that are used, providing the condition under which human life can be at home on earth.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The world, the man-made home erected on earth and made of the material which earthly nature delivers into human hands, consists not of things that are consumed but of things that are used. If nature and the earth generally constitute the condition of human life , then the world and the things of the world constitute the condition under which this specifically human life can be at home on earth."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "An economy in which things must be almost as quickly devoured and discarded as they appear in the world to prevent a catastrophic end to the process.",
+      "term": "waste economy"
+    },
+    {
+      "definition": "The man-made home erected on earth consisting of things that are used rather than consumed, which constitutes the condition under which specifically human life can be at home.",
+      "term": "the world"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "Things that are consumed belong to the domain of the animal laborans and life processes, whereas things that are used constitute the durable world built by homo faber that stands in contrast to mere life.",
+      "item_a": "things that are consumed",
+      "item_b": "things that are used"
+    },
+    {
+      "distinction": "Animal laborans views nature as the provider of good things to be taken and consumed, while homo faber views nature as furnishing almost worthless materials whose value comes entirely from work performed upon them.",
+      "item_a": "nature seen through the eyes of the animal laborans",
+      "item_b": "nature seen through the eyes of homo faber"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "The distinction between consumer society processes and the enduring world of use.",
+    "The dual necessity of consumption for survival and durability for human existence."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "conclusion",
+  "unresolved_context": []
+}

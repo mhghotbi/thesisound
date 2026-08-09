@@ -1,0 +1,77 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "ef0efef8-822d-4301-84e5-6e36c7593566",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 1892,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T01:58:33.753483Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "1698dcd6-7ac6-4192-a913-11ee2d2c751f",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 1776,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T01:58:35.532644Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 3,
+      "call_id": "f8faaeda-8998-4086-95d0-8252d08da225",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 1814,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T01:58:37.348327Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 2824,
+        "output_tokens": 398,
+        "thinking_tokens": null,
+        "total_tokens": 3222
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T01:58:37.348340Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [
+    "http://dx.doi.org/10.1017/CBO9780511521300\\nFelken",
+    "http://dx.doi.org/10.1002/9780470774311\\nVilla"
+  ],
+  "input_hash": "d737ae9ef4e781add12f3da5ba62047356195196ca667c72dd38ed9781cc6606",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "EvidenceExtractionDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "92fbcf858765c4ea51853eb6793e4ddded97e586f5526e13c261f6d5b334e088",
+  "prompt_id": "evidence_extraction",
+  "prompt_version": "1.2.0",
+  "provider": "gemini",
+  "run_id": "bc87fa37-b488-477f-81de-fb761fcbc3a7",
+  "stage": "evidence_extraction",
+  "started_at": "2026-08-09T01:58:31.857736Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

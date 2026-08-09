@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "ace3de5f-dace-46e7-a46e-9293d813a3f4",
+      "error_message": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 4653,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T11:57:36.844755Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "041f009f-c4ff-45ed-b47e-e3223a8bbe54",
+      "error_message": "Server disconnected without sending a response.",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 50021,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T11:58:27.866188Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "error_message": "Server disconnected without sending a response.",
+  "error_type": "ModelProviderError"
+}

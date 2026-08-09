@@ -1,0 +1,79 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00112-cb2bca930cf3",
+  "extraction": {
+    "segment_function": "To analyze the historical and epistemological significance of Galileo's telescope and the scientific discoveries that initiated the modern age and earth alienation.",
+    "claims": [
+      {
+        "evidence_id": "ev-d1a2a31e84867182",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00112-cb2bca930cf3",
+        "claim": "Galileo's use of the telescope marked an unprecedented event that delivered the secrets of the universe to human cognition with the certainty of sense-perception.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "What Galileo did and what nobody had done before was to use the telescope in such a way that the secrets of the universe were delivered to human cognition “with the certainty of sense-perception”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-e2471de7009db413",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00112-cb2bca930cf3",
+        "claim": "Prior speculations and philosophical hypotheses, such as those of Copernicus and Bruno, lacked the status of an objective historical event until confirmed by empirical facts delivered by the telescope.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "However, neither the speculations of philosophers nor the imaginings of astronomers has ever constituted an event. Prior to the telescopic discoveries of Galileo, Giordano Bruno’s philosophy attracted little attention even among learned men, and without the factual confirmation they bestowed upon the Copernican revolution",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "In the realm of ideas there are only originality and depth, but no absolute, objective novelty"
+        ],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "item_a": "Ideas",
+        "item_b": "Events",
+        "distinction": "Ideas possess permanence and immortality based on inherent power of illumination independently of time and history, whereas historical events involve objective, factual novelty such as Galileo's telescopic discoveries.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Distinction between speculative ideas of astronomers/philosophers and factual confirmation brought by Galileo's telescope.",
+      "The characterization of Galileo's intervention as bringing secrets of the universe within grasp of earth-bound senses with certainty."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

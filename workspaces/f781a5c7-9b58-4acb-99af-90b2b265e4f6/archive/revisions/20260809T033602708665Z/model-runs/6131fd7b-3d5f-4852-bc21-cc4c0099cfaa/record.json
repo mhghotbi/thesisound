@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "e4b9d1d3-9eb3-43db-b30b-95c66e61d280",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 24177,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T02:44:58.466121Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 11946,
+        "output_tokens": 1993,
+        "thinking_tokens": 3372,
+        "total_tokens": 17311
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T02:44:58.466135Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "b2ad7268b52e0050c08c4bf4d912ec5e82c846c5476d1bbfd88e832469aac971",
+  "model": "gemini-3.6-flash",
+  "output_model": "EpisodePlanDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "5d0c616c786ef6f015b1bbf1c443fcb6bf74f9fff177f385bc4c5a121dc68b05",
+  "prompt_id": "episode_plan",
+  "prompt_version": "1.1.0",
+  "provider": "gemini",
+  "run_id": "6131fd7b-3d5f-4852-bc21-cc4c0099cfaa",
+  "stage": "episode_plan",
+  "started_at": "2026-08-09T02:44:34.288052Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

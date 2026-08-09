@@ -1,0 +1,53 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "1f945579-c24a-44ce-aa2e-6307fffae1f4",
+      "error_message": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 4645,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T01:22:32.535192Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "2d2352d8-3f52-44f0-85b9-e42ed0bee6b5",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 9237,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T01:22:42.774329Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T01:22:42.774918Z",
+  "error_message": "supporting_excerpt must be copied from the supplied source block.",
+  "error_type": "DeterministicValidationError",
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "0e8f221b2bd73e4c6de617c115d8cf4b797655ea0a6e4845a6a07521ff9bdead",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "EvidenceExtractionDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "e25ceabd8a0052c5163c5ce16c0479c9e35402287fc9ea455d50cce503ac4509",
+  "prompt_id": "evidence_extraction",
+  "prompt_version": "1.1.0",
+  "provider": "gemini",
+  "run_id": "bb3a5331-d049-43f7-909e-afbe3f243974",
+  "stage": "evidence_extraction",
+  "started_at": "2026-08-09T01:22:27.887608Z",
+  "status": "failed",
+  "web_search_queries": []
+}

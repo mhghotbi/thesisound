@@ -1,0 +1,14 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "conclusion",
+  "unresolved_context": [
+    "The target block contains encoded Unicode escape sequences representing Arabic text and numeric tokens, which cannot be reliably interpreted as substantive claims without decoding context."
+  ]
+}

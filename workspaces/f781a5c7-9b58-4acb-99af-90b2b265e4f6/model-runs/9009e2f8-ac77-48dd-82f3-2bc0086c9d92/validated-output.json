@@ -1,0 +1,14 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "bibliographic_notes_and_citations",
+  "unresolved_context": [
+    "The target semantic block is a list of bibliographic notes, citations, and reference annotations for the Introduction and Chapter 1 of the text."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00006-fc18f0c4f349",
+  "extraction": {
+    "segment_function": "The target block contains bibliographic or reference-like encoded strings with unrendered character entities that cannot be reliably interpreted as prose claims.",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The target block consists of encoded textual data and character codes that require rendering or decryption to yield meaningful semantic claims."
+    ],
+    "must_not_be_lost": [
+      "Preserve the reference structure of the block if higher-level context becomes available."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

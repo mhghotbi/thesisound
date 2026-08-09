@@ -1,0 +1,62 @@
+{
+  "claims": [
+    {
+      "claim": "Homo faber represents the sphere of work as a tool-making agent who creates lasting things and constitutes the human world, serving as the dwelling place for human plurality.",
+      "claim_type": "scholarly_interpretation",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The next level of human existence is the sphere of work. Homo faber is a tool-mak-\ning and tool-using agent who is capable to create lasting and durable things (Arendt\n1958: 136–137). The differentia specifica of human existence is owned by homo faber ;\nhe is the creator of human world which is the home and dwelling place for the plural -\nity of human beings."
+    },
+    {
+      "claim": "Action is regarded as the highest and most specifically human activity in Arendt's ontology, where to act and to be free are identical, and it requires plurality and speech.",
+      "claim_type": "scholarly_interpretation",
+      "confidence": 1.0,
+      "qualifications": [
+        "taking place in the world of things created by homo faber"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "The third and highest stage of human existence, in the ontology of Arendt, is the\nlevel of action taking place in the world of things created by homo faber . Action is the\nmost specifically human activity; to act and to be free is the same, Arendt concludes."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "A mere animal activity in the ontology of Arendt that summarizes the animal laborans's condition of being conditioned by life.",
+      "term": "Labor"
+    },
+    {
+      "definition": "A tool-making and tool-using agent who creates lasting and durable things, constituting the human world and the terrain of human artifice.",
+      "term": "Homo faber"
+    },
+    {
+      "definition": "The highest stage of human existence, taking place in the world of things created by homo faber, where acting and being free are the same and which constitutes human plurality through speech.",
+      "term": "Action"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "The private realm is the terrain of life-sustaining labor, whereas the public realm is the terrain of action.",
+      "item_a": "Private realm",
+      "item_b": "Public realm"
+    },
+    {
+      "distinction": "Necessity stands as a synonym for the social, while liberty stands as a synonym for the political.",
+      "item_a": "Necessity",
+      "item_b": "Liberty"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "The tripartite division of human existence into labor, work, and action.",
+    "The embedding of necessity-liberty and social-political dichotomies within the labor-work-action triad."
+  ],
+  "objections": [],
+  "references_to_other_sections": [
+    "unit 7 (Arendt 1958: 38–50)"
+  ],
+  "responses": [],
+  "segment_function": "To define the three levels of human existence in Arendt's ontology (labor, work, and action), outline their conditions and spatial divisions, and link them to the dichotomy between necessity and liberty.",
+  "unresolved_context": [
+    "The broader historical approach extending from the Greeks to the rise of modernity that enlarges Arendt's static analytical framework."
+  ]
+}

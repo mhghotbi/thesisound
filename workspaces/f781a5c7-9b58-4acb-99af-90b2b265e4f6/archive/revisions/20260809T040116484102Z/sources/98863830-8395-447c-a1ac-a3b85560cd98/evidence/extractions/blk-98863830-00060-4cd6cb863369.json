@@ -1,0 +1,88 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00060-4cd6cb863369",
+  "extraction": {
+    "segment_function": "conclusion",
+    "claims": [
+      {
+        "evidence_id": "ev-d3ebaa6d570fa15c",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00060-4cd6cb863369",
+        "claim": "The modern economy has increasingly become a waste economy characterized by the rapid consumption and discarding of goods to keep economic processes going.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "One of the obvious danger signs that we may be on our way to bring into existence the ideal of the animal laborans is the extent to which our whole economy has become a waste economy, in which things must be almost as quickly devoured and discarded as they have appeared in the world, if the process itself is not to come to a sudden catastrophic end.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-742ad1e26c2130c8",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00060-4cd6cb863369",
+        "claim": "The human world consists of things that are used rather than consumed, and these durable things provide the condition that enables human life to be at home on earth.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The world, the man-made home erected on earth and made of the material which earthly nature delivers into human hands, consists not of things that are consumed but of things that are used. If nature and the earth generally constitute the condition of human life , then the world and the things of the world constitute the condition under which this specifically human life can be at home on earth.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "the world",
+        "definition": "The man-made home erected on earth, consisting of things that are used rather than consumed, whose permanence stands in contrast to biological life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "nature",
+        "item_b": "the world",
+        "distinction": "Nature constitutes the general condition of human life and provides materials, whereas the world and its things constitute the condition under which specifically human life can be at home on earth through durability and use.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

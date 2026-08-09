@@ -1,0 +1,94 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00011-cfc985d154bc",
+  "extraction": {
+    "segment_function": "The prologue introduces the broader human and philosophical implications of modern scientific and technological advancements, specifically the launch of the man-made satellite and aspirations to escape earthly imprisonment, framing these developments as a political question concerning the rebellion against the given human condition.",
+    "claims": [
+      {
+        "evidence_id": "ev-1b64e887fe3efc4a",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00011-cfc985d154bc",
+        "claim": "The immediate reaction to the launch of the man-made satellite was not triumphal pride, but relief regarding the first step toward escaping human imprisonment to the earth.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The immediate reaction, expressed on the spur of the moment, was relief about the first “step toward escape from men’s imprisonment to the earth.”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 07 pro",
+          "section": "9780226924571 07 pro",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-cc62d06bf4c20e7a",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00011-cfc985d154bc",
+        "claim": "The question of whether to use new scientific and technical knowledge to alter human existence and escape the human condition cannot be decided by scientific means and is fundamentally a political question.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The question is only whether we wish to use our new scientific and technical knowledge in this direction, and this question cannot be decided by scientific means; it is a political question of the first order and therefore can hardly be left to the decision of professional scientists or professional politicians.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 07 pro",
+          "section": "9780226924571 07 pro",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "The earth",
+        "definition": "The very quintessence of the human condition and a unique habitat providing human beings with a place to move and breathe without effort and without artifice.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 07 pro",
+          "section": "9780226924571 07 pro",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "The human artifice of the world",
+        "item_b": "Life itself",
+        "distinction": "The human artifice separates human existence from all mere animal environment, whereas life itself remains outside this artificial world and connects man to all other living organisms.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 07 pro",
+          "section": "9780226924571 07 pro",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Details on how political institutions or citizens should address the political questions raised by modern scientific power.",
+      "The full scope of the historical transition from secularization to the repudiation of the earth."
+    ],
+    "must_not_be_lost": [
+      "The characterization of modern scientific endeavors as an escape from the human condition and earthly imprisonment.",
+      "The assertion that decisions regarding the direction of scientific and technical knowledge are political questions of the first order."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

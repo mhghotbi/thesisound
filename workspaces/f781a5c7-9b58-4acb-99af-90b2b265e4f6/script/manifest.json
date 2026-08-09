@@ -1,0 +1,17 @@
+{
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "verified",
+  "segment_count": 4,
+  "turn_count": 22,
+  "revision_count": 0,
+  "model_run_ids": [
+    "ee276ea8-f841-474a-adac-19203debfce8",
+    "8880ef3d-3af9-494a-9aa9-ab88a846e16e",
+    "35084754-b936-405c-9598-95c03bb80d2a",
+    "ec19ea13-5c13-4863-b68c-5f79a6e35631",
+    "3fd8330e-833a-43bf-9927-5a5a61602540",
+    "31993821-db75-496c-a541-57049dc3844f"
+  ],
+  "updated_at": "2026-08-09T12:31:15.458748Z",
+  "last_error": null
+}

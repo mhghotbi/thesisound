@@ -1,0 +1,23 @@
+{
+  "run_id": "8997bfe6-eaf3-45ba-8caf-475971461d0a",
+  "previous_run_id": null,
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "failed",
+  "sources": [
+    {
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "filename": "Hannah Arendt - The Human Condition.epub",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/98863830-8395-447c-a1ac-a3b85560cd98/Hannah-Arendt---The-Human-Condition-9612445f8cd558e5/ingestion-result.json",
+      "status": "failed",
+      "stage": "failed",
+      "claim_count": 0,
+      "last_error": "Blocks may belong to only one map section: blk-98863830-00145-4f7835c33d22, blk-98863830-00153-ca797199e59c, blk-98863830-00163-3ad84664951c, blk-98863830-00168-7e391cc73ec7, blk-98863830-00174-d49b5a3edc1f.",
+      "warnings": [],
+      "carried_forward": false
+    }
+  ],
+  "started_at": "2026-08-09T09:28:13.318555Z",
+  "updated_at": "2026-08-09T09:30:20.148608Z",
+  "finished_at": "2026-08-09T09:30:20.148605Z",
+  "last_error": "Blocks may belong to only one map section: blk-98863830-00145-4f7835c33d22, blk-98863830-00153-ca797199e59c, blk-98863830-00163-3ad84664951c, blk-98863830-00168-7e391cc73ec7, blk-98863830-00174-d49b5a3edc1f."
+}

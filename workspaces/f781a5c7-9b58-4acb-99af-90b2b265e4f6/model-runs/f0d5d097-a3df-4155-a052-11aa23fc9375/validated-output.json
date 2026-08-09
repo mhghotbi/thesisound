@@ -1,0 +1,43 @@
+{
+  "claims": [
+    {
+      "claim": "The modern age shifted the object of knowledge from eternal things or motions to processes, making history and development central to both the historical and physical sciences.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The shift from the “why” and “what” to the “how” implies that the actual objects of knowledge can no longer be things or eternal motions but must be processes, and that the object of science therefore is no longer nature or the universe but the history, the story of the coming into being, of nature or life or the universe."
+    },
+    {
+      "claim": "Modern philosophy's turn exclusively to man-made things and history stemmed from despair over human reason when confronted with non-man-made objects.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The modern discovery of history and historical consciousness owed one of its greatest impulses neither to a new enthusiasm for the greatness of man, his doings and sufferings, nor to the belief that the meaning of human existence can be found in the story of mankind, but to the despair of human reason, which seemed adequate only when confronted with man-made objects."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "Man as a builder and fabricator, whose inherent standards include productivity and creativity.",
+      "term": "homo faber"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "It is in the nature of Being to appear and disclose itself, whereas it is in the nature of Process to remain invisible and be inferable only from certain phenomena.",
+      "item_a": "Being",
+      "item_b": "Process"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "The replacement of the concept of Being by the concept of Process in modern science and philosophy.",
+    "The reversal of means and ends where the production process or development is treated as more important than the finished product."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": []
+}

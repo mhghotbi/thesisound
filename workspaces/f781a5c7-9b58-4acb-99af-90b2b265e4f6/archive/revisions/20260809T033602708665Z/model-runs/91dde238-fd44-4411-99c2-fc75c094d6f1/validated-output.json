@@ -1,0 +1,16 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "Preserve block structure and note the presence of unparsed text formatting."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": [
+    "The target block contains unparsed or unicode-escaped Arabic script tokens and legacy character encodings, preventing direct semantic interpretation and grounding of claims within the brief analysis tier."
+  ]
+}

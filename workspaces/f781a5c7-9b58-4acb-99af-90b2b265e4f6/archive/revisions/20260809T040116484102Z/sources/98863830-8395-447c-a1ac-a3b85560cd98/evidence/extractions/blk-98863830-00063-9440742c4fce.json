@@ -1,0 +1,74 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00063-9440742c4fce",
+  "extraction": {
+    "segment_function": "Examine the role of models, multiplication, and means-end categories in the process of fabrication within the vita activa.",
+    "claims": [
+      {
+        "evidence_id": "ev-3549b405df72d4cd",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00063-9440742c4fce",
+        "claim": "The work of fabrication is guided by a model, such as a mental image or blueprint, which precedes the actual work process and exists outside the fabricator.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The actual work of fabrication is performed under the guidance of a model in accordance with which the object is constructed. This model can be an image beheld by the eye of the mind or a blueprint in which the image has already found a tentative materialization through work. In either case, what guides the work of fabrication is outside the fabricator and precedes the actual work process in much the same way as the urgencies of the life process within the laborer precede the actual labor process.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-21b5402f944499ae",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00063-9440742c4fce",
+        "claim": "The process of making is entirely determined by the categories of means and end, where the fabricated thing serves as an independent enduring end product.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The process of making is itself entirely determined by the categories of means and end. The fabricated thing is an end product in the twofold sense that the production process comes to an end in it (“the process disappears in the product,” as Marx said) and that it is only a means to produce this end.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "item_a": "Multiplication",
+        "item_b": "Repetition",
+        "distinction": "Multiplication multiplies something that already possesses a relatively stable, relatively permanent existence in the world, whereas repetition is urged upon and remains subject to the biological cycle.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

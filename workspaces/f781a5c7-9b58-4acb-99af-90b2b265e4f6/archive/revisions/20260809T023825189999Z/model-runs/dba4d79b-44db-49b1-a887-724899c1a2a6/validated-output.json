@@ -1,0 +1,29 @@
+{
+  "claims": [
+    {
+      "claim": "For Arendt, action is linked to speech and reveals human subjectivity and connectedness in the public realm, standing in contrast to isolation and making action and speech a web of human relationships.",
+      "claim_type": "author_position",
+      "confidence": 0.95,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "ﺑﯿﻨﺪ و ﻣﻌﺘﻘﺪ اﺳﺖ ﮐـﻪ ﺳـﺨﻦ اﺳـﺖ ﮐـﻪ ﺳـﻮژﮔﯽ       ﻋﻤﻞ را در ﭘﯿﻮﻧﺪ ﺑﺎ ﺳﺨﻦ ﻣﯽ، آرﻧﺖ\nواﻗﻊ ﺷﻬﺮوﻧﺪي ﺑﺮاي آرﻧﺖ ﺑﺎ  در. ﺳﺎزد اﻧﺴﺎن را ﻋﯿﺎن ﻣﯽ »ﺳﺨﻦ«و»ارﺗﺒـﺎط«ﭘﯿﻮﻧـﺪ ﺧـﻮرده\n، آرﻧﺖ ﮥدر اﻧﺪﯾﺸ. اﺳﺖ »ﻋﻤﻞ«ﺑﺮﺧﻼف»ﺳﺎﺧﺘﻦ« در اﻧـﺰوا . ﮔﺎه در اﻧﺰوا ﻣﻤﮑـﻦ ﻧﯿﺴـﺖ   ﻫﯿﭻ،\nﺗﻮدرﺗﻮي اﻋﻤﺎل  ﮥﻋﻤﻞ و ﺳﺨﻦ ﻣﺤﺎط در ﺷﺒﮑ. ﺑﻮدن ﯾﻌﻨﯽ ﻣﺤﺮوﻣﯿﺖ از ﻗﺎﺑﻠﯿﺖ ﻋﻤﻞ ﮐﺮدن"
+    },
+    {
+      "claim": "Arendt regards the American Revolution as successful and preserving freedom through deliberate founding and concerted action, whereas the French Revolution ended in disaster and focused on the social question of poverty.",
+      "claim_type": "author_position",
+      "confidence": 0.95,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "آرﻧﺖ\nاﻧﻘـﻼب آﻣﺮﯾﮑـﺎ ﭘﯿـﺮوز و ﮐﺎﻣﯿـﺎب     ، ﺑﻪ اﻋﺘﻘﺎد او. ﮐﺮد اﻧﻘﻼب آﻣﺮﯾﮑﺎ را ﺗﺤﺴﯿﻦ ﻣﯽ،\nوﻟـﯽ اﻧﻘـﻼب   . وﻟﯽ اﻫﻤﯿﺖ آن ﻫﺮﮔﺰ از اﻫﻤﯿﺖ ﯾﮏ روﯾﺪاد ﻣﺤﻠﯽ ﺗﺠـﺎوز ﻧﮑـﺮده اﺳـﺖ   ، ﺷﺪ\n) اﻣﺎ ﺗﺎرﯾﺦ ﺟﻬﺎن را ﺑﻪ وﺟـﻮد آورد ، ﻓﺮاﻧﺴﻪ ﺑﻪ ﻓﺎﺟﻌﻪ اﻧﺠﺎﻣﯿﺪ Arendt,\n1963: 56ﻘﺎﺑـﻞ  در\nﻣ"
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": []
+}

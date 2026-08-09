@@ -1,0 +1,77 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00085-6ee8c471e473",
+  "extraction": {
+    "segment_function": "Examine the Greek concept of action as individualistic self-disclosure, the agonal spirit, the prepolitical status of legislation and city-building as making (poiēsis), and the Socratic school's preference for making over the uncertainty of action (praxis).",
+    "claims": [
+      {
+        "evidence_id": "ev-fd7d44a418beb86d",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00085-6ee8c471e473",
+        "claim": "The ancient Greek concept of action was highly individualistic, stressing self-disclosure and serving as the prototype of action and the agonal spirit in city-states.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "No doubt this concept of action is highly individualistic, as we would say today. 20 It stresses the urge toward self-disclosure at the expense of all other factors and therefore remains relatively untouched by the predicament of unpredictability. As such it became the prototype of action for Greek antiquity and influenced, in the form of the so-called agonal spirit, the passionate drive to show one’s self in measuring up against others that underlies the concept of politics prevalent in the city-states.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-fdf94a6a7074e6f9",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00085-6ee8c471e473",
+        "claim": "Greeks treated legislation and city-building as prepolitical activities of making (poiēsis) rather than action (praxis), comparing lawmakers to builders and craftsmen.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "An outstanding symptom of this prevailing influence is that the Greeks, in distinction from all later developments, did not count legislating among the political activities. In their opinion, the lawmaker was like the builder of the city wall, someone who had to do and finish his work before political activity could begin.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "item_a": "Action (praxis)",
+        "item_b": "Making (poiēsis)",
+        "distinction": "Action involves non-tangible, utterly fragile, boundlessly uncertain meaning, whereas making produces a tangible product with a clearly recognizable end and greater reliability.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Distinction between Greek view of legislation as prepolitical making versus Roman or modern views.",
+      "The characterization of action as self-disclosure and the agonal spirit."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,14 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "bibliographic notes or references",
+  "unresolved_context": [
+    "The target block contains unrendered font or unicode mapping fragments (e.g., 2uFEB62uFEEB...) rather than readable prose, making it a list of bibliographic or symbolic references."
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00072-8432597e6bd2",
+  "extraction": {
+    "segment_function": "To analyze the distinction between the intrinsic worth of things and their exchange value or marketable value within the public realm, and to trace how the rise of value as a relational concept undermines absolute standards.",
+    "claims": [
+      {
+        "evidence_id": "ev-cb8deeadc14e3e93",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00072-8432597e6bd2",
+        "claim": "Value is exclusively acquired in the public realm through appearance and esteem, distinguishing it from the intrinsic natural worth possessed by a thing in privacy.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Value is the quality a thing can never possess in privacy but acquires automatically the moment it appears in public.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-c86c354dcbd3c883",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00072-8432597e6bd2",
+        "claim": "The inherent concept of value entails universal relativity and the loss of intrinsic worth, as things exist only in relation to other things and depend on the fluctuating estimations of supply and demand.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Universal relativity, that a thing exists only in relation to other things, and loss of intrinsic worth, that nothing any longer possesses an “objective” value independent of the ever-changing estimations of supply and demand, are inherent in the very concept of value itself.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Value",
+        "definition": "A quality a thing acquires automatically the moment it appears in public, consisting solely in the esteem of the public realm where things appear as commodities.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Intrinsick natural worth",
+        "definition": "An objective quality of a thing itself, existing outside the will of the individual purchaser or seller, attached to the thing itself whether one likes it or not.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Marketable value",
+        "item_b": "Intrinsic natural worth",
+        "distinction": "Marketable value is altered by the alteration of a commodity's proportion to something else in the exchange market, whereas the intrinsic worth of a thing can be changed only through the actual physical change of the thing itself.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Value comes into existence only in the exchange market and public realm.",
+      "Homo faber cannot bear the loss of absolute standards caused by universal relativity in exchange."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

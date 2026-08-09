@@ -1,0 +1,118 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00060-4cd6cb863369",
+  "extraction": {
+    "segment_function": "conclusion",
+    "claims": [
+      {
+        "evidence_id": "ev-29806bda2bdc0dfd",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00060-4cd6cb863369",
+        "claim": "The transformation of our economy into a waste economy, where goods are rapidly devoured and discarded, serves as an obvious danger sign indicating we are moving toward the ideal of the animal laborans.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "One of the obvious danger signs that we may be on our way to bring into existence the ideal of the animal laborans is the extent to which our whole economy has become a waste economy, in which things must be almost as quickly devoured and discarded as they have appeared in the world, if the process itself is not to come to a sudden catastrophic end.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-e5208bae97921356",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00060-4cd6cb863369",
+        "claim": "The human world is composed not of consumed items, but of things that are used, providing the condition under which human life can be at home on earth.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The world, the man-made home erected on earth and made of the material which earthly nature delivers into human hands, consists not of things that are consumed but of things that are used. If nature and the earth generally constitute the condition of human life , then the world and the things of the world constitute the condition under which this specifically human life can be at home on earth.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "waste economy",
+        "definition": "An economy in which things must be almost as quickly devoured and discarded as they appear in the world to prevent a catastrophic end to the process.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "the world",
+        "definition": "The man-made home erected on earth consisting of things that are used rather than consumed, which constitutes the condition under which specifically human life can be at home.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "things that are consumed",
+        "item_b": "things that are used",
+        "distinction": "Things that are consumed belong to the domain of the animal laborans and life processes, whereas things that are used constitute the durable world built by homo faber that stands in contrast to mere life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "item_a": "nature seen through the eyes of the animal laborans",
+        "item_b": "nature seen through the eyes of homo faber",
+        "distinction": "Animal laborans views nature as the provider of good things to be taken and consumed, while homo faber views nature as furnishing almost worthless materials whose value comes entirely from work performed upon them.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The distinction between consumer society processes and the enduring world of use.",
+      "The dual necessity of consumption for survival and durability for human existence."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

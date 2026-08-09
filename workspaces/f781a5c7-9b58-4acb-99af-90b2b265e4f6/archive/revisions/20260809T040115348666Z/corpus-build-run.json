@@ -1,0 +1,26 @@
+{
+  "run_id": "285ac52b-ecb9-4d1d-8ca3-56b7f163957e",
+  "previous_run_id": "52c94889-38f7-4dc9-b39d-8e7c41d574f2",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "failed",
+  "sources": [
+    {
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "filename": "Hannah Arendt - The Human Condition.epub",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/98863830-8395-447c-a1ac-a3b85560cd98/Hannah-Arendt---The-Human-Condition-9612445f8cd558e5/ingestion-result.json",
+      "status": "failed",
+      "stage": "failed",
+      "claim_count": 0,
+      "last_error": "Server disconnected without sending a response.",
+      "warnings": [
+        "Rejected evidence for blk-98863830-00143-e7291095b2a2: No auditable evidence survived validation after retries.",
+        "Evidence coverage 24% is below the 35% target for the brief profile (the plan itself could only reach 25%)."
+      ],
+      "carried_forward": false
+    }
+  ],
+  "started_at": "2026-08-09T03:58:39.771001Z",
+  "updated_at": "2026-08-09T04:00:25.658428Z",
+  "finished_at": "2026-08-09T04:00:25.658424Z",
+  "last_error": "Server disconnected without sending a response."
+}

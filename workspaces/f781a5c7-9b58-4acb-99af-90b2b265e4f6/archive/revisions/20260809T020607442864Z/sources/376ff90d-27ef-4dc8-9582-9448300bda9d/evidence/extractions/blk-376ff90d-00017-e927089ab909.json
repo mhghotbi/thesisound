@@ -1,0 +1,47 @@
+{
+  "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+  "block_id": "blk-376ff90d-00017-e927089ab909",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-f4f2f993ce56b063",
+        "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+        "block_id": "blk-376ff90d-00017-e927089ab909",
+        "claim": "The meaning of being indoors or outdoors varies significantly depending on existing forms of social inequality both locally and globally.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "the meaning of being indoors or outdoors, whether literally or ﬁguratively , will not be the same f o re v e r y o n e ,a n ym o r et h a nt h em e a ning of a domestic interior is the same for men and women, or for prosperous homeowners and the people they hire to do their cleaning.",
+        "locator": {
+          "page_start": 19,
+          "page_end": 20,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "applies literally or figuratively",
+          "depends on existing forms of social inequality both locally and globally"
+        ],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Conflictual politics of climate change adaptations and limits of The Human Condition"
+    ],
+    "must_not_be_lost": [
+      "Asymmetrical impacts of warming between global North and global South",
+      "Adaptations by enclosure functioning to protect wealthy people, cities, and countries against climate migrants"
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

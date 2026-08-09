@@ -1,0 +1,53 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "eb36ca20-12b3-4b87-b954-36f3d8f7aa8d",
+      "error_message": "Internal Server Error",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 413,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T00:42:50.827577Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "50810c51-db10-4ab7-bfb6-7a87c39fc335",
+      "error_message": "Internal Server Error",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 411,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T00:42:52.239776Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T00:42:52.240538Z",
+  "error_message": "Internal Server Error",
+  "error_type": "ModelProviderError",
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "46515f7219ec3e26a7f955b34043af1037b249cacbf88a6d9fb2dde497845498",
+  "model": "gemma4-31",
+  "output_model": "DocumentMapDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "bf943fe14dd09bd8207dee9380a6b9e67a6c50abba5afc4c0d69b51bd94de01e",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "provider": "okian",
+  "run_id": "e9e2d524-0fa8-473b-9be2-6d4762cfe51d",
+  "stage": "document_map_part",
+  "started_at": "2026-08-09T00:42:50.412305Z",
+  "status": "failed",
+  "web_search_queries": []
+}

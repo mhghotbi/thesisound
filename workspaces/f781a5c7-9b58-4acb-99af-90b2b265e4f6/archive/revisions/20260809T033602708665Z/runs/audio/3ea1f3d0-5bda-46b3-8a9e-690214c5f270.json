@@ -1,0 +1,12 @@
+{
+  "run_id": "3ea1f3d0-5bda-46b3-8a9e-690214c5f270",
+  "previous_run_id": null,
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "verified_script_hash": "41d624f1abf6d12be2f941bb4c1965ef0b2158683b7847dea00ac9cac9b69381",
+  "status": "failed",
+  "stage": "failed",
+  "started_at": "2026-08-09T02:49:08.600209Z",
+  "updated_at": "2026-08-09T03:01:21.491644Z",
+  "finished_at": "2026-08-09T03:01:21.491633Z",
+  "last_error": "400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Request contains an invalid argument.', 'status': 'INVALID_ARGUMENT'}}"
+}

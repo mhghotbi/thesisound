@@ -1,0 +1,45 @@
+{
+  "claims": [
+    {
+      "claim": "Arendt's political ontology in The Human Condition is based on a phenomenological approach rooted in German Existenz-philosophy.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The political ontology explained in the book was based on a phenomenological approach rooted in the German Existenz -philosophy."
+    },
+    {
+      "claim": "The search for an extraterrestrial Archimedean point involves a radical modification of the human condition.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The search for an ex -\ntraterrestrial Archimedean point, Arendt argues, involves a radical modification of\nhuman condition so far having been determined by the circumstances of our native\nplanet"
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "A human being on the existential level who is imprisoned in the endless repetitive cycles of consumption and production, consuming natural goods or producing things for biological maintenance without creating lasting entities.",
+      "term": "animal laborans"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "The human artifice separates human existence from all mere animal environment, whereas life itself remains outside this artificial world, through which man remains related to all other living organisms.",
+      "item_a": "human artifice of the world",
+      "item_b": "life itself"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "Arendt's view on the alteration of the human condition caused by space technology and satellite launch.",
+    "The definition of the earth as the quintessence of the human condition providing a unique habitat."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "introduction and ontological definition of Arendt's theory regarding the human condition, space technology, and the relation between the natural and artificial",
+  "unresolved_context": [
+    "Margaret Canovan's questioning of The Human Condition as Arendt's opus magnum."
+  ]
+}

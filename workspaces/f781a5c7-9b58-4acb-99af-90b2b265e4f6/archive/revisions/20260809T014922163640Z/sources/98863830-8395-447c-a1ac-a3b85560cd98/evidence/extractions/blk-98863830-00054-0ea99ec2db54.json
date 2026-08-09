@@ -1,0 +1,105 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00054-0ea99ec2db54",
+  "extraction": {
+    "segment_function": "To analyze the biological burden of life, the role of ancient slavery, and the relationship between the necessity of pain and effort and human vitality versus worldliness.",
+    "claims": [
+      {
+        "evidence_id": "ev-447747eee1573b4a",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00054-0ea99ec2db54",
+        "claim": "The animal laborans is ejected from the world because of being imprisoned in the privacy of the body and caught in the fulfillment of unshareable and uncommunicable needs.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The animal laborans does not flee the world but is ejected from it in so far as he is imprisoned in the privacy of his own body, caught in the fulfilment of needs in which nobody can share and which nobody can fully communicate.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-103694d1a2415e62",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00054-0ea99ec2db54",
+        "claim": "Pain and effort are the modes in which life and necessity make themselves felt, such that their complete elimination would deprive human life of its liveliness and vitality.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The human condition is such that pain and effort are not just symptoms which can be removed without changing life itself; they are rather the modes in which life itself, together with the necessity to which it is bound, makes itself felt.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "animal laborans",
+        "definition": "A condition characterized by worldlessness, imprisonment in bodily privacy, and the fulfillment of unshareable biological needs.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "worldlessness of the animal laborans",
+        "item_b": "active flight from publicity inherent in good works",
+        "distinction": "The animal laborans does not flee the world voluntarily but is ejected from it by being imprisoned in bodily privacy and necessity.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "item_a": "trust in the reality of the world",
+        "item_b": "trust in the reality of life",
+        "distinction": "Trust in world reality derives from the permanence and durability of the world, whereas trust in life reality depends on the intensity and impact with which life is felt.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The connection between ancient slavery, biological life burdens, and the ancient city-state as a consumption center.",
+      "The idea that pain and effort are constitutive of human vitality rather than mere removable symptoms."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

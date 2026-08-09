@@ -1,0 +1,114 @@
+{
+  "claims": [
+    {
+      "claim": "Modernity has traditionally been presented as the age when artifacts supplant nature and destroy the originally given natural environment through a process of de-naturalization, but Hannah Arendt questioned this conviction.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-83441a9b4a8aa69f"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Arendt's political ontology in The Human Condition is based on a phenomenological approach rooted in German Existenz-philosophy.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-e0b1f8c825c98b3e"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The search for an extraterrestrial Archimedean point involves a radical modification of the human condition.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-6a3c83fe831e6a04"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Labor is described as a mere animal activity in Arendt's ontology, wherein humanity is considered the most dangerous of animal races.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-2de6ac5cde13f99c"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Action is identified as the highest and most specifically human activity, taking place in the world of things created by homo faber.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-c2e0ae7a3f680306"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Process is the antithesis of action, functioning as a sequence of changes predetermined by an inner impersonal law that creates a terrain of necessity.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-d11e49a2f0450605"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Modernity in its first phase is characterized by the victory of homo faber using means-end rationality to produce artificial things, with fabrication inherently entailing violence against nature.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-b7298157e889d80f"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Fabrication inevitably involves an over-all reification of nature and acts as a destroyer of nature through an element of violation and violence.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-8ddee1474b1db322"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "In the second phase of modernity, animal laborans rises to dominance and technological productivity paradoxically annihilates the lasting artificial world by flooding it with natural processes.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-72c7a36ee98df2be"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Arendt asserts that the rationality required for constructing machines and launching artificial processes is an animal rather than a human ability, functioning as a modified animal instinct to maintain biological existence.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-430156e9ba5fe580"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Modern technology does not build a lasting artificial human world, but instead serves to fulfill consumption needs and ensure the continuous functioning of human metabolism with nature.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-f87b9d11b491616f"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "In her closing chapter, Arendt returns to the narrative of cultural criticism where re-naturalization and the fading out of action embody the main threat of modernity rather than environmental pollution.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-7378c77ccc67fe99"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    }
+  ],
+  "unresolved_evidence_ids": [],
+  "warnings": []
+}

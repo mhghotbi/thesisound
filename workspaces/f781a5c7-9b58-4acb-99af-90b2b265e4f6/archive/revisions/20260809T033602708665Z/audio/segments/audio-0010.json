@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0010",
+    "segment_id": "seg-002",
+    "speaker": "B",
+    "source_turn_ids": [
+      "seg-002-turn-005"
+    ],
+    "text": "چرا کنش نیازمند سخن است و آرنت چگونه کنش را از انزوا و صرفِ ساختن متمایز می‌کند؟",
+    "sequence": 9,
+    "voice_name": "Puck",
+    "content_hash": "8ae16ab62fcf3d3dab7dff7c7022fe85670d2e9609e2d092607bc1db475d9ce6",
+    "expected_duration_seconds": 7.5555555555555545
+  },
+  "wav_ref": "audio/segments/audio-0010.wav",
+  "wav_sha256": "7bd16c3ddbf543262287d51f43c98f17e0f2216b27aa527039a012cf3ef34617",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:51:45.596831Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 9.4,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 225600,
+    "peak_ratio": 0.8495742667928098,
+    "issues": []
+  },
+  "generation_attempts": 1
+}

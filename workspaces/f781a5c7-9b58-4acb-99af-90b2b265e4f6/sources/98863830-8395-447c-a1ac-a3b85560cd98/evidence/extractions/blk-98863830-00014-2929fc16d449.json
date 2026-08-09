@@ -1,0 +1,119 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00014-2929fc16d449",
+  "extraction": {
+    "segment_function": "definition",
+    "claims": [
+      {
+        "evidence_id": "ev-9f02fb7b35c018a1",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00014-2929fc16d449",
+        "claim": "The term vita activa designates three fundamental human activities: labor, work, and action, each corresponding to a basic condition under which life on earth is given.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "With the term vita activa , I propose to designate three fundamental human activities: labor, work, and action. They are fundamental because each corresponds to one of the basic conditions under which life on earth has been given to man.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "limited to labor, work, and action"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-952e7399875e4ce7",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00014-2929fc16d449",
+        "claim": "Plurality is the specific condition of all political life and is the condition of human action because humans are fundamentally alike yet individually unique.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Action, the only activity that goes on directly between men without the intermediary of things or matter, corresponds to the human condition of plurality, to the fact that men, not Man, live on the earth and inhabit the world. While all aspects of the human condition are somehow related to politics, this plurality is specifically the condition—not only the conditio sine qua non , but the conditio per quam —of all political life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Labor",
+        "definition": "The activity that corresponds to the biological process of the human body, whose conditions, growth, metabolism, and decay are bound to vital necessities.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Work",
+        "definition": "The activity that corresponds to the unnaturalness of human existence, providing an artificial world of things meant to outlast and transcend mortal life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Action",
+        "definition": "The only activity that goes on directly between men without the intermediary of things or matter, corresponding to the condition of plurality.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Labor",
+        "item_b": "Work",
+        "distinction": "Labor corresponds to the biological life process of the human body and individual survival, whereas work provides an artificial world of things that transcends and outlasts mortal life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 08 ch1",
+          "section": "9780226924571 08 ch1",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Vita activa comprises labor, work, and action.",
+      "Men are conditioned beings whose existence is shaped by natural and self-made conditions."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

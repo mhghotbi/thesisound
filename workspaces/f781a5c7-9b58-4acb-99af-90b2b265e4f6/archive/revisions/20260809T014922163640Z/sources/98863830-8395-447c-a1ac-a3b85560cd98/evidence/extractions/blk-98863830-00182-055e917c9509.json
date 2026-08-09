@@ -1,0 +1,59 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00182-055e917c9509",
+  "extraction": {
+    "segment_function": "index entries for concepts related to action, animal laborans, architecture, Aristotle, and related terms in Hannah Arendt's work",
+    "claims": [
+      {
+        "evidence_id": "ev-5845e0666dd79ee0",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00182-055e917c9509",
+        "claim": "The index entries document various aspects of action, including its definition, properties, and historical or philosophical associations.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "action, 175–247 ; the agent as disclosed in, 175–81 ; archein , 177 , 189 , 222–23 , 224 ; in Aristotle’s bios politikos , 12–13 , 25",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 17 ind",
+          "section": "9780226924571 17 ind",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-fa7daa2b9191464e",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00182-055e917c9509",
+        "claim": "The index records multiple characteristics and modern figures associated with the concept of animal laborans.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "animal laborans: abundance as ideal of, 126 , 134 ; on action and speech as idleness, 208 ; as animal, 84 ; homo faber contrasted with, 136",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 17 ind",
+          "section": "9780226924571 17 ind",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

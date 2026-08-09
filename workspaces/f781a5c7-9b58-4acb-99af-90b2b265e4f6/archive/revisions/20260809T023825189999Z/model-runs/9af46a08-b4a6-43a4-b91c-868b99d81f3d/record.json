@@ -1,0 +1,61 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "2c6bd73c-240d-45e7-8663-794ce899af8f",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 2477,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T02:08:50.968676Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "de02b47a-82e3-437b-a746-2aa6f2d439ee",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 2525,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T02:08:53.505843Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 2814,
+        "output_tokens": 701,
+        "thinking_tokens": null,
+        "total_tokens": 3515
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T02:08:53.505857Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [
+    "http://www.tandfonline.com/Tlim\\nLimes:"
+  ],
+  "input_hash": "92811bdd77e9830ffb1693485261d01ff2713aaf3c4607b2ec2450e7f6de0bc1",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "EvidenceExtractionDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "e161bea35728d791d8084fe0fa07a4c6c7db75f1541072b7f487258ce431f933",
+  "prompt_id": "evidence_extraction",
+  "prompt_version": "1.3.0",
+  "provider": "gemini",
+  "run_id": "9af46a08-b4a6-43a4-b91c-868b99d81f3d",
+  "stage": "evidence_extraction",
+  "started_at": "2026-08-09T02:08:48.488078Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

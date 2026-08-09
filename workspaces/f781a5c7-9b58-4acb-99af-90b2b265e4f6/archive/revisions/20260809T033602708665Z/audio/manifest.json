@@ -1,0 +1,14 @@
+{
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "script_hash": "41d624f1abf6d12be2f941bb4c1965ef0b2158683b7847dea00ac9cac9b69381",
+  "status": "verified",
+  "chunk_count": 24,
+  "passed_chunk_count": 18,
+  "regenerated_chunk_ids": [],
+  "final_audio_ref": "audio/final.wav",
+  "final_audio_sha256": "68fe41eaa8396684db71367d0ca9b8c3c1a9bac61977758545048593a8ed5bce",
+  "final_duration_seconds": 700.94,
+  "normalization": "ffmpeg_loudnorm",
+  "last_error": null,
+  "updated_at": "2026-08-09T03:11:59.120795Z"
+}

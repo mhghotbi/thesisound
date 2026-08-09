@@ -1,0 +1,36 @@
+{
+  "central_question_claim_ids": [
+    "clm-27d7960629cc8d70",
+    "clm-3a561b777e44ce86",
+    "clm-43c898a10d267e4a",
+    "clm-cdfd1f19002d9de1",
+    "clm-177abafe0237f1e2",
+    "clm-42387f05124f8d6c",
+    "clm-69fe45bd8b92b783",
+    "clm-f2514de064072149"
+  ],
+  "central_question_status": "well_covered",
+  "material_gaps": [],
+  "max_supported_minutes": 10,
+  "objective_coverage": [
+    {
+      "claim_ids": [
+        "clm-27d7960629cc8d70",
+        "clm-3a561b777e44ce86",
+        "clm-43c898a10d267e4a",
+        "clm-cdfd1f19002d9de1",
+        "clm-177abafe0237f1e2",
+        "clm-42387f05124f8d6c",
+        "clm-469d428f8dd902ee",
+        "clm-69fe45bd8b92b783",
+        "clm-f2514de064072149",
+        "clm-12d66b0d3864127f"
+      ],
+      "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+      "rationale": "ادعاهای مستخرج به‌طور کامل مفاهیم کلیدی کتاب وضع بشر شامل فعالیت‌های سه‌گانه انسانی (زحمت، کار، عمل)، قلمروهای عمومی و خصوصی، تکثر، ناتالیتی، و بیگانگی از جهان و زمین را تبیین می‌کنند.",
+      "status": "well_covered"
+    }
+  ],
+  "recommendation": "continue",
+  "recommendation_reason": "پوشش ادعاها برای تبیین موضوعات اصلی کتاب وضع بشر هانا آرنت در طول زمان ۱۰ دقیقه کافی و مستند است."
+}

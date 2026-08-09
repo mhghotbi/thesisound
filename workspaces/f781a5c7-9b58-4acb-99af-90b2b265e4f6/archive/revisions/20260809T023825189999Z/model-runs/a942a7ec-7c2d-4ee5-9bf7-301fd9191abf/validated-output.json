@@ -1,0 +1,29 @@
+{
+  "claims": [
+    {
+      "claim": "The second stage in the emergence of modernity from the beginning of the twentieth century corresponds to earth alienation and the victory of animal laborans.",
+      "claim_type": "scholarly_interpretation",
+      "confidence": 0.95,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "دوم از ﻇﻬﻮر ﻣﺪرﻧﯿﺘﻪ از آﻏﺎز ﻗﺮن ﺑﯿﺴﺘﻢ ﻣﺘﻨﺎﻇﺮ ﺑﺎ »زﻣـﯿﻦ   از  ﺑﯿﮕﺎﻧﮕﯽ «و»ﭘﯿـﺮوزي ﺣﯿـﻮان"
+    },
+    {
+      "claim": "Arendt rejects the Hegelian or Marxist view that labor can be an instrument to realize the capacity and power of workers.",
+      "claim_type": "author_position",
+      "confidence": 0.95,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "ﺘﯽ را ﮐـﻪ زﺣﻤـﺖ ﻣـﯽ   ﻫﮕﻠﯽ ﯾـﺎ ﻣﺎرﮐﺴﯿﺴـ  ه ﻗﺎﻃﻌﺎﻧﻪ اﯾﻦ ﻋﻘﯿﺪ"
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": []
+}

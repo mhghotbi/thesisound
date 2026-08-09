@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "f85e31a3-ab23-4862-9094-5e0ccddcb2b7",
+      "error_message": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}]}}",
+      "error_type": "ModelRateLimitError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 4713,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T02:23:12.424194Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "47687352-1e4f-4df4-ba3a-b9bdedc42892",
+      "error_message": "All configured Gemini API keys are temporarily quota-blocked; retry in approximately 56 seconds.",
+      "error_type": "ModelRateLimitError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 14,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T02:23:13.438976Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "error_message": "All configured Gemini API keys are temporarily quota-blocked; retry in approximately 56 seconds.",
+  "error_type": "ModelRateLimitError"
+}

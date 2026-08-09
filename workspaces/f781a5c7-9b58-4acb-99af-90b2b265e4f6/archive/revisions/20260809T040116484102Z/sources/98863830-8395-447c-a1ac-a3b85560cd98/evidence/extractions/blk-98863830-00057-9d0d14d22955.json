@@ -1,0 +1,62 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00057-9d0d14d22955",
+  "extraction": {
+    "segment_function": "Examines the triumph of the animal laborans, the transformation of work into labor through the division of labor and mass consumption, and the emergence of a consumers' society where all activities are leveled to the standard of making a living.",
+    "claims": [
+      {
+        "evidence_id": "ev-629e10fd019f6f36",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00057-9d0d14d22955",
+        "claim": "The ideals of homo faber—permanence, stability, and durability—have been sacrificed to abundance, the ideal of the animal laborans.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The ideals of homo faber , the fabricator of the world, which are permanence, stability, and durability, have been sacrificed to abundance, the ideal of the animal laborans.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-49c053b5f3d46709",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00057-9d0d14d22955",
+        "claim": "The consumers' society emerged not through the political emancipation of the laboring classes, but through the emancipation of the laboring activity itself.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "This society did not come about through the emancipation of the laboring classes but by the emancipation of the laboring activity itself, which preceded by centuries the political emancipation of laborers.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Transformation of the work process by the division of labor turning work into labor.",
+      "Levelling of all human activities to the common denominator of making a living."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

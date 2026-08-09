@@ -1,0 +1,71 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00119-dee662b404b0",
+  "extraction": {
+    "segment_function": "Examines the historical rise of Cartesian doubt as the foundational principle of modern philosophy, contrasting it with ancient wonder and traditional assumptions about truth and appearance.",
+    "claims": [
+      {
+        "evidence_id": "ev-c85783cf38541813",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00119-dee662b404b0",
+        "claim": "Modern philosophy began with Descartes' universal doubt, which replaced the ancient Greek thaumazein (wonder at everything that is) as the central position and motor of thought.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Modern philosophy began with Descartes’ de omnibus dubitandum est , with doubt, but with doubt not as an inherent control of the human mind to guard against deceptions of thought and illusions of sense, not as skepticism against the morals and prejudices of men and times, not even as a critical method in scientific inquiry and philosophic speculation. Cartesian doubt is much more far-reaching in scope and too fundamental in intent to be determined by such concrete contents. In modern philosophy and thought, doubt occupies much the same central position as that occupied for all the centuries before by the Greek thaumazein , the wonder at everything that is as it is.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Cartesian doubt",
+        "definition": "A radical and universal doubt occupying the central position in modern thought that doubts the existence of truth itself, resting on the premise that truth and reality do not simply appear of their own accord to human senses or reason.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Ancient philosophy (from Plato and Aristotle to the modern age)",
+        "item_b": "Modern philosophy since Descartes",
+        "distinction": "Ancient philosophy was the articulation of wonder (thaumazein), whereas modern philosophy consists in the articulations and ramifications of doubting.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The full implications of Kierkegaard's leap into belief from doubt in modern religion.",
+      "The exact mechanism by which the reading of an instrument defeated both mind and senses."
+    ],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

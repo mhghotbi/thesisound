@@ -1,0 +1,16 @@
+{
+  "run_id": "6e1bb99f-2c57-420c-bf40-a333ea243ff7",
+  "previous_run_id": null,
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "succeeded",
+  "stage": "complete",
+  "target_duration_minutes": 10,
+  "max_supported_minutes": 10,
+  "effective_supported_minutes": 10.0,
+  "coverage_recommendation": "continue",
+  "material_gaps": [],
+  "started_at": "2026-08-09T11:34:16.185913Z",
+  "updated_at": "2026-08-09T11:34:59.270425Z",
+  "finished_at": "2026-08-09T11:34:59.270417Z",
+  "last_error": null
+}

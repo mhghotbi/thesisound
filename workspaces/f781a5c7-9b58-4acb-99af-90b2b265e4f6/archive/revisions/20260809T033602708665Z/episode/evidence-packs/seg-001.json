@@ -1,0 +1,103 @@
+{
+  "segment_id": "seg-001",
+  "claim_ids": [
+    "clm-27d7960629cc8d70",
+    "clm-cdfd1f19002d9de1"
+  ],
+  "evidence_items": [
+    {
+      "evidence_id": "ev-95e68aff538c3f68",
+      "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+      "block_id": "blk-187a0ac0-00002-31b1a9859865",
+      "claim": "The political ontology in The Human Condition is rooted in a phenomenological approach derived from German Existenz-philosophy, departing from questions about what it means to be a human being and the basic characteristics of the human condition under modernity.",
+      "claim_type": "scholarly_interpretation",
+      "supporting_excerpt": "The political ontology explained in the book was based on a phenomenological\napproach rooted in the German Existenz -philosophy. What does it mean to be human\nbeing? This question was a point of departure for Arendt’s thought-train. Which are\nthe basic characteristics of human condition? This second question led her to the main\ndilemma: in which way had human condition been influenced by the emergence of\nmodernity?",
+      "locator": {
+        "page_start": 3,
+        "page_end": 3,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "support_kind": "direct",
+      "qualifications": [],
+      "confidence": 1.0
+    },
+    {
+      "evidence_id": "ev-88bc80bcbbe626d3",
+      "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+      "block_id": "blk-c354e702-00006-342ad0243588",
+      "claim": "Arendt categorizes human activities and realms into three distinct levels, where the private realm represents labor and the public realm represents action.",
+      "claim_type": "author_position",
+      "supporting_excerpt": "ﻗﻠﻤـﺮو  ، ﺗـﻮان ﭼﻨـﯿﻦ ﺗﺤﻠﯿـﻞ ﻧﻤـﻮد ﮐـﻪ ﻗﻠﻤـﺮو ﻧﺨﺴـﺘﯿﻦ        ﻣـﯽ ، ﺗﺮﯾﻦ ﻣﺮﺗﺒﻪ ﺗﺎ ﺑﺮﺗﺮﯾﻦ ﭘﺎﯾﯿﻦ ﻗﻠﻤﺮوﯾﯽ ﮐﻪ اﻧﺴﺎن زﺣﻤﺘﮑﺶ در آن ﺣﻀـﻮر دارد و ﻓﻌـﻞ ﺑﺸـﺮ ﻣﺒﺘﻨـﯽ ﺑـﺮ      ؛ ﺧﺼﻮﺻﯽ اﺳﺖ اﻧﺴﺎﻧﯽ ﮐـﻪ ﻓﻌـﻞ او   ؛ ﺟﺎﯾﮕﺎه »ﻋﻤـﻞ« ﺑﻠﮑﻪ ، ﺷﻮد ﻣﺤﺴﻮب ﻧﻤﯽ »رﻓﺘﺎر«، آﺧﺮﯾﻦ و ﺑﺮﺗﺮﯾﻦ ﻗﻠﻤﺮو. اﺳﺖ »ﻗﻠﻤـﺮو ﻋﻤـﻮﻣﯽ«اﺳـﺖ ﮐـﻪ",
+      "locator": {
+        "page_start": 14,
+        "page_end": 16,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "support_kind": "direct",
+      "qualifications": [],
+      "confidence": 0.95
+    }
+  ],
+  "original_blocks": [
+    {
+      "block_id": "blk-187a0ac0-00002-31b1a9859865",
+      "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+      "locator": {
+        "page_start": 3,
+        "page_end": 3,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "heading_path": [],
+      "block_type": "other",
+      "text": "95\nLimes: Borderland s tudies, 2012, Vol. 5, No. 2: 93–102\nArendt’s theory on the relation of natural and artificial\nThe Human Condition earlier was considered as the opus magnum of Arendt. Lately,\nher monographer, Margaret Canovan has questioned this opinion (Canovan 1992: 99–\n154). The political ontology explained in the book was based on a phenomenological\napproach rooted in the German Existenz -philosophy. What does it mean to be human\nbeing? This question was a point of departure for Arendt’s thought-train. Which are\nthe basic characteristics of human condition? This second question led her to the main\ndilemma: in which way had human condition been influenced by the emergence of\nmodernity?\nArendt’s starting point is the alteration of human condition caused by new space\ntechnology; in the prologue of the book she deals in detail with the possible conse -\nquences of the fact that an Earth-born artificial object, a satellite, had been launched\ninto the space in 1957. This event was a shock for American public opinion because\nthis satellite had been constructed by Soviet engineers. This meant a turning point\nin the history of humanity, Arendt argues. It indicated that human beings, who are\nEarth-bound creatures, try to undo this tie and leave their natural habitat to find an\nArchimedean point out of the Earth, somewhere in Universe. The search for an ex -\ntraterrestrial Archimedean point, Arendt argues, involves a radical modification of\nhuman condition so far having been determined by the circumstances of our native\nplanet:\n“The earth is very quintessence of the human condition, and earthly nature, for all\nwe know, may be unique in the universe in providing human beings with a habitat\nin which they can move and breathe without effort and without artifice. The human\nartifice of the world separates human existence from all mere animal environment,\nbut life itself is outside this artificial world, and through life man remains related to\nall other living organisms” (Arendt 1958: 2).\nThis quotation is important because it refers to the basic notions of the Arendtian\nontology in which human persons are endowed with the ability of special activities\nrelated to different ontological spheres of reality. First of all, we live in nature and the\nlife of humanity as one of the biological species of Earth is based on its metabolism\nwith nature. Human race, in this respect, shares the fate of all animal species of our\nplanet (Arendt 1958: 84). It consumes the goods offered by nature reproducing its\nbiological existence. Human being, on this existential level, is an animal laborans\nimprisoned in the endless repetitive cycles of consumption and production. Animal\nlaborans does not create any lasting or durable entity but devours the natural goods\nor, in more advanced historical phases, produces things required for the maintenance\nof its biological existence but their way comes to an end in the human stomach.\nHumanity is really one of the animal species but there is a difference by which it\nis standing to the opposite of other animal races; it is able to withdraw itself from the\npower of natural laws ensuring the balance among the species of earthly habitat. It is\nable to reproduce itself as a biological race in never-ending expanding cycles endan -\ngering the sensitive ecological equilibrium of the Earth. Human race, as a collectivity",
+      "estimated_token_count": 966,
+      "source_block_keys": [
+        "page-3-block-3"
+      ],
+      "previous_block_id": "blk-187a0ac0-00001-fe211b3390ab",
+      "next_block_id": "blk-187a0ac0-00003-72bb2365b274"
+    },
+    {
+      "block_id": "blk-c354e702-00006-342ad0243588",
+      "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+      "locator": {
+        "page_start": 14,
+        "page_end": 16,
+        "chapter": null,
+        "section": null,
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "heading_path": [],
+      "block_type": "other",
+      "text": "320/ ﭘﮋوﻫﺶ\n1400\nﻧﺪﯾﺸﻪ ﻫﺎﻧﺎ آرﻧﺖ\nﺷﻬﺮوﻧﺪي در ا\nﮐﻮﺷـﺶ ﺷـﺪ   ، ﮔﺎه ﻫﺎﻧﺎ آرﻧـﺖ دﯾﺪوﯾﻞ ﺷﻬﺮوﻧﺪي ﺑﺎ روﯾﮑﺮدي اﻧﺘﻘﺎدي از ﺄﺑﺮاي ﺗﺒﯿﯿﻦ و ﺗ\nﺗﺎ ﭘﯿﺸﺘﺮ ﻣﻔﺎﻫﯿﻤﯽ ﺷﺮح و ﺑﺴﻂ داده ﺷﻮد ﮐﻪ ﺑﯿﺸﺘﺮﯾﻦ ﻗﺮاﺑﺖ را ﺑﺎ ﺑﺤﺚ ﺷﻬﺮوﻧﺪي او دارﻧﺪ\nرو در اداﻣـﻪ ﮐﻮﺷـﺶ  از اﯾـﻦ . آﻣـﺪ اﯾﻦ ﻣﻔﺎﻫﯿﻢ ﺑﻪ ﻓﻬﻢ ﺷـﻬﺮوﻧﺪي ﻧﺎﺋـﻞ    ﮥو در واﻗﻊ از درﯾﭽ\nﺟﺎي آﺛـﺎرش ﺑـﻪ آﻧﻬـﺎ اﺷـﺎره     ﺷﻮد ﺗﺎ ﭘﯿﻮﻧﺪ و ارﺗﺒﺎط ﻣﯿﺎن ﭼﻨﺪ ﻣﻔﻬﻮم ﮐﻪ آرﻧﺖ در ﺟﺎي ﻣﯽ\nﺑﺎ ﻣﻔﻬﻮم ، ﮐﺮده اﺳﺖ »ﺷﻬﺮوﻧﺪي«ﺗﻔﻬﯿﻢ و ﺗﺒﯿﯿﻦ ﺷﻮد ﮐﻪ ﺑﺘﻮان درﯾﺎﻓـﺖ ﺑـﺪﯾﻞ ﺷـﻬﺮوﻧﺪي\nﭘﯿﻮﻧﺪ ﻣﯿـﺎن   رواز اﯾﻦ. ﺪ ﭼﻪ ﻣﺨﺘﺼﺎﺗﯽ داﺷﺘﻪ ﺑﺎﺷﺪﺟﻬﺎن ﺑﯿﮕﺎﻧﮕﯽ ﺑﺸﺮ ﺑﺎﯾ ﺑﺮاي ﻣﻮاﺟﻬﻪ ﺑﺎ از\n-ﻋﻤﻞ و ﺷﻮراﻫﺎ و اﻧﻘﻼب ﺑـﺎ روﯾﮑـﺮدي اﻧﺘﻘـﺎدي   ، ﺧﻮد ﻋﻤﻮﻣﯽ، ﺷﻬﺮوﻧﺪي ﺑﺎ ﻋﺮﺻﻪ ﻋﻤﻮﻣﯽ\n. ﺷﺪﺗﺤﻠﯿﻠﯽ ﺑﺮرﺳﯽ ﺧﻮاﻫﺪ\nﺮوﻧﺪي و ﻋﺮﺻ\nﻋﻤﻮﻣﯽﻪ ﺷﻬ\nوﻧﺪي و ﻋﺮﺻ\nﻫـﺎي   ﺑـﺮ اﻧﺪﯾﺸـﻪ    ﺗﻮان ﺑـﺎ ﺗﮑﯿـﻪ   ﻣﯽ ﻋﻤﻮﻣﯽﻪ ﺑﺮاي ﺗﺒﯿﯿﻦ ارﺗﺒﺎط ﻣﯿﺎن ﺷﻬﺮ\nاز ، ﺑـﻪ ﺗﺮﺗﯿـﺐِ ارزش و اﺻـﺎﻟﺖ   . ﺑﻮد ﺳﻪ ﻧﻮع اﻧﺴﺎن و ﺳﻪ ﻧﻮع ﻓﻌﻞ، ﻗﺎﺋﻞ ﺑﻪ ﺳﻪ ﻋﺮﺻﻪ، آرﻧﺖ\nﻗﻠﻤـﺮو  ، ﺗـﻮان ﭼﻨـﯿﻦ ﺗﺤﻠﯿـﻞ ﻧﻤـﻮد ﮐـﻪ ﻗﻠﻤـﺮو ﻧﺨﺴـﺘﯿﻦ        ﻣـﯽ ، ﺗﺮﯾﻦ ﻣﺮﺗﺒﻪ ﺗﺎ ﺑﺮﺗﺮﯾﻦ ﭘﺎﯾﯿﻦ\nﻗﻠﻤﺮوﯾﯽ ﮐﻪ اﻧﺴﺎن زﺣﻤﺘﮑﺶ در آن ﺣﻀـﻮر دارد و ﻓﻌـﻞ ﺑﺸـﺮ ﻣﺒﺘﻨـﯽ ﺑـﺮ      ؛ ﺧﺼﻮﺻﯽ اﺳﺖ\nاﻧﺴﺎﻧﯽ ﮐـﻪ ﻓﻌـﻞ او   ؛ ﺟﺎﯾﮕﺎه »ﻋﻤـﻞ«\nﺑﻠﮑﻪ ، ﺷﻮد ﻣﺤﺴﻮب ﻧﻤﯽ »رﻓﺘﺎر«، آﺧﺮﯾﻦ و ﺑﺮﺗﺮﯾﻦ ﻗﻠﻤﺮو. اﺳﺖ »ﻗﻠﻤـﺮو ﻋﻤـﻮﻣﯽ«اﺳـﺖ ﮐـﻪ\nﺟﺎﯾﮕﺎه ﺷﻬﺮوﻧﺪاﻧﯽ اﺳﺖ ﮐﻪ »ﻋﺎﻣﻞ«ﻋﻨـﻮان   ﺑـﺎ آﻧﭽﻪ آرﻧﺖ ﻫﺴﺘﻨﺪ و »ورزاﻧـﻪ  زﻧـﺪﮔﯽ ﻋﻤـﻞ «\nﻧﻈﺮ آرﻧﺖ\nﻗﻠﻤﺮو ﻋﻤﻮﻣﯽ از دو ﺑﻌـﺪ\nﻓﻀـﺎي آزادي  ؛ ﻓﻀﺎي ﻧﻤﻮد اﺳـﺖ ، اوﻟﯽ. ﺷﻮد ﺣﺎل ﻣﺮﺗﺒﻂ ﺑﻪ ﻫﻢ ﺗﺸﮑﯿﻞ ﻣﯽ درﻋﯿﻦﻣﺘﻤﺎﯾﺰ و\nاز ﻃﺮﯾﻖ ﺳﺨﻦ و اﻗﻨـﺎع  ، ﺻﻮرت ﻫﻤﺎﻫﻨﮓ و ﺟﻤﻌﯽ و ﺑﺮاﺑﺮي ﺳﯿﺎﺳﯽ ﮐﻪ ﻫﺮﮔﺎه ﺷﻬﺮوﻧﺪان ﺑﻪ\nﺟﻬـﺎن ﻣﺸـﺘﺮك و ﻋﻤـﻮﻣﯽِ    ؛ اﺳـﺖ  ﺟﻬﺎن ﻣﺸـﺘﺮك ، دوﻣﯽ. آﯾﺪ ﺑﻪ وﺟﻮد ﻣﯽ، ﮐﻨﻨﺪ ﻋﻤﻞ ﻣﯽ\nاي ﻧﺴـﺒﺘﺎً   ﮐﻨـﺪ و زﻣﯿﻨـﻪ   را از ﻃﺒﯿﻌﺖ ﺟﺪا ﻣﯽﮐﻪ ﻣﺎ  ﻫﺎي اﻧﺴﺎﻧﯽ ﻧﻬﺎدﻫﺎ و ﻣﺤﯿﻂ، ﻣﺼﻨﻮﻋﺎت\nﻫـﺮ دو ﺑﻌـﺪ ﺑـﺮاي ﮐـﻨﺶ ﺷـﻬﺮوﻧﺪي      . آورد ﻫﺎﯾﻤـﺎن ﻓـﺮاﻫﻢ ﻣـﯽ    ﭘﺎﯾﺪار و ﺑﺎدوام ﺑﺮاي ﻓﻌﺎﻟﯿﺖ\nﺗﻮاﻧـﺪ ﺷـﮑﻮﻓﺎ ﺷـﻮد و     ﻣـﯽ  آﻧﻬﺎ ﮐﻨﺪ ﮐﻪ ﺷﻬﺮوﻧﺪي در ﻓﻀﺎﻫﺎﯾﯽ را ﻓﺮاﻫﻢ ﻣﯽ، اوﻟﯽ. اﻧﺪ اﺳﺎﺳﯽ\nﺗﻮاﻧﻨـﺪ در   ﻞ و ﻣﺸﻮرت ﻣـﯽ ﮐﻪ ﻓﻀﺎﻫﺎي ﻋﻤﻮﻣﯽ ﻋﻤ آورد اي ﭘﺎﯾﺪار را ﻓﺮاﻫﻢ ﻣﯽ زﻣﯿﻨﻪ، دوﻣﯽ\n، ﭘﺎﺳﺮﯾﻦ) آن ﭘﺪﯾﺪ آﯾﻨﺪ\n1393  : 77 (.\n\n»ﺷﻬﺮوﻧﺪي«\nﻣﺜﺎﺑﻪ ﺑﺪﯾﻠﯽ ﺑﺮاي  ﺑﻪ »/ﻫﻤﮑﺎرو  آزاده ﺷﻌﺒﺎﻧﯽ؛  ...ﺟﻬﺎن از 321\nاﺳﺘﺜﻨﺎﯾﯽ\n؛ ﮐﻨﻨـﺪ  ﺧﻠـﻖ ﻣـﯽ   ﺑﺎ ﮐﻤﮏ ﻫﻢ ﺟﻬﺎﻧﯽ اﻧﺴـﺎﻧﯽ ، در ﻗﻠﻤﺮو ﻋﻤﻮﻣﯽ، اﻓﺮاد\nﺟﺎﻧﺴﻮن) رود ﻓﺮاﺗﺮ ﻣﯽ، ﻫﺎ ﻓﺸﺎرِ ﺿﺮورتﻪ ﺟﻬﺎﻧﯽ ﮐﻪ از ﺣﯿﻄ\nﺮاي آرﻧﺖ\nﻓﺮدﯾﺖ و ، ﺑ\nﺻـﺮف\nاو . ﮐﺎري اﻧﺠـﺎم ﺑﺪﻫـﺪ  ، او ﺑﺎﯾﺪ در ﺟﻬﺎن ﻣﺸﺘﺮك، ﺑﺮاي اﯾﺠﺎد ﻓﺮدﯾﺖ. ﭘﺪﯾﺪاري ﮐﺎﻓﯽ ﻧﯿﺴﺖ\n) آﺷـﮑﺎر ﺳـﺎزد   ﺻﺮاﺣﺖ ﺧﻮد را در ﻋﻤـﻞ ﺑـﺎ دﯾﮕـﺮان    ﺑﺎﯾﺪ ﺑﻪ Dossa\n, 1989: 103در ﭼﻨـﯿﻦ\nﺟﻬﺎﻧﯽ\nﯿﺎﺳـﺖ  ﺳ، ﺑﯿﻨﯽ ﻣـﺪرن  ﺟﻬﺎن. ﺳﯿﺎﺳﺖ در ﺑﺴﺘﮕﯽِ ﻋﻤﯿﻘﯽ ﺑﺎ ﻗﻠﻤﺮو ﻋﻤﻮﻣﯽ ﻗﺮار دارد،\n، در ﻣﻘﺎﺑﻞ ﺑﺮاي آرﻧﺖ. ﮔﯿﺮد زﻧﺪﮔﯽ و ﻣﺤﺎﻓﻈﺖ از ﻣﻨﺎﻓﻊ آن در ﻧﻈﺮ ﻣﯽ يرا در ارﺗﺒﺎط ﺑﺎ اﺑﻘﺎ\nﺟﻬـﺎﻧﯽ   ةﺳﯿﺎﺳﺖ درﺑﺎر. ﺑﯿﺶ از ﺻﺮف\nاﻓـﺮاد  ﻪ ﻋﻤﻮﻣﯽ اﺳﺖ و ﺑﺎﻋﺚ دوام و ﻃﻮل ﻋﻤﺮ ﻫﺮ ﻓـﺮد و ﻫﻤـ   ةاﺳﺖ ﮐﻪ ﺑﻪ ﻣﻌﻨﺎي ﯾﮏ ﺣﻮز\n) ﺷﻮد ﻣﯽ Goldoni\n&mcCorkindale, 2012: 39 .(\nﻋﻤﻮﻣﯽﺷﻬﺮوﻧﺪي\nو ﺧﻮد\nآرﻧﺖ\nﻣﻔﻬﻮم ، ﮕﯽاز ﺧﻮدﺑﯿﮕﺎﻧدر ﻣﻘﺎﺑﻞ »ﺧﻮد ﻋﻤﻮﻣﯽ«را ﻃﺮح ﮐﺮده اﺳﺖ ﮐﻪ اﯾـﻦ ﺧـﻮد\nﮥﺗﻮﺟـﻪ ﻣـﺎ را ﺑـﻪ آن ﺟﻨﺒـ    ، آرﻧﺖﻪ اﻧﺪﯾﺸ. در ارﺗﺒﺎﻃﯽ ﻋﻤﯿﻖ ﺑﺎ ﺷﻬﺮوﻧﺪي ﻗﺮار دارد، ﻋﻤﻮﻣﯽ\n، ﺑـﺮاي او . ﻣﺮﺗﺒﻂ اﺳـﺖ ، ﻋﻤﻮﻣﯽ و ﻣﺸﺘﺮكﮐﻨﺪ ﮐﻪ ﺑﺎ ﻓﻄﺮت  اﺳﺎﺳﯽ از ﺳﯿﺎﺳﺖ ﻣﻌﻄﻮف ﻣﯽ\nاﻣﮑــﺎن »1«ـﺎف ﺧــﻮد\nﺧــﻮرده اﺳــﺖ  ﮔــﺮه در ﻋﻤــﻞ ﺑــﺎ ﺗﻤﺎﯾــﻞ ﺑــﺮاي اﻧﮑﺸـ\n)Goldoni\n&mcCorkindale, 2012: 109(.\nﺑﺤﺚ ﭘﺮورش ﺧـﻮد\n، ﻫﺎﻧـﺎ آرﻧـﺖ   زﯾﺮا؛ ﭘﺮورش اﻓﺮاد ﭘﯿﻮﻧﺪ ﺧﻮرده اﺳﺖ و  ﺑﺎ آﻣﻮزش، ﺧﻮرد او ﺑﻪ ﭼﺸﻢ ﻣﯽ ﮥاﻧﺪﯾﺸ\nو  ﺗﻮاﻧﺪ ﻓﺮﯾﺎد ﺳﻨﺖ اﻧﺘﻘﺎدي را ﺑﺮاي ﺗﻐﯿﯿـﺮ آﻣـﻮزش   ﮐﻪ ﻣﯽ ﮐﻨﺪ اي ﺧﺎص را ﻋﺮﺿﻪ ﻣﯽ ﻋﻘﯿﺪه\nﻫـﺎي ﺷـﻬﺮوﻧﺪي دﻣﻮﮐﺮاﺗﯿـﮏ و ﻋـﺪاﻟﺖ      ﺗﻮاﻧـﺪ ارزش  ﻣـﯽ  ﻫﻤﭽﻨـﯿﻦ  ﭘﺮورش ﺗﺠﻠﯽ ﺑﺨﺸﺪ و\n) ﺪاﺟﺘﻤﺎﻋﯽ را ﭘﺮورش دﻫ Gordo\nn, 2001: 2 .(\nﺎﯾﯽِ ﺳﯿﺎﺳﺖ\nاي از  اﺳـﺖ ﮐـﻪ ﻣﺠﻤﻮﻋـﻪ   ﺑﻪ اﯾﻦ ﭘﺮﺳﺶ ﻣﺮﺑﻮط ، ﺗﺄﮐﯿﺪ آرﻧﺖ ﺑﺮ ﮐﯿﻔﯿﺖ ﻓﻀ\nﺑـﻪ ﻧﻈـﺮ   . ﺗﻮاﻧﻨﺪ ﻣﺘﺤﺪ ﺷﻮﻧﺪ و اﺟﺘﻤﺎﻋﯽ ﺳﯿﺎﺳﯽ را ﺗﺸـﮑﯿﻞ دﻫﻨـﺪ   ﭼﮕﻮﻧﻪ ﻣﯽ، اﻓﺮاد ﻣﺘﻤﺎﯾﺰ\nﭘﯿﻮﻧـﺪ ﻣـﺬﻫﺒﯽ ﯾـﺎ     ﮥﻧﻪ ﻧﺘﯿﺠـ ، ﺗﻮان در اﺟﺘﻤﺎع ﺳﯿﺎﺳﯽ ﺑﻪ دﺳﺖ آورد وﺣﺪﺗﯽ ﮐﻪ ﻣﯽ، آرﻧﺖ\nﺑﻠﮑﻪ اﯾﻦ وﺣﺪت ﺑـﺎ اﺷـﺘﺮاك در ﻓﻀـﺎﯾﯽ    ؛ ﻧﻈﺎم ارزﺷﯽ ﻣﺸﺘﺮﮐﯽ اﺳﺖ ةﻗﻮﻣﯽ اﺳﺖ و ﻧﻪ ﺟﻠﻮ\nﻫـﺎﯾﯽ ﮐـﻪ    ﻫـﺎ و ﻓﻌﺎﻟﯿـﺖ   اي از ﻧﻬﺎدﻫـﺎي ﺳﯿﺎﺳـﯽ و اﺷـﺘﻐﺎل ﺑـﻪ ﮐـﻨﺶ      ﻣﺠﻤﻮﻋـﻪ  ﻋﻤﻮﻣﯽ و\nﭘﺎﺳـﺮﯾﻦ ) ﻗﺎﺑﻞ ﺣﺼﻮل اﺳﺖ، آن ﻓﻀﺎ و ﻧﻬﺎدﻫﺎ ﻫﺴﺘﻨﺪﮥﻣﺸﺨﺼ\n، ﻣﺴﺌﻠﻪ ﺑﺮاي آرﻧﺖ\n\n1. self-disclosure\n\n322/ ﭘﮋوﻫﺶ\n1400\nﺟﺎﻣﻌﻪ اﺳﺖ\nﺑﺮاي ﺟﺪا ﮐـﺮدنِ ﺧـﻮد ﻋﻤـﻮﻣﯽ از ﺧﺼﻮﺻـﯽ و     ، ﺑﺎزﮔﺸﺎﯾﯽِ ﺷﮑﺎﻓﯽ ﻣﯿﺎن ﻓﺮد و\nﺷـﻬﺮوﻧﺪ  )، ﺧـﻮد\nاو ﺑـﻪ ﺧﺸـﻮﻧﺖ و    ﮥدر ﺧﺎﻧـ . ﮐﻨﺪ ﻫﺎي ﻣﺘﻀﺎدي ﻋﻤﻞ ﻣﯽ زﻣﺎن ﺑﻪ ﺷﯿﻮه ﻃﻮر ﻫﻢ ﺑﻪ( ﺣﻘﯿﻘﯽ او\nﺧﻮد . ﮐﻨﺪ رﻫﺎ ﻣﯽ، او ﺧﺸﻮﻧﺖ را ﺑﻪ ﺧﺎﻃﺮ ﺳﺨﻦ، ﻋﻤﻮﻣﯽ ﮥدر ﻋﺮﺻ و ﺷﻮد ﺳﻠﻄﻪ ﻣﺘﻮﺳﻞ ﻣﯽ\nﻫـﺎ ﭘﯿﺸـﯽ    ﻓﺮﺻـﺖ ﻪ ﺑﺴﯿﺎر ﺳﺮاﻓﺮاز اﺳﺖ و از ﻫﻤﺘﺎﯾﺎﻧﺶ در ﻫﻤ، در ﺗﻮﺿﯿﺤﺎت آرﻧﺖ ﻋﻤﻮﻣﯽ\n) ﺖﮔﺮﻓﺘﻪ اﺳ Dossa,\n1989: 100-105 .(\nو ﻋﻤﻞ\nﺷﻬﺮوﻧﺪي\nﺷﻬﺮوﻧﺪي\nﭘﯿﻮﻧﺪي ﻧﺎﮔﺴﺴﺘﻨﯽ اﺳﺖ ﮐـﻪ در ﻗﻠﻤـﺮو ﻋﻤـﻮﻣﯽ اﻣﮑـﺎن     ، ﭘﯿﻮﻧﺪ ﻣﯿﺎن ﻋﻤﻞ و\nاي  ﺑﺎ ﺗﻮﺟﻪ ﺑﻪ اﯾﻨﮑﻪ ﺗﺄﮐﯿﺪ ﺑﺮ زﺣﻤﺖ اﻧﺴﺎﻧﯽ ﻣﻨﺠﺮ ﺑـﻪ ﭘﺪﯾـﺪاري ﺟﺎﻣﻌـﻪ   . ﮐﻨﺪ ﺗﺤﻘﻖ ﭘﯿﺪا ﻣﯽ\nﮐـﺎر  . ﺷﻮد ﺑﻪ ﭘﺪﯾﺪاري ﯾﮏ ﺑﺎزار ﻣﺒﺎدﻟﻪ ﻣﯽﺷﻮد و ﺗﺄﮐﯿﺪ ﺑﺮ ﮐﺎر اﻧﺴﺎﻧﯽ ﻫﻢ ﻣﻨﺠﺮ  ﻣﺼﺮﻓﯽ ﻣﯽ\nزﺣﻤﺘـﯽ ﮐـﻪ وﺟـﻪ ﻣﺸـﺘﺮك اﻧﺴـﺎن و      ) زﺣﻤﺖ اﺳـﺖ  ﺗﺮ از ﯾﮏ ﮔﺎم ﺟﻠﻮﺗﺮ و اﻧﺴﺎﻧﯽ ﻫﺮﭼﻨﺪ\nﻓﺎﯾـﺪه در ﺟﺎﯾﮕـﺎه ﻣﻌﻨـﺎ ﻗﺮارﮔﺮﻓﺘـﻪ اﺳـﺖ و ﺑـﺮاي       ، ﮐـﺎر ﻪ ﻫﻤﭽﻨﺎن در ﻋﺮﺻـ ، (ﺣﯿﻮان اﺳﺖ\nدﯾﮕـﺮ  اي  دﯾﮕﺮي ﮔﺎم ﻧﻬﺎد و ﺑﺎﯾﺴﺘﯽ ﻓﻌﻠـﯽ دﯾﮕـﺮ و ﻋﺮﺻـﻪ    ﮥﺟﻮي ﻣﻌﻨﺎ ﺑﺎﯾﺪ ﺑﻪ ﻋﺮﺻو ﺟﺴﺖ\nﺑﺮاي ﺑﺮوز و ﻇﻬﻮر ﺷﻬﺮوﻧﺪان وﺟﻮد داﺷﺘﻪ ﺑﺎﺷﺪ و ﺑﻪ ﻫﻤﯿﻦ دﻟﯿﻞ ﻫﻢ آرﻧﺖ از ﻋﻤـﻞ ﺑﺸـﺮ و\nﺟﺎﻧﺴـﻮن ) ﮔﻮﯾـﺪ  ﻇﻬﻮر ﺷﻬﺮوﻧﺪان ﺳﺨﻦ ﻣـﯽ ﻪ ﻋﻨﻮان ﻋﺮﺻ ﻗﻠﻤﺮو ﻋﻤﻮﻣﯽ ﺑﻪ\nﻋﻤـﻞ\nﺳﺒﺐ ﻣﯽ\nﻋﻨﻮان اﻣﺮي ﻣﺘﻤـﺎﯾﺰ   ﺷﻮد ﮐﻪ ﮐﯿﺴﺘﯽ ﺧﻮد را ﺑﻪ ﻣﻮﺟﺐ آﺷﮑﺎرﺳﺎزيِ ﻫﻮﯾﺖ\n، ﭘﺎﺳﺮﯾﻦ) ﻨﺪاز ﭼﯿﺴﺘﯽ ﺧﻮد آﺷﮑﺎر ﮐ\n1393  : 39 (.\nاﺳﺘﻌﺎر\nاي  آن ﻣـﻮارد ﺗـﺎرﯾﺨﯽ  ﻪ ﺑـﻪ ﻫﻤـ  ، ﮐﻨـﺪ  ﭘﻮﻟﯿﺲ ﮐﻪ آرﻧﺖ ﺑﺴﯿﺎر از آن اﺳﺘﻔﺎده ﻣﯽه\nاﺷﺎره دارد ﮐﻪ ﻗﻠﻤﺮوي ﻋﻤﻮﻣﯽ از ﻋﻤﻞ و ﺳﺨﻦ در ﻣﯿﺎن اﺟﺘﻤﺎﻋﯽ از ﺷﻬﺮوﻧﺪان آزاد و ﺑﺮاﺑـﺮ\nﻧـﺖ در\nاﺑﺘـﺪاي  آر\nﺑﺤﺚ »ﻋﻤﻞ«در ﮐﺘﺎب»وﺿﻊ ﺑﺸﺮ«آورد ﮐﻪ ﻓﺤﻮاي آن ﺣﺎﮐﯽ از آن اﺳﺖ  ﻗﻮﻟﯽ ﻣﯽ ﻧﻘﻞ، از داﻧﺘﻪ\n، ﮐﻨـﺪ  و اﻧﺴﺎن ﺗﻨﻬﺎ زﻣﺎﻧﯽ ﮐﻪ ﻋﻤﻞ ﻣﯽ ﺳﺎزد ﺗﺼﻮﯾﺮ ﺣﻘﯿﻘﯽِ ﺧﻮد\nﻧـﻪ آﻧﮑـﻪ از   ، ﺑﻪ وﺟﻮد ﺧﻮد ﻓﺮد ﻣﺘﻤﺎﯾـﻞ اﺳـﺖ  ، ﻫﺮآﻧﭽﻪ ﻫﺴﺖ زﯾﺮا؛ ﺑﺮد از ﮐﻨﺶ ﺧﻮد ﻟﺬت ﻣﯽ\nﺧـﻮد  ، ﻋﻤـﻞ  واﻗﻊ در. ﯾﺎﺑﺪ وﺟﻮد ﻋﺎﻣﻞ در ﻋﻤﻞ اﺳﺖ ﮐﻪ ﺑﺮوز و ﻇﻬﻮر ﻣﯽ. ﯿﮕﺎﻧﻪ ﺑﺎﺷﺪﺧﻮدش ﺑ\nﺗـﺎ ﺣـﺪ ﺑﺴـﯿﺎري آﻧﭽـﻪ را     ، آورد اﯾﻦ ﻧﻘﻠﯽ ﮐﻪ آرﻧـﺖ از داﻧﺘـﻪ ﻣـﯽ   . ﺳﺎزد ﻧﻬﺎن ﻓﺮد را آﺷﮑﺎر ﻣﯽ\nاﻧﺴﺎن ﻋﺎﻣﻞ ﺑﺎ ﮐﻼم و ﮐـﺮدار وارد  . دﻫﺪ ﺗﺤﺖ ﭘﻮﺷﺶ ﻗﺮار ﻣﯽ، ﻋﻤﻞ ﺑﮕﻮﯾﺪﻪ زﻣﯿﻨ ﺧﻮاﻫﺪ در ﻣﯽ\nﺣﮑـﻢ ﺿـﺮورت     اﻣﺎ اﯾﻦ ورود ﻣﺜـﻞ زﺣﻤـﺖ ﺑـﻪ   ؛ ﯾﺎﺑﺪ و ﺗﻮﻟﺪي دوﺑﺎره ﻣﯽ ﺷﻮد ﺟﻬﺎن ﺑﺸﺮي ﻣﯽ",
+      "estimated_token_count": 1598,
+      "source_block_keys": [
+        "page-14-block-29",
+        "page-15-block-30",
+        "page-15-block-31",
+        "page-16-block-32"
+      ],
+      "previous_block_id": "blk-c354e702-00005-68028add3a97",
+      "next_block_id": "blk-c354e702-00007-afa7f80a67dc"
+    }
+  ],
+  "context_blocks": [],
+  "retrieval_hits": [],
+  "token_budget": 3500,
+  "actual_tokens": 2564,
+  "warnings": []
+}

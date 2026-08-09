@@ -1,0 +1,61 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00059-f73cea452505",
+  "extraction": {
+    "segment_function": "To analyze how a society dominated by the animal laborans and modern automation risks consuming the world, and how the triumph over necessity through the emancipation of labor results in mass culture and universal unhappiness.",
+    "claims": [
+      {
+        "evidence_id": "ev-ac43a8aeed8cb515",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00059-f73cea452505",
+        "claim": "The danger of future automation lies in human productivity being absorbed into an intensified life process that follows an automatic cycle, wearing down world durability.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The danger of future automation is less the much deplored mechanization and artificialization of natural life than that, its artificiality notwithstanding, all human productivity would be sucked into an enormously intensified life process and would follow automatically, without pain or effort, its ever-recurrent natural cycle.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-2056877edc488586",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00059-f73cea452505",
+        "claim": "The spare time of the animal laborans is spent entirely on consumption rather than higher activities, and increased free time only intensifies craving appetites.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "the spare time of the animal laborans is never spent in anything but consumption, and the more time left to him, the greedier and more craving his appetites.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The triumph over necessity achieved by the modern world through the emancipation of labor leads to mass culture and universal unhappiness because the animal laborans occupies the public realm."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

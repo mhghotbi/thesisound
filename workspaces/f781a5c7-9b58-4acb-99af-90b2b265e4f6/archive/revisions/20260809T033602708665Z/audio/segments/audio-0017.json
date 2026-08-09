@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0017",
+    "segment_id": "seg-003",
+    "speaker": "A",
+    "source_turn_ids": [
+      "seg-003-turn-004"
+    ],
+    "text": "از نظر آرنت، نخستین و مهم‌ترین نتیجه بیگانگی از جهان این است که ما معنای وجود بشری و به تبع آن هویت خود و درکمان از واقعیت در زادگاه و جهان را از دست می‌دهیم. نتیجه دیگر این است که فرد جهان مشترک و عمومی را واگذار می‌کند و به سمت حوزه خصوصی خود یا درون خویشتن رانده می‌شود. این بیگانگی به معنای از دست دادن جهانِ تجربه و عمل است؛ یعنی همان جهانی که به نحوی بیناسوبژکتیو تقوم می‌یافت و وسیله‌ای بود که انسان‌ها از طریق آن هویت خود را می‌ساختند. با زوال این حوزه عمومی، قلمرو مشترک حیات جمعی و معنای واقعیت خدشه‌دار می‌شود.",
+    "sequence": 16,
+    "voice_name": "Kore",
+    "content_hash": "56321c6fcf94dee226296eff91a78295bba895be0f462556e8e97defb5ea29a5",
+    "expected_duration_seconds": 47.111111111111114
+  },
+  "wav_ref": "audio/segments/audio-0017.wav",
+  "wav_sha256": "672f1897e90e9714be9c30bc0d9b8350676be2679858f022d879161bdfc5c667",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:54:05.663100Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 53.88,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 1293120,
+    "peak_ratio": 0.9499801629688406,
+    "issues": []
+  },
+  "generation_attempts": 1
+}

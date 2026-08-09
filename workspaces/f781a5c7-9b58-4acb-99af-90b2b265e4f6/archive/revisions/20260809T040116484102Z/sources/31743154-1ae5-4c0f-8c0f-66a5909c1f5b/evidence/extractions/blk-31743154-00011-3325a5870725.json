@@ -1,0 +1,20 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00011-3325a5870725",
+  "extraction": {
+    "segment_function": "The target block contains unparsed or corrupted text encoding glyphs (Unicode escape-like tokens such as 2u96/A) representing bibliographic references or citations, rendering the text unusable for extracting semantic claims.",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The block consists entirely of encoded character sequences or unrendered text tokens (e.g., 2u96/A2u96/82u9675) which prevent extraction of substantive semantic claims or definitions."
+    ],
+    "must_not_be_lost": []
+  },
+  "status": "rejected",
+  "rejection_reason": "No auditable evidence survived validation after retries."
+}

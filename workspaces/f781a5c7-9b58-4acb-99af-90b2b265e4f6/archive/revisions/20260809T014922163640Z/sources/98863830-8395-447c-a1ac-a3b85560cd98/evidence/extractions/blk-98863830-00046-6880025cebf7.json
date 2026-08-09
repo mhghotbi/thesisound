@@ -1,0 +1,104 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00046-6880025cebf7",
+  "extraction": {
+    "segment_function": "Explaining the characteristics of labor, the biological life process, and their relation to nature's cyclical movement versus the human world's permanence.",
+    "claims": [
+      {
+        "evidence_id": "ev-8c54ee853bb9c890",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00046-6880025cebf7",
+        "claim": "The least durable tangible things are those needed for the life process itself, which are consumed by use or perish quickly through decay.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The least durable of tangible things are those needed for the life process itself. Their consumption barely survives the act of their production; in the words of Locke, all those “good things” which are “really useful to the life of man,” to the “necessity of subsisting,” are “generally of short duration, such as—if they are not consumed by use—will decay and perish by themselves.”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-597a42eba4cf94fc",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00046-6880025cebf7",
+        "claim": "Laboring always moves in a repetitive circle prescribed by the biological process of the living organism, having no proper beginning or end until the organism dies.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "laboring always moves in the same circle, which is prescribed by the biological process of the living organism and the end of its “toil and trouble” comes only with the death of this organism.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "bios",
+        "definition": "Human life as a linear time interval between birth and death, full of events that can be told as a story and establish a biography.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "zōē",
+        "definition": "Mere biological life shared with other living things, retaining the cyclical movement of nature.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "bios",
+        "item_b": "zōē",
+        "distinction": "Bios is human life as a linear interval between birth and death capable of forming a story or biography, whereas zōē is the mere biological life process shared with other living things that retains a cyclical movement.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Distinction between perishable things needed for life and the durable human artifice.",
+      "The connection between labor and the cyclical movement of the biological life process."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

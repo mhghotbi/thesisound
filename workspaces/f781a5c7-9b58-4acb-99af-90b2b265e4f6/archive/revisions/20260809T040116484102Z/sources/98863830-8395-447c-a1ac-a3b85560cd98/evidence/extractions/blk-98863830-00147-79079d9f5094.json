@@ -1,0 +1,22 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00147-79079d9f5094",
+  "extraction": {
+    "segment_function": "bibliographic notes and references supporting distinctions between household management, property, ancient government forms, and the private-public realm",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Bibliographic notes and source citations referencing Coulanges, Xenophon, Hobbes, Herodotus, Aristotle, Myrdal, R. H. Barrow, E. Levasseur, Plato, and Wallon concerning ancient property, slavery, household rule, and society."
+    ],
+    "must_not_be_lost": [
+      "The block consists entirely of numbered endnotes/citations containing references to historical sources and scholarly works."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

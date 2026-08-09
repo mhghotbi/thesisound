@@ -1,0 +1,21 @@
+{
+  "run_id": "db4328bf-4a9d-4fc5-9b31-5564f37844ab",
+  "previous_run_id": "511e2d9b-fc10-43b9-8232-15e31eb7ff87",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "failed",
+  "sources": [
+    {
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "filename": "Hannah Arendt - The Human Condition.epub",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/98863830-8395-447c-a1ac-a3b85560cd98/Hannah-Arendt---The-Human-Condition-9612445f8cd558e5/ingestion-result.json",
+      "status": "failed",
+      "stage": "failed",
+      "claim_count": 0,
+      "last_error": "supporting_excerpt must be copied from the supplied source block."
+    }
+  ],
+  "started_at": "2026-08-09T01:15:42.048857Z",
+  "updated_at": "2026-08-09T01:17:03.080476Z",
+  "finished_at": "2026-08-09T01:17:03.080471Z",
+  "last_error": "supporting_excerpt must be copied from the supplied source block."
+}

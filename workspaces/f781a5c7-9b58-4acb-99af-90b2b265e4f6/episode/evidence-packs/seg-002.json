@@ -1,0 +1,115 @@
+{
+  "segment_id": "seg-002",
+  "claim_ids": [
+    "clm-6c69a449ae6362e9",
+    "clm-0b10619fef07de50"
+  ],
+  "evidence_items": [
+    {
+      "evidence_id": "ev-0ea1e22640abcfaa",
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "block_id": "blk-98863830-00046-6880025cebf7",
+      "claim": "Laboring activities are endlessly repetitive and bound to the recurring cycles of the biological life process, unlike working, which concludes when an object is finished.",
+      "claim_type": "author_position",
+      "supporting_excerpt": "all human activities which arise out of the necessity to cope with them are bound to the recurring cycles of nature and have in themselves no beginning and no end, properly speaking; unlike working , whose end has come when the object is finished, ready to be added to the common world of things, laboring always moves in the same circle, which is prescribed by the biological process of the living organism and the end of its “toil and trouble” comes only with the death of this organism.",
+      "locator": {
+        "page_start": null,
+        "page_end": null,
+        "chapter": "9780226924571 10 ch3",
+        "section": "9780226924571 10 ch3",
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "support_kind": "direct",
+      "qualifications": [],
+      "confidence": 1.0
+    },
+    {
+      "evidence_id": "ev-c84273aaa2994cf0",
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "block_id": "blk-98863830-00061-5613acad3e65",
+      "claim": "Homo faber makes and works upon things, distinguishing this activity from animal laborans which labors and mixes with things.",
+      "claim_type": "author_position",
+      "supporting_excerpt": "The work of our hands, as distinguished from the labor of our bodies— homo faber who makes and literally “works upon” 1 as distinguished from the animal laborans which labors and “mixes with”—fabricates the sheer unending variety of things whose sum total constitutes the human artifice.",
+      "locator": {
+        "page_start": null,
+        "page_end": null,
+        "chapter": "9780226924571 11 ch4",
+        "section": "9780226924571 11 ch4",
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "support_kind": "direct",
+      "qualifications": [],
+      "confidence": 1.0
+    }
+  ],
+  "original_blocks": [
+    {
+      "block_id": "blk-98863830-00046-6880025cebf7",
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "locator": {
+        "page_start": null,
+        "page_end": null,
+        "chapter": "9780226924571 10 ch3",
+        "section": "9780226924571 10 ch3",
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "heading_path": [
+        "9780226924571 10 ch3"
+      ],
+      "block_type": "other",
+      "text": "The reality and reliability of the human world rest primarily on the fact that we are surrounded by things more permanent than the activity by which they were produced, and potentially even more permanent than the lives of their authors. Human life, in so far as it is world-building, is engaged in a constant process of reification, and the degree of worldliness of produced things, which all together form the human artifice, depends upon their greater or lesser permanence in the world itself.\n\n13 LABOR AND LIFE\n\nThe least durable of tangible things are those needed for the life process itself. Their consumption barely survives the act of their production; in the words of Locke, all those “good things” which are “really useful to the life of man,” to the “necessity of subsisting,” are “generally of short duration, such as—if they are not consumed by use—will decay and perish by themselves.” 31 After a brief stay in the world, they return into the natural process which yielded them either through absorption into the life process of the human animal or through decay; in their man-made shape, through which they acquired their ephemeral place in the world of man-made things, they disappear more quickly than any other part of the world. Considered in their worldliness, they are the least worldly and at the same time the most natural of all things. Although they are man-made, they come and go, are produced and consumed, in accordance with the ever-recurrent cyclical movement of nature. Cyclical, too, is the movement of the living organism, the human body not excluded, as long as it can withstand the process that permeates its being and makes it alive. Life is a process that everywhere uses up durability, wears it down, makes it disappear, until eventually dead matter, the result of small, single, cyclical, life processes, returns into the over-all gigantic circle of nature herself, where no beginning and no end exist and where all natural things swing in changeless, deathless repetition.\n\nNature and the cyclical movement into which she forces all living things know neither birth nor death as we understand them. The birth and death of human beings are not simple natural oc currences, but are related to a world into which single individuals, unique, unexchangeable, and unrepeatable entities, appear and from which they depart. Birth and death presuppose a world which is not in constant movement, but whose durability and relative permanence makes appearance and disappearance possible, which existed before any one individual appeared into it and will survive his eventual departure. Without a world into which men are born and from which they die, there would be nothing but changeless eternal recurrence, the deathless everlastingness of the human as of all other animal species. A philosophy of life that does not arrive, as did Nietzsche, at the affirmation of “eternal recurrence” ( ewige Wiederkehr ) as the highest principle of all being, simply does not know what it is talking about.\n\nThe word “life,” however, has an altogether different meaning if it is related to the world and meant to designate the time interval between birth and death. Limited by a beginning and an end, that is, by the two supreme events of appearance and disappearance within the world, it follows a strictly linear movement whose very motion nevertheless is driven by the motor of biological life which man shares with other living things and which forever retains the cyclical movement of nature. The chief characteristic of this specifically human life, whose appearance and disappearance constitute worldly events, is that it is itself always full of events which ultimately can be told as a story, establish a biography; it is of this life, bios as distinguished from mere zōē , that Aristotle said that it “somehow is a kind of praxis. ” 32 For action and speech, which, as we saw before, belonged close together in the Greek understanding of politics, are indeed the two activities whose end result will always be a story with enough coherence to be told, no matter how accidental or haphazard the single events and their causation may appear to be.\n\nIt is only within the human world that nature’s cyclical movement manifests itself as growth and decay. Like birth and death, they, too, are not natural occurrences, properly speaking; they have no place in the unceasing, indefatigable cycle in which the whole household of nature swings perpetually. Only when they enter the man-made world can nature’s processes be characterized by growth and decay; only if we consider nature’s products, this tree or this dog, as individual things, thereby already removing them from their “natural” surroundings and putting them into our world, do they begin to grow and to decay. While nature manifests itself in human existence through the circular movement of our bodily functions, she makes her presence felt in the man-made world through the constant threat of overgrowing or decaying it. The common characteristic of both, the biological process in man and the process of growth and decay in the world, is that they are part of the cyclical movement of nature and therefore endlessly repetitive; all human activities which arise out of the necessity to cope with them are bound to the recurring cycles of nature and have in themselves no beginning and no end, properly speaking; unlike working , whose end has come when the object is finished, ready to be added to the common world of things, laboring always moves in the same circle, which is prescribed by the biological process of the living organism and the end of its “toil and trouble” comes only with the death of this organism. 33",
+      "estimated_token_count": 1630,
+      "source_block_keys": [
+        "OEBPS/html/9780226924571_10_ch3.html#epubcfi(/6/18[c9780226924571_10_ch3]!/4/50)",
+        "OEBPS/html/9780226924571_10_ch3.html#epubcfi(/6/18[c9780226924571_10_ch3]!/4/52)",
+        "OEBPS/html/9780226924571_10_ch3.html#epubcfi(/6/18[c9780226924571_10_ch3]!/4/54)",
+        "OEBPS/html/9780226924571_10_ch3.html#epubcfi(/6/18[c9780226924571_10_ch3]!/4/56)",
+        "OEBPS/html/9780226924571_10_ch3.html#epubcfi(/6/18[c9780226924571_10_ch3]!/4/58)",
+        "OEBPS/html/9780226924571_10_ch3.html#epubcfi(/6/18[c9780226924571_10_ch3]!/4/60)"
+      ],
+      "previous_block_id": "blk-98863830-00045-09504c919bfd",
+      "next_block_id": "blk-98863830-00047-e4926a23ac97"
+    },
+    {
+      "block_id": "blk-98863830-00061-5613acad3e65",
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "locator": {
+        "page_start": null,
+        "page_end": null,
+        "chapter": "9780226924571 11 ch4",
+        "section": "9780226924571 11 ch4",
+        "paragraph_start": null,
+        "paragraph_end": null,
+        "epub_cfi": null
+      },
+      "heading_path": [
+        "9780226924571 11 ch4"
+      ],
+      "block_type": "other",
+      "text": "CHAPTER IV\n\nWork\n\n18 THE DURABILITY OF THE WORLD\n\nThe work of our hands, as distinguished from the labor of our bodies— homo faber who makes and literally “works upon” 1 as distinguished from the animal laborans which labors and “mixes with”—fabricates the sheer unending variety of things whose sum total constitutes the human artifice. They are mostly, but not exclusively, objects for use and they possess the durability Locke needed for the establishment of property, the “value” Adam Smith needed for the exchange market, and they bear testimony to productivity, which Marx believed to be the test of human nature. Their proper use does not cause them to disappear and they give the human artifice the stability and solidity without which it could not be relied upon to house the unstable and mortal creature which is man.\n\nThe durability of the human artifice is not absolute; the use we make of it, even though we do not consume it, uses it up. The life process which permeates our whole being invades it, too, and if we do not use the things of the world, they also will eventually decay, return into the over-all natural process from which they were drawn and against which they were erected. If left to itself or discarded from the human world, the chair will again become wood, and the wood will decay and return to the soil from which the tree sprang before it was cut off to become the material upon which to work and with which to build. But though this may be the unavoidable end of all single things in the world, the sign of their being products of a mortal maker, it is not so certainly the eventual fate of the human artifice itself, where all single things can be constantly replaced with the change of generations which come and inhabit the man-made world and go away. Moreover, while usage is bound to use up these objects, this end is not their destiny in the same way as destruction is the inherent end of all things for consumption. What usage wears out is durability.\n\nIt is this durability which gives the things of the world their relative independence from men who produced and use them, their “objectivity” which makes them withstand, “stand against” 2 and endure, at least for a time, the voracious needs and wants of their living makers and users. From this viewpoint, the things of the world have the function of stabilizing human life, and their objectivity lies in the fact that—in contradiction to the Heraclitean saying that the same man can never enter the same stream—men, their ever-changing nature notwithstanding, can retrieve their sameness, that is, their identity, by being related to the same chair and the same table. In other words, against the subjectivity of men stands the objectivity of the man-made world rather than the sublime indifference of an untouched nature, whose overwhelming elementary force, on the contrary, will compel them to swing relentlessly in the circle of their own biological movement, which fits so closely into the over-all cyclical movement of nature’s household. Only we who have erected the objectivity of a world of our own from what nature gives us, who have built it into the environment of nature so that we are protected from her, can look upon nature as something “objective.” Without a world between men and nature, there is eternal movement, but no objectivity.\n\nAlthough use and consumption, like work and labor, are not the same, they seem to overlap in certain important areas to such an extent that the unanimous agreement with which both public and learned opinion have identified these two different matters seems well justified. Use, indeed, does contain an element of consumption, in so far as the wearing-out process comes about through the contact of the use object with the living consuming organism, and the closer the contact between the body and the used thing, the more plausible will an equation of the two appear. If one construes, for instance, the nature of use objects in terms of wearing apparel, he will be tempted to conclude that use is nothing but consumption at a slower pace. Against this stands what we mentioned before, that destruction, though unavoidable, is incidental to use but inherent in consumption. What distinguishes the most flimsy pair of shoes from mere consumer goods is that they do not spoil if I do not wear them, that they have an independence of their own, however modest, which enables them to survive even for a considerable time the changing moods of their owner. Used or unused, they will remain in the world for a certain while unless they are wantonly destroyed.",
+      "estimated_token_count": 1314,
+      "source_block_keys": [
+        "OEBPS/html/9780226924571_11_ch4.html#epubcfi(/6/20[c9780226924571_11_ch4]!/4/2)",
+        "OEBPS/html/9780226924571_11_ch4.html#epubcfi(/6/20[c9780226924571_11_ch4]!/4/4)",
+        "OEBPS/html/9780226924571_11_ch4.html#epubcfi(/6/20[c9780226924571_11_ch4]!/4/6)",
+        "OEBPS/html/9780226924571_11_ch4.html#epubcfi(/6/20[c9780226924571_11_ch4]!/4/8)",
+        "OEBPS/html/9780226924571_11_ch4.html#epubcfi(/6/20[c9780226924571_11_ch4]!/4/10)",
+        "OEBPS/html/9780226924571_11_ch4.html#epubcfi(/6/20[c9780226924571_11_ch4]!/4/12)",
+        "OEBPS/html/9780226924571_11_ch4.html#epubcfi(/6/20[c9780226924571_11_ch4]!/4/14)"
+      ],
+      "previous_block_id": "blk-98863830-00060-4cd6cb863369",
+      "next_block_id": "blk-98863830-00062-9aa5de647675"
+    }
+  ],
+  "context_blocks": [],
+  "retrieval_hits": [],
+  "token_budget": 4900,
+  "actual_tokens": 2944,
+  "warnings": []
+}

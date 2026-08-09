@@ -1,0 +1,16 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "Preserve the reference structure of the block if higher-level context becomes available."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "The target block contains bibliographic or reference-like encoded strings with unrendered character entities that cannot be reliably interpreted as prose claims.",
+  "unresolved_context": [
+    "The target block consists of encoded textual data and character codes that require rendering or decryption to yield meaningful semantic claims."
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "claims": [
+    {
+      "claim": "The Greek political consciousness clearly and articulately distinguished activities sustaining the life process from the political realm, barring them from entry.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "At the root of Greek political consciousness we find an unequaled clarity and articulateness in drawing this distinction. No activity that served only the purpose of making a living, of sustaining only the life process, was permitted to enter the political realm"
+    },
+    {
+      "claim": "The emergence of society from the household into the public sphere blurred the boundary between private and political and altered the meaning of both terms.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The emergence of society—the rise of housekeeping, its activities, problems, and organizational devices—from the shadowy interior of the household into the light of the public sphere, has not only blurred the old borderline between private and political, it has also changed almost beyond recognition the meaning of the two terms and their significance for the life of the individual and the citizen."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [
+    {
+      "distinction": "In ancient feeling, privacy had a privative trait meaning deprivation of the highest capacities, whereas modern privacy is associated with an enormous enrichment through individualism and serves to shelter the intimate against the social realm.",
+      "item_a": "Ancient privacy",
+      "item_b": "Modern privacy"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": []
+}

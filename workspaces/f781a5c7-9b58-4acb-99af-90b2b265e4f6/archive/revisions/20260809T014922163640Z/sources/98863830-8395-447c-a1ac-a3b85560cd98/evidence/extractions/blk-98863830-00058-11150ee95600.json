@@ -1,0 +1,63 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00058-11150ee95600",
+  "extraction": {
+    "segment_function": "Examines the distinction between the emancipation of labor and freedom, contrasting ancient views on necessity and violence with modern trends, automation, and Marx's concept of emancipation from labor.",
+    "claims": [
+      {
+        "evidence_id": "ev-f98ea7cc39280ab0",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00058-11150ee95600",
+        "claim": "All civilizations prior to the modern era viewed the art of earning money as separate from the actual content of other arts and aimed at keeping the worker free from the necessity to labor.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "all civilizations prior to our own would rather have agreed with Plato that the “art of earning money” ( technē mistharnētikē ) is entirely unconnected with the actual content even of such arts as medicine, navigation, or architecture, which were attended by monetary rewards.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-49fee97f9da97356",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00058-11150ee95600",
+        "claim": "The modern age's emancipation of labor brought progress toward non-violence, but its status as progress toward freedom is much less certain.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The emancipation of labor and the concomitant emancipation of the laboring classes from oppression and exploitation certainly meant progress in the direction of non-violence. It is much less certain that it was also progress in the direction of freedom.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Emancipation of labor vs freedom",
+      "Marx's view on emancipation from labor and necessity",
+      "Role of violence and necessity in antiquity versus the modern age"
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,93 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00047-e4926a23ac97",
+  "extraction": {
+    "segment_function": "Examine Marx's definition of labor as metabolism with nature, the cyclical and destructive nature of labor versus work, labor's fight against natural decay, and the historical elevation of labor by Locke, Smith, and Marx along with the associated contradictions stemming from the equation of work with labor.",
+    "claims": [
+      {
+        "evidence_id": "ev-2891464f3e7c40d5",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00047-e4926a23ac97",
+        "claim": "Marx defined labor physiologically as man's metabolism with nature, placing labor and consumption as two stages in the cyclical process of biological life.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "When Marx defined labor as “man’s metabolism with nature,” in whose process “nature’s material [is] adapted by a change of form to the wants of man,” so that “labour has incorporated itself with its subject,” he indicated clearly that he was “speaking physiologically” and that labor and consumption are but two stages of the ever-recurring cycle of biological life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-bafcd3c2be3f263f",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00047-e4926a23ac97",
+        "claim": "Locke, Smith, and Marx held that labor was the supreme world-building capacity of man, leading them into contradictions due to equating work with labor.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "But all three, though Marx with greatest force and consistency, held that labor was considered to be the supreme world-building capacity of man, and since labor actually is the most natural and least worldly of man’s activities, each of them, and again none more than Marx, found himself in the grip of certain genuine contradictions.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "labor",
+        "definition": "An activity that produces items meant to be fed into the human life process almost immediately, functioning as a devouring process that seizes and destroys matter.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "labor",
+        "item_b": "work",
+        "distinction": "Labor's product is meant for immediate consumption and involves the destruction or preparation of matter for incorporation, whereas work does not prepare matter for incorporation but changes it into material to work upon and use as a finished product.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Footnotes 34 through 40 referenced in the block text are not provided."
+    ],
+    "must_not_be_lost": [
+      "The distinction between labor and work regarding the destruction or preservation of matter.",
+      "The historical sequence of Locke, Smith, and Marx elevating labor and encountering contradictions through equating work with labor."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

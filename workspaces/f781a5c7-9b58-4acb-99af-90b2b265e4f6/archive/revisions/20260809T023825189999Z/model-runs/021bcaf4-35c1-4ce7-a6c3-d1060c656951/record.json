@@ -1,0 +1,50 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "962187f5-e5db-4033-888a-286ee88be716",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 7081,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T02:06:33.620219Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 23835,
+        "output_tokens": 1614,
+        "thinking_tokens": null,
+        "total_tokens": 25449
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T02:06:33.620240Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [
+    "http://creativecommons.org/\\nlicenses/by/4.0/",
+    "https://doi.org/10.1017/S0034670524000226\\nPublished",
+    "https://www.thecanadianencyclopedia.ca/en/article/\\nseagram-company-limited",
+    "https://www.osha.gov/heat-exposure/controls",
+    "http://data.perseus.org/\\ntexts/urn:cts:greekLit:tlg0059.tlg030"
+  ],
+  "input_hash": "9a6f4ed48721179efa8b8836e80ee87ce821d516737e725036cec0fa6cc2083e",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "bf943fe14dd09bd8207dee9380a6b9e67a6c50abba5afc4c0d69b51bd94de01e",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "021bcaf4-35c1-4ce7-a6c3-d1060c656951",
+  "stage": "document_map",
+  "started_at": "2026-08-09T02:06:26.538338Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

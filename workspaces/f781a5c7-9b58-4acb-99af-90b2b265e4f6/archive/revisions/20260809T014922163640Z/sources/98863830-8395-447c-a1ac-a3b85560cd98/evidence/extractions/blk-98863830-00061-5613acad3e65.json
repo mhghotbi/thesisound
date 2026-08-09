@@ -1,0 +1,77 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00061-5613acad3e65",
+  "extraction": {
+    "segment_function": "The block defines the distinction between work and labor through the concepts of homo faber, the human artifice, durability, and objectivity, contrasting the stability of man-made things with the cyclical nature of biological consumption.",
+    "claims": [],
+    "definitions": [
+      {
+        "term": "Homo faber",
+        "definition": "The maker who literally works upon materials and fabricates the things that constitute the human artifice.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Animal laborans",
+        "definition": "The laborer who labors and mixes with biological processes.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Work",
+        "item_b": "Labor",
+        "distinction": "Work is the activity of hands by homo faber that makes and works upon things to create a durable human artifice, whereas labor is the activity of animal laborans that mixes with biological processes.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "item_a": "Use",
+        "item_b": "Consumption",
+        "distinction": "Destruction is inherent in consumption, whereas wear is incidental to use, as use objects possess an independence and durability that allows them to survive even when unused.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The distinction between homo faber and animal laborans.",
+      "The role of durability and objectivity in stabilizing human life and identity."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

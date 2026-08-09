@@ -1,0 +1,169 @@
+[
+  {
+    "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+    "filename": "Hannah Arendt - The Human Condition.epub",
+    "display_title": null,
+    "content_type": "application/epub+zip",
+    "size_bytes": 1223574,
+    "status": "ready",
+    "selected": true,
+    "issue_summary": "استخراج با موفقیت انجام شد و متن برای ساخت شاهدها قابل‌استفاده است.",
+    "quality_issues": [],
+    "is_demo_result": false,
+    "parser_name": "epub",
+    "quality_verdict": "pass",
+    "safe_for_claim_extraction": true,
+    "block_count": 1779,
+    "text_characters": 903700,
+    "attempted_parsers": [
+      "epub"
+    ],
+    "artifact_ref": "Hannah-Arendt---The-Human-Condition-9612445f8cd558e5/ingestion-result.json",
+    "inspection_sha256": "9612445f8cd558e5669ee390b01edbca9059b125257f10241f1d6ba83b71e893",
+    "content_key": null,
+    "origin": "local_upload",
+    "canonical_url": null,
+    "retrieval_scope": null
+  },
+  {
+    "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+    "filename": "EN-1-The-Outdoor-Condition-Reading-Arendt.pdf",
+    "display_title": null,
+    "content_type": "application/pdf",
+    "size_bytes": 240627,
+    "status": "ready",
+    "selected": false,
+    "issue_summary": "متن قابل‌استفاده است و تحلیل ادامه پیدا می‌کند. برچسب «هشدار» یعنی استخراج متوقف نشده، اما چند مورد برای شفافیت ثبت شده است؛ جزئیات را پایین همین منبع ببینید.",
+    "quality_issues": [
+      "برخی عنوان‌ها یا ساختار بخش‌ها از دست رفته (شدت: متوسط)؛ نشانه ثبت‌شده: No heading hierarchy survived in a document with at least 12 blocks."
+    ],
+    "is_demo_result": false,
+    "parser_name": "native",
+    "quality_verdict": "warning",
+    "safe_for_claim_extraction": true,
+    "block_count": 22,
+    "text_characters": 71512,
+    "attempted_parsers": [
+      "native"
+    ],
+    "artifact_ref": "EN-1-The-Outdoor-Condition-Reading-Arendt-b3b6d79eae823717/ingestion-result.json",
+    "inspection_sha256": "b3b6d79eae823717ee16cf359f8ef7f7ac71e8823eee491d80a2ca865ed7461a",
+    "content_key": null,
+    "origin": "local_upload",
+    "canonical_url": null,
+    "retrieval_scope": null
+  },
+  {
+    "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+    "filename": "EN-2-Arendt-Natural-and-Artificial.pdf",
+    "display_title": null,
+    "content_type": "application/pdf",
+    "size_bytes": 381488,
+    "status": "ready",
+    "selected": false,
+    "issue_summary": "استخراج با موفقیت انجام شد و متن برای ساخت شاهدها قابل‌استفاده است.",
+    "quality_issues": [],
+    "is_demo_result": false,
+    "parser_name": "native",
+    "quality_verdict": "pass",
+    "safe_for_claim_extraction": true,
+    "block_count": 10,
+    "text_characters": 32749,
+    "attempted_parsers": [
+      "native"
+    ],
+    "artifact_ref": "EN-2-Arendt-Natural-and-Artificial-4f58e8011265b02e/ingestion-result.json",
+    "inspection_sha256": "4f58e8011265b02e00a42fa33965a9fb920f7c08b4a2543d1bfebca65461b4e1",
+    "content_key": null,
+    "origin": "local_upload",
+    "canonical_url": null,
+    "retrieval_scope": null
+  },
+  {
+    "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+    "filename": "FA-1-Politics-and-Existentialism-Arendt-Action.pdf",
+    "display_title": null,
+    "content_type": "application/pdf",
+    "size_bytes": 236541,
+    "status": "ready",
+    "selected": false,
+    "issue_summary": "متن قابل‌استفاده است و تحلیل ادامه پیدا می‌کند. برچسب «هشدار» یعنی استخراج متوقف نشده، اما چند مورد برای شفافیت ثبت شده است؛ جزئیات را پایین همین منبع ببینید.",
+    "quality_issues": [
+      "برخی عنوان‌ها یا ساختار بخش‌ها از دست رفته (شدت: متوسط)؛ نشانه ثبت‌شده: No heading hierarchy survived in a document with at least 12 blocks."
+    ],
+    "is_demo_result": false,
+    "parser_name": "native",
+    "quality_verdict": "warning",
+    "safe_for_claim_extraction": true,
+    "block_count": 41,
+    "text_characters": 248193,
+    "attempted_parsers": [
+      "docling",
+      "native"
+    ],
+    "artifact_ref": "FA-1-Politics-and-Existentialism-Arendt-Action-5fbe3118803d47c6/ingestion-result.json",
+    "inspection_sha256": "5fbe3118803d47c69e5438d53b90e3edb3697d81afc4329a5d31bece27ce45cd",
+    "content_key": null,
+    "origin": "local_upload",
+    "canonical_url": null,
+    "retrieval_scope": null
+  },
+  {
+    "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+    "filename": "FA-2-Citizenship-as-Alternative-to-World-Alienation.pdf",
+    "display_title": null,
+    "content_type": "application/pdf",
+    "size_bytes": 244707,
+    "status": "ready",
+    "selected": false,
+    "issue_summary": "متن قابل‌استفاده است و تحلیل ادامه پیدا می‌کند. برچسب «هشدار» یعنی استخراج متوقف نشده، اما چند مورد برای شفافیت ثبت شده است؛ جزئیات را پایین همین منبع ببینید.",
+    "quality_issues": [
+      "برخی عنوان‌ها یا ساختار بخش‌ها از دست رفته (شدت: متوسط)؛ نشانه ثبت‌شده: No heading hierarchy survived in a document with at least 12 blocks."
+    ],
+    "is_demo_result": false,
+    "parser_name": "native",
+    "quality_verdict": "warning",
+    "safe_for_claim_extraction": true,
+    "block_count": 55,
+    "text_characters": 55491,
+    "attempted_parsers": [
+      "docling",
+      "native"
+    ],
+    "artifact_ref": "FA-2-Citizenship-as-Alternative-to-World-Alienation-7f1a6b6bc22f06d8/ingestion-result.json",
+    "inspection_sha256": "7f1a6b6bc22f06d867192db7e13883c076ef069a9ea81ad1c2d562ff469b00e0",
+    "content_key": null,
+    "origin": "local_upload",
+    "canonical_url": null,
+    "retrieval_scope": null
+  },
+  {
+    "source_id": "2a2ed20a-619f-49ef-a6fe-838547971865",
+    "filename": "FA-3-Arendt-Actor-and-Heideggerian-Dasein.pdf",
+    "display_title": null,
+    "content_type": "application/pdf",
+    "size_bytes": 531437,
+    "status": "ready",
+    "selected": false,
+    "issue_summary": "متن قابل‌استفاده است و تحلیل ادامه پیدا می‌کند. برچسب «هشدار» یعنی استخراج متوقف نشده، اما چند مورد برای شفافیت ثبت شده است؛ جزئیات را پایین همین منبع ببینید.",
+    "quality_issues": [
+      "برخی عنوان‌ها یا ساختار بخش‌ها از دست رفته (شدت: متوسط)؛ نشانه ثبت‌شده: No heading hierarchy survived in a document with at least 12 blocks."
+    ],
+    "is_demo_result": false,
+    "parser_name": "native",
+    "quality_verdict": "warning",
+    "safe_for_claim_extraction": true,
+    "block_count": 71,
+    "text_characters": 46484,
+    "attempted_parsers": [
+      "docling",
+      "native"
+    ],
+    "artifact_ref": "FA-3-Arendt-Actor-and-Heideggerian-Dasein-f3482582699cde3b/ingestion-result.json",
+    "inspection_sha256": "f3482582699cde3b3aeba8dc2b1a2460a851d0335fe32a5d10ea12ec736d4805",
+    "content_key": null,
+    "origin": "local_upload",
+    "canonical_url": null,
+    "retrieval_scope": null
+  }
+]

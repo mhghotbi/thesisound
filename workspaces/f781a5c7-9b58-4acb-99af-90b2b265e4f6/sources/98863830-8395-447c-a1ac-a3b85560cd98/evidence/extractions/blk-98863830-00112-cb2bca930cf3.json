@@ -1,0 +1,59 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00112-cb2bca930cf3",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-77b80686fef4373e",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00112-cb2bca930cf3",
+        "claim": "Galileo's use of the telescope delivered the secrets of the universe to human cognition with the certainty of sense-perception, doing what no one had done before.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "What Galileo did and what nobody had done before was to use the telescope in such a way that the secrets of the universe were delivered to human cognition “with the certainty of sense-perception”;",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-0c25b0a1335db3e3",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00112-cb2bca930cf3",
+        "claim": "Prior to Galileo's telescopic discoveries, the philosophical and astronomical speculations of thinkers like Bruno and Copernicus lacked factual confirmation and would have been dismissed as ungrounded imagination.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Prior to the telescopic discoveries of Galileo, Giordano Bruno’s philosophy attracted little attention even among learned men, and without the factual confirmation they bestowed upon the Copernican revolution, not only the theologians but all “sensible men . . . would have pronounced it a wild appeal . . . of an uncontrolled imagination.”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

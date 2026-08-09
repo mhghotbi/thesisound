@@ -1,0 +1,14 @@
+{
+  "chunk_id": "audio-0022",
+  "chunk_hash": "17bac63a209c65efc63d3a24485386b2ef0c7afee010635c4affa2d3a11a58b7",
+  "wav_sha256": "d6545535d81440b7ec315c91a67bbd0ce4bcdd025a6d2873911e730e574f16da",
+  "verdict": "pass",
+  "similarity_ratio": 1.0,
+  "expected_text": "یعنی بررسی دقیق متون او به ما نشان می‌دهد که بازخوانی شهروندی چطور می‌تواند ما را از این بیگانگی نجات دهد؟",
+  "transcript_text": "یعنی بررسی دقیق متون او به ما نشان می‌دهد که بازخوانی شهروندی چطور می‌تواند ما را از این بیگانگی نجات دهد.",
+  "missing_sentences": [],
+  "repeated_phrases": [],
+  "truncated": false,
+  "pronunciation_review": [],
+  "regeneration_instruction": null
+}

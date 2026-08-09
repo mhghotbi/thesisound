@@ -1,0 +1,62 @@
+{
+  "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+  "block_id": "blk-187a0ac0-00008-ba6dc172e4b0",
+  "extraction": {
+    "segment_function": "conclusion and summary",
+    "claims": [
+      {
+        "evidence_id": "ev-c48a7f2ea7ebfeb7",
+        "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+        "block_id": "blk-187a0ac0-00008-ba6dc172e4b0",
+        "claim": "The problem of the relation between the artificial and the natural in The Human Condition is fit into a double narrative consisting of cultural criticism and political philosophy, with cultural criticism being the stronger narrative.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The problem of the relation for artificial and natural has been fit into a double narra - tive in The Human Condition ; it partly belongs to the narrative of cultural criticism, partly belongs to that of political philosophy. The stronger narrative, in this book, is the first one.",
+        "locator": {
+          "page_start": 9,
+          "page_end": 10,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-ca6e590c86dceb28",
+        "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+        "block_id": "blk-187a0ac0-00008-ba6dc172e4b0",
+        "claim": "In the closing chapter of The Human Condition, Arendt returns to the narrative of cultural criticism, where re-naturalization and the fading out of action represent the main threat of modernity rather than environmental pollution.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "However, in the closing chapter, Arendt returns back to the narrative of cultural criticism, albeit giving a special meaning to the notions of natural and artificial. It is re-naturalization, for her, and not human construed artifice which embodies the main threat of modernity. She more fears for the fading out of action from the world than the pollution of the environment.",
+        "locator": {
+          "page_start": 9,
+          "page_end": 10,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The Human Condition contains a double narrative of cultural criticism and political philosophy regarding the natural and artificial.",
+      "Arendt's primary fear in modernity is re-naturalization and the fading of action rather than environmental pollution."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

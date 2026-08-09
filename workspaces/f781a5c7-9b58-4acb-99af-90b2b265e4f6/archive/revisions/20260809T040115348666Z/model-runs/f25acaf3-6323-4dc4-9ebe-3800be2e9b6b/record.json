@@ -1,0 +1,53 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "ebd934b9-cc63-41fb-ae2c-b9cf6431fbbe",
+      "error_message": "Server disconnected without sending a response.",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 49951,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T03:59:34.273160Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "a9c2284b-42c6-4a1c-a1f3-c4c269604cca",
+      "error_message": "Server disconnected without sending a response.",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 50380,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T04:00:25.653923Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T04:00:25.654954Z",
+  "error_message": "Server disconnected without sending a response.",
+  "error_type": "ModelProviderError",
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "83a9bf76800530f1b5feb7d10d06acf3015158e0532d3df7735babbaabe9a58a",
+  "model": "gemini-3.6-flash",
+  "output_model": "ClaimReconciliationDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "f5de9a4b92a242cd7a8e7578faab96c5a61847bac9dda2e90992d6089d25e82d",
+  "prompt_id": "claim_reconciliation",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "f25acaf3-6323-4dc4-9ebe-3800be2e9b6b",
+  "stage": "claim_reconciliation",
+  "started_at": "2026-08-09T03:58:44.319490Z",
+  "status": "failed",
+  "web_search_queries": []
+}

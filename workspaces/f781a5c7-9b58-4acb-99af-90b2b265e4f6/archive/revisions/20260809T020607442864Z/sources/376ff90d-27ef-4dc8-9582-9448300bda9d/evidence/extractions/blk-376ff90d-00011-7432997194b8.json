@@ -1,0 +1,64 @@
+{
+  "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+  "block_id": "blk-376ff90d-00011-7432997194b8",
+  "extraction": {
+    "segment_function": "Discusses Hannah Arendt's metaphorics of indoor and outdoor spaces, her relation to Athenian civic ideology, and her reading of Plato's allegory of the cave in the Republic.",
+    "claims": [
+      {
+        "evidence_id": "ev-37277419bd6a7e47",
+        "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+        "block_id": "blk-376ff90d-00011-7432997194b8",
+        "claim": "Arendt's concepts are connected loosely and connotatively to outdoor and indoor spaces and their associations with exposure and shelter.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "her concepts seem only loosely and connotatively connected to outdoor and indoor spaces, and to their association of these spaces with exposure and shelter respectively .",
+        "locator": {
+          "page_start": 12,
+          "page_end": 12,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "Even in passages that do not make reference to Greece"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "evidence_id": "ev-bdc89587be6d66de",
+        "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+        "block_id": "blk-376ff90d-00011-7432997194b8",
+        "claim": "Arendt read Plato's cave allegory as a celebratory account of the philosopher's flight from the dark cave of human affairs into the bright sky of ideas.",
+        "claim_type": "scholarly_interpretation",
+        "supporting_excerpt": "Arendt read this allegory , ﬂatly , as Plato ’s celebratory account of the philosopher ’s ﬂight from the “dark cave of human affairs, ” where everything is mere appearance, into the “bright sky of ideas ” where the “true essence of Being ” can be seen",
+        "locator": {
+          "page_start": 12,
+          "page_end": 12,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 0.95
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Arendt's understanding of publicity and privacy did not simply reproduce Athenian civic ideology.",
+      "Plato initiated a tradition that recast the polis as a locus of necessity to be ruled by the philosopher as a despot rules the household."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

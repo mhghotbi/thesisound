@@ -1,0 +1,33 @@
+{
+  "claims": [
+    {
+      "claim": "Pain and the experience of release from pain are uniquely independent from the world because they contain no experience of any worldly object.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "In any event, pain and the concomitant experience of release from pain are the only sense experiences that are so independent from the world that they do not contain the experience of any worldly object."
+    },
+    {
+      "claim": "Laboring is the only activity that corresponds strictly to worldlessness or the loss of world found in pain, as the body remains imprisoned in its metabolism with nature.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The only activity which corresponds strictly to the experience of worldlessness, or rather to the loss of world that occurs in pain, is laboring, where the human body, its activity notwithstanding, is also thrown back upon itself, concentrates upon nothing but its own being alive, and remains imprisoned in its metabolism with nature without ever transcending or freeing itself from the recurring cycle of its own functioning."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "Pain and tickling as extreme examples used by modern philosophy to doubt the senses.",
+    "Locke's concept of private property as an enclosure from the common that mitigates labor's unrelatedness to the world.",
+    "The shift toward infinite accumulation and the socialized mankind where individual life-spans and property limits are superseded by the species life process."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Analyze the worldlessness of pain and labor, the nature of bodily sensation, and how private property and the modern process of wealth accumulation relate to the life process and world-alienation.",
+  "unresolved_context": []
+}

@@ -1,0 +1,94 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00068-a58ed713283e",
+  "extraction": {
+    "segment_function": "Analyzing the inherent perplexity and philosophical limits of utilitarianism as the philosophy of homo faber, specifically its inability to distinguish utility from meaningfulness, its endless chain of means and ends, and its recourse to anthropocentrism and Kantian formulation.",
+    "claims": [
+      {
+        "evidence_id": "ev-b20224cd145663b6",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00068-a58ed713283e",
+        "claim": "Consistent utilitarianism suffers from an innate incapacity to distinguish between utility and meaningfulness, trapping itself in an unending chain of means and ends without a justifying principle.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "This perplexity, inherent in all consistent utilitarianism, the philosophy of homo faber par excellence, can be diagnosed theoretically as an innate incapacity to understand the distinction between utility and meaningfulness, which we express linguistically by distinguishing between “in order to” and “for the sake of.”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-462f55951449eeae",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00068-a58ed713283e",
+        "claim": "When anthropocentric utilitarianism establishes man as the ultimate end and measure of all things, it reduces nature and valuable things to mere means, thereby robbing them of their independent dignity.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "if man the user is the highest end, “the measure of all things,” then not only nature, treated by homo faber as the almost “worthless material” upon which to work, but the “valuable” things themselves have become mere means, losing thereby their own intrinsic “value.”",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "applies when man the user is made the highest end and measure of all things"
+        ],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "homo faber",
+        "definition": "The fabricator who thinks entirely in terms of means and ends arising directly out of work activity.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "utility",
+        "item_b": "meaningfulness",
+        "distinction": "Utility corresponds to \"in order to\" whereas meaningfulness corresponds to \"for the sake of.\"",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The inherent perplexity of utilitarianism in collapsing utility into meaning and generating meaninglessness.",
+      "The limitation of homo faber in understanding meaning versus instrumentality.",
+      "The paradoxical nature of Kantian formulas as rooted in utilitarian thinking while attempting to restrict the means-end category."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

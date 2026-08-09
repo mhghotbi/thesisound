@@ -1,0 +1,63 @@
+{
+  "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+  "block_id": "blk-376ff90d-00009-f70bf8ca3f7b",
+  "extraction": {
+    "segment_function": "evaluation of alternative interpretations of Arendt regarding technology, mediation, and adaptation",
+    "claims": [
+      {
+        "evidence_id": "ev-486620834352efea",
+        "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+        "block_id": "blk-376ff90d-00009-f70bf8ca3f7b",
+        "claim": "The cumulative effect of mundane adaptations might intensify human isolation or alienation from the earth in its givenness, cutting people off from awareness of their earthbound limitations.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Another possibility is that, even if these adaptations are small-scale and\nmundane, their cumulative effect might be to intensify the isolation or alien-\nation of human beings from the earth in its givenness, cutting people off from\na vital source of awareness of their own earthbound limitations, which is nec-\nessary to keep the activity of world building from running amok.",
+        "locator": {
+          "page_start": 10,
+          "page_end": 10,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 0.95
+      },
+      {
+        "evidence_id": "ev-1af2b08d3b9d4186",
+        "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+        "block_id": "blk-376ff90d-00009-f70bf8ca3f7b",
+        "claim": "Modern science interposes humanly made technologies of observation and measurement between us and the world, cutting humans off from reality.",
+        "claim_type": "scholarly_interpretation",
+        "supporting_excerpt": "insofar as modern science interposes\nhumanly made technologies of observation and measurement between us\nand the world, it cuts human beings off from the “reality” to which it prom-\nised reliable access.",
+        "locator": {
+          "page_start": 10,
+          "page_end": 10,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 0.9
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Discussion of footnote references to Benjamin Lazier and Waseem Yaqoob, and Arendt's citation of Heisenberg in The Human Condition."
+    ],
+    "must_not_be_lost": [
+      "The risk of reading all three types of adaptation solely through the problem of mediation and immediacy."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

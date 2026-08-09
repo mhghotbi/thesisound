@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0007",
+    "segment_id": "seg-002",
+    "speaker": "A",
+    "source_turn_ids": [
+      "seg-002-turn-002"
+    ],
+    "text": "مرتبه بعدی در حیات فعال، حوزه کار است. در این مرتبه، انسان سازنده به عنوان عاملی افزارساز و ابزارکار ظاهر می‌شود که توانایی خلق اشیا و امور ماندگار و باپایام را دارد. فصل ممیز وجود انسانی در اختیار انسان سازنده است، چرا که او آفریننده جهان انسانی محسوب می‌شود؛ جهانی مصنوعی که به عنوان اقامتگاه و موطنی برای تکثر انسان‌ها عمل می‌کند.",
+    "sequence": 6,
+    "voice_name": "Kore",
+    "content_hash": "4032adadb6940601cd0621f9b1e6c128118bc74084c9b51ed1c2b32519933ac5",
+    "expected_duration_seconds": 27.555555555555557
+  },
+  "wav_ref": "audio/segments/audio-0007.wav",
+  "wav_sha256": "d754bc8447cb309b72fd0706fc21f95daa655d0543d8bd629f0506dc799897c9",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:59:09.628703Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 37.24,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 893760,
+    "peak_ratio": 0.8425244911038545,
+    "issues": []
+  },
+  "generation_attempts": 2
+}

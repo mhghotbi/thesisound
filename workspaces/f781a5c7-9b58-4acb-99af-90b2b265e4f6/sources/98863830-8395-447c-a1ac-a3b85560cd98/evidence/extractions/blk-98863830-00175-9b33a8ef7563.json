@@ -1,0 +1,65 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00175-9b33a8ef7563",
+  "extraction": {
+    "segment_function": "notes and bibliographic annotations",
+    "claims": [
+      {
+        "evidence_id": "ev-f5e357b6a3c5cc12",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00175-9b33a8ef7563",
+        "claim": "Marx's early consideration of world alienation in the 1842 article on the wood theft law played a minor role in his work, which remained rooted in the modern age's extreme subjectivism.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "However, such occasional considerations play a minor role in his work, which remained firmly rooted in the modern age’s extreme subjectivism.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 16 not",
+          "section": "9780226924571 16 not",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "referring to the writings and thought of the young Marx"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-de7ef70a15e65337",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00175-9b33a8ef7563",
+        "claim": "World alienation is even more present in Marx's ideal society than it was before, since men will use production to objectify and actualize their true being.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "In his ideal society, where men will produce as human beings, world alienation is even more present than it was before; for then they will be able to objectify ( vergegenständlichen ) their individuality, their peculiarity, to confirm and actualize their true being",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 16 not",
+          "section": "9780226924571 16 not",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "Bibliographic notes and commentary on Max Weber, post-war Germany, Karl Marx, A. N. Whitehead, Alexandre Koyré, P.-M. Schuhl, and E. A. Burtt."
+    ],
+    "must_not_be_lost": [
+      "Notes on Chapter 6 involving world alienation, Max Weber, and Marx's critique of property and exchange."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

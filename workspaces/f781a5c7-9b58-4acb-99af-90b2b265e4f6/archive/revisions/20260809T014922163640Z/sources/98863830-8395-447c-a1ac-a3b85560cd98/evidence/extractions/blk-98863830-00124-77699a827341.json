@@ -1,0 +1,64 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00124-77699a827341",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-0e0c920f4d6f535b",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00124-77699a827341",
+        "claim": "The most momentous and unavoidable spiritual consequence of modern discoveries has been the reversal of the hierarchical order between the vita contemplativa and the vita activa.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Perhaps the most momentous of the spiritual consequences of the discoveries of the modern age and, at the same time, the only one that could not have been avoided, since it followed closely upon the discovery of the Archimedean point and the concomitant rise of Cartesian doubt, has been the reversal of the hierarchical order between the vita contemplativa and the vita activa.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "follows closely upon the discovery of the Archimedean point and the concomitant rise of Cartesian doubt"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-a24299736efea0e4",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00124-77699a827341",
+        "claim": "Modern technology originated exclusively in a non-practical search for useless knowledge rather than a pragmatic desire to improve earthly conditions or ease labor.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "It is a matter of historical record that modern technology has its origins not in the evolution of those tools man had always devised for the twofold purpose of easing his labors and erecting the human artifice, but exclusively in an altogether non-practical search for useless knowledge.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 13 ch6",
+          "section": "9780226924571 13 ch6",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Reversal of the hierarchical order between vita contemplativa and vita activa",
+      "Modern technology originating from non-practical search for useless knowledge rather than practical instincts"
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

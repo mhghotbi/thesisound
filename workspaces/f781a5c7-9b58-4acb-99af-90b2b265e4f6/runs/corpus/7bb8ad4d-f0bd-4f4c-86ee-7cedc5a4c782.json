@@ -1,0 +1,29 @@
+{
+  "run_id": "7bb8ad4d-f0bd-4f4c-86ee-7cedc5a4c782",
+  "previous_run_id": "d52728fb-4548-41c2-8d47-77721ab96e13",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "succeeded",
+  "sources": [
+    {
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "filename": "Hannah Arendt - The Human Condition.epub",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/98863830-8395-447c-a1ac-a3b85560cd98/Hannah-Arendt---The-Human-Condition-9612445f8cd558e5/ingestion-result.json",
+      "status": "succeeded",
+      "stage": "complete",
+      "claim_count": 70,
+      "last_error": null,
+      "warnings": [
+        "Rejected evidence for blk-98863830-00001-d63e18794c51: No auditable evidence survived validation after retries.",
+        "Rejected evidence for blk-98863830-00143-e7291095b2a2: No auditable evidence survived validation after retries.",
+        "Rejected evidence for blk-98863830-00154-4fd131b4a47a: No auditable evidence survived validation after retries.",
+        "Rejected evidence for blk-98863830-00164-9d5a0fb35bbc: No auditable evidence survived validation after retries.",
+        "Evidence coverage 20% is below the 35% target for the brief profile (the plan itself could only reach 22%)."
+      ],
+      "carried_forward": false
+    }
+  ],
+  "started_at": "2026-08-09T11:27:02.418700Z",
+  "updated_at": "2026-08-09T11:28:01.268456Z",
+  "finished_at": "2026-08-09T11:28:01.268452Z",
+  "last_error": null
+}

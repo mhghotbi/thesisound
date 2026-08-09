@@ -1,0 +1,59 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "b84aa02c-9b58-44de-a5fe-0409d4ab58e9",
+      "error_message": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 4916,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T11:27:13.949874Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "b65caf28-28cd-4650-9611-8134006cb67f",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 46305,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T11:28:01.257227Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": 16030,
+        "input_tokens": 23140,
+        "output_tokens": 5303,
+        "thinking_tokens": 5604,
+        "total_tokens": 34047
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T11:28:01.257243Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "943d2c1a0b04ac5299cf5093544c60c2c62b7d1b0ef006786f65fbd7691251f7",
+  "model": "gemini-3.6-flash",
+  "output_model": "ClaimReconciliationDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "f5de9a4b92a242cd7a8e7578faab96c5a61847bac9dda2e90992d6089d25e82d",
+  "prompt_id": "claim_reconciliation",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "838ee020-4d3f-4753-8576-b0be186d18da",
+  "stage": "claim_reconciliation",
+  "started_at": "2026-08-09T11:27:09.031626Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

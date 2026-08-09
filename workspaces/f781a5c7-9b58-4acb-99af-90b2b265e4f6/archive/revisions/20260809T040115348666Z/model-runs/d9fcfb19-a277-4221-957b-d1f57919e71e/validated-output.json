@@ -1,0 +1,33 @@
+{
+  "claims": [
+    {
+      "claim": "The stability of the man-made human artifice as a home for mortals depends on its transcending both the functionalism of consumption and the utility of use.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The man-made world of things, the human artifice erected by homo faber , becomes a home for mortal men, whose stability will endure and outlast the ever-changing movement of their lives and actions, only insomuch as it transcends both the sheer functionalism of things produced for consumption and the sheer utility of objects produced for use."
+    },
+    {
+      "claim": "Acting and speaking men require the help of artists, poets, historiographers, and writers so that the stories they enact and tell can survive.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "If the animal laborans needs the help of homo faber to ease his labor and remove his pain, and if mortals need his help to erect a home on earth, acting and speaking men need the help of homo faber in his highest capacity, that is, the help of the artist, of poets and historiographers, of monument-builders or writers, because without them the only product of their activity, the story they enact and tell, would not survive at all."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "The human artifice must transcend functionalism and utility to serve as a stable home.",
+    "Action and speech are inherently futile and leave no material product without the help of artists and writers.",
+    "The measure of things can be neither the necessity of biological life nor utilitarian instrumentalism."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Conclude the discussion of the human artifice, action, speech, and the measure of things.",
+  "unresolved_context": []
+}

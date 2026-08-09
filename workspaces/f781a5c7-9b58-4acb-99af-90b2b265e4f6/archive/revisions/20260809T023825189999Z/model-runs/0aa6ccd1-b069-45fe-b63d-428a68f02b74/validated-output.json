@@ -1,0 +1,32 @@
+{
+  "central_question_claim_ids": [
+    "clm-27d7960629cc8d70",
+    "clm-cdfd1f19002d9de1",
+    "clm-3a561b777e44ce86",
+    "clm-43c898a10d267e4a",
+    "clm-469d428f8dd902ee",
+    "clm-177abafe0237f1e2"
+  ],
+  "central_question_status": "well_covered",
+  "material_gaps": [],
+  "max_supported_minutes": 10,
+  "objective_coverage": [
+    {
+      "claim_ids": [
+        "clm-27d7960629cc8d70",
+        "clm-cdfd1f19002d9de1",
+        "clm-3a561b777e44ce86",
+        "clm-43c898a10d267e4a",
+        "clm-469d428f8dd902ee",
+        "clm-177abafe0237f1e2",
+        "clm-42387f05124f8d6c",
+        "clm-f2514de064072149"
+      ],
+      "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+      "rationale": "The claim ledger contains comprehensive interpretations of Arendt's core concepts in The Human Condition, including the distinction between labor, work (homo faber), and action, as well as public and private realms, natality, and world/earth alienation.",
+      "status": "well_covered"
+    }
+  ],
+  "recommendation": "continue",
+  "recommendation_reason": "The provided claims thoroughly cover the main themes, concepts, and structure of Arendt's The Human Condition, fully supporting the 10-minute planned overview."
+}

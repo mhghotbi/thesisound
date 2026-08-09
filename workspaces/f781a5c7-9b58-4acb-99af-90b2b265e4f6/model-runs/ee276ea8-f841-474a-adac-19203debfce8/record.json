@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "a1c7550f-7b01-4de4-85a1-15aaae874238",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 19686,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T11:55:16.880722Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 21787,
+        "output_tokens": 599,
+        "thinking_tokens": 1957,
+        "total_tokens": 24343
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T11:55:16.880757Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "27ff8a5dcb8f50c23b858ff9ba0fd33885fc06f7c98423e1fae07becd0506849",
+  "model": "gemini-3.6-flash",
+  "output_model": "GlossaryDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "801ceaec16be777c510f5960c973df12622d9710a6d7d65383307b3cd8f3e387",
+  "prompt_id": "glossary",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "ee276ea8-f841-474a-adac-19203debfce8",
+  "stage": "glossary",
+  "started_at": "2026-08-09T11:54:57.193978Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

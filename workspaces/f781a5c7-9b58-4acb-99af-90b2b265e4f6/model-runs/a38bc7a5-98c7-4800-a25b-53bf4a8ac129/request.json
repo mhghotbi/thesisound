@@ -1,0 +1,17 @@
+{
+  "grounding_mode": "none",
+  "grounding_urls": [],
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapDraft",
+  "prompt_hash": "f5b86c4d4601d985c623ff2eb909cb18d069bbd8a2a7d7402cb0bfc2993ece61",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "raw_prompts_stored": false,
+  "stage": "document_map_part",
+  "variable_names": [
+    "blocks",
+    "part_number",
+    "scope",
+    "source_id"
+  ]
+}

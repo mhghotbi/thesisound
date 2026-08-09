@@ -1,0 +1,19 @@
+{
+  "grounding_mode": "google_search",
+  "grounding_urls": [
+    "http://www.tandfonline.com/Tlim\\nLimes:"
+  ],
+  "model": "gemini-3.6-flash",
+  "output_model": "GlossaryDraft",
+  "prompt_hash": "801ceaec16be777c510f5960c973df12622d9710a6d7d65383307b3cd8f3e387",
+  "prompt_id": "glossary",
+  "prompt_version": "1.0.0",
+  "raw_prompts_stored": false,
+  "stage": "glossary",
+  "variable_names": [
+    "disagreement_graph",
+    "episode_plan",
+    "evidence_packs",
+    "research_brief"
+  ]
+}

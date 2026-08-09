@@ -1,0 +1,77 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00103-9dabc8aa9052",
+  "extraction": {
+    "segment_function": "Discuss the moral standards of action based on forgiving and promising, contrasting them with Platonic rule, examining the dangers of applying action without its remedies to nature or fabrication, and tracing the secular political significance of Jesus of Nazareth's discovery of forgiveness.",
+    "claims": [
+      {
+        "evidence_id": "ev-a02bf4fcb99b8d0b",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00103-9dabc8aa9052",
+        "claim": "The moral code inferred from the faculties of forgiving and promising rests entirely on experiences grounded in the presence of others, unlike the Platonic notion of rule which is derived from a self-relationship.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The moral code, on the other hand, inferred from the faculties of forgiving and of making promises, rests on experiences which nobody could ever have with himself, which, on the contrary, are entirely based on the presence of others.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-f30055292b137202",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00103-9dabc8aa9052",
+        "claim": "Jesus of Nazareth discovered the role of forgiveness in human affairs, a discovery whose religious articulation does not diminish its strictly secular political significance.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The discoverer of the role of forgiveness in the realm of human affairs was Jesus of Nazareth. The fact that he made this discovery in a religious context and articulated it in religious language is no reason to take it any less seriously in a strictly secular sense.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "item_a": "Platonic notion of rule",
+        "item_b": "Moral code inferred from forgiving and promising",
+        "distinction": "Platonic rulership draws its guiding principles from self-domination and a relationship established between oneself and oneself, whereas the moral code of forgiving and promising rests entirely on experiences based on the presence of others.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Forgiving and promising provide necessary remedies and corrective limits to the irreversibility and unpredictability of human action.",
+      "Applying action's processes into the natural realm or acting strictly in the mode of fabrication without action's remedies risks destroying the conditions of human life."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

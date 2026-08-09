@@ -1,0 +1,17 @@
+{
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "target": "sources",
+  "actor": "09120000000",
+  "reason": null,
+  "previous_state": "failed_retryable",
+  "new_state": "source_selection_required",
+  "archived_paths": [
+    "episode",
+    "script",
+    "runs",
+    "model-runs",
+    "corpus-build-run.json",
+    "script-build-run.json"
+  ],
+  "created_at": "2026-08-09T02:38:25.193010Z"
+}

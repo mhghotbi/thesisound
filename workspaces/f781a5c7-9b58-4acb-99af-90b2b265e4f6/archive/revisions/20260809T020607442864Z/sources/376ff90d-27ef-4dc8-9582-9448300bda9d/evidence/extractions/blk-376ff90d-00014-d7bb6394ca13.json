@@ -1,0 +1,64 @@
+{
+  "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+  "block_id": "blk-376ff90d-00014-d7bb6394ca13",
+  "extraction": {
+    "segment_function": "Discusses the experiential difference between indoor and outdoor spaces, highlighting the interstitial and unenclosed nature of the outdoors, and connects this to Hannah Arendt's account of the embodied senses.",
+    "claims": [
+      {
+        "evidence_id": "ev-c04560ffb305ac88",
+        "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+        "block_id": "blk-376ff90d-00014-d7bb6394ca13",
+        "claim": "The crucial difference between indoors and outdoors is that the indoors lends itself to comprehensive design as a whole to facilitate or discourage specific patterns, whereas outdoor spaces are not fully enclosed, making a totalizing form more challenging to impose.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The crucial difference is simply that the indoors lends itself to being designed comprehensively , as some kind of whole, with an eye toward facilitating certain patterns of use, movement, and encounter and discouraging others; and while outdoor spaces have also been subject to the same sort of design, sometimes in a highly rationalizing and regimented spirit, the fact that they are not fully enclosed makes it more challenging to impose a totalizing\nform upon them.",
+        "locator": {
+          "page_start": 16,
+          "page_end": 16,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "outdoor spaces are also subject to design in a rationalizing and regimented spirit"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-70a303171f1733bb",
+        "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+        "block_id": "blk-376ff90d-00014-d7bb6394ca13",
+        "claim": "Being outdoors as a sensate creature exposes one through the senses to a wider field of possibilities for the unanticipated or peripheral summoning of attention because the outdoors is intransigently interstitial.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "What matters about the outdoors, from this perspective, is that it is intransigently\ninterstitial; and to be outdoors, as a sensate creature, is to be exposed\nthrough the senses to a wider ﬁeld of possibilities for the unanticipated —\nwe might say , peripheral— summoning of one ’s attention.",
+        "locator": {
+          "page_start": 16,
+          "page_end": 16,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The distinction regarding comprehensive indoor design versus the interstitial, unenclosed nature of the outdoors.",
+      "Arendt's account of the embodied senses and their receptivity to the reality of life."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

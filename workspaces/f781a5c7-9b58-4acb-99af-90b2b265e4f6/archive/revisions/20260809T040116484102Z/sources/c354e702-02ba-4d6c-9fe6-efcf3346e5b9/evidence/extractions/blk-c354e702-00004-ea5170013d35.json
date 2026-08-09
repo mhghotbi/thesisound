@@ -1,0 +1,59 @@
+{
+  "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+  "block_id": "blk-c354e702-00004-ea5170013d35",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-8aff68c5df1eb262",
+        "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+        "block_id": "blk-c354e702-00004-ea5170013d35",
+        "claim": "The second stage in the emergence of modernity from the beginning of the twentieth century corresponds to earth alienation and the victory of animal laborans.",
+        "claim_type": "scholarly_interpretation",
+        "supporting_excerpt": "دوم از ﻇﻬﻮر ﻣﺪرﻧﯿﺘﻪ از آﻏﺎز ﻗﺮن ﺑﯿﺴﺘﻢ ﻣﺘﻨﺎﻇﺮ ﺑﺎ »زﻣـﯿﻦ   از  ﺑﯿﮕﺎﻧﮕﯽ «و»ﭘﯿـﺮوزي ﺣﯿـﻮان",
+        "locator": {
+          "page_start": 8,
+          "page_end": 11,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 0.95
+      },
+      {
+        "evidence_id": "ev-202fa8fe29a22464",
+        "source_id": "c354e702-02ba-4d6c-9fe6-efcf3346e5b9",
+        "block_id": "blk-c354e702-00004-ea5170013d35",
+        "claim": "Arendt rejects the Hegelian or Marxist view that labor can be an instrument to realize the capacity and power of workers.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "ﺘﯽ را ﮐـﻪ زﺣﻤـﺖ ﻣـﯽ   ﻫﮕﻠﯽ ﯾـﺎ ﻣﺎرﮐﺴﯿﺴـ  ه ﻗﺎﻃﻌﺎﻧﻪ اﯾﻦ ﻋﻘﯿﺪ",
+        "locator": {
+          "page_start": 8,
+          "page_end": 11,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 0.95
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

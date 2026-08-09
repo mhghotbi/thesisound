@@ -1,0 +1,21 @@
+{
+  "claims": [
+    {
+      "claim": "World alienation results in the loss of meaning of human existence and identity, as well as the loss of the shared common and public sphere.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "آرﻧﺖ ﺑﯿﮕﺎﻧﮕﯽ از ﺟﻬﺎن اﯾﻦ اﺳﺖ ﮐـﻪ ﻣـﺎ ﻣﻌﻨـﺎي وﺟـﻮد ﮥﺗﺮﯾﻦ ﻧﺘﯿﺠ اوﻟﯿﻦ و ﻣﻬﻢ، ﺑﺮاي ﺗﺒﻊ آن ﻫﻮﯾﺖ ﻣﺎ و درﮐﻤـﺎن از واﻗﻌﯿـﺖ دﻫﯿﻢ و ﺑﻪ ﺧﻮد در زادﮔﺎه و در ﺟﻬﺎن را از دﺳﺖ ﻣﯽ"
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Examines Hannah Arendt's concept of world alienation in the modern era, contrasting it with self-alienation and tracing its philosophical roots to Plato's cave allegory and Kafka's critique of modernity.",
+  "unresolved_context": []
+}

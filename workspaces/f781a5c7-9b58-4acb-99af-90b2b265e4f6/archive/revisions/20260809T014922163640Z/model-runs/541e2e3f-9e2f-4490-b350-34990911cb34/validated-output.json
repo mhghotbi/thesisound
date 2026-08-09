@@ -1,0 +1,49 @@
+{
+  "claims": [
+    {
+      "claim": "Consistent utilitarianism suffers from an innate incapacity to distinguish between utility and meaningfulness.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "Inherent in all consistent utilitarianism"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "This perplexity, inherent in all consistent utilitarianism, the philosophy of homo faber par excellence, can be diagnosed theoretically as an innate incapacity to understand the distinction between utility and meaningfulness"
+    },
+    {
+      "claim": "Establishing utility as meaning generates meaninglessness because it traps thought in an endless chain of means and ends.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The perplexity of utilitarianism is that it gets caught in the unending chain of means and ends without ever arriving at some principle which could justify the category of means and end, that is, of utility itself. The “in order to” has become the content of the “for the sake of”; in other words, utility established as meaning generates meaninglessness."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "The relational status of being a means 'in order to' achieve something else.",
+      "term": "Utility"
+    },
+    {
+      "definition": "A domain expressed linguistically by 'for the sake of' that defies questioning about its own use.",
+      "term": "Meaningfulness"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "Utility is expressed as 'in order to,' whereas meaningfulness is expressed as 'for the sake of.'",
+      "item_a": "Utility",
+      "item_b": "Meaningfulness"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "The inherent perplexity of utilitarianism involving the unending chain of means and ends.",
+    "The paradox that homo faber as pure fabricator cannot comprehend meaning except as a paradoxical end in itself."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Analyzing the utilitarian perplexities of homo faber, the inability to distinguish utility from meaningfulness, and the resulting slide into meaninglessness.",
+  "unresolved_context": []
+}

@@ -1,0 +1,20 @@
+{
+  "grounding_mode": "none",
+  "grounding_urls": [],
+  "model": "gemini-3.6-flash",
+  "output_model": "EpisodePlanDraft",
+  "prompt_hash": "5d0c616c786ef6f015b1bbf1c443fcb6bf74f9fff177f385bc4c5a121dc68b05",
+  "prompt_id": "episode_plan",
+  "prompt_version": "1.1.0",
+  "raw_prompts_stored": false,
+  "stage": "episode_plan",
+  "variable_names": [
+    "budget_report",
+    "claim_priorities",
+    "claims",
+    "coverage_report",
+    "disagreement_graph",
+    "extraction_plans",
+    "research_brief"
+  ]
+}

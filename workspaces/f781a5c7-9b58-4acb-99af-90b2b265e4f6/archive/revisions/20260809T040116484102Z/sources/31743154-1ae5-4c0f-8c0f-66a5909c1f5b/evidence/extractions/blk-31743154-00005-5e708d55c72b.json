@@ -1,0 +1,22 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00005-5e708d55c72b",
+  "extraction": {
+    "segment_function": "The target block contains encoded text strings and formatting that represent unparsed bibliographic references, citations, or metadata notes rather than interpretable prose.",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The block consists entirely of unparsed encoded strings (such as 2uFEE7, 2u9609, etc.), making it a list of bibliographic references or unrendered source data rather than substantive prose."
+    ],
+    "must_not_be_lost": [
+      "Retain the recognition that this block is non-prose metadata or bibliographic content lacking direct semantic claims."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

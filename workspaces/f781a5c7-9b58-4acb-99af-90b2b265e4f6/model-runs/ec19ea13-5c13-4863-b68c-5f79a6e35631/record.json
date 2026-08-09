@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "ffe123b3-ebbe-4034-9b03-cd9c764ac941",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 31441,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T11:57:04.460390Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 6496,
+        "output_tokens": 948,
+        "thinking_tokens": 3287,
+        "total_tokens": 10731
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T11:57:04.460401Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "d92b95be04d09985db88c73fa85c9dd7f42acce608ad177e710c79b23fe3df9a",
+  "model": "gemini-3.6-flash",
+  "output_model": "SegmentScriptDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "c331ed2414f370adc8b05b5b73ac2a280909653c194257e288dfa1241934173e",
+  "prompt_id": "persian_script_segment",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "ec19ea13-5c13-4863-b68c-5f79a6e35631",
+  "stage": "script_segment:seg-003",
+  "started_at": "2026-08-09T11:56:33.018603Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

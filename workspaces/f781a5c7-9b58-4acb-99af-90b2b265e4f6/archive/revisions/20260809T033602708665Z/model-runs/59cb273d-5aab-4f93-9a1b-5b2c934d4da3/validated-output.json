@@ -1,0 +1,16 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "The target block appears to list bibliographic or source references rather than discursive prose."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "The target block contains bibliographic references or textual notes with corrupted/encoded characters and citations, and does not establish any substantive prose claims or arguments.",
+  "unresolved_context": [
+    "The target block consists predominantly of heavily encoded or corrupted character sequences alongside sporadic numeric citations (e.g., 1344 : 23 815, 1342 : 35) and a concluding reference (1. ΔΑΙΑΔΑΙΙΔ /Kosmos), rendering substantive claim extraction impossible without external context."
+  ]
+}

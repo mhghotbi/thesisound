@@ -1,0 +1,19 @@
+{
+  "grounding_mode": "none",
+  "grounding_urls": [],
+  "model": "gemini-3.6-flash",
+  "output_model": "SegmentScriptDraft",
+  "prompt_hash": "c331ed2414f370adc8b05b5b73ac2a280909653c194257e288dfa1241934173e",
+  "prompt_id": "persian_script_segment",
+  "prompt_version": "1.0.0",
+  "raw_prompts_stored": false,
+  "stage": "script_segment:seg-003",
+  "variable_names": [
+    "disagreement_graph",
+    "evidence_pack",
+    "glossary",
+    "research_brief",
+    "segment",
+    "target_word_count"
+  ]
+}

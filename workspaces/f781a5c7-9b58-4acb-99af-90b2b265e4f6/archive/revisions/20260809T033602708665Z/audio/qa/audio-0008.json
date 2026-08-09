@@ -1,0 +1,14 @@
+{
+  "chunk_id": "audio-0008",
+  "chunk_hash": "5e6850630e036b55e3ea5eae11d74e8a3c796a2670cc708b3d3c627369ac8ca7",
+  "wav_sha256": "5ff06df503d5722e837682a0e42b1f4e048b311f194b9231d31a71c976054c6d",
+  "verdict": "pass",
+  "similarity_ratio": 1.0,
+  "expected_text": "با این حساب، جهانی که انسان سازنده می‌سازد بستری برای فعالیت عالی‌تر می‌شود. آن فعالیت برتر چیست و چه رابطه‌ای با آزادی دارد؟",
+  "transcript_text": "با این حساب جهانی که انسان سازنده می‌سازد بستری برای فعالیت عالی‌تر می‌شود. آن فعالیت برتر چیست و چه رابطه‌ای با آزادی دارد؟",
+  "missing_sentences": [],
+  "repeated_phrases": [],
+  "truncated": false,
+  "pronunciation_review": [],
+  "regeneration_instruction": null
+}

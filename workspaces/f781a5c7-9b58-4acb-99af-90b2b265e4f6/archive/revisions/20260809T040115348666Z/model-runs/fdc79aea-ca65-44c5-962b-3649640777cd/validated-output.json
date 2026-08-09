@@ -1,0 +1,36 @@
+{
+  "claims": [
+    {
+      "claim": "The action process is never exhausted by a single deed and possesses an endurance superior to man-made products, but it burdens human beings with irreversibility and unpredictability.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "dependent on the ability to bear the burden of irreversibility and unpredictability"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "That deeds possess such an enormous capacity for endurance, superior to every other man-made product, could be a matter of pride if men were able to bear its burden, the burden of irreversibility and unpredictability, from which the action process draws its very strength."
+    },
+    {
+      "claim": "Western philosophical and political tradition wrongly identifies sovereignty with freedom, viewing action negatively because sovereignty contradicts the condition of human plurality.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "applies to political and philosophic thought throughout the Western tradition"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "their basic error seems to lie in that identification of sovereignty with freedom which has always been taken for granted by political as well as philosophic thought. If it were true that sovereignty and freedom are the same, then indeed no man could be free, because sovereignty, the ideal of uncompromising self-sufficiency and mastership, is contradictory to the very condition of plurality."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "Identification of sovereignty with freedom is an error because sovereignty contradicts plurality.",
+    "Action processes are irreversible, unpredictable, and enduring."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": []
+}

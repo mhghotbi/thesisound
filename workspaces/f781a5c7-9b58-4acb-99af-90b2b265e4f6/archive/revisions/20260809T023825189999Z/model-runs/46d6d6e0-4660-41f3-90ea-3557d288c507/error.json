@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "7e8ca182-082c-4bfd-94c5-10e9baddceed",
+      "error_message": "Blocks may belong to only one map section: blk-187a0ac0-00007-8a3c01755291, blk-187a0ac0-00008-ba6dc172e4b0.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 4362,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T02:07:18.334035Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "8870f3cd-b0ba-4eee-9c05-95b0b77b2f46",
+      "error_message": "Blocks may belong to only one map section: blk-187a0ac0-00008-ba6dc172e4b0.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 4454,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T02:07:22.789872Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "error_message": "Blocks may belong to only one map section: blk-187a0ac0-00008-ba6dc172e4b0.",
+  "error_type": "DeterministicValidationError"
+}

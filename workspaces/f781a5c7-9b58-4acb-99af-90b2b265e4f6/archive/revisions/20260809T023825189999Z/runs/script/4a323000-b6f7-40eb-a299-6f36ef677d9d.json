@@ -1,0 +1,13 @@
+{
+  "run_id": "4a323000-b6f7-40eb-a299-6f36ef677d9d",
+  "previous_run_id": "70bbd51c-83dd-44f3-8bc8-19c7c0149112",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "approved_plan_hash": "a1357872624250a03c67765dcd693f2ff6ea7b21dc202c81c5fe4e60eb532831",
+  "approved_by": "0912000000",
+  "status": "failed",
+  "stage": "failed",
+  "started_at": "2026-08-09T02:20:01.826970Z",
+  "updated_at": "2026-08-09T02:20:07.419466Z",
+  "finished_at": "2026-08-09T02:20:07.419459Z",
+  "last_error": "All configured Gemini API keys are temporarily quota-blocked; retry in approximately 57 seconds."
+}

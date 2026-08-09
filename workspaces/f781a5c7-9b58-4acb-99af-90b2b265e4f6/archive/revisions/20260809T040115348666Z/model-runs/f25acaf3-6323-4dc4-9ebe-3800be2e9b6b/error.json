@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "ebd934b9-cc63-41fb-ae2c-b9cf6431fbbe",
+      "error_message": "Server disconnected without sending a response.",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 49951,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T03:59:34.273160Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "a9c2284b-42c6-4a1c-a1f3-c4c269604cca",
+      "error_message": "Server disconnected without sending a response.",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 50380,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T04:00:25.653923Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "error_message": "Server disconnected without sending a response.",
+  "error_type": "ModelProviderError"
+}

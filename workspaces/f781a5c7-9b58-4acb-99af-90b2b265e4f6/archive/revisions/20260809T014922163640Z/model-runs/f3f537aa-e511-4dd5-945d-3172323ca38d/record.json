@@ -1,0 +1,53 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "14b16c9a-5183-4b8f-988b-6eb75afafc27",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 2043,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T01:17:01.039912Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "accaac45-0867-422b-9f11-615ba81b0921",
+      "error_message": "supporting_excerpt must be copied from the supplied source block.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 2033,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T01:17:03.075526Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T01:17:03.076361Z",
+  "error_message": "supporting_excerpt must be copied from the supplied source block.",
+  "error_type": "DeterministicValidationError",
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "93e4c690840a6185071b67981c116864045a904325d7cc861c08dac7074deb8d",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "EvidenceExtractionDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "e25ceabd8a0052c5163c5ce16c0479c9e35402287fc9ea455d50cce503ac4509",
+  "prompt_id": "evidence_extraction",
+  "prompt_version": "1.1.0",
+  "provider": "gemini",
+  "run_id": "f3f537aa-e511-4dd5-945d-3172323ca38d",
+  "stage": "evidence_extraction",
+  "started_at": "2026-08-09T01:16:58.993225Z",
+  "status": "failed",
+  "web_search_queries": []
+}

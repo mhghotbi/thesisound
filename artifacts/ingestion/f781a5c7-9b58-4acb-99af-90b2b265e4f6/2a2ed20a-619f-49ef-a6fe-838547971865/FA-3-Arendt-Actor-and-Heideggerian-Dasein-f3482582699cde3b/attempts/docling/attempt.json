@@ -1,0 +1,9 @@
+{
+  "parser_name": "docling",
+  "status": "error",
+  "duration_seconds": 0.6113683419989684,
+  "parsed": null,
+  "quality": null,
+  "error_type": "DocumentParseError",
+  "error_message": "Docling conversion failed offline: LocalEntryNotFoundError. Provision every required model during build/deploy; runtime downloads are disabled."
+}

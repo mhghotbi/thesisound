@@ -1,0 +1,118 @@
+{
+  "claims": [
+    {
+      "claim": "Patchen Markell's article examines whether Hannah Arendt's political thought is relevant to the contemporary planetary situation by using a phenomenological distinction between outdoors and indoors to analyze artificial adaptations to a warming planet.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-bb10f25693e4d78a"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Hannah Arendt used the term earth to refer not only to the planet but also to make a broader theoretical point concerning the relationship between the given and the made.",
+      "claim_type": "scholarly_interpretation",
+      "evidence_ids": [
+        "ev-66195767f6d03e99"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Forms of artifice used by people to adapt to hostile environmental conditions depend heavily on who they are, their political circumstances, and global inequalities.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-96ef4426d248da80"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The carapace is a type of artificial adaptation that uses protective equipment and material to insulate human bodies from an increasingly hostile atmosphere, conforming to the neoliberal tendency to individualize public problems.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-3fc633e1be57a2aa"
+      ],
+      "qualifications": [
+        "used broadly to refer to a wide range of protective equipment"
+      ],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The cumulative effect of small-scale adaptations might be to intensify human isolation or alienation from the earth in its givenness.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-4ea9ea857b1a0c46"
+      ],
+      "qualifications": [
+        "applies as a possibility even if adaptations are small-scale and mundane"
+      ],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Modern science interposes humanly made technologies between humans and the world, cutting them off from reality.",
+      "claim_type": "scholarly_interpretation",
+      "evidence_ids": [
+        "ev-cb112eb92d04988b"
+      ],
+      "qualifications": [
+        "referenced through Arendt's stylized account of modern natural sciences"
+      ],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Arendt's concepts are connected loosely and connotatively to outdoor and indoor spaces and their associations with exposure and shelter.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-37277419bd6a7e47"
+      ],
+      "qualifications": [
+        "Even in passages that do not make reference to Greece"
+      ],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Arendt read Plato's cave allegory as a celebratory account of the philosopher's flight from the dark cave of human affairs into the bright sky of ideas.",
+      "claim_type": "scholarly_interpretation",
+      "evidence_ids": [
+        "ev-bdc89587be6d66de"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The crucial difference between indoors and outdoors is that the indoors lends itself to comprehensive design as a whole to facilitate or discourage specific patterns, whereas outdoor spaces are not fully enclosed, making a totalizing form more challenging to impose.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-c04560ffb305ac88"
+      ],
+      "qualifications": [
+        "outdoor spaces are also subject to design in a rationalizing and regimented spirit"
+      ],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Being outdoors as a sensate creature exposes one through the senses to a wider field of possibilities for the unanticipated or peripheral summoning of attention because the outdoors is intransigently interstitial.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-70a303171f1733bb"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The meaning of being indoors or outdoors varies significantly depending on existing forms of social inequality both locally and globally.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-f4f2f993ce56b063"
+      ],
+      "qualifications": [
+        "applies literally or figuratively",
+        "depends on existing forms of social inequality both locally and globally"
+      ],
+      "support_status": "strong"
+    }
+  ],
+  "unresolved_evidence_ids": [],
+  "warnings": []
+}

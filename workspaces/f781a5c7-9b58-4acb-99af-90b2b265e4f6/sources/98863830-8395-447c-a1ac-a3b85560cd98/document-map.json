@@ -1,0 +1,1195 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "scope_locator": {
+    "page_start": null,
+    "page_end": null,
+    "chapter": "9780226924571 04 cpy",
+    "section": "9780226924571 04 cpy",
+    "paragraph_start": null,
+    "paragraph_end": null,
+    "epub_cfi": null
+  },
+  "working_thesis": "Hannah Arendt's The Human Condition presents a phenomenological and historical analysis of the vita activa (labor, work, and action) and critiques the traditional philosophical subordination of political action to contemplation, while diagnosing the modern rise of society and the dangers of world alienation and thoughtlessness.",
+  "sections": [
+    {
+      "section_id": "part-0001:sec-001",
+      "source_block_ids": [
+        "blk-98863830-00001-d63e18794c51",
+        "blk-98863830-00002-9f16d7964abd",
+        "blk-98863830-00003-a7d0021b37df",
+        "blk-98863830-00004-a1c4a049193c",
+        "blk-98863830-00005-9503519b95b8",
+        "blk-98863830-00006-ad83a09f8711",
+        "blk-98863830-00007-ef27bc8317db",
+        "blk-98863830-00008-bc48a961db74",
+        "blk-98863830-00009-d379d7f1d990",
+        "blk-98863830-00010-b07f10ee6718"
+      ],
+      "title": "Introduction to The Human Condition by Margaret Canovan",
+      "function": "front_matter",
+      "key_concepts": [
+        "vita activa",
+        "labor",
+        "work",
+        "action",
+        "plurality",
+        "world alienation",
+        "earth alienation",
+        "social"
+      ],
+      "depends_on_section_ids": [],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0001:sec-002",
+      "source_block_ids": [
+        "blk-98863830-00011-cfc985d154bc",
+        "blk-98863830-00012-e43525f478a5",
+        "blk-98863830-00013-ee676e873bdc"
+      ],
+      "title": "Prologue",
+      "function": "argument",
+      "key_concepts": [
+        "space satellite",
+        "earthly imprisonment",
+        "automation",
+        "thoughtlessness",
+        "modern age"
+      ],
+      "depends_on_section_ids": [
+        "part-0001:sec-001"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0001:sec-003",
+      "source_block_ids": [
+        "blk-98863830-00014-2929fc16d449",
+        "blk-98863830-00015-0dc93405ad60"
+      ],
+      "title": "Chapter I, Section 1-1: Vita Activa and the Human Condition",
+      "function": "definition",
+      "key_concepts": [
+        "labor",
+        "work",
+        "action",
+        "plurality",
+        "natality",
+        "mortality",
+        "conditioned beings"
+      ],
+      "depends_on_section_ids": [
+        "part-0001:sec-002"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0001:sec-004",
+      "source_block_ids": [
+        "blk-98863830-00016-0bae9913560f",
+        "blk-98863830-00017-8d2b21d55a85",
+        "blk-98863830-00018-c110ef9718e2",
+        "blk-98863830-00019-87eeca01511a"
+      ],
+      "title": "Chapter I, Section 2-3: The Term Vita Activa and Eternity versus Immortality",
+      "function": "argument",
+      "key_concepts": [
+        "bios politikos",
+        "vita contemplativa",
+        "contemplation",
+        "immortality",
+        "eternity"
+      ],
+      "depends_on_section_ids": [
+        "part-0001:sec-003"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0001:sec-005",
+      "source_block_ids": [
+        "blk-98863830-00020-b6939d12c2ab",
+        "blk-98863830-00021-62fc4bace9d3",
+        "blk-98863830-00022-360c6289622f",
+        "blk-98863830-00023-5f79e4666b2e",
+        "blk-98863830-00024-2933cef84dd9"
+      ],
+      "title": "Chapter II, Section 4-5: Man: A Social or a Political Animal and The Polis and the Household",
+      "function": "argument",
+      "key_concepts": [
+        "zōon politikon",
+        "animal socialis",
+        "polis",
+        "household",
+        "freedom",
+        "necessity"
+      ],
+      "depends_on_section_ids": [
+        "part-0001:sec-003",
+        "part-0001:sec-004"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0001:sec-006",
+      "source_block_ids": [
+        "blk-98863830-00025-9be9277af64f",
+        "blk-98863830-00026-980ba5e99a46",
+        "blk-98863830-00027-5c53f02a15fc",
+        "blk-98863830-00028-9b4ca688b49a",
+        "blk-98863830-00029-f36b56728386",
+        "blk-98863830-00030-2024aaf66660"
+      ],
+      "title": "Chapter II, Section 6-7: The Rise of the Social and The Public Realm",
+      "function": "argument",
+      "key_concepts": [
+        "rise of society",
+        "intimacy",
+        "conformism",
+        "behaviorism",
+        "common world",
+        "excellence"
+      ],
+      "depends_on_section_ids": [
+        "part-0001:sec-005"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0001:sec-007",
+      "source_block_ids": [
+        "blk-98863830-00031-75f26de0f939",
+        "blk-98863830-00032-eee5696a79ca",
+        "blk-98863830-00033-0410164c12b2",
+        "blk-98863830-00034-2759e45d7054",
+        "blk-98863830-00035-bcf4009bded8",
+        "blk-98863830-00036-4bda9e090bb2",
+        "blk-98863830-00037-12ec6df6a76f",
+        "blk-98863830-00038-4bcfb6bf2ad4",
+        "blk-98863830-00039-6411020c333a",
+        "blk-98863830-00040-90b0c6194a41"
+      ],
+      "title": "Chapter II, Section 8-10: The Private Realm: Property, The Social and the Private, and The Location of Human Activities",
+      "function": "argument",
+      "key_concepts": [
+        "property",
+        "wealth",
+        "privacy",
+        "goodness",
+        "location of activities"
+      ],
+      "depends_on_section_ids": [
+        "part-0001:sec-006"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-001",
+      "source_block_ids": [
+        "blk-98863830-00041-45a9fcc0206f"
+      ],
+      "title": "Introduction: The Neglected Distinction Between Labor and Work",
+      "function": "front_matter",
+      "key_concepts": [
+        "labor",
+        "work",
+        "etymological distinction",
+        "ancient contempt for labor"
+      ],
+      "depends_on_section_ids": [],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-002",
+      "source_block_ids": [
+        "blk-98863830-00042-f7aa919f145a"
+      ],
+      "title": "Antiquity, Slavery, and the Animal Laborans",
+      "function": "definition",
+      "key_concepts": [
+        "slavery",
+        "necessity",
+        "animal laborans",
+        "household vs. public realm"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-001"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-003",
+      "source_block_ids": [
+        "blk-98863830-00043-ded5c049cadd"
+      ],
+      "title": "Productivity of Labor and Modern Economic Theories",
+      "function": "argument",
+      "key_concepts": [
+        "productive and unproductive labor",
+        "Adam Smith",
+        "Karl Marx",
+        "labor power",
+        "surplus"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-002"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-004",
+      "source_block_ids": [
+        "blk-98863830-00044-705024407fd9"
+      ],
+      "title": "Skills, Manual and Intellectual Labor, and Bureaucracy",
+      "function": "argument",
+      "key_concepts": [
+        "skilled and unskilled work",
+        "manual and intellectual labor",
+        "liberal and servile arts",
+        "bureaucracy"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-003"
+      ],
+      "required_for_global_understanding": false,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-005",
+      "source_block_ids": [
+        "blk-98863830-00045-09504c919bfd"
+      ],
+      "title": "The Thing-Character of the World and Reification",
+      "function": "definition",
+      "key_concepts": [
+        "consumer goods",
+        "use objects",
+        "products of action and speech",
+        "reification"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-003"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-006",
+      "source_block_ids": [
+        "blk-98863830-00046-6880025cebf7"
+      ],
+      "title": "Labor and Life: Cyclical Nature and Biological Processes",
+      "function": "argument",
+      "key_concepts": [
+        "life process",
+        "cyclical movement",
+        "growth and decay",
+        "bios vs. zōē"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-005"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-007",
+      "source_block_ids": [
+        "blk-98863830-00047-e4926a23ac97",
+        "blk-98863830-00048-4ac3e959ea0e"
+      ],
+      "title": "Labor, Fertility, and Marx's Contradictions",
+      "function": "argument",
+      "key_concepts": [
+        "metabolism with nature",
+        "fertility",
+        "contradictions in Marx",
+        "realm of freedom vs. realm of necessity"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-003",
+        "part-0002:sec-006"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-008",
+      "source_block_ids": [
+        "blk-98863830-00049-99ac0610327d",
+        "blk-98863830-00050-e91b7ced182b"
+      ],
+      "title": "The Experience of Labor, Happiness, and Privacy",
+      "function": "argument",
+      "key_concepts": [
+        "blessing of life",
+        "happiness",
+        "fertility of life force",
+        "private property"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-007"
+      ],
+      "required_for_global_understanding": false,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-009",
+      "source_block_ids": [
+        "blk-98863830-00051-8ad6adfea771",
+        "blk-98863830-00052-1aaeca94df80"
+      ],
+      "title": "Locke, Private Property, and the Body as Quintessence of Property",
+      "function": "argument",
+      "key_concepts": [
+        "property in his own person",
+        "appropriation",
+        "pain and absence of pain",
+        "hedonism"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-008"
+      ],
+      "required_for_global_understanding": false,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-010",
+      "source_block_ids": [
+        "blk-98863830-00053-46ef49b52c96",
+        "blk-98863830-00054-0ea99ec2db54"
+      ],
+      "title": "Socialized Mankind, Worldlessness, and the Burden of Life",
+      "function": "argument",
+      "key_concepts": [
+        "socialized mankind",
+        "worldlessness",
+        "burden of biological life",
+        "vicarious life"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-007",
+        "part-0002:sec-009"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-011",
+      "source_block_ids": [
+        "blk-98863830-00055-f9f0a05390c9",
+        "blk-98863830-00056-e324fbf7401d"
+      ],
+      "title": "Tools, Machines, and the Division of Labor",
+      "function": "argument",
+      "key_concepts": [
+        "tools vs. machines",
+        "division of labor",
+        "specialization",
+        "mute robots"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-003",
+        "part-0002:sec-010"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-012",
+      "source_block_ids": [
+        "blk-98863830-00057-9d0d14d22955",
+        "blk-98863830-00058-11150ee95600",
+        "blk-98863830-00059-f73cea452505",
+        "blk-98863830-00060-4cd6cb863369"
+      ],
+      "title": "Consumers' Society and the Triumph of the Animal Laborans",
+      "function": "conclusion",
+      "key_concepts": [
+        "waste economy",
+        "consumers' society",
+        "mass culture",
+        "universal unhappiness"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-011"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-013",
+      "source_block_ids": [
+        "blk-98863830-00061-5613acad3e65",
+        "blk-98863830-00062-9aa5de647675"
+      ],
+      "title": "Chapter IV Work: The Durability of the World and Reification",
+      "function": "definition",
+      "key_concepts": [
+        "homo faber",
+        "durability of the human artifice",
+        "objectivity",
+        "reification"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-005"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-014",
+      "source_block_ids": [
+        "blk-98863830-00063-9440742c4fce",
+        "blk-98863830-00064-7408029a32f4",
+        "blk-98863830-00065-936943606979",
+        "blk-98863830-00066-e49e49d808e4",
+        "blk-98863830-00067-66852767fa22"
+      ],
+      "title": "Instrumentality, Models, and Automation",
+      "function": "argument",
+      "key_concepts": [
+        "guidance of a model",
+        "means and end",
+        "tools vs. machines",
+        "automation"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-013"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-015",
+      "source_block_ids": [
+        "blk-98863830-00068-a58ed713283e",
+        "blk-98863830-00069-1e36a37977c9",
+        "blk-98863830-00070-0df9a0040a34"
+      ],
+      "title": "The Perplexity of Utilitarianism and Protagoras' Measure",
+      "function": "argument",
+      "key_concepts": [
+        "utilitarianism",
+        "meaninglessness",
+        "Kant's formula",
+        "Protagoras",
+        "degradation of nature"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-014"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-016",
+      "source_block_ids": [
+        "blk-98863830-00071-83645bcd1f3f",
+        "blk-98863830-00072-8432597e6bd2"
+      ],
+      "title": "The Exchange Market and Marketable Value",
+      "function": "argument",
+      "key_concepts": [
+        "exchange market",
+        "conspicuous production",
+        "marketable value",
+        "intrinsic worth"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-015"
+      ],
+      "required_for_global_understanding": false,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0002:sec-017",
+      "source_block_ids": [
+        "blk-98863830-00073-484f60306745",
+        "blk-98863830-00074-152179c77412",
+        "blk-98863830-00075-90bd683a5dd0",
+        "blk-98863830-00076-4d3b5a787291"
+      ],
+      "title": "The Permanence of the World and the Work of Art",
+      "function": "conclusion",
+      "key_concepts": [
+        "works of art",
+        "thought vs. cognition",
+        "transfiguration",
+        "beauty and worldly transcendence"
+      ],
+      "depends_on_section_ids": [
+        "part-0002:sec-013",
+        "part-0002:sec-016"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-001",
+      "source_block_ids": [
+        "blk-98863830-00077-5e4939c361c7",
+        "blk-98863830-00078-5653b51ca68d"
+      ],
+      "title": "The Conditions of Action and Speech: Plurality, Natality, and Revelation",
+      "function": "definition",
+      "key_concepts": [
+        "Human plurality",
+        "Equality and distinction",
+        "Uniqueness",
+        "Natality",
+        "Initiative and beginning",
+        "Disclosure of the 'who'"
+      ],
+      "depends_on_section_ids": [],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-002",
+      "source_block_ids": [
+        "blk-98863830-00079-d88c7d1cf9a9",
+        "blk-98863830-00080-56048fc53d98",
+        "blk-98863830-00081-40d4d7350bb0",
+        "blk-98863830-00082-f63270da96ee"
+      ],
+      "title": "The Web of Relationships and the Enacted Stories",
+      "function": "argument",
+      "key_concepts": [
+        "Sheer human togetherness",
+        "The web of human relationships",
+        "Enacted stories",
+        "The hero without an author",
+        "Intangibility of human affairs"
+      ],
+      "depends_on_section_ids": [
+        "part-0003:sec-001"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-003",
+      "source_block_ids": [
+        "blk-98863830-00083-50aedfaf5211",
+        "blk-98863830-00084-b85c260fac7b"
+      ],
+      "title": "The Frailty, Boundlessness, and Unpredictability of Human Affairs",
+      "function": "argument",
+      "key_concepts": [
+        "Frailty of human affairs",
+        "Boundlessness of action",
+        "Chain reactions",
+        "Unpredictability",
+        "Hubris and moderation"
+      ],
+      "depends_on_section_ids": [
+        "part-0003:sec-001",
+        "part-0003:sec-002"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-004",
+      "source_block_ids": [
+        "blk-98863830-00085-6ee8c471e473",
+        "blk-98863830-00086-91c82aeb577e",
+        "blk-98863830-00087-bb5f87340bb1"
+      ],
+      "title": "The Greek Solution: The Polis and the Agonal Spirit",
+      "function": "argument",
+      "key_concepts": [
+        "The polis",
+        "Sharing of words and deeds",
+        "Space of appearance",
+        "Immortality and remembrance"
+      ],
+      "depends_on_section_ids": [
+        "part-0003:sec-001",
+        "part-0003:sec-002",
+        "part-0003:sec-003"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-005",
+      "source_block_ids": [
+        "blk-98863830-00088-a8f21f4e7a68",
+        "blk-98863830-00089-3d55d9c818ec",
+        "blk-98863830-00090-f8be348ef42a"
+      ],
+      "title": "Power, Violence, and Energeia",
+      "function": "definition",
+      "key_concepts": [
+        "Power (dynamis / potentia)",
+        "Tyranny and isolation",
+        "Violence versus power",
+        "Energeia and actuality"
+      ],
+      "depends_on_section_ids": [
+        "part-0003:sec-001",
+        "part-0003:sec-004"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-006",
+      "source_block_ids": [
+        "blk-98863830-00091-f8ee3a7ac3d0",
+        "blk-98863830-00092-9337c543230a"
+      ],
+      "title": "Homo Faber and the Space of Appearance",
+      "function": "argument",
+      "key_concepts": [
+        "Homo faber",
+        "Alienation",
+        "Common sense",
+        "The exchange market",
+        "Genius and workmanship"
+      ],
+      "depends_on_section_ids": [
+        "part-0003:sec-001",
+        "part-0003:sec-005"
+      ],
+      "required_for_global_understanding": false,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-007",
+      "source_block_ids": [
+        "blk-98863830-00093-04225164222d",
+        "blk-98863830-00094-b63e40e75606",
+        "blk-98863830-00095-5ce307767181"
+      ],
+      "title": "The Labor Movement and the Sameness of Society",
+      "function": "argument",
+      "key_concepts": [
+        "Animal laborans",
+        "Labor gang and sameness",
+        "Emancipation of labor",
+        "People's councils"
+      ],
+      "depends_on_section_ids": [
+        "part-0003:sec-001",
+        "part-0003:sec-006"
+      ],
+      "required_for_global_understanding": false,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-008",
+      "source_block_ids": [
+        "blk-98863830-00096-fcce8a507720",
+        "blk-98863830-00097-c807df4ea8b3",
+        "blk-98863830-00098-7a2891ea9fde",
+        "blk-98863830-00099-fcccca03da2f",
+        "blk-98863830-00100-44b7dec21c02"
+      ],
+      "title": "The Traditional Substitution of Making for Acting",
+      "function": "objection",
+      "key_concepts": [
+        "Substitution of making for acting",
+        "Monarchy and rule",
+        "Plato's Statesman and Republic",
+        "Instrumentality and means-ends category",
+        "Process character of action and science"
+      ],
+      "depends_on_section_ids": [
+        "part-0003:sec-003",
+        "part-0003:sec-005"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0003:sec-009",
+      "source_block_ids": [
+        "blk-98863830-00101-19f60938cfbd",
+        "blk-98863830-00102-38d13fb4d7a8",
+        "blk-98863830-00103-9dabc8aa9052",
+        "blk-98863830-00104-16bdc218816d",
+        "blk-98863830-00105-972f311af8fd",
+        "blk-98863830-00106-91a43b94f2cf",
+        "blk-98863830-00107-4ccb8c9f0388"
+      ],
+      "title": "Remedies of Action: Forgiving, Promising, and Natality",
+      "function": "response",
+      "key_concepts": [
+        "Sovereignty versus freedom",
+        "Faculty of forgiving",
+        "Faculty of making promises",
+        "Respect",
+        "Miracle of natality",
+        "Faith and hope"
+      ],
+      "depends_on_section_ids": [
+        "part-0003:sec-001",
+        "part-0003:sec-003",
+        "part-0003:sec-008"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-001",
+      "source_block_ids": [
+        "blk-98863830-00108-efae252f4a34",
+        "blk-98863830-00109-ae67b5bf1953",
+        "blk-98863830-00110-0d18ebd7d848",
+        "blk-98863830-00111-27537ce4c519"
+      ],
+      "title": "World Alienation and the Threshold of Modernity",
+      "function": "argument",
+      "key_concepts": [
+        "world alienation",
+        "earth alienation",
+        "Reformation",
+        "capital accumulation",
+        "shrinkage of the globe"
+      ],
+      "depends_on_section_ids": [],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-002",
+      "source_block_ids": [
+        "blk-98863830-00112-cb2bca930cf3",
+        "blk-98863830-00113-417abc62e5b6"
+      ],
+      "title": "The Discovery of the Archimedean Point",
+      "function": "argument",
+      "key_concepts": [
+        "Archimedean point",
+        "telescope",
+        "Galileo",
+        "sense perception",
+        "Copernican revolution"
+      ],
+      "depends_on_section_ids": [
+        "part-0004:sec-001"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-003",
+      "source_block_ids": [
+        "blk-98863830-00114-654d87180d12",
+        "blk-98863830-00115-520a34af2a29",
+        "blk-98863830-00116-7b2921816395",
+        "blk-98863830-00117-45539534398f",
+        "blk-98863830-00118-93e67b6e862a"
+      ],
+      "title": "Universal Science and Earth Alienation",
+      "function": "argument",
+      "key_concepts": [
+        "universal science",
+        "mathematization",
+        "algebra",
+        "despair and triumph",
+        "Cartesian philosophy"
+      ],
+      "depends_on_section_ids": [
+        "part-0004:sec-002"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-004",
+      "source_block_ids": [
+        "blk-98863830-00119-dee662b404b0",
+        "blk-98863830-00120-40586928a3b9",
+        "blk-98863830-00121-bdc0b69e5c27",
+        "blk-98863830-00122-0e31a023eddc",
+        "blk-98863830-00123-1ba98cb0a683"
+      ],
+      "title": "The Rise of Cartesian Doubt and Introspection",
+      "function": "argument",
+      "key_concepts": [
+        "Cartesian doubt",
+        "introspection",
+        "certainty",
+        "cogito ergo sum",
+        "theodicies"
+      ],
+      "depends_on_section_ids": [
+        "part-0004:sec-003"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-005",
+      "source_block_ids": [
+        "blk-98863830-00124-77699a827341",
+        "blk-98863830-00125-4ff44c65eecb",
+        "blk-98863830-00126-cad89b43c457",
+        "blk-98863830-00127-2d0d6e2910bc"
+      ],
+      "title": "The Reversal of Contemplation and Action",
+      "function": "argument",
+      "key_concepts": [
+        "vita contemplativa",
+        "vita activa",
+        "experiment",
+        "truthfulness",
+        "Platonic tradition"
+      ],
+      "depends_on_section_ids": [
+        "part-0004:sec-004"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-006",
+      "source_block_ids": [
+        "blk-98863830-00128-797bccbff6e0",
+        "blk-98863830-00129-4f168757eb8e",
+        "blk-98863830-00130-efb120fbbe4a",
+        "blk-98863830-00131-77f4034108ec"
+      ],
+      "title": "The Victory of Homo Faber and Process",
+      "function": "argument",
+      "key_concepts": [
+        "homo faber",
+        "process",
+        "making",
+        "Hobbes",
+        "political philosophy"
+      ],
+      "depends_on_section_ids": [
+        "part-0004:sec-005"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-007",
+      "source_block_ids": [
+        "blk-98863830-00132-196015dfbff9",
+        "blk-98863830-00133-650a8d0f2b33",
+        "blk-98863830-00134-87566bcfe622",
+        "blk-98863830-00135-3b8e656bcdf4"
+      ],
+      "title": "The Defeat of Homo Faber and Life as Highest Good",
+      "function": "argument",
+      "key_concepts": [
+        "utility",
+        "happiness principle",
+        "pain and pleasure calculus",
+        "life philosophy",
+        "causality"
+      ],
+      "depends_on_section_ids": [
+        "part-0004:sec-006"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-008",
+      "source_block_ids": [
+        "blk-98863830-00136-d1b9e86b28aa",
+        "blk-98863830-00137-c98ace9011b5",
+        "blk-98863830-00138-655c319689f1",
+        "blk-98863830-00139-7e259826d30c",
+        "blk-98863830-00140-0355bab509cf"
+      ],
+      "title": "The Victory of the Animal Laborans",
+      "function": "conclusion",
+      "key_concepts": [
+        "animal laborans",
+        "Christianity",
+        "immortality of life",
+        "laboring society",
+        "behaviorism"
+      ],
+      "depends_on_section_ids": [
+        "part-0004:sec-007"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0004:sec-009",
+      "source_block_ids": [
+        "blk-98863830-00141-62b0d7197557",
+        "blk-98863830-00142-56991480d620"
+      ],
+      "title": "Acknowledgments and Front Matter",
+      "function": "front_matter",
+      "key_concepts": [
+        "acknowledgments",
+        "Hannah Arendt"
+      ],
+      "depends_on_section_ids": [],
+      "required_for_global_understanding": false,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0005:sec-001",
+      "source_block_ids": [
+        "blk-98863830-00143-e7291095b2a2",
+        "blk-98863830-00144-16b12e01b035",
+        "blk-98863830-00145-4f7835c33d22",
+        "blk-98863830-00146-74fbdf17f664",
+        "blk-98863830-00147-79079d9f5094",
+        "blk-98863830-00148-25bac839ecd7",
+        "blk-98863830-00149-790d889bff76",
+        "blk-98863830-00150-0f3a9e3aed23",
+        "blk-98863830-00151-bff03997ac60",
+        "blk-98863830-00152-ff55653b5ce9",
+        "blk-98863830-00153-ca797199e59c"
+      ],
+      "title": "Notes on Introduction and Chapter 1: The Human Condition, Classical Status of Labor, and Political Life",
+      "function": "argument",
+      "key_concepts": [
+        "vita activa",
+        "labor and necessity",
+        "slavery and freedom",
+        "the public realm vs. household",
+        "property and citizenship"
+      ],
+      "depends_on_section_ids": [],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0005:sec-002",
+      "source_block_ids": [
+        "blk-98863830-00154-4fd131b4a47a",
+        "blk-98863830-00155-47b20935e369",
+        "blk-98863830-00156-84a20d6ee86e",
+        "blk-98863830-00157-73415661ecff",
+        "blk-98863830-00158-a8532d6f1ba0",
+        "blk-98863830-00159-a6ffadfaa395",
+        "blk-98863830-00160-3e88b3f9f6ab",
+        "blk-98863830-00161-f638ca54ad73",
+        "blk-98863830-00162-5059c635c53f",
+        "blk-98863830-00163-3ad84664951c"
+      ],
+      "title": "Notes on Chapter 2 and Chapter 3: Labor, Animal Laborans, and Historical Conceptions of Work",
+      "function": "argument",
+      "key_concepts": [
+        "animal laborans",
+        "Marx's labor theory",
+        "pain and effort",
+        "metabolism with nature",
+        "automation and modern labor"
+      ],
+      "depends_on_section_ids": [
+        "part-0005:sec-001"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0005:sec-003",
+      "source_block_ids": [
+        "blk-98863830-00164-9d5a0fb35bbc",
+        "blk-98863830-00165-f6afc86861ff",
+        "blk-98863830-00166-15d4c346c292",
+        "blk-98863830-00167-845be5bd0ef9",
+        "blk-98863830-00168-7e391cc73ec7",
+        "blk-98863830-00169-79f4f85f24c7",
+        "blk-98863830-00170-8ba96b71ca2a",
+        "blk-98863830-00171-8f6adf2a2c73",
+        "blk-98863830-00172-161c9ebe9d12",
+        "blk-98863830-00173-420456daf1ef",
+        "blk-98863830-00174-d49b5a3edc1f"
+      ],
+      "title": "Notes on Chapter 4 and Chapter 5: Homo Faber, Action, Speech, and Forgiveness",
+      "function": "argument",
+      "key_concepts": [
+        "homo faber",
+        "action and speech",
+        "plurality",
+        "forgiveness and promising",
+        "worldliness"
+      ],
+      "depends_on_section_ids": [
+        "part-0005:sec-001",
+        "part-0005:sec-002"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0005:sec-004",
+      "source_block_ids": [
+        "blk-98863830-00175-9b33a8ef7563",
+        "blk-98863830-00176-0e7147ab86d4",
+        "blk-98863830-00177-1a7906a1baf0",
+        "blk-98863830-00178-78c823a488ac",
+        "blk-98863830-00179-a35ffb89a0ad",
+        "blk-98863830-00180-0f692c0c3a73",
+        "blk-98863830-00181-03aa99c96d90"
+      ],
+      "title": "Notes on Chapter 6: The Modern Age, Cartesian Doubt, and the Loss of World",
+      "function": "conclusion",
+      "key_concepts": [
+        "modern science",
+        "Cartesian doubt",
+        "world alienation",
+        "Archimedean point",
+        "vita contemplativa vs. activa"
+      ],
+      "depends_on_section_ids": [
+        "part-0005:sec-001",
+        "part-0005:sec-002",
+        "part-0005:sec-003"
+      ],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    },
+    {
+      "section_id": "part-0006:sec-001",
+      "source_block_ids": [
+        "blk-98863830-00182-055e917c9509",
+        "blk-98863830-00183-97b57759bf03",
+        "blk-98863830-00184-2b799bca5c3b",
+        "blk-98863830-00185-c8c8aaf02230",
+        "blk-98863830-00186-4ef3b1a10267",
+        "blk-98863830-00187-ac363c3a2912",
+        "blk-98863830-00188-babd847c14fb",
+        "blk-98863830-00189-79a3fbf1ee49",
+        "blk-98863830-00190-d6ce3339ce17",
+        "blk-98863830-00191-f0f8c5349197",
+        "blk-98863830-00192-2545267a2692",
+        "blk-98863830-00193-b42fcf4c4f47",
+        "blk-98863830-00194-32134159f9b9",
+        "blk-98863830-00195-87d7f106e0ba",
+        "blk-98863830-00196-8b773ad9f351",
+        "blk-98863830-00197-1b33b31332b7",
+        "blk-98863830-00198-1f76da3fc86e"
+      ],
+      "title": "Index Blocks",
+      "function": "other",
+      "key_concepts": [
+        "Index",
+        "vita activa",
+        "action",
+        "labor",
+        "work"
+      ],
+      "depends_on_section_ids": [],
+      "required_for_global_understanding": true,
+      "unresolved_context": []
+    }
+  ],
+  "cross_section_threads": [
+    {
+      "label": "The Distinction Between Public and Private",
+      "section_ids": [
+        "part-0001:sec-005",
+        "part-0001:sec-006",
+        "part-0001:sec-007"
+      ],
+      "description": "Tracing the historical and conceptual separation between the public sphere (polis, action, freedom) and the private sphere (household, necessity, property) and how the modern rise of the social has blurred these boundaries."
+    },
+    {
+      "label": "Critique of Traditional Philosophy and the Vita Activa",
+      "section_ids": [
+        "part-0001:sec-001",
+        "part-0001:sec-003",
+        "part-0001:sec-004"
+      ],
+      "description": "Examining how Western philosophical tradition subordinated the vita activa and political action to contemplation and eternity."
+    },
+    {
+      "label": "The Conflict Between Labor and Work",
+      "section_ids": [
+        "part-0002:sec-001",
+        "part-0002:sec-003",
+        "part-0002:sec-007",
+        "part-0002:sec-013",
+        "part-0002:sec-017"
+      ],
+      "description": "Tracing the tension between the ephemeral, consuming activity of labor (animal laborans) and the durable, world-building activity of work/fabrication (homo faber) throughout the chapters."
+    },
+    {
+      "label": "Instrumentality and Means-End Categories",
+      "section_ids": [
+        "part-0002:sec-011",
+        "part-0002:sec-014",
+        "part-0002:sec-015"
+      ],
+      "description": "Exploration of how the means-end framework operates in craftsmanship, breaks down under automation and laboring, and leads to utilitarian paradoxes."
+    },
+    {
+      "label": "Action and Making (Praxis vs. Poiēsis)",
+      "section_ids": [
+        "part-0003:sec-005",
+        "part-0003:sec-006",
+        "part-0003:sec-008"
+      ],
+      "description": "The persistent historical tendency to misunderstand or replace the sheer actuality of action (praxis) with the instrumentality of making and fabrication (poiēsis)."
+    },
+    {
+      "label": "Plurality and Sovereignty",
+      "section_ids": [
+        "part-0003:sec-001",
+        "part-0003:sec-008",
+        "part-0003:sec-009"
+      ],
+      "description": "The tension between human plurality (where no single person is sovereign) and the traditional philosophical quest for individual or single-rule sovereignty."
+    },
+    {
+      "label": "Alienation Thread",
+      "section_ids": [
+        "part-0004:sec-001",
+        "part-0004:sec-003",
+        "part-0004:sec-008"
+      ],
+      "description": "The evolution of world alienation, earth alienation, and self-alienation throughout the modern age."
+    },
+    {
+      "label": "Hierarchical Reversals of the Vita Activa",
+      "section_ids": [
+        "part-0004:sec-005",
+        "part-0004:sec-006",
+        "part-0004:sec-007",
+        "part-0004:sec-008"
+      ],
+      "description": "The successive reversals between contemplation, making (homo faber), and laboring (animal laborans)."
+    },
+    {
+      "label": "Concept of Labor and Animal Laborans",
+      "section_ids": [
+        "part-0005:sec-001",
+        "part-0005:sec-002",
+        "part-0005:sec-003"
+      ],
+      "description": "Tracing the evolution of the concept of labor from classical disdain for necessity to Marx's definition of man as animal laborans and modern industrial conditions."
+    },
+    {
+      "label": "World Alienation and Modernity",
+      "section_ids": [
+        "part-0005:sec-003",
+        "part-0005:sec-004"
+      ],
+      "description": "The progression from traditional worldliness and action to modern scientific abstraction and world alienation."
+    }
+  ],
+  "warnings": [
+    "No partitions were provided in the input context.",
+    "Document was mapped hierarchically across 6 complete semantic partitions; no blocks were omitted."
+  ]
+}

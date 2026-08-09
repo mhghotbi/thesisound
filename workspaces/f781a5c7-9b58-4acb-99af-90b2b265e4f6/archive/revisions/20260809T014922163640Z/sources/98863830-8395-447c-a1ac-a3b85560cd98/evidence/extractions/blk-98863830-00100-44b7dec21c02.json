@@ -1,0 +1,61 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00100-44b7dec21c02",
+  "extraction": {
+    "segment_function": "Analyze the process character of action in modern natural and historical sciences, highlighting the capacity to start irreversible processes and the resulting unpredictability and inability to undo deeds.",
+    "claims": [
+      {
+        "evidence_id": "ev-9b315b9fc7a2ec1d",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00100-44b7dec21c02",
+        "claim": "The natural sciences have become exclusively sciences of process because the underlying human capacity that brought about this development is the human ability to act and start new unprecedented processes.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The very fact that natural sciences have become exclusively sciences of process and, in their last stage, sciences of potentially irreversible, irremediable “processes of no return” is a clear indication that, whatever the brain power necessary to start them, the actual underlying human capacity which alone could bring about this development is no “theoretical” capacity, neither contemplation nor reason, but the human ability to act—to start new unprecedented processes whose outcome remains uncertain and unpre dictable whether they are let loose in the human or the natural realm.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-6fdde4096540535e",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00100-44b7dec21c02",
+        "claim": "Men have never been and never will be able to undo or reliably control any of the processes they start through action.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "men never have been and never will be able to undo or even to control reliably any of the processes they start through action.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The central concept of modern natural and historical sciences is the concept of process, grounded in the human capacity for action."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

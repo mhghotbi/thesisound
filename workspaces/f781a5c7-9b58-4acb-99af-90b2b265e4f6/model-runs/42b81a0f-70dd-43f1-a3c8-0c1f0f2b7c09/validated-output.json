@@ -1,0 +1,14 @@
+{
+  "claims": [],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "bibliographic_notice_and_copyright_page",
+  "unresolved_context": [
+    "The target block contains bibliographic notes, copyright notices, and cataloging-in-publication data rather than prose arguments."
+  ]
+}

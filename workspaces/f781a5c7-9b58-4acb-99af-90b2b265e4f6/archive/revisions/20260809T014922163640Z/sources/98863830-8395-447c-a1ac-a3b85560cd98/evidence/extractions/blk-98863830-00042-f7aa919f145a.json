@@ -1,0 +1,59 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00042-f7aa919f145a",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-23689c286fa779dc",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00042-f7aa919f145a",
+        "claim": "Ancient ancients did not despise labor and work simply because slaves were engaged in them; rather, they felt it necessary to possess slaves because all occupations serving the maintenance of life had a slavish nature.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The opinion that labor and work were despised in antiquity because only slaves were engaged in them is a prejudice of modern historians. The ancients reasoned the other way around and felt it necessary to possess slaves because of the slavish nature of all occupations that served the needs for the maintenance of life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-af5108b82ce6d15f",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00042-f7aa919f145a",
+        "claim": "The institution of slavery in antiquity functioned as an attempt to exclude labor from the conditions of man's life rather than as a device for cheap labor or profit-driven exploitation.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The institution of slavery in antiquity, though not in later times, was not a device for cheap labor or an instrument of exploitation for profit but rather the attempt to exclude labor from the conditions of man’s life.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 10 ch3",
+          "section": "9780226924571 10 ch3",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The enslavement to necessity in ancient thought and its relation to slavery and the vita activa."
+    ]
+  }
+}

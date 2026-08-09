@@ -1,0 +1,14 @@
+{
+  "chunk_id": "audio-0018",
+  "chunk_hash": "fc1b836d2fb2d1963894c611b6b3f0ba0a5f60028e9ed0a2220717452971babd",
+  "wav_sha256": "5f43a7a33122574a9b6022edc77fddc61cfa0272a9335d09f9192bbb8258cd4c",
+  "verdict": "pass",
+  "similarity_ratio": 1.0,
+  "expected_text": "علاوه بر بیگانگی از جهان، آرنت از مرحله دیگری هم در مدرنیته یاد می‌کند که به زمین مربوط می‌شود. این مرحله دوم چیست و چه ارتباطی با نوع فعالیت‌های انسانی دارد؟",
+  "transcript_text": "علاوه بر بیگانگی از جهان، آرنت از مرحله دیگری هم در مدرنیته یاد می‌کند که به زمین مربوط می‌شود. این مرحله دوم چیست و چه ارتباطی با نوع فعالیت‌های انسانی دارد؟",
+  "missing_sentences": [],
+  "repeated_phrases": [],
+  "truncated": false,
+  "pronunciation_review": [],
+  "regeneration_instruction": null
+}

@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "a21c872d-0dd2-451b-a0c6-f36291590a91",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 10361,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T02:10:58.317187Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 4662,
+        "output_tokens": 764,
+        "thinking_tokens": 1755,
+        "total_tokens": 7181
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T02:10:58.317205Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "09b12f3e80d37e0664c6ebe3ca5da2ab153d4c3faf10a70f37ec0d89db7d08d0",
+  "model": "gemini-3.6-flash",
+  "output_model": "ClaimReconciliationDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "f5de9a4b92a242cd7a8e7578faab96c5a61847bac9dda2e90992d6089d25e82d",
+  "prompt_id": "claim_reconciliation",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "9c751a67-53df-42a3-9cf4-4df28ba27f19",
+  "stage": "claim_reconciliation",
+  "started_at": "2026-08-09T02:10:47.954953Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

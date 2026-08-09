@@ -1,0 +1,63 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00076-4d3b5a787291",
+  "extraction": {
+    "segment_function": "Conclude the discussion of the human artifice, action, speech, and the measure of things.",
+    "claims": [
+      {
+        "evidence_id": "ev-904e9773fd59fdf0",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00076-4d3b5a787291",
+        "claim": "The stability of the man-made human artifice as a home for mortals depends on its transcending both the functionalism of consumption and the utility of use.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The man-made world of things, the human artifice erected by homo faber , becomes a home for mortal men, whose stability will endure and outlast the ever-changing movement of their lives and actions, only insomuch as it transcends both the sheer functionalism of things produced for consumption and the sheer utility of objects produced for use.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-70ed5a4217c8f377",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00076-4d3b5a787291",
+        "claim": "Acting and speaking men require the help of artists, poets, historiographers, and writers so that the stories they enact and tell can survive.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "If the animal laborans needs the help of homo faber to ease his labor and remove his pain, and if mortals need his help to erect a home on earth, acting and speaking men need the help of homo faber in his highest capacity, that is, the help of the artist, of poets and historiographers, of monument-builders or writers, because without them the only product of their activity, the story they enact and tell, would not survive at all.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The human artifice must transcend functionalism and utility to serve as a stable home.",
+      "Action and speech are inherently futile and leave no material product without the help of artists and writers.",
+      "The measure of things can be neither the necessity of biological life nor utilitarian instrumentalism."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

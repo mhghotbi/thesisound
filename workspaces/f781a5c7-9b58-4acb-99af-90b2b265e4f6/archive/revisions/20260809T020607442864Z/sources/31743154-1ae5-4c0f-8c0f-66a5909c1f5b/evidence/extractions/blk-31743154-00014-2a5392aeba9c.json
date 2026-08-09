@@ -1,0 +1,22 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00014-2a5392aeba9c",
+  "extraction": {
+    "segment_function": "conclusion",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The target block consists of non-standard encoded text or unparsed character entities that preclude reliable semantic extraction of author positions or claims."
+    ],
+    "must_not_be_lost": [
+      "Preserve the raw encoded block text for future processing when decoding or translation is available."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

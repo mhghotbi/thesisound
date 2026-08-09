@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0001",
+    "segment_id": "seg-001",
+    "speaker": "A",
+    "source_turn_ids": [
+      "seg-001-turn-001"
+    ],
+    "text": "هانا آرنت برای تحلیل وضع بشر در کتاب خود، از یک رویکرد پدیدارشناختی استفاده می‌کند که ریشه در فلسفه وجودی آلمانی دارد. او بحث خود را از دو پرسش بنیادی آغاز می‌کند: نخست اینکه انسان بودن اصلاً به چه معناست؟ و دوم اینکه ویژگی‌های اصلی وضع بشر چیست و مدرنیته چه تأثیری بر این ویژگی‌ها گذاشته است؟ این نگاه پدیدارشناختی مبنای هستی‌شناسی سیاسی او را تشکیل می‌دهد.",
+    "sequence": 0,
+    "voice_name": "Kore",
+    "content_hash": "1e72535a766e5783ec0061eaf9545ea096de723b039fe504bd48a83f71de4bc0",
+    "expected_duration_seconds": 29.77777777777778
+  },
+  "wav_ref": "audio/segments/audio-0001.wav",
+  "wav_sha256": "8138066b380f9be9c2aa4ad60a4016191b9aebb98b0dc94b31a196c8e28da643",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:56:24.223344Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 34.88,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 837120,
+    "peak_ratio": 0.804376354258858,
+    "issues": []
+  },
+  "generation_attempts": 2
+}

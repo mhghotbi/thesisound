@@ -1,0 +1,104 @@
+{
+  "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+  "block_id": "blk-187a0ac0-00006-361a0214c6d8",
+  "extraction": {
+    "segment_function": "To analyze Arendt's conception of modernity, distinguishing between animal laborans and homo faber, and arguing that modern technology serves biological necessity and re-naturalization rather than building a durable human world.",
+    "claims": [
+      {
+        "evidence_id": "ev-430156e9ba5fe580",
+        "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+        "block_id": "blk-187a0ac0-00006-361a0214c6d8",
+        "claim": "Arendt asserts that the rationality required for constructing machines and launching artificial processes is an animal rather than a human ability, functioning as a modified animal instinct to maintain biological existence.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Arendt puts forward an astonishing and strange assertion: rationality needed for construction of machines and getting involved in launching artificial processes, an sich , for her, is an animal and not human ability. Rationality, in her argumentation, a special modified kind of animal instinct, whose function is to find the necessary means to reach the shared end of all living organ -\nisms; the maintenance of their biological existence",
+        "locator": {
+          "page_start": 7,
+          "page_end": 7,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-f87b9d11b491616f",
+        "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+        "block_id": "blk-187a0ac0-00006-361a0214c6d8",
+        "claim": "Modern technology does not build a lasting artificial human world, but instead serves to fulfill consumption needs and ensure the continuous functioning of human metabolism with nature.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The emerging gigantic machine of human technology does not contribute to the upkeep of the lasting artificial human world; it serves to fulfill the needs of consumption, in other words, it ensures, in an ever-expanding cycles, the un -\ndisturbed functioning of the processes of human metabolism with nature.",
+        "locator": {
+          "page_start": 7,
+          "page_end": 7,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Humanization of rationality",
+        "definition": "The application of rationality to create a common human world which is our lasting and durable home and a dwelling place for human plurality.",
+        "locator": {
+          "page_start": 7,
+          "page_end": 7,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Re-naturalization",
+        "definition": "A condition of modernity described by Arendt where the technological world is a pseudo-artifact and modern humanity is reduced to a 'world-poor' animal race bound by biological necessity.",
+        "locator": {
+          "page_start": 7,
+          "page_end": 7,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Animal laborans",
+        "item_b": "Homo faber",
+        "distinction": "Animal laborans engages in labor subject to the everlasting cycles of human metabolism with nature, whereas homo faber creates products and a durable common world that do not fall prey to these cycles.",
+        "locator": {
+          "page_start": 7,
+          "page_end": 7,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Arendt's view that modern technology serves biological necessity rather than durability.",
+      "The characterization of modernity as an age of re-naturalization."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

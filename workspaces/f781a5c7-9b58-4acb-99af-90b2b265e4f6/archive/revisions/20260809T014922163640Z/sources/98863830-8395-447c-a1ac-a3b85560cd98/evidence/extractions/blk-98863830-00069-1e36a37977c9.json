@@ -1,0 +1,93 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00069-1e36a37977c9",
+  "extraction": {
+    "segment_function": "argument",
+    "claims": [
+      {
+        "evidence_id": "ev-08519db4ee61a764",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00069-1e36a37977c9",
+        "claim": "Homo faber's instrumentalization involves degrading all things into means, leading to a loss of intrinsic and independent value for both manufactured objects and natural forces.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Man, in so far as he is homo faber , instrumentalizes, and his instrumentalization implies a degradation of all things into means, their loss of intrinsic and independent value, so that eventually not only the objects of fabrication but also “the earth in general and all forces of nature,” which clearly came into being without the help of man and have an existence independent of the human world, lose their “value",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "In so far as man is homo faber"
+        ],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-4c9995d88ac51217",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00069-1e36a37977c9",
+        "claim": "The generalization of the fabrication experience turns usefulness and utility into ultimate standards for life and the world, transforming every end into a means.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The issue at stake is, of course, not instrumentality, the use of means to achieve an end, as such, but rather the generalization of the fabrication experience in which usefulness and utility are established as the ultimate standards for life and the world of men.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "banausic",
+        "definition": "A term applied by classical Greeks to the arts and crafts, best translated by philistine, implying vulgarity of thinking and acting in terms of expediency.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "production/instrumentality of fabrication",
+        "item_b": "limitless instrumentalization",
+        "distinction": "From the viewpoint of fabrication, the finished product is an end in itself; productive and limited instrumentality changes into limitless instrumentalization only when the life process takes hold of things and uses them for its purposes.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The distinction between limited instrumentality in fabrication and the limitless instrumentalization caused by the life process.",
+      "Plato's counter-argument to Protagoras regarding man as the measure of use things."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,22 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00009-d0977e1aa054",
+  "extraction": {
+    "segment_function": "The target block contains a mixture of corrupted or unrendered Unicode escape sequences interspersed with identifiable numbers, punctuation, and terms such as ΑΙΖΔΑΒΓ variants and a concluding reference line referencing '1. ΑΖΔΒΓΑ Γ /Kosmos'.",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The block text is dominated by raw or corrupted character encoding sequences (e.g., 2uFE992u96/92uFEF/...) that impede direct semantic extraction, apart from a few isolated numbers, citations (e.g., 1344 : 23 815, 1342 : 35), and the final line '1. ΑΖΔΒΓΑ Γ /Kosmos'."
+    ],
+    "must_not_be_lost": [
+      "Preserve the textual sequence or note the unrendered encoding present in the source block."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

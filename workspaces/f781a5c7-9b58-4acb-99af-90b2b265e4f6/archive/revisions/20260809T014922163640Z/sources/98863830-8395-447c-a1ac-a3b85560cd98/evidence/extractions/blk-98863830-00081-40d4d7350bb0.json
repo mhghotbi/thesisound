@@ -1,0 +1,91 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00081-40d4d7350bb0",
+  "extraction": {
+    "segment_function": "Analyzing why human affairs lack a tangible author and how philosophies of history and political philosophy invent the metaphor of an invisible maker.",
+    "claims": [
+      {
+        "evidence_id": "ev-20282adff2b2b551",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00081-40d4d7350bb0",
+        "claim": "Human lives tell stories and history becomes the storybook of mankind because both are the outcome of action, resulting in stories with many actors and speakers yet without any tangible authors.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "the reason why each human life tells its story and why history ultimately becomes the storybook of mankind, with many actors and speakers and yet without any tangible authors, is that both are the outcome of action.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-0e1297761d6c8f77",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00081-40d4d7350bb0",
+        "claim": "Plato invented the metaphor of an actor behind the scenes pulling the strings because human affairs and the outcome of action lack a single author, leading him to view human affairs as lacking great seriousness.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Plato, who had no inkling of the modern concept of history, should have been the first to invent the metaphor of an actor behind the scenes who, behind the backs of acting men, pulls the strings and is responsible for the story.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "item_a": "real story",
+        "item_b": "fictional story",
+        "distinction": "The fictional story was made up by an author who pulls the strings and directs the play, whereas the real story has no visible or invisible maker because it is not made at all.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "item_a": "who somebody is",
+        "item_b": "what somebody is",
+        "distinction": "Who somebody is can only be known by knowing the story of which he is the hero, whereas everything else known about him, including the work he produced, tells us only what he is or was.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 12 ch5",
+          "section": "9780226924571 12 ch5",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The distinction between real stories without an author and fictional stories with a maker.",
+      "The role of action in producing history and human biographies."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

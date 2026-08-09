@@ -1,0 +1,101 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00074-152179c77412",
+  "extraction": {
+    "segment_function": "To analyze the distinctions between reification and transfiguration in art, the nature of poetry and language, and the fundamental differences between thought and cognition.",
+    "claims": [
+      {
+        "evidence_id": "ev-91c1c47276a00add",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00074-152179c77412",
+        "claim": "Art works involve reification as transfiguration, a metamorphosis where thought becomes tangible reality through workmanship.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "In the case of art works, reification is more than mere transformation; it is transfiguration, a veritable metamorphosis in which it is as though the course of nature which wills that all fire burn to ashes is reverted and even dust can burst into flames.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-c6b051572470d478",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00074-152179c77412",
+        "claim": "Thought and cognition are distinct, with cognition pursuing definite aims and ending when reached, whereas thought has no external end or aim.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Thought and cognition are not the same. Thought, the source of art works, is manifest without transformation or transfiguration in all great philosophy, whereas the chief manifestation of the cognitive processes, by which we acquire and store up knowledge, is the sciences. Cognition always pursues a definite aim, which can be set by practical considerations as well as by “idle curiosity”; but once this aim is reached, the cognitive process has come to an end. Thought, on the contrary, has neither an end nor an aim outside itself, and it does not even produce results",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "Thought",
+        "definition": "The source of art works and great philosophy that has neither an end nor an aim outside itself and does not produce results.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "Cognition",
+        "definition": "The process by which we acquire and store up knowledge, pursuing a definite aim that concludes when the aim is reached.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Thought",
+        "item_b": "Cognition",
+        "distinction": "Cognition always pursues a definite aim and ends when reached, whereas thought has no end or aim outside itself and produces no results.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

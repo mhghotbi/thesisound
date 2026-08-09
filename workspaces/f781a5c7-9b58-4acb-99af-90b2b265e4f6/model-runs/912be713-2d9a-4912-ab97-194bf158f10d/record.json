@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "b859cfe6-bd2c-4203-85bb-a35af79f0d2e",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 15306,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T11:34:31.556483Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 17927,
+        "output_tokens": 509,
+        "thinking_tokens": 1079,
+        "total_tokens": 19515
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T11:34:31.556495Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "c976db7662dbef3acb59e85a4abcb4a00116ebac47dab844a05b2424ae94f895",
+  "model": "gemini-3.6-flash",
+  "output_model": "CoverageAuditDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "ac4ef54eb6bbab7c439b42b857eac94457bb283548ec101013968faf77603c34",
+  "prompt_id": "coverage_audit",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "912be713-2d9a-4912-ab97-194bf158f10d",
+  "stage": "coverage_audit",
+  "started_at": "2026-08-09T11:34:16.249864Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

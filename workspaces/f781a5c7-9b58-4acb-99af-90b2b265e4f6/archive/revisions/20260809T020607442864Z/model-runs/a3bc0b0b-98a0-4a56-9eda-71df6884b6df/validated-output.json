@@ -1,0 +1,38 @@
+{
+  "claims": [
+    {
+      "claim": "Forms of artifice used by people to adapt to hostile environmental conditions depend heavily on who they are, their political circumstances, and global inequalities.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "What forms of arti ﬁce are people likely to reach for to make it easier to “move and breathe ” under these conditions? One signi ﬁcant part of the answer is that it will depend on who they are, where and under what political circumstances they live, and where they stand in the interlocking inequalities of wealth, health, power, and regard that already stratify the globe."
+    },
+    {
+      "claim": "The carapace is a type of artificial adaptation that uses protective equipment and material to insulate human bodies from an increasingly hostile atmosphere, conforming to the neoliberal tendency to individualize public problems.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "used broadly to refer to a wide range of protective equipment"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "The ﬁrst is in some ways the simplest, for it hews closest to the human body ,\nand is readily conformable to the neoliberal tendency to convert public prob-\nlems into challenges to individual resourcefulness and resilience. I call this the\n“carapace,” using the term broadly to refer to a wide range of protective\nequipment and material designed to insulate human bodies from an increas-\ningly hostile atmosphere."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "A wide range of protective equipment and material designed to insulate human bodies from an increasingly hostile atmosphere.",
+      "term": "carapace"
+    }
+  ],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "The connection between the carapace and neoliberal tendencies to convert public problems into individual challenges."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Introducing three types of artificial adaptation to climate change, focusing specifically on the first type, the carapace.",
+  "unresolved_context": []
+}

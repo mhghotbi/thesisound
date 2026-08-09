@@ -1,0 +1,16 @@
+{
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "source_sha256": "9612445f8cd558e5669ee390b01edbca9059b125257f10241f1d6ba83b71e893",
+  "status": "blocks_ready",
+  "block_count": 198,
+  "selected_block_count": 0,
+  "deferred_block_count": 0,
+  "analysis_depth": null,
+  "evidence_token_coverage": null,
+  "evidence_count": 0,
+  "claim_count": 0,
+  "model_run_ids": [],
+  "updated_at": "2026-08-09T04:01:46.516343Z",
+  "last_error": null
+}

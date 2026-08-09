@@ -1,0 +1,13 @@
+{
+  "run_id": "6f7462eb-4c2c-42b7-a89f-eb3947896697",
+  "previous_run_id": null,
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "approved_plan_hash": "14563d89fa19940929b3c58448679df421e301feaaf2848a908c7c5b35985450",
+  "approved_by": "09120000000",
+  "status": "failed",
+  "stage": "failed",
+  "started_at": "2026-08-09T11:54:57.094717Z",
+  "updated_at": "2026-08-09T11:58:27.875393Z",
+  "finished_at": "2026-08-09T11:58:27.875385Z",
+  "last_error": "Server disconnected without sending a response."
+}

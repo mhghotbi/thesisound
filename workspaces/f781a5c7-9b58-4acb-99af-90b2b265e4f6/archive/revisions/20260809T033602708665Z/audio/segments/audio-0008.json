@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0008",
+    "segment_id": "seg-002",
+    "speaker": "B",
+    "source_turn_ids": [
+      "seg-002-turn-003"
+    ],
+    "text": "با این حساب، جهانی که انسان سازنده می‌سازد بستری برای فعالیت عالی‌تر می‌شود. آن فعالیت برتر چیست و چه رابطه‌ای با آزادی دارد؟",
+    "sequence": 7,
+    "voice_name": "Puck",
+    "content_hash": "5e6850630e036b55e3ea5eae11d74e8a3c796a2670cc708b3d3c627369ac8ca7",
+    "expected_duration_seconds": 10.222222222222221
+  },
+  "wav_ref": "audio/segments/audio-0008.wav",
+  "wav_sha256": "5ff06df503d5722e837682a0e42b1f4e048b311f194b9231d31a71c976054c6d",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:51:19.966160Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 14.64,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 351360,
+    "peak_ratio": 0.641071810052797,
+    "issues": []
+  },
+  "generation_attempts": 1
+}

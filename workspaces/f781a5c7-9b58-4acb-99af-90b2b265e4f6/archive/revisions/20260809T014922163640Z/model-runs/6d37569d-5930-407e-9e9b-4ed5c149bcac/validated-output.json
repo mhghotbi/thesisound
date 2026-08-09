@@ -1,0 +1,47 @@
+{
+  "claims": [
+    {
+      "claim": "Logical reasoning and intelligence resemble biological labor power and operate through compulsory brain processes akin to the physical laws of nature.",
+      "claim_type": "author_position",
+      "confidence": 0.95,
+      "qualifications": [
+        "applies to intelligence and logical reasoning rather than thought and cognition"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "In these human faculties we are actually confronted with a sort of brain power which in more than one respect resembles nothing so much as the labor power the human animal develops in its metabolism with nature."
+    },
+    {
+      "claim": "Every manufactured thing transcends pure instrumentality and functional use through its shape, appearing publicly as either beautiful, ugly, or in-between.",
+      "claim_type": "author_position",
+      "confidence": 0.95,
+      "qualifications": [
+        "dependent on having a shape and appearing publicly"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "By the same token, namely, in its sheer worldly existence, every thing also transcends the sphere of pure instrumentality once it is completed."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "Mental processes that feed on brain power, producing logical operations that can be measured like bodily strength and governed by the laws of logic rooted in brain structure.",
+      "term": "intelligence"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "Thought and cognition are distinct from the power of logical reasoning, which resembles biological labor power and operates via compulsive brain processes.",
+      "item_a": "thought and cognition",
+      "item_b": "logical reasoning and intelligence"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "Distinction between intelligence/logical reasoning and true thought/cognition.",
+    "The connection between a thing's shape, public appearance, and its transcendence of pure usefulness."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Distinguish logical reasoning and intelligence from thought and cognition, compare intelligence to biological labor power, and analyze the relationship between utility, durability, shape, and beauty in worldly objects.",
+  "unresolved_context": []
+}

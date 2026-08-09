@@ -1,0 +1,90 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00064-7408029a32f4",
+  "extraction": {
+    "segment_function": "The block analyzes the distinctions between fabrication (work), labor, and action, focusing on the role of instrumentality, tools, machines, and the loss of the means-end distinction when tools are absorbed into the cyclic rhythm of animal laborans.",
+    "claims": [
+      {
+        "evidence_id": "ev-2d0fe62ceb7927c2",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00064-7408029a32f4",
+        "claim": "Fabrication is distinguished from all other human activities by having a definite beginning and a predictable end.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "To have a definite beginning and a definite, predictable end is the mark of fabrication, which through this characteristic alone dis tinguishes itself from all other human activities.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-ef9de75636039750",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00064-7408029a32f4",
+        "claim": "Homo faber is a master of himself and his doings because he is alone with his image of the future product and free to produce or destroy.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "Homo faber is indeed a lord and master, not only because he is the master or has set himself up as the master of all nature but because he is master of himself and his doings.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [
+          "True neither of the animal laborans nor of the man of action"
+        ],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [
+      {
+        "term": "fabrication",
+        "definition": "An activity marked by having a definite beginning and a predictable and not irreversible end, associated with homo faber.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "Fabrication",
+        "item_b": "Labor",
+        "distinction": "Fabrication has a definite and predictable beginning and end and is not irreversible, whereas labor is caught in the cyclical movement of the body's life process and has neither a beginning nor an end.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 11 ch4",
+          "section": "9780226924571 11 ch4",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0014",
+    "segment_id": "seg-003",
+    "speaker": "B",
+    "source_turn_ids": [
+      "seg-003-turn-001"
+    ],
+    "text": "تا اینجا درباره انواع فعالیت‌های حیات فعال صحبت کردیم. اما نقد آرنت به مدرنیته و مسئله بیگانگی چیست؟ مدرنیته دقیقاً چگونه رابطه انسان را با جهان و طبیعت تغییر می‌دهد؟",
+    "sequence": 13,
+    "voice_name": "Puck",
+    "content_hash": "0dbc6b4c0d1c241766cb1b6ac7145995cc2823376240c6d0ae35949c10cdaec9",
+    "expected_duration_seconds": 13.333333333333332
+  },
+  "wav_ref": "audio/segments/audio-0014.wav",
+  "wav_sha256": "eb6932a8bf5effc64939707a340eb51037f425c21d993c9e9afd7ceff235b27f",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:52:48.335923Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 17.88,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 429120,
+    "peak_ratio": 0.7900326548051393,
+    "issues": []
+  },
+  "generation_attempts": 1
+}

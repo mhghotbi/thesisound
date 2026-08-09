@@ -1,0 +1,53 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "005f0334-6cc0-4f55-ab03-676910948828",
+      "error_message": "1 validation error for Schema\nproperties.segments.items.properties.target_minutes.exclusiveMinimum\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 14,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T02:15:08.299774Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "a7e08753-ed8f-4a7e-b22e-fa2e3dabd582",
+      "error_message": "1 validation error for Schema\nproperties.segments.items.properties.target_minutes.exclusiveMinimum\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 17,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T02:15:09.317857Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T02:15:09.318670Z",
+  "error_message": "1 validation error for Schema\nproperties.segments.items.properties.target_minutes.exclusiveMinimum\n  Extra inputs are not permitted [type=extra_forbidden, input_value=0, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+  "error_type": "ModelProviderError",
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "ee7523a6cfa28975ffad0be8ac5fdc563fdb44c26f4bb1aaa3d930409c50ade3",
+  "model": "gemini-3.6-flash",
+  "output_model": "EpisodePlanDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "5d0c616c786ef6f015b1bbf1c443fcb6bf74f9fff177f385bc4c5a121dc68b05",
+  "prompt_id": "episode_plan",
+  "prompt_version": "1.1.0",
+  "provider": "gemini",
+  "run_id": "70fa364e-1c59-41ce-8051-1dd32c8670dd",
+  "stage": "episode_plan",
+  "started_at": "2026-08-09T02:15:08.283318Z",
+  "status": "failed",
+  "web_search_queries": []
+}

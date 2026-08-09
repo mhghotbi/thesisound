@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "dad9290d-836d-4517-a2a7-246b19ee6969",
+      "error_message": "Document map referenced unknown blocks: blk-98863830-00182-055e917c9509.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 8722,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T09:30:13.278244Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "d5eab5f7-af72-4a43-94ed-29b7f9a9ed04",
+      "error_message": "Blocks may belong to only one map section: blk-98863830-00145-4f7835c33d22, blk-98863830-00153-ca797199e59c, blk-98863830-00163-3ad84664951c, blk-98863830-00168-7e391cc73ec7, blk-98863830-00174-d49b5a3edc1f.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 6865,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T09:30:20.145523Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "error_message": "Blocks may belong to only one map section: blk-98863830-00145-4f7835c33d22, blk-98863830-00153-ca797199e59c, blk-98863830-00163-3ad84664951c, blk-98863830-00168-7e391cc73ec7, blk-98863830-00174-d49b5a3edc1f.",
+  "error_type": "DeterministicValidationError"
+}

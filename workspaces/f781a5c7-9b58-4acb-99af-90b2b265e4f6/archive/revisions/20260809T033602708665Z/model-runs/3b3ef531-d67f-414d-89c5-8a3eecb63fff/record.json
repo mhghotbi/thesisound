@@ -1,0 +1,46 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "74e9488a-f406-428c-857f-9451e414f3b5",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 23725,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T02:47:50.275402Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 16098,
+        "output_tokens": 1039,
+        "thinking_tokens": 3704,
+        "total_tokens": 20841
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T02:47:50.275415Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [
+    "http://www.tandfonline.com/Tlim\\nLimes:"
+  ],
+  "input_hash": "e8c477e60d7c11a234f11fe1a531e264d73811ffa2e2b3946c5213f12285550a",
+  "model": "gemini-3.6-flash",
+  "output_model": "SegmentScriptDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "c331ed2414f370adc8b05b5b73ac2a280909653c194257e288dfa1241934173e",
+  "prompt_id": "persian_script_segment",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "3b3ef531-d67f-414d-89c5-8a3eecb63fff",
+  "stage": "script_segment:seg-003",
+  "started_at": "2026-08-09T02:47:26.549141Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

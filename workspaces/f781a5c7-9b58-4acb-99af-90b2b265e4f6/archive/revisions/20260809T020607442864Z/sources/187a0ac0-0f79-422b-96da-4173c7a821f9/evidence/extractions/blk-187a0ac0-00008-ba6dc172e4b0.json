@@ -1,0 +1,43 @@
+{
+  "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+  "block_id": "blk-187a0ac0-00008-ba6dc172e4b0",
+  "extraction": {
+    "segment_function": "conclusion and summary",
+    "claims": [
+      {
+        "evidence_id": "ev-7378c77ccc67fe99",
+        "source_id": "187a0ac0-0f79-422b-96da-4173c7a821f9",
+        "block_id": "blk-187a0ac0-00008-ba6dc172e4b0",
+        "claim": "In her closing chapter, Arendt returns to the narrative of cultural criticism where re-naturalization and the fading out of action embody the main threat of modernity rather than environmental pollution.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "It is re-naturalization, for her, and not human construed artifice which embodies the main threat of modernity. She more fears for the fading out of action from the world than the pollution of the environment.",
+        "locator": {
+          "page_start": 9,
+          "page_end": 10,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [
+      "chapter V"
+    ],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "The problem of the relation for artificial and natural has been fit into a double narrative in The Human Condition"
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,34 @@
+{
+  "claims": [
+    {
+      "claim": "Arendt's concepts are connected loosely and connotatively to outdoor and indoor spaces and their associations with exposure and shelter.",
+      "claim_type": "author_position",
+      "confidence": 0.95,
+      "qualifications": [
+        "Even in passages that do not make reference to Greece"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "her concepts seem only loosely and connotatively connected to outdoor and indoor spaces, and to their association of these spaces with exposure and shelter respectively ."
+    },
+    {
+      "claim": "Arendt read Plato's cave allegory as a celebratory account of the philosopher's flight from the dark cave of human affairs into the bright sky of ideas.",
+      "claim_type": "scholarly_interpretation",
+      "confidence": 0.95,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "Arendt read this allegory , ﬂatly , as Plato ’s celebratory account of the philosopher ’s ﬂight from the “dark cave of human affairs, ” where everything is mere appearance, into the “bright sky of ideas ” where the “true essence of Being ” can be seen"
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "Arendt's understanding of publicity and privacy did not simply reproduce Athenian civic ideology.",
+    "Plato initiated a tradition that recast the polis as a locus of necessity to be ruled by the philosopher as a despot rules the household."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Discusses Hannah Arendt's metaphorics of indoor and outdoor spaces, her relation to Athenian civic ideology, and her reading of Plato's allegory of the cave in the Republic.",
+  "unresolved_context": []
+}

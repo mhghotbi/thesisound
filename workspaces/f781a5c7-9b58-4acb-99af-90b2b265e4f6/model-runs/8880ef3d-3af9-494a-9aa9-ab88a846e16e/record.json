@@ -1,0 +1,59 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "c5247940-e9e2-485a-86d6-83dce87a5afb",
+      "error_message": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 19796,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T11:55:36.687862Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "abcd2b01-848b-449f-ad9a-941a49069144",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 32136,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T11:56:09.825253Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 10501,
+        "output_tokens": 817,
+        "thinking_tokens": 3634,
+        "total_tokens": 14952
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T11:56:09.825302Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "e89e0ca063c1db26183e65ea5cf6477b98ff83b2b03fb0000aa5193dc9e5aefe",
+  "model": "gemini-3.6-flash",
+  "output_model": "SegmentScriptDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "c331ed2414f370adc8b05b5b73ac2a280909653c194257e288dfa1241934173e",
+  "prompt_id": "persian_script_segment",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "8880ef3d-3af9-494a-9aa9-ab88a846e16e",
+  "stage": "script_segment:seg-001",
+  "started_at": "2026-08-09T11:55:16.889700Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

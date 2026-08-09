@@ -1,0 +1,36 @@
+{
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "central_question_status": "well_covered",
+  "central_question_claim_ids": [
+    "clm-d47c35b404043ad8",
+    "clm-443edcc199fc184b",
+    "clm-f39996b8e235a6d7",
+    "clm-aca0fe068f941e3d",
+    "clm-6c69a449ae6362e9",
+    "clm-0b10619fef07de50",
+    "clm-8df3154d31d3151c",
+    "clm-d4f47e5a01a1d054"
+  ],
+  "objective_coverage": [
+    {
+      "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+      "status": "well_covered",
+      "claim_ids": [
+        "clm-d47c35b404043ad8",
+        "clm-443edcc199fc184b",
+        "clm-6c69a449ae6362e9",
+        "clm-0b10619fef07de50",
+        "clm-8df3154d31d3151c",
+        "clm-aca0fe068f941e3d"
+      ],
+      "rationale": "The corpus provides detailed grounded claims defining Arendt's concept of vita activa, the distinctions between labor, work, and action, as well as the public and private realms."
+    }
+  ],
+  "material_gaps": [],
+  "max_supported_minutes": 10,
+  "recommendation": "continue",
+  "recommendation_reason": "The claim ledger contains extensive, high-quality evidence covering the core distinctions and historical context of Hannah Arendt's 'The Human Condition', easily supporting the requested 10-minute episode.",
+  "can_plan_episode": true,
+  "model_run_id": "912be713-2d9a-4912-ab97-194bf158f10d",
+  "created_at": "2026-08-09T11:34:31.557720Z"
+}

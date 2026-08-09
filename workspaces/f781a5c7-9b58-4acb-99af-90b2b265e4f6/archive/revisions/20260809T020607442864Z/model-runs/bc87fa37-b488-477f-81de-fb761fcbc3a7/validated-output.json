@@ -1,0 +1,25 @@
+{
+  "claims": [
+    {
+      "claim": "In her closing chapter, Arendt returns to the narrative of cultural criticism where re-naturalization and the fading out of action embody the main threat of modernity rather than environmental pollution.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "It is re-naturalization, for her, and not human construed artifice which embodies the main threat of modernity. She more fears for the fading out of action from the world than the pollution of the environment."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "The problem of the relation for artificial and natural has been fit into a double narrative in The Human Condition"
+  ],
+  "objections": [],
+  "references_to_other_sections": [
+    "chapter V"
+  ],
+  "responses": [],
+  "segment_function": "conclusion and summary",
+  "unresolved_context": []
+}

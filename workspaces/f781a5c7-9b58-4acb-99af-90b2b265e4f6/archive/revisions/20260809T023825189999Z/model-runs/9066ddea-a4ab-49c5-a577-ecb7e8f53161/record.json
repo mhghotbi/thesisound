@@ -1,0 +1,53 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "992aa74f-29f6-41ac-b65e-db589969719f",
+      "error_message": "additionalProperties is not supported in the Gemini API.",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 13,
+      "retry_delay_ms": 1000,
+      "retryable": true,
+      "started_at": "2026-08-09T02:11:40.069654Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "3f9a2a61-a7bc-4c0f-8e78-401d5821da1c",
+      "error_message": "additionalProperties is not supported in the Gemini API.",
+      "error_type": "ModelProviderError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 16,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T02:11:41.086716Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T02:11:41.087353Z",
+  "error_message": "additionalProperties is not supported in the Gemini API.",
+  "error_type": "ModelProviderError",
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "cedb5db11b72bedcb6b8345b874a24fbe9f8b1884662a4b3a3a39bef5843c764",
+  "model": "gemini-3.6-flash",
+  "output_model": "EpisodePlanDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "6cbc7991644a434e1f705c8cc58cc0486b18e8d96717c74d4b8aace32a665cfd",
+  "prompt_id": "episode_plan",
+  "prompt_version": "1.1.0",
+  "provider": "gemini",
+  "run_id": "9066ddea-a4ab-49c5-a577-ecb7e8f53161",
+  "stage": "episode_plan",
+  "started_at": "2026-08-09T02:11:40.054491Z",
+  "status": "failed",
+  "web_search_queries": []
+}

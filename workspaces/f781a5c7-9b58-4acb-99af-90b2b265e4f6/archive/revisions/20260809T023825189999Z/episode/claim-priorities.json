@@ -1,0 +1,356 @@
+{
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "target_duration_minutes": 10,
+  "priorities": [
+    {
+      "claim_id": "clm-177abafe0237f1e2",
+      "level": "must_include",
+      "score": 97,
+      "reasons": [
+        "Support status: strong.",
+        "Directly supports the central question.",
+        "Supports 1 learning objective(s)."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-69fe45bd8b92b783",
+      "level": "supporting",
+      "score": 97,
+      "reasons": [
+        "Support status: strong.",
+        "Directly supports the central question.",
+        "Supports 1 learning objective(s)."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-cdfd1f19002d9de1",
+      "level": "supporting",
+      "score": 97,
+      "reasons": [
+        "Support status: strong.",
+        "Directly supports the central question.",
+        "Supports 1 learning objective(s)."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-43c898a10d267e4a",
+      "level": "optional",
+      "score": 92,
+      "reasons": [
+        "Support status: strong.",
+        "Directly supports the central question.",
+        "Supports 1 learning objective(s).",
+        "Carries material qualifications that should not be lost."
+      ],
+      "estimated_explanation_seconds": 85
+    },
+    {
+      "claim_id": "clm-12d66b0d3864127f",
+      "level": "deferred",
+      "score": 91,
+      "reasons": [
+        "Support status: strong.",
+        "Directly supports the central question.",
+        "Supports 1 learning objective(s)."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-27d7960629cc8d70",
+      "level": "deferred",
+      "score": 91,
+      "reasons": [
+        "Support status: strong.",
+        "Directly supports the central question.",
+        "Supports 1 learning objective(s)."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-3a561b777e44ce86",
+      "level": "deferred",
+      "score": 91,
+      "reasons": [
+        "Support status: strong.",
+        "Directly supports the central question.",
+        "Supports 1 learning objective(s)."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-f2514de064072149",
+      "level": "deferred",
+      "score": 91,
+      "reasons": [
+        "Support status: strong.",
+        "Directly supports the central question.",
+        "Supports 1 learning objective(s)."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-42387f05124f8d6c",
+      "level": "deferred",
+      "score": 72,
+      "reasons": [
+        "Support status: strong.",
+        "Supports 1 learning objective(s)."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-469d428f8dd902ee",
+      "level": "deferred",
+      "score": 64,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 60
+    },
+    {
+      "claim_id": "clm-d537dadeb42ec902",
+      "level": "deferred",
+      "score": 64,
+      "reasons": [
+        "Support status: strong.",
+        "Carries material qualifications that should not be lost."
+      ],
+      "estimated_explanation_seconds": 75
+    },
+    {
+      "claim_id": "clm-2b6b35a1238d355c",
+      "level": "deferred",
+      "score": 63,
+      "reasons": [
+        "Support status: strong.",
+        "Carries material qualifications that should not be lost."
+      ],
+      "estimated_explanation_seconds": 60
+    },
+    {
+      "claim_id": "clm-7c56f868013911c8",
+      "level": "deferred",
+      "score": 63,
+      "reasons": [
+        "Support status: strong.",
+        "Carries material qualifications that should not be lost."
+      ],
+      "estimated_explanation_seconds": 60
+    },
+    {
+      "claim_id": "clm-c405f8caef2c5a76",
+      "level": "deferred",
+      "score": 63,
+      "reasons": [
+        "Support status: strong.",
+        "Carries material qualifications that should not be lost."
+      ],
+      "estimated_explanation_seconds": 60
+    },
+    {
+      "claim_id": "clm-033a1f2ba7f72f4a",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-188940a4b928c242",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-18a2868e055746da",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-3a162f5404f08e78",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-43a32889e3db4a7b",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-67d13f10775f9275",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-74ed3707d91940af",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-9a6cfd871a2dbcc7",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-b0019526b05f33be",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-b04f8f757be082ca",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-d426d716a069cea0",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-f70049469025113b",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-f8752aeecf6ca906",
+      "level": "deferred",
+      "score": 62,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 45
+    },
+    {
+      "claim_id": "clm-7a6bf87729c605be",
+      "level": "deferred",
+      "score": 57,
+      "reasons": [
+        "Support status: strong.",
+        "Carries material qualifications that should not be lost."
+      ],
+      "estimated_explanation_seconds": 85
+    },
+    {
+      "claim_id": "clm-11b14ac83eb6456f",
+      "level": "deferred",
+      "score": 56,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-2f4d7c52e35b88e2",
+      "level": "deferred",
+      "score": 56,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-6c742521f52c76c9",
+      "level": "deferred",
+      "score": 56,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-8508e2335e88195b",
+      "level": "deferred",
+      "score": 56,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-9a8edde50b72b48b",
+      "level": "deferred",
+      "score": 56,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-c3ff138ff14a48c9",
+      "level": "deferred",
+      "score": 56,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-dffb6f228cecb331",
+      "level": "deferred",
+      "score": 56,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 70
+    },
+    {
+      "claim_id": "clm-f1bcfb3974cafbd9",
+      "level": "deferred",
+      "score": 56,
+      "reasons": [
+        "Support status: strong."
+      ],
+      "estimated_explanation_seconds": 70
+    }
+  ],
+  "available_content_seconds": 600,
+  "estimated_selected_seconds": 135,
+  "created_at": "2026-08-09T02:17:48.496965Z"
+}

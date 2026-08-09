@@ -1,0 +1,62 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00164-9d5a0fb35bbc",
+  "extraction": {
+    "segment_function": "notes and scholarly references discussing labor, workmanship, machine rhythms, and Plato's theory of ideas",
+    "claims": [
+      {
+        "evidence_id": "ev-ccbf15da08cf9413",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00164-9d5a0fb35bbc",
+        "claim": "Plato introduced the term idea into philosophic terminology, as testified by Aristotle in his Metaphysics.",
+        "claim_type": "scholarly_interpretation",
+        "supporting_excerpt": "Aristotle’s testimony that Plato introduced the term idea into philosophic terminology occurs in the first book of his Metaphysics (987b8).",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 16 not",
+          "section": "9780226924571 16 not",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-beaf89397616add8",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00164-9d5a0fb35bbc",
+        "claim": "There are labor songs but no work songs, and the songs of craftsmen are social and sung after work.",
+        "claim_type": "scholarly_interpretation",
+        "supporting_excerpt": "One of the best of these studies (Joseph Schopp, Das deutsche Arbeitslied [1935]) stresses that there exist only labor songs, but no work songs. The songs of the craftsmen are social; they are sung after work.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 16 not",
+          "section": "9780226924571 16 not",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Plato's introduction of the term idea and its connection to the craftsman making items in accordance with an idea.",
+      "The distinction between labor songs and work songs, along with the observation that machine labor shares a rhythmic performance with pre-industrial labor."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "795583da-f592-4123-b4c5-b4c84357d51a",
+      "error_message": null,
+      "error_type": null,
+      "finish_reason": "STOP",
+      "grounding_source_count": 0,
+      "latency_ms": 2471,
+      "retry_delay_ms": null,
+      "retryable": false,
+      "started_at": "2026-08-09T01:39:01.278174Z",
+      "success": true,
+      "usage": {
+        "cached_tokens": null,
+        "input_tokens": 2870,
+        "output_tokens": 571,
+        "thinking_tokens": null,
+        "total_tokens": 3441
+      },
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T01:39:01.278217Z",
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "fbf37e75f612140a1ce6ad907f911aeb949fd094488a05ba093d23c33cc3c4f3",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "EvidenceExtractionDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "92fbcf858765c4ea51853eb6793e4ddded97e586f5526e13c261f6d5b334e088",
+  "prompt_id": "evidence_extraction",
+  "prompt_version": "1.2.0",
+  "provider": "gemini",
+  "run_id": "4a4496a1-4042-4aa9-9030-08a6efceafdd",
+  "stage": "evidence_extraction",
+  "started_at": "2026-08-09T01:38:58.805139Z",
+  "status": "succeeded",
+  "web_search_queries": []
+}

@@ -1,0 +1,9 @@
+{
+  "cross_section_threads": [],
+  "globally_required_section_ids": [],
+  "section_updates": [],
+  "warnings": [
+    "No partitions were provided in the input."
+  ],
+  "working_thesis": null
+}

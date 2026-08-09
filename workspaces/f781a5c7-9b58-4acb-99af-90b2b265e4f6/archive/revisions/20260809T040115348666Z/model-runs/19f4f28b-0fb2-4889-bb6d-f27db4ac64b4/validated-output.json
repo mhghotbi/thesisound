@@ -1,0 +1,32 @@
+{
+  "claims": [
+    {
+      "claim": "The ideals of homo faber—permanence, stability, and durability—have been sacrificed to abundance, the ideal of the animal laborans.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The ideals of homo faber , the fabricator of the world, which are permanence, stability, and durability, have been sacrificed to abundance, the ideal of the animal laborans."
+    },
+    {
+      "claim": "The consumers' society emerged not through the political emancipation of the laboring classes, but through the emancipation of the laboring activity itself.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "This society did not come about through the emancipation of the laboring classes but by the emancipation of the laboring activity itself, which preceded by centuries the political emancipation of laborers."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "Transformation of the work process by the division of labor turning work into labor.",
+    "Levelling of all human activities to the common denominator of making a living."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Examines the triumph of the animal laborans, the transformation of work into labor through the division of labor and mass consumption, and the emergence of a consumers' society where all activities are leveled to the standard of making a living.",
+  "unresolved_context": []
+}

@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0005",
+    "segment_id": "seg-001",
+    "speaker": "A",
+    "source_turn_ids": [
+      "seg-001-turn-005"
+    ],
+    "text": "دقیقاً. روش پدیدارشناختی آرنت که برخاسته از فلسفه وجودی آلمانی است، تلاش می‌کند ویژگی‌های پایه وضع بشر را بررسی کند. او نشان می‌دهد که انسان‌ها در سطوح متفاوتی دست به فعالیت می‌زنند. از یک سو قلمرو خصوصی است که با زحمت و حفظ بقا پیوند خورده، و از سوی دیگر قلمرو عمومی است که در آن کنش و آزادی امکان بروز پیدا می‌کنند. تحلیل این سه سطح از فعالیت‌ها به ما اجازه می‌دهد درک کنیم چطور ظهور مدرنیته، این مناسبات و در نتیجه شرایط زیست انسانی را دستخوش دگرگونی ساخته است.",
+    "sequence": 4,
+    "voice_name": "Kore",
+    "content_hash": "db12c324d553c6ce364c0ba0a59f1c1fe1686734331f1e0c32800613cc826755",
+    "expected_duration_seconds": 40.44444444444444
+  },
+  "wav_ref": "audio/segments/audio-0005.wav",
+  "wav_sha256": "45455f825ff517242c83e0c522b1b0a01ead517c5a01daae6fb4090273140672",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:58:16.227295Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 46.52,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 1116480,
+    "peak_ratio": 0.8639790032654805,
+    "issues": []
+  },
+  "generation_attempts": 2
+}

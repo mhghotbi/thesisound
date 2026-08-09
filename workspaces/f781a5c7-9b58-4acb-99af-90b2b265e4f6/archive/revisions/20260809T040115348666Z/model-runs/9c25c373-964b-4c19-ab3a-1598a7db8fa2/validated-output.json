@@ -1,0 +1,48 @@
+{
+  "claims": [
+    {
+      "claim": "Value is exclusively acquired in the public realm through appearance and esteem rather than by labor, work, capital, profit, or material.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "This value consists solely in the esteem of the public realm where the things appear as commodities, and it is neither labor, nor work, nor capital, nor profit, nor material, which bestows such value upon an object, but only and exclusively the public realm where it appears to be esteemed, demanded, or neglected."
+    },
+    {
+      "claim": "Universal relativity and the loss of intrinsic worth are inherent properties of the concept of value itself in the exchange market.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "Universal relativity, that a thing exists only in relation to other things, and loss of intrinsic worth, that nothing any longer possesses an “objective” value independent of the ever-changing estimations of supply and demand, are inherent in the very concept of value itself."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "The quality a thing acquires automatically the moment it appears in public as a commodity in the exchange market, consisting solely in public esteem.",
+      "term": "Value"
+    },
+    {
+      "definition": "An objective quality of a thing itself, attached to the thing, existing outside the will of the individual purchaser or seller, and unchanging unless the thing itself changes.",
+      "term": "Intrinsic natural worth"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "Marketable value is altered by the change of proportion a commodity bears to something else in the exchange market, whereas intrinsic worth is an objective quality attached to the thing itself that can only be changed through the physical alteration of the thing.",
+      "item_a": "Marketable value",
+      "item_b": "Intrinsic natural worth"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "Distinction between use value and exchange value",
+    "Marx's view on value and socialist distribution",
+    "Homo faber's inability to bear the loss of absolute standards"
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Examine the distinction between intrinsic worth and exchange value, explaining how things become values through the public exchange market and how this produces universal relativity.",
+  "unresolved_context": []
+}

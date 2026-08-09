@@ -1,0 +1,39 @@
+{
+  "claims": [
+    {
+      "claim": "The enclosure category involves converting outdoor into indoor space to alter its atmosphere, with active cooling, dehumidification, and air filtration demanding and enabling the permanent sealing off of the inside from the outside.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "My third category of adaptation is the “enclosure”: the conversion of\noutdoor into indoor space for the sake of altering its atmosphere. This, of\ncourse, is as old as the practice of building shelters, but the active heating\nof indoor spaces has a far longer history than the active cooling and other\nforms of conditioning, like dehumidi ﬁcation and air ﬁltration, that are most\nrelevant in the context of a warming planet, and which were also the ﬁrst\ntechnologies to demand and enable “permanently sealing off the inside\nfrom the outside, ” creating what Gail Cooper calls “a totally arti ﬁcial\nindoor environment. ”"
+    },
+    {
+      "claim": "One possibility is that Arendt's The Human Condition serves as a general warning against using instrumental rationality and technological inventiveness to master the earth and world, viewing the carapace, prosthesis, and enclosure as expressions of dangerous hubris.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "One pos-\nsibility is that The Human Condition stands as a general warning against the\nimpulse to deploy human powers of instrumental rationality and technolog-\nical inventiveness to “master the earth and the world, ” as Oliver has put it,\nand that the carapace, the prosthesis, and the enclosure would all constitute\nexpressions of what she calls a “dangerous hubris, ” which responds to the\nconsequences of earlier centuries of dominance and exploitation of the\nplanet by doubling down."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "The conversion of outdoor into indoor space for the sake of altering its atmosphere.",
+      "term": "enclosure"
+    }
+  ],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "The definition and role of the enclosure in altering atmospheres and sealing off the inside from the outside.",
+    "The potential application of Arendt's critique of mastery and hubris to technological adaptations."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Discusses the third category of artificial adaptation (enclosure) and evaluates whether Arendt's reflections on the earth can shed light on these adaptations as a form of hubris.",
+  "unresolved_context": [
+    "Footnote citations and references including Gail Cooper, Wallace-Wells, Wainwright and Mann, Anthony Morey and Volkan Alkanoglu, and Oliver."
+  ]
+}

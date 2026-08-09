@@ -1,0 +1,38 @@
+{
+  "claims": [
+    {
+      "claim": "The moral code inferred from the faculties of forgiving and promising rests entirely on experiences grounded in the presence of others, unlike the Platonic notion of rule which is derived from a self-relationship.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The moral code, on the other hand, inferred from the faculties of forgiving and of making promises, rests on experiences which nobody could ever have with himself, which, on the contrary, are entirely based on the presence of others."
+    },
+    {
+      "claim": "Jesus of Nazareth discovered the role of forgiveness in human affairs, a discovery whose religious articulation does not diminish its strictly secular political significance.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The discoverer of the role of forgiveness in the realm of human affairs was Jesus of Nazareth. The fact that he made this discovery in a religious context and articulated it in religious language is no reason to take it any less seriously in a strictly secular sense."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [
+    {
+      "distinction": "Platonic rulership draws its guiding principles from self-domination and a relationship established between oneself and oneself, whereas the moral code of forgiving and promising rests entirely on experiences based on the presence of others.",
+      "item_a": "Platonic notion of rule",
+      "item_b": "Moral code inferred from forgiving and promising"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "Forgiving and promising provide necessary remedies and corrective limits to the irreversibility and unpredictability of human action.",
+    "Applying action's processes into the natural realm or acting strictly in the mode of fabrication without action's remedies risks destroying the conditions of human life."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Discuss the moral standards of action based on forgiving and promising, contrasting them with Platonic rule, examining the dangers of applying action without its remedies to nature or fabrication, and tracing the secular political significance of Jesus of Nazareth's discovery of forgiveness.",
+  "unresolved_context": []
+}

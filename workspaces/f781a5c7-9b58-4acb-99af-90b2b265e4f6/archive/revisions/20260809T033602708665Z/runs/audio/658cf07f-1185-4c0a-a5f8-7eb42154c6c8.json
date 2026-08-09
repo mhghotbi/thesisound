@@ -1,0 +1,12 @@
+{
+  "run_id": "658cf07f-1185-4c0a-a5f8-7eb42154c6c8",
+  "previous_run_id": "3e3547e5-2053-43bf-9b66-da60b39e2a20",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "verified_script_hash": "41d624f1abf6d12be2f941bb4c1965ef0b2158683b7847dea00ac9cac9b69381",
+  "status": "failed",
+  "stage": "failed",
+  "started_at": "2026-08-09T03:04:57.418562Z",
+  "updated_at": "2026-08-09T03:06:05.622181Z",
+  "finished_at": "2026-08-09T03:06:05.622175Z",
+  "last_error": "Audio QA did not pass for all chunks: audio-0003:regenerate"
+}

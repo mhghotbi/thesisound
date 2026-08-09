@@ -1,0 +1,42 @@
+{
+  "claims": [
+    {
+      "claim": "The ideals of homo faber, emphasizing permanence and durability, have been sacrificed to the ideal of abundance championed by the animal laborans.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "The ideals of homo faber , the fabricator of the world, which are permanence, stability, and durability, have been sacrificed to abundance, the ideal of the animal laborans."
+    },
+    {
+      "claim": "A consumers' society arose not through the political emancipation of the laboring classes, but through the emancipation of the laboring activity itself.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "This society did not come about through the emancipation of the laboring classes but by the emancipation of the laboring activity itself, which preceded by centuries the political emancipation of laborers."
+    }
+  ],
+  "definitions": [
+    {
+      "definition": "A society of laborers where labor and consumption are two stages of the same process, and human activities are leveled to the common denominator of securing the necessities of life and providing for their abundance.",
+      "term": "Consumers' society"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "Homo faber is the fabricator of the world whose ideals are permanence, stability, and durability, whereas animal laborans is associated with the pursuit of abundance.",
+      "item_a": "Homo faber",
+      "item_b": "Animal laborans"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [
+    "The transition from a society valuing permanence and durability (homo faber) to a consumers' society valuing abundance (animal laborans)."
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": []
+}

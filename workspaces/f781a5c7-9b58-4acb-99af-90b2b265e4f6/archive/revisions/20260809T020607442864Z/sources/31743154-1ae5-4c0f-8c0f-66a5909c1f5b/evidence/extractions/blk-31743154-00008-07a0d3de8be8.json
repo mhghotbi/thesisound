@@ -1,0 +1,22 @@
+{
+  "source_id": "31743154-1ae5-4c0f-8c0f-66a5909c1f5b",
+  "block_id": "blk-31743154-00008-07a0d3de8be8",
+  "extraction": {
+    "segment_function": "text representation of Unicode escape sequences",
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [
+      "The block consists entirely of encoded Unicode representation strings such as 2uFEE22uFEB/2uFEF/2uFEDF, preventing meaningful semantic extraction under brief constraints."
+    ],
+    "must_not_be_lost": [
+      "Preserve raw Unicode encoding block data if downstream tasks require exact character-level sequence matching."
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

@@ -1,0 +1,226 @@
+{
+  "cross_section_threads": [
+    {
+      "description": "The evolution of world alienation, earth alienation, and self-alienation throughout the modern age.",
+      "label": "Alienation Thread",
+      "section_ids": [
+        "sec-001",
+        "sec-003",
+        "sec-008"
+      ]
+    },
+    {
+      "description": "The successive reversals between contemplation, making (homo faber), and laboring (animal laborans).",
+      "label": "Hierarchical Reversals of the Vita Activa",
+      "section_ids": [
+        "sec-005",
+        "sec-006",
+        "sec-007",
+        "sec-008"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "depends_on_section_ids": [],
+      "function": "argument",
+      "key_concepts": [
+        "world alienation",
+        "earth alienation",
+        "Reformation",
+        "capital accumulation",
+        "shrinkage of the globe"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-001",
+      "source_block_ids": [
+        "blk-98863830-00108-efae252f4a34",
+        "blk-98863830-00109-ae67b5bf1953",
+        "blk-98863830-00110-0d18ebd7d848",
+        "blk-98863830-00111-27537ce4c519"
+      ],
+      "title": "World Alienation and the Threshold of Modernity",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-001"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Archimedean point",
+        "telescope",
+        "Galileo",
+        "sense perception",
+        "Copernican revolution"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-002",
+      "source_block_ids": [
+        "blk-98863830-00112-cb2bca930cf3",
+        "blk-98863830-00113-417abc62e5b6"
+      ],
+      "title": "The Discovery of the Archimedean Point",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-002"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "universal science",
+        "mathematization",
+        "algebra",
+        "despair and triumph",
+        "Cartesian philosophy"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-003",
+      "source_block_ids": [
+        "blk-98863830-00114-654d87180d12",
+        "blk-98863830-00115-520a34af2a29",
+        "blk-98863830-00116-7b2921816395",
+        "blk-98863830-00117-45539534398f",
+        "blk-98863830-00118-93e67b6e862a"
+      ],
+      "title": "Universal Science and Earth Alienation",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-003"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "Cartesian doubt",
+        "introspection",
+        "certainty",
+        "cogito ergo sum",
+        "theodicies"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-004",
+      "source_block_ids": [
+        "blk-98863830-00119-dee662b404b0",
+        "blk-98863830-00120-40586928a3b9",
+        "blk-98863830-00121-bdc0b69e5c27",
+        "blk-98863830-00122-0e31a023eddc",
+        "blk-98863830-00123-1ba98cb0a683"
+      ],
+      "title": "The Rise of Cartesian Doubt and Introspection",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-004"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "vita contemplativa",
+        "vita activa",
+        "experiment",
+        "truthfulness",
+        "Platonic tradition"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-005",
+      "source_block_ids": [
+        "blk-98863830-00124-77699a827341",
+        "blk-98863830-00125-4ff44c65eecb",
+        "blk-98863830-00126-cad89b43c457",
+        "blk-98863830-00127-2d0d6e2910bc"
+      ],
+      "title": "The Reversal of Contemplation and Action",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-005"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "homo faber",
+        "process",
+        "making",
+        "Hobbes",
+        "political philosophy"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-006",
+      "source_block_ids": [
+        "blk-98863830-00128-797bccbff6e0",
+        "blk-98863830-00129-4f168757eb8e",
+        "blk-98863830-00130-efb120fbbe4a",
+        "blk-98863830-00131-77f4034108ec"
+      ],
+      "title": "The Victory of Homo Faber and Process",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-006"
+      ],
+      "function": "argument",
+      "key_concepts": [
+        "utility",
+        "happiness principle",
+        "pain and pleasure calculus",
+        "life philosophy",
+        "causality"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-007",
+      "source_block_ids": [
+        "blk-98863830-00132-196015dfbff9",
+        "blk-98863830-00133-650a8d0f2b33",
+        "blk-98863830-00134-87566bcfe622",
+        "blk-98863830-00135-3b8e656bcdf4"
+      ],
+      "title": "The Defeat of Homo Faber and Life as Highest Good",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [
+        "sec-007"
+      ],
+      "function": "conclusion",
+      "key_concepts": [
+        "animal laborans",
+        "Christianity",
+        "immortality of life",
+        "laboring society",
+        "behaviorism"
+      ],
+      "required_for_global_understanding": true,
+      "section_id": "sec-008",
+      "source_block_ids": [
+        "blk-98863830-00136-d1b9e86b28aa",
+        "blk-98863830-00137-c98ace9011b5",
+        "blk-98863830-00138-655c319689f1",
+        "blk-98863830-00139-7e259826d30c",
+        "blk-98863830-00140-0355bab509cf"
+      ],
+      "title": "The Victory of the Animal Laborans",
+      "unresolved_context": []
+    },
+    {
+      "depends_on_section_ids": [],
+      "function": "front_matter",
+      "key_concepts": [
+        "acknowledgments",
+        "Hannah Arendt"
+      ],
+      "required_for_global_understanding": false,
+      "section_id": "sec-009",
+      "source_block_ids": [
+        "blk-98863830-00141-62b0d7197557",
+        "blk-98863830-00142-56991480d620"
+      ],
+      "title": "Acknowledgments and Front Matter",
+      "unresolved_context": []
+    }
+  ],
+  "warnings": [],
+  "working_thesis": "The modern age, initiated by world and earth alienation, the discovery of the Archimedean point through the telescope, and Cartesian doubt, has reversed the traditional hierarchy between the vita contemplativa and the vita activa, ultimately elevating labor and the biological life process above world-building and contemplation."
+}

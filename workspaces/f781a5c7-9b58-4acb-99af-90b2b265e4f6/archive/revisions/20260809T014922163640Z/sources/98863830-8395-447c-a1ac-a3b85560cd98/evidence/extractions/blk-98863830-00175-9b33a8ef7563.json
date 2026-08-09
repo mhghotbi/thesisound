@@ -1,0 +1,62 @@
+{
+  "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+  "block_id": "blk-98863830-00175-9b33a8ef7563",
+  "extraction": {
+    "segment_function": "notes and supplementary commentary on Chapter 6 discussing themes of world alienation, Max Weber, Marx, and the historical context of modern science and capitalism",
+    "claims": [
+      {
+        "evidence_id": "ev-eec7a63e3ae21a06",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00175-9b33a8ef7563",
+        "claim": "The increase in human power over worldly things arises from world alienation, stemming from the distance man places between himself and the world.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "The increase in power of man over the things of this world springs in either case from the distance which man puts between himself and the world, that is, from world alienation.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 16 not",
+          "section": "9780226924571 16 not",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      },
+      {
+        "evidence_id": "ev-5612809549f98bcf",
+        "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+        "block_id": "blk-98863830-00175-9b33a8ef7563",
+        "claim": "Marx's work remained firmly rooted in the extreme subjectivism of the modern age despite occasional considerations of world alienation.",
+        "claim_type": "author_position",
+        "supporting_excerpt": "However, such occasional considerations play a minor role in his work, which remained firmly rooted in the modern age’s extreme subjectivism.",
+        "locator": {
+          "page_start": null,
+          "page_end": null,
+          "chapter": "9780226924571 16 not",
+          "section": "9780226924571 16 not",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        },
+        "support_kind": "direct",
+        "qualifications": [],
+        "confidence": 1.0
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": [
+      "Connection between world alienation and increased power over worldly things",
+      "Marx's engagement with and limitations regarding world alienation"
+    ]
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

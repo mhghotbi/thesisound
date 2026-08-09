@@ -1,0 +1,22 @@
+{
+  "run_id": "4659b8f6-b751-4ddc-b725-49a41d1d03c9",
+  "previous_run_id": "6022c2bf-cf6a-446b-9a05-902e891bf8ee",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "status": "failed",
+  "sources": [
+    {
+      "source_id": "98863830-8395-447c-a1ac-a3b85560cd98",
+      "filename": "Hannah Arendt - The Human Condition.epub",
+      "ingestion_path": "/home/ubuntu/thesisound/artifacts/ingestion/f781a5c7-9b58-4acb-99af-90b2b265e4f6/98863830-8395-447c-a1ac-a3b85560cd98/Hannah-Arendt---The-Human-Condition-9612445f8cd558e5/ingestion-result.json",
+      "status": "failed",
+      "stage": "failed",
+      "claim_count": 0,
+      "last_error": "Evidence coverage collapsed to 33% after block rejections; required coverage is 35%.",
+      "warnings": []
+    }
+  ],
+  "started_at": "2026-08-09T01:42:43.515684Z",
+  "updated_at": "2026-08-09T01:42:46.690204Z",
+  "finished_at": "2026-08-09T01:42:46.690200Z",
+  "last_error": "Evidence coverage collapsed to 33% after block rejections; required coverage is 35%."
+}

@@ -1,0 +1,34 @@
+{
+  "claims": [
+    {
+      "claim": "The most momentous and unavoidable spiritual consequence of modern discoveries has been the reversal of the hierarchical order between the vita contemplativa and the vita activa.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [
+        "follows closely upon the discovery of the Archimedean point and the concomitant rise of Cartesian doubt"
+      ],
+      "support_kind": "direct",
+      "supporting_excerpt": "Perhaps the most momentous of the spiritual consequences of the discoveries of the modern age and, at the same time, the only one that could not have been avoided, since it followed closely upon the discovery of the Archimedean point and the concomitant rise of Cartesian doubt, has been the reversal of the hierarchical order between the vita contemplativa and the vita activa."
+    },
+    {
+      "claim": "Modern technology originated exclusively in a non-practical search for useless knowledge rather than a pragmatic desire to improve earthly conditions or ease labor.",
+      "claim_type": "author_position",
+      "confidence": 1.0,
+      "qualifications": [],
+      "support_kind": "direct",
+      "supporting_excerpt": "It is a matter of historical record that modern technology has its origins not in the evolution of those tools man had always devised for the twofold purpose of easing his labors and erecting the human artifice, but exclusively in an altogether non-practical search for useless knowledge."
+    }
+  ],
+  "definitions": [],
+  "distinctions": [],
+  "examples": [],
+  "must_not_be_lost": [
+    "Reversal of the hierarchical order between vita contemplativa and vita activa",
+    "Modern technology originating from non-practical search for useless knowledge rather than practical instincts"
+  ],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "argument",
+  "unresolved_context": []
+}

@@ -1,0 +1,53 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "call_id": "c841fd11-f253-40d8-b906-ff2dd401869e",
+      "error_message": "Document map referenced unknown blocks: blk-98863830-0005-9503519b95b8.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 7926,
+      "retry_delay_ms": 0,
+      "retryable": true,
+      "started_at": "2026-08-09T01:55:22.100898Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    },
+    {
+      "attempt": 2,
+      "call_id": "aa6c6ab2-7fb8-4273-b42b-f9e2443e3ff6",
+      "error_message": "Document map referenced unknown blocks: blk-98863830-00041-45a9fcc0206f.",
+      "error_type": "DeterministicValidationError",
+      "finish_reason": null,
+      "grounding_source_count": 0,
+      "latency_ms": 7994,
+      "retry_delay_ms": 0,
+      "retryable": false,
+      "started_at": "2026-08-09T01:55:30.097459Z",
+      "success": false,
+      "usage": null,
+      "web_search_queries": []
+    }
+  ],
+  "completed_at": "2026-08-09T01:55:30.098088Z",
+  "error_message": "Document map referenced unknown blocks: blk-98863830-00041-45a9fcc0206f.",
+  "error_type": "DeterministicValidationError",
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "51bab29c1c715ec9e9846ed3a1af3895fdb4a9c3d4034138cb8d80ad6aca0b28",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "bf943fe14dd09bd8207dee9380a6b9e67a6c50abba5afc4c0d69b51bd94de01e",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "370b13f2-2c4a-4b6c-85b6-33b559f31f66",
+  "stage": "document_map_part",
+  "started_at": "2026-08-09T01:55:14.170394Z",
+  "status": "failed",
+  "web_search_queries": []
+}

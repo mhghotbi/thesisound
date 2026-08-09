@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0022",
+    "segment_id": "seg-004",
+    "speaker": "B",
+    "source_turn_ids": [
+      "seg-004-turn-003"
+    ],
+    "text": "یعنی بررسی دقیق متون او به ما نشان می‌دهد که بازخوانی شهروندی چطور می‌تواند ما را از این بیگانگی نجات دهد؟",
+    "sequence": 21,
+    "voice_name": "Puck",
+    "content_hash": "17bac63a209c65efc63d3a24485386b2ef0c7afee010635c4affa2d3a11a58b7",
+    "expected_duration_seconds": 9.333333333333334
+  },
+  "wav_ref": "audio/segments/audio-0022.wav",
+  "wav_sha256": "d6545535d81440b7ec315c91a67bbd0ce4bcdd025a6d2873911e730e574f16da",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:55:38.175616Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 10.96,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 263040,
+    "peak_ratio": 0.6556291390728477,
+    "issues": []
+  },
+  "generation_attempts": 1
+}

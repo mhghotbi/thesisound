@@ -1,0 +1,119 @@
+{
+  "claims": [
+    {
+      "claim": "Patchen Markell uses a phenomenological distinction between outdoors and indoors to examine three likely types of artificial adaptation to a warming planet.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-db44e499884759d7"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Arendt used the term earth to advance a general theoretical point regarding the relationship between the given and the made.",
+      "claim_type": "scholarly_interpretation",
+      "evidence_ids": [
+        "ev-d699bd3fbdc74aeb"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Environmental deterioration including unhealthy outdoor air, heat, and extreme weather will lead people to adopt various forms of artifice to move and breathe.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-000c5099e6f6283b"
+      ],
+      "qualifications": [
+        "depends on who people are, where they live under political circumstances, and their standing in interlocking inequalities"
+      ],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The carapace refers to protective equipment and material designed to insulate human bodies from a hostile atmosphere, aligning with the neoliberal tendency to privatize public problems into individual resilience.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-e2270e62a2b28c3a"
+      ],
+      "qualifications": [
+        "hew closest to the human body",
+        "conformable to the neoliberal tendency"
+      ],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The enclosure category involves converting outdoor into indoor space to alter its atmosphere, with active cooling, dehumidification, and air filtration demanding and enabling the permanent sealing off of the inside from the outside.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-4270b4c542d76809"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "One possibility is that Arendt's The Human Condition serves as a general warning against using instrumental rationality and technological inventiveness to master the earth and world, viewing the carapace, prosthesis, and enclosure as expressions of dangerous hubris.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-847941175c6b25a1"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The cumulative effect of mundane adaptations might intensify human isolation or alienation from the earth in its givenness, cutting people off from awareness of their earthbound limitations.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-486620834352efea"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Modern science interposes humanly made technologies of observation and measurement between us and the world, cutting humans off from reality.",
+      "claim_type": "scholarly_interpretation",
+      "evidence_ids": [
+        "ev-1af2b08d3b9d4186"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Arendt's concepts of publicity and privacy are connected only loosely and connotatively to outdoor and indoor spaces and their associations with exposure and shelter respectively.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-b2e2a47e9fd508c2"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Arendt interpreted Plato's allegory of the cave flatly as a celebratory account of the philosopher's flight from the dark cave of human affairs to the bright sky of ideas.",
+      "claim_type": "scholarly_interpretation",
+      "evidence_ids": [
+        "ev-ab47cba0eef4c5cc"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "The crucial difference between indoor and outdoor spaces is that indoors can be designed comprehensively as a whole to facilitate or discourage specific patterns, whereas the lack of full enclosure in outdoor spaces makes it more challenging to impose a totalizing form upon them.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-db4eda36fbdd63cf"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    },
+    {
+      "claim": "Being outdoors as a sensate creature exposes one through the senses to a wider field of possibilities for the unanticipated or peripheral summoning of attention because the outdoors is intransigently interstitial.",
+      "claim_type": "author_position",
+      "evidence_ids": [
+        "ev-70a303171f1733bb"
+      ],
+      "qualifications": [],
+      "support_status": "strong"
+    }
+  ],
+  "unresolved_evidence_ids": [],
+  "warnings": []
+}

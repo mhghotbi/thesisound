@@ -1,0 +1,60 @@
+{
+  "source_id": "376ff90d-27ef-4dc8-9582-9448300bda9d",
+  "block_id": "blk-376ff90d-00007-8d7e230c2896",
+  "extraction": {
+    "segment_function": "Discussing the artificial adaptations of 'carapace' and 'prosthesis' as personal protective equipment and apparatuses that mediate human sensation, perception, and interaction under hazardous environmental conditions.",
+    "claims": [],
+    "definitions": [
+      {
+        "term": "carapace",
+        "definition": "Personal protective equipment—which can be either hard or soft, such as masks, respirators, cooling garments, hazmat gear, and face shields—used to protect the body from hazardous environmental conditions.",
+        "locator": {
+          "page_start": 8,
+          "page_end": 8,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      },
+      {
+        "term": "prosthesis",
+        "definition": "Apparatuses that facilitate sensation, perception, action, or interaction at a distance from the body, including teleconferencing software, automation, robotics, remote sensing, and simpler devices.",
+        "locator": {
+          "page_start": 8,
+          "page_end": 8,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "carapace",
+        "item_b": "prosthesis",
+        "distinction": "Carapace functions as personal protective equipment worn on or enclosing the body against immediate hazards, whereas a prosthesis functions as an apparatus that facilitates sensation, perception, action, or interaction at a distance from the body.",
+        "locator": {
+          "page_start": 8,
+          "page_end": 8,
+          "chapter": null,
+          "section": null,
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "references_to_other_sections": [],
+    "unresolved_context": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null
+}

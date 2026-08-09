@@ -1,0 +1,31 @@
+{
+  "chunk": {
+    "chunk_id": "audio-0023",
+    "segment_id": "seg-004",
+    "speaker": "A",
+    "source_turn_ids": [
+      "seg-004-turn-004"
+    ],
+    "text": "دقیقاً. پژوهش‌ها و خوانش‌های انتقادی بر متون آرنت تأکید دارند که با ارزیابی ابعاد و وجوه گوناگون شهروندی در اندیشه او، می‌توان این مفهوم را به عنوان یک گزینه بدیل در برابر بحران بیگانگی بشر از جهان صورت‌بندی کرد و راهی برای بازسازی مناسبات انسانی یافت.",
+    "sequence": 22,
+    "voice_name": "Kore",
+    "content_hash": "0567be13c6c2ca3166d55b206aea76819ec9d35b452ea2327e25aa2b2ec2d2ba",
+    "expected_duration_seconds": 20.444444444444443
+  },
+  "wav_ref": "audio/segments/audio-0023.wav",
+  "wav_sha256": "d15b3654f64f848005de9b77d156d561837fed5e99e8df2442e26e13809035e6",
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-tts-preview",
+  "synthesized_at": "2026-08-09T02:55:50.819915Z",
+  "validation": {
+    "verdict": "pass",
+    "duration_seconds": 23.76,
+    "sample_rate_hz": 24000,
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "frame_count": 570240,
+    "peak_ratio": 0.8406018250068666,
+    "issues": []
+  },
+  "generation_attempts": 1
+}

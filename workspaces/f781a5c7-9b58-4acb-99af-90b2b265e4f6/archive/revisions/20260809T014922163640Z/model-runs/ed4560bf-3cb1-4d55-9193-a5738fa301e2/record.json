@@ -1,0 +1,22 @@
+{
+  "attempts": [],
+  "completed_at": null,
+  "error_message": null,
+  "error_type": null,
+  "grounding_mode": "none",
+  "grounding_source_count": 0,
+  "grounding_urls": [],
+  "input_hash": "51bab29c1c715ec9e9846ed3a1af3895fdb4a9c3d4034138cb8d80ad6aca0b28",
+  "model": "gemini-3.5-flash-lite",
+  "output_model": "DocumentMapDraft",
+  "project_id": "f781a5c7-9b58-4acb-99af-90b2b265e4f6",
+  "prompt_hash": "bf943fe14dd09bd8207dee9380a6b9e67a6c50abba5afc4c0d69b51bd94de01e",
+  "prompt_id": "document_map",
+  "prompt_version": "1.0.0",
+  "provider": "gemini",
+  "run_id": "ed4560bf-3cb1-4d55-9193-a5738fa301e2",
+  "stage": "document_map_part",
+  "started_at": "2026-08-09T00:35:52.041920Z",
+  "status": "running",
+  "web_search_queries": []
+}

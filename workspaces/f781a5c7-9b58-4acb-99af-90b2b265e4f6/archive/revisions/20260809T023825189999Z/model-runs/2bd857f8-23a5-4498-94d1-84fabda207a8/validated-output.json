@@ -1,0 +1,27 @@
+{
+  "claims": [],
+  "definitions": [
+    {
+      "definition": "Personal protective equipment—which can be either hard or soft, such as masks, respirators, cooling garments, hazmat gear, and face shields—used to protect the body from hazardous environmental conditions.",
+      "term": "carapace"
+    },
+    {
+      "definition": "Apparatuses that facilitate sensation, perception, action, or interaction at a distance from the body, including teleconferencing software, automation, robotics, remote sensing, and simpler devices.",
+      "term": "prosthesis"
+    }
+  ],
+  "distinctions": [
+    {
+      "distinction": "Carapace functions as personal protective equipment worn on or enclosing the body against immediate hazards, whereas a prosthesis functions as an apparatus that facilitates sensation, perception, action, or interaction at a distance from the body.",
+      "item_a": "carapace",
+      "item_b": "prosthesis"
+    }
+  ],
+  "examples": [],
+  "must_not_be_lost": [],
+  "objections": [],
+  "references_to_other_sections": [],
+  "responses": [],
+  "segment_function": "Discussing the artificial adaptations of 'carapace' and 'prosthesis' as personal protective equipment and apparatuses that mediate human sensation, perception, and interaction under hazardous environmental conditions.",
+  "unresolved_context": []
+}
