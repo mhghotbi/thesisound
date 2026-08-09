@@ -47,5 +47,5 @@ jobs:
             echo "No implementation changes to commit."
             exit 0
           fi
-          git commit -m "feat: implement server-mono light item 1"
+          git commit -m "feat: add per-run observability rollups"
           git push
