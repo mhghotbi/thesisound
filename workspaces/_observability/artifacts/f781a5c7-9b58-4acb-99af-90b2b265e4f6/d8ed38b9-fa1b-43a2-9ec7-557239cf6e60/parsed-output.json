@@ -1,0 +1,10 @@
+{
+  "chunk_hash": "8ae16ab62fcf3d3dab7dff7c7022fe85670d2e9609e2d092607bc1db475d9ce6",
+  "chunk_id": "audio-0010",
+  "detected_language": "fa",
+  "model": "gemini-3.6-flash",
+  "provider": "gemini",
+  "speaker": "B",
+  "text": "چرا کنش نیازمند سخن است؟ و آرنت چگونه کنش را از انزوا و صرف ساختن متمایز می‌کند؟",
+  "wav_sha256": "7bd16c3ddbf543262287d51f43c98f17e0f2216b27aa527039a012cf3ef34617"
+}

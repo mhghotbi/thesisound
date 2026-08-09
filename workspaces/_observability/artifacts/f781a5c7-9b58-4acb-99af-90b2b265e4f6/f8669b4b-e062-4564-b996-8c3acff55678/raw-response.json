@@ -1,0 +1,81 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"The second stage in the emergence of modernity from the beginning of the twentieth century corresponds to earth alienation and the victory of animal laborans.\",\n      \"claim_type\": \"scholarly_interpretation\",\n      \"supporting_excerpt\": \"دوم از ﻇﻬﻮر ﻣﺪرﻧﯿﺘﻪ از آﻏﺎز ﻗﺮن ﺑﯿﺴﺘﻢ ﻣﺘﻨﺎﻇﺮ ﺑﺎ »زﻣـﯿﻦ   از  ﺑﯿﮕﺎﻧﮕﯽ «و»ﭘﯿـﺮوزي ﺣﯿـﻮان\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 0.95\n    },\n    {\n      \"claim\": \"Arendt rejects the Hegelian or Marxist view that labor can be an instrument to realize the capacity and power of workers.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"ﺘﯽ را ﮐـﻪ زﺣﻤـﺖ ﻣـﯽ   ﻫﮕﻠﯽ ﯾـﺎ ﻣﺎرﮐﺴﯿﺴـ  ه ﻗﺎﻃﻌﺎﻧﻪ اﯾﻦ ﻋﻘﯿﺪ\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 0.95\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPVrnXEjANDDB_d9KtnicDzkQqYCmLVSznKuSo4fN2E9sLmAxmpRs_WcyTXOVP",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The second stage in the emergence of modernity from the beginning of the twentieth century corresponds to earth alienation and the victory of animal laborans.",
+        "claim_type": "scholarly_interpretation",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "دوم از ﻇﻬﻮر ﻣﺪرﻧﯿﺘﻪ از آﻏﺎز ﻗﺮن ﺑﯿﺴﺘﻢ ﻣﺘﻨﺎﻇﺮ ﺑﺎ »زﻣـﯿﻦ   از  ﺑﯿﮕﺎﻧﮕﯽ «و»ﭘﯿـﺮوزي ﺣﯿـﻮان"
+      },
+      {
+        "claim": "Arendt rejects the Hegelian or Marxist view that labor can be an instrument to realize the capacity and power of workers.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "ﺘﯽ را ﮐـﻪ زﺣﻤـﺖ ﻣـﯽ   ﻫﮕﻠﯽ ﯾـﺎ ﻣﺎرﮐﺴﯿﺴـ  ه ﻗﺎﻃﻌﺎﻧﻪ اﯾﻦ ﻋﻘﯿﺪ"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"The second stage in the emergence of modernity from the beginning of the twentieth century corresponds to earth alienation and the victory of animal laborans.\",\n      \"claim_type\": \"scholarly_interpretation\",\n      \"supporting_excerpt\": \"دوم از ﻇﻬﻮر ﻣﺪرﻧﯿﺘﻪ از آﻏﺎز ﻗﺮن ﺑﯿﺴﺘﻢ ﻣﺘﻨﺎﻇﺮ ﺑﺎ »زﻣـﯿﻦ   از  ﺑﯿﮕﺎﻧﮕﯽ «و»ﭘﯿـﺮوزي ﺣﯿـﻮان\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 0.95\n    },\n    {\n      \"claim\": \"Arendt rejects the Hegelian or Marxist view that labor can be an instrument to realize the capacity and power of workers.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"ﺘﯽ را ﮐـﻪ زﺣﻤـﺖ ﻣـﯽ   ﻫﮕﻠﯽ ﯾـﺎ ﻣﺎرﮐﺴﯿﺴـ  ه ﻗﺎﻃﻌﺎﻧﻪ اﯾﻦ ﻋﻘﯿﺪ\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 0.95\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 389,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 6621,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 6621
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 7010,
+    "traffic_type": null
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The work of fabrication is guided by a model or blueprint that precedes the actual work process and exists outside the fabricator.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The actual work of fabrication is performed under the guidance of a model in accordance with which the object is constructed. This model can be an image beheld by the eye of the mind or a blueprint in which the image has already found a tentative materialization through work. In either case, what guides the work of fabrication is outside the fabricator and precedes the actual work process"
+      },
+      {
+        "claim": "The process of making is entirely determined by the categories of means and end, culminating in a durable end product that is added to the human artifice.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The process of making is itself entirely determined by the categories of means and end. The fabricated thing is an end product in the twofold sense that the production process comes to an end in it... and that it is only a means to produce this end."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The act of multiplying something that already possesses a relatively stable, relatively permanent existence in the world, differing in principle from the repetition characteristic of labor.",
+        "term": "Multiplication"
+      },
+      {
+        "definition": "The mark of labor that is urged upon and remains subject to the biological cycle of human needs and wants.",
+        "term": "Repetition"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Multiplication multiplies something that already possesses a relatively stable and permanent existence in the world, whereas repetition is the mark of labor urged upon and remaining subject to the biological cycle.",
+        "item_a": "Multiplication",
+        "item_b": "Repetition"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Fabrication is guided by an external model or mental image.",
+      "The process of making is determined by means-end categories.",
+      "Multiplication in work is distinct from the biological repetition of labor."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  }
+}

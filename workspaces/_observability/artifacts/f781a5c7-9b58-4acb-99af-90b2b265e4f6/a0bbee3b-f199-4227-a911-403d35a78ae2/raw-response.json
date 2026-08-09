@@ -1,0 +1,83 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"The term out of doors was used in eighteenth-century North America to describe the populace acting outside formal legal representative institutions.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"In eighteenth-century North America, the term“out of doors” was frequently used to characterize the people of the British colonies, and then of the postrev\\nolutionary United States, acting “outside of the legal representative institu-\\ntions” by which they were governed, sometimes in mobs and crowds and\\nsometimes through “extralegal associations.”\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Arendt's distinction between outdoors and indoors may help interpret political action and association outside official channels.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Even here, though, there is one last way in which Arendt,\\nvia the distinction between outdoors and indoors, might help.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The historical meaning and figurative use of out of doors in eighteenth-century North American politics.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPLXKZkQEBWSwmmASK4U52iwiTGfVgW9AOd8xrioBMEll4rsWYDFre3GZ2CCHf",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The term out of doors was used in eighteenth-century North America to describe the populace acting outside formal legal representative institutions.",
+        "claim_type": "historical_context",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "In eighteenth-century North America, the term“out of doors” was frequently used to characterize the people of the British colonies, and then of the postrev\nolutionary United States, acting “outside of the legal representative institu-\ntions” by which they were governed, sometimes in mobs and crowds and\nsometimes through “extralegal associations.”"
+      },
+      {
+        "claim": "Arendt's distinction between outdoors and indoors may help interpret political action and association outside official channels.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Even here, though, there is one last way in which Arendt,\nvia the distinction between outdoors and indoors, might help."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The historical meaning and figurative use of out of doors in eighteenth-century North American politics."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "conclusion",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"The term out of doors was used in eighteenth-century North America to describe the populace acting outside formal legal representative institutions.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"In eighteenth-century North America, the term“out of doors” was frequently used to characterize the people of the British colonies, and then of the postrev\\nolutionary United States, acting “outside of the legal representative institu-\\ntions” by which they were governed, sometimes in mobs and crowds and\\nsometimes through “extralegal associations.”\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Arendt's distinction between outdoors and indoors may help interpret political action and association outside official channels.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Even here, though, there is one last way in which Arendt,\\nvia the distinction between outdoors and indoors, might help.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The historical meaning and figurative use of out of doors in eighteenth-century North American politics.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 357,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2201,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2201
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2558,
+    "traffic_type": null
+  }
+}

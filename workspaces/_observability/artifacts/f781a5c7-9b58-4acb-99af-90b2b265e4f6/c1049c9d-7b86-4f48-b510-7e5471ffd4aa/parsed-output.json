@@ -1,0 +1,61 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The vita activa is always rooted in a world of men and man-made things, and no human life is possible without a world testifying to the presence of other human beings.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The vita activa , human life in so far as it is actively engaged in doing something, is always rooted in a world of men and of man-made things which it never leaves or altogether transcends."
+      },
+      {
+        "claim": "Action is the exclusive prerogative of man and is entirely dependent upon the constant presence of others, whereas labor and work do not strictly require the presence of others in the same way.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, 1 and only action is entirely dependent upon the constant presence of others."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Human life in so far as it is actively engaged in doing something, always rooted in a world of men and man-made things.",
+        "term": "vita activa"
+      },
+      {
+        "definition": "A second life received upon the rise of the city-state, comprising action (praxis) and speech (lexis) in the realm of human affairs.",
+        "term": "bios politikos"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "The substitution of animal socialis for zōon politikon betrays the loss of the original Greek understanding of politics, conflating the natural companionship of the human species with political organization.",
+        "item_a": "animal socialis",
+        "item_b": "zōon politikon"
+      },
+      {
+        "distinction": "A sharp distinction in a citizen's life between private existence centered in the household and communal existence in the city-state.",
+        "item_a": "idion (what is one's own)",
+        "item_b": "koinon (what is communal)"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The distinction between action, which requires the presence of others, and other human activities like labor and fabrication.",
+      "The historical significance of translating zōon politikon as animal socialis in obscuring the original Greek understanding of politics.",
+      "The opposition between the natural association of the household (oikia) and the political realm of the city-state (polis)."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "To introduce Chapter II by examining the relationship between human activities and human togetherness, tracing the historical loss of the Greek understanding of politics through the translation of zōon politikon as animal socialis, and contrasting the natural association of the household with the political realm of the polis.",
+    "unresolved_context": []
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"bibliographic notes and references supporting distinctions between household management, property, ancient government forms, and the private-public realm\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"Bibliographic notes and source citations referencing Coulanges, Xenophon, Hobbes, Herodotus, Aristotle, Myrdal, R. H. Barrow, E. Levasseur, Plato, and Wallon concerning ancient property, slavery, household rule, and society.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The block consists entirely of numbered endnotes/citations containing references to historical sources and scholarly works.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPxkLZclGQiQc6uf7sJHM8ZAg7rjjXJI3VIafN8C4mtYrl6EO2PPLbizpHFfOI",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The block consists entirely of numbered endnotes/citations containing references to historical sources and scholarly works."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "bibliographic notes and references supporting distinctions between household management, property, ancient government forms, and the private-public realm",
+    "unresolved_context": [
+      "Bibliographic notes and source citations referencing Coulanges, Xenophon, Hobbes, Herodotus, Aristotle, Myrdal, R. H. Barrow, E. Levasseur, Plato, and Wallon concerning ancient property, slavery, household rule, and society."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"bibliographic notes and references supporting distinctions between household management, property, ancient government forms, and the private-public realm\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"Bibliographic notes and source citations referencing Coulanges, Xenophon, Hobbes, Herodotus, Aristotle, Myrdal, R. H. Barrow, E. Levasseur, Plato, and Wallon concerning ancient property, slavery, household rule, and society.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The block consists entirely of numbered endnotes/citations containing references to historical sources and scholarly works.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 192,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 3511,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 3511
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3703,
+    "traffic_type": null
+  }
+}

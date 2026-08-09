@@ -1,0 +1,32 @@
+{
+  "finish_reason": "STOP",
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "detected_language": "fa",
+    "speaker": "A",
+    "transcript": "دقیقا. پژوهش‌ها و خوانش‌های انتقادی بر متون آرنت تاکید دارند که با ارزیابی ابعاد و وجوه گوناگون شهروندی در اندیشه او می‌توان این مفهوم را به عنوان یک گزینه بدیل در برابر بحران بیگانگی بشر از جهان صورت‌بندی کرد و راهی برای بازسازی مناسبات انسانی یافت."
+  },
+  "text": "{\n  \"transcript\": \"دقیقا. پژوهش‌ها و خوانش‌های انتقادی بر متون آرنت تاکید دارند که با ارزیابی ابعاد و وجوه گوناگون شهروندی در اندیشه او می‌توان این مفهوم را به عنوان یک گزینه بدیل در برابر بحران بیگانگی بشر از جهان صورت‌بندی کرد و راهی برای بازسازی مناسبات انسانی یافت.\",\n  \"detected_language\": \"fa\",\n  \"speaker\": \"A\"\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 102,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 627,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 33
+      },
+      {
+        "modality": "AUDIO",
+        "token_count": 594
+      }
+    ],
+    "thoughts_token_count": 351,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 1080,
+    "traffic_type": null
+  }
+}

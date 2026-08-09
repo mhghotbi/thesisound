@@ -1,0 +1,32 @@
+{
+  "finish_reason": "STOP",
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "detected_language": "fa",
+    "speaker": "B",
+    "transcript": "این دیدگاه بسیار قابل تامل است. این بیگانگی از جهان که آرنت مطرح می‌کند، چه آسیب‌های مشخصی برای معنای زندگی، هویت و عرصه عمومی به همراه دارد؟"
+  },
+  "text": "{\"transcript\":\"این دیدگاه بسیار قابل تامل است. این بیگانگی از جهان که آرنت مطرح می‌کند، چه آسیب‌های مشخصی برای معنای زندگی، هویت و عرصه عمومی به همراه دارد؟\",\"detected_language\":\"fa\",\"speaker\":\"B\"}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 55,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 406,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 33
+      },
+      {
+        "modality": "AUDIO",
+        "token_count": 373
+      }
+    ],
+    "thoughts_token_count": 225,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 686,
+    "traffic_type": null
+  }
+}

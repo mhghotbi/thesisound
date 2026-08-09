@@ -1,0 +1,32 @@
+{
+  "finish_reason": "STOP",
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "detected_language": "fa",
+    "speaker": "A",
+    "transcript": "سومین و عالی‌ترین مرحله وجود انسانی در هستی‌شناسی آرنت مرحله کنش است که دقیقاً در همان جهان ساخته‌شده به دست انسان سازنده رخ می‌دهد. آرنت کنش را مشخصاً انسانی‌ترین فعالیت بشری می‌داند و به این نتیجه می‌رسد که کنش‌ورزی و آزاد بودن دقیقاً یک چیز و هم‌معنا هستند. این کنش فعالیت یا مرتبه‌ای است که تحقق آن نیازمند تکثر و سخن است."
+  },
+  "text": "{\"transcript\":\"سومین و عالی‌ترین مرحله وجود انسانی در هستی‌شناسی آرنت مرحله کنش است که دقیقاً در همان جهان ساخته‌شده به دست انسان سازنده رخ می‌دهد. آرنت کنش را مشخصاً انسانی‌ترین فعالیت بشری می‌داند و به این نتیجه می‌رسد که کنش‌ورزی و آزاد بودن دقیقاً یک چیز و هم‌معنا هستند. این کنش فعالیت یا مرتبه‌ای است که تحقق آن نیازمند تکثر و سخن است.\",\"detected_language\":\"fa\",\"speaker\":\"A\"}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 112,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 927,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 33
+      },
+      {
+        "modality": "AUDIO",
+        "token_count": 894
+      }
+    ],
+    "thoughts_token_count": 354,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 1393,
+    "traffic_type": null
+  }
+}

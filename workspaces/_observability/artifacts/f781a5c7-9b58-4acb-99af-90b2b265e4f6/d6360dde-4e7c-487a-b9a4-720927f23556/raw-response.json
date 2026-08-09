@@ -1,0 +1,100 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"To analyze the public realm of homo faber (the exchange market), contrast modern exclusion of political man with ancient exclusions, and examine the necessity of isolation for craftsmanship.\",\n  \"claims\": [\n    {\n      \"claim\": \"The modern age aimed to exclude political man (who acts and speaks) from its public realm, much as antiquity sought to exclude homo faber.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The truth of this remark lies in the fact that the modern age was as intent on excluding political man, that is, man who acts and speaks, from its public realm as antiquity was on excluding homo faber.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"In both instances the exclusion was not a matter of course\"\n      ],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Homo faber forms a public realm of his own through the exchange market, driven by the need to show hand-made products and receive esteem.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"His public realm is the exchange market, where he can show the products of his hand and receive the esteem which is due him.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"even though it may not be a political realm, properly speaking\"\n      ],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Homo faber\",\n      \"definition\": \"The builder of the world and producer of things whose products are produced in isolation.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Animal laborans\",\n      \"item_b\": \"Homo faber\",\n      \"distinction\": \"Animal laborans has a worldless, herdlike social life and cannot build a public worldly realm, whereas homo faber is fully capable of having a public realm of his own (the exchange market).\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The modern age based its view of society on the productivity of homo faber.\",\n    \"Isolation is a necessary condition for craftsmanship and mastership.\",\n    \"Conspicuous production is a trait of a society of producers.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPp1ZFktGDS0wno3z-aTavk8HT4SnrVf-Kb_Q65KV2G_gqIKfA6oygxa7MjYwN",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The modern age aimed to exclude political man (who acts and speaks) from its public realm, much as antiquity sought to exclude homo faber.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "In both instances the exclusion was not a matter of course"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "The truth of this remark lies in the fact that the modern age was as intent on excluding political man, that is, man who acts and speaks, from its public realm as antiquity was on excluding homo faber."
+      },
+      {
+        "claim": "Homo faber forms a public realm of his own through the exchange market, driven by the need to show hand-made products and receive esteem.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "even though it may not be a political realm, properly speaking"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "His public realm is the exchange market, where he can show the products of his hand and receive the esteem which is due him."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The builder of the world and producer of things whose products are produced in isolation.",
+        "term": "Homo faber"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Animal laborans has a worldless, herdlike social life and cannot build a public worldly realm, whereas homo faber is fully capable of having a public realm of his own (the exchange market).",
+        "item_a": "Animal laborans",
+        "item_b": "Homo faber"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The modern age based its view of society on the productivity of homo faber.",
+      "Isolation is a necessary condition for craftsmanship and mastership.",
+      "Conspicuous production is a trait of a society of producers."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "To analyze the public realm of homo faber (the exchange market), contrast modern exclusion of political man with ancient exclusions, and examine the necessity of isolation for craftsmanship.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"To analyze the public realm of homo faber (the exchange market), contrast modern exclusion of political man with ancient exclusions, and examine the necessity of isolation for craftsmanship.\",\n  \"claims\": [\n    {\n      \"claim\": \"The modern age aimed to exclude political man (who acts and speaks) from its public realm, much as antiquity sought to exclude homo faber.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The truth of this remark lies in the fact that the modern age was as intent on excluding political man, that is, man who acts and speaks, from its public realm as antiquity was on excluding homo faber.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"In both instances the exclusion was not a matter of course\"\n      ],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Homo faber forms a public realm of his own through the exchange market, driven by the need to show hand-made products and receive esteem.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"His public realm is the exchange market, where he can show the products of his hand and receive the esteem which is due him.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"even though it may not be a political realm, properly speaking\"\n      ],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Homo faber\",\n      \"definition\": \"The builder of the world and producer of things whose products are produced in isolation.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Animal laborans\",\n      \"item_b\": \"Homo faber\",\n      \"distinction\": \"Animal laborans has a worldless, herdlike social life and cannot build a public worldly realm, whereas homo faber is fully capable of having a public realm of his own (the exchange market).\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The modern age based its view of society on the productivity of homo faber.\",\n    \"Isolation is a necessary condition for craftsmanship and mastership.\",\n    \"Conspicuous production is a trait of a society of producers.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 571,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2278,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2278
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2849,
+    "traffic_type": null
+  }
+}

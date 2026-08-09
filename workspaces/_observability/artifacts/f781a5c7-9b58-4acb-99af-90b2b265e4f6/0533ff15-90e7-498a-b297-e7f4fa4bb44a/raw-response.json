@@ -1,0 +1,84 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"The author examines the political standing of speech and action relative to homo faber and animal laborans, the role of common sense, and the distinct forms of alienation found in commercial and laboring societies.\",\n  \"claims\": [\n    {\n      \"claim\": \"The ancient estimation of politics rests on the conviction that individuals appear and confirm themselves in unique distinctness through speech and action.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The root of the ancient estimation of politics is the conviction that man qua man, each individual in his unique distinctness, appears and confirms himself in speech and action, and that these activi ties, despite their material futility, possess an enduring quality of their own because they create their own remembrance.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Both homo faber and animal laborans are strictly unpolitical because they judge public activities in terms of usefulness to higher ends rather than value appearance and actualization.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Both, therefore, are, strictly speaking, unpolitical, and will incline to denounce action and speech as idleness, idle busybodyness and idle talk, and generally will judge public activities in terms of their usefulness to supposedly higher ends\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"common sense\",\n      \"definition\": \"The one sense that fits our five strictly individual senses and their particular data into reality as a whole, allowing us to recognize them as disclosures of reality.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"homo faber\",\n      \"item_b\": \"animal laborans\",\n      \"distinction\": \"Homo faber views public activities in terms of making the world more useful and beautiful, whereas animal laborans views them in terms of making life easier and longer.\"\n    }\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPMVXosPgmJFtyQ6vTu7q4hm-Fij5RSzcqIROG5qM05OmyUg_rrLsjLDTvZ4l3",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The ancient estimation of politics rests on the conviction that individuals appear and confirm themselves in unique distinctness through speech and action.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "support_kind": "direct",
+        "supporting_excerpt": "The root of the ancient estimation of politics is the conviction that man qua man, each individual in his unique distinctness, appears and confirms himself in speech and action, and that these activi ties, despite their material futility, possess an enduring quality of their own because they create their own remembrance."
+      },
+      {
+        "claim": "Both homo faber and animal laborans are strictly unpolitical because they judge public activities in terms of usefulness to higher ends rather than value appearance and actualization.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "support_kind": "direct",
+        "supporting_excerpt": "Both, therefore, are, strictly speaking, unpolitical, and will incline to denounce action and speech as idleness, idle busybodyness and idle talk, and generally will judge public activities in terms of their usefulness to supposedly higher ends"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The one sense that fits our five strictly individual senses and their particular data into reality as a whole, allowing us to recognize them as disclosures of reality.",
+        "term": "common sense"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Homo faber views public activities in terms of making the world more useful and beautiful, whereas animal laborans views them in terms of making life easier and longer.",
+        "item_a": "homo faber",
+        "item_b": "animal laborans"
+      }
+    ],
+    "segment_function": "The author examines the political standing of speech and action relative to homo faber and animal laborans, the role of common sense, and the distinct forms of alienation found in commercial and laboring societies."
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"The author examines the political standing of speech and action relative to homo faber and animal laborans, the role of common sense, and the distinct forms of alienation found in commercial and laboring societies.\",\n  \"claims\": [\n    {\n      \"claim\": \"The ancient estimation of politics rests on the conviction that individuals appear and confirm themselves in unique distinctness through speech and action.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The root of the ancient estimation of politics is the conviction that man qua man, each individual in his unique distinctness, appears and confirms himself in speech and action, and that these activi ties, despite their material futility, possess an enduring quality of their own because they create their own remembrance.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Both homo faber and animal laborans are strictly unpolitical because they judge public activities in terms of usefulness to higher ends rather than value appearance and actualization.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Both, therefore, are, strictly speaking, unpolitical, and will incline to denounce action and speech as idleness, idle busybodyness and idle talk, and generally will judge public activities in terms of their usefulness to supposedly higher ends\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"common sense\",\n      \"definition\": \"The one sense that fits our five strictly individual senses and their particular data into reality as a whole, allowing us to recognize them as disclosures of reality.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"homo faber\",\n      \"item_b\": \"animal laborans\",\n      \"distinction\": \"Homo faber views public activities in terms of making the world more useful and beautiful, whereas animal laborans views them in terms of making life easier and longer.\"\n    }\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 467,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2846,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2846
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3313,
+    "traffic_type": null
+  }
+}

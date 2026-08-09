@@ -1,0 +1,87 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"The Greek political consciousness clearly and articulately distinguished activities sustaining the life process from the political realm, barring them from entry.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"At the root of Greek political consciousness we find an unequaled clarity and articulateness in drawing this distinction. No activity that served only the purpose of making a living, of sustaining only the life process, was permitted to enter the political realm\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The emergence of society from the household into the public sphere blurred the boundary between private and political and altered the meaning of both terms.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The emergence of society—the rise of housekeeping, its activities, problems, and organizational devices—from the shadowy interior of the household into the light of the public sphere, has not only blurred the old borderline between private and political, it has also changed almost beyond recognition the meaning of the two terms and their significance for the life of the individual and the citizen.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Ancient privacy\",\n      \"item_b\": \"Modern privacy\",\n      \"distinction\": \"In ancient feeling, privacy had a privative trait meaning deprivation of the highest capacities, whereas modern privacy is associated with an enormous enrichment through individualism and serves to shelter the intimate against the social realm.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPtgubrFvnPlJ6a9HdsfAli7WGMBQ5tBrNMubSkteKqblSzD5D3r8hu6-6Mxan",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The Greek political consciousness clearly and articulately distinguished activities sustaining the life process from the political realm, barring them from entry.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "At the root of Greek political consciousness we find an unequaled clarity and articulateness in drawing this distinction. No activity that served only the purpose of making a living, of sustaining only the life process, was permitted to enter the political realm"
+      },
+      {
+        "claim": "The emergence of society from the household into the public sphere blurred the boundary between private and political and altered the meaning of both terms.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The emergence of society—the rise of housekeeping, its activities, problems, and organizational devices—from the shadowy interior of the household into the light of the public sphere, has not only blurred the old borderline between private and political, it has also changed almost beyond recognition the meaning of the two terms and their significance for the life of the individual and the citizen."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "distinction": "In ancient feeling, privacy had a privative trait meaning deprivation of the highest capacities, whereas modern privacy is associated with an enormous enrichment through individualism and serves to shelter the intimate against the social realm.",
+        "item_a": "Ancient privacy",
+        "item_b": "Modern privacy"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"The Greek political consciousness clearly and articulately distinguished activities sustaining the life process from the political realm, barring them from entry.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"At the root of Greek political consciousness we find an unequaled clarity and articulateness in drawing this distinction. No activity that served only the purpose of making a living, of sustaining only the life process, was permitted to enter the political realm\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The emergence of society from the household into the public sphere blurred the boundary between private and political and altered the meaning of both terms.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The emergence of society—the rise of housekeeping, its activities, problems, and organizational devices—from the shadowy interior of the household into the light of the public sphere, has not only blurred the old borderline between private and political, it has also changed almost beyond recognition the meaning of the two terms and their significance for the life of the individual and the citizen.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Ancient privacy\",\n      \"item_b\": \"Modern privacy\",\n      \"distinction\": \"In ancient feeling, privacy had a privative trait meaning deprivation of the highest capacities, whereas modern privacy is associated with an enormous enrichment through individualism and serves to shelter the intimate against the social realm.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 428,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2979,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2979
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3407,
+    "traffic_type": null
+  }
+}

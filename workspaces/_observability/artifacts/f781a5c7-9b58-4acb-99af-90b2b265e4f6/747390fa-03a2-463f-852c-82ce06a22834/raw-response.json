@@ -1,0 +1,99 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"The author defines and distinguishes consumer goods, use objects, and the products of action and speech based on their worldly character, durability, and dependence on reification.\",\n  \"claims\": [\n    {\n      \"claim\": \"The distinction between labor and work becomes merely a difference in degree if the worldly character, location, function, and length of stay of the produced thing are not taken into account.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"It seems that the distinction between labor and work, which our theorists have so obstinately neglected and our languages so stubbornly preserved, indeed becomes merely a difference in degree if the worldly character of the produced thing—its location, function, and length of stay in the world—is not taken into account.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The products of work guarantee the permanence and durability without which a world would not be possible at all, whereas consumer goods are for incessant consumption and lack stability.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Viewed as part of the world, the products of work—and not the products of labor—guarantee the permanence and durability without which a world would not be possible at all.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Consumer goods\",\n      \"definition\": \"Things needed by our bodies and produced by laboring that have no stability of their own and appear and disappear for incessant consumption.\"\n    },\n    {\n      \"term\": \"Use objects\",\n      \"definition\": \"Things in an environment that are used rather than consumed, to which men become accustomed, and which give rise to the familiarity of the world, its customs, and habits.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Consumer goods\",\n      \"item_b\": \"Use objects\",\n      \"distinction\": \"Consumer goods are for incessant consumption to assure life's survival and disappear, whereas use objects are items in an environment that are used rather than consumed and provide familiarity and stability.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The distinction between labor and work depends on the worldly character and permanence of the things produced.\",\n    \"Products of action, speech, and thought are unworldly and futile, depending on reification (materialization into tangible things like books, monuments, or art) to remain in the world.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPg8F-7u_icCUPVpztmK3devhHUk8ckV7-20ba0tsdRV9x9mGY8mD8jZwXiO-z",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The distinction between labor and work becomes merely a difference in degree if the worldly character, location, function, and length of stay of the produced thing are not taken into account.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "It seems that the distinction between labor and work, which our theorists have so obstinately neglected and our languages so stubbornly preserved, indeed becomes merely a difference in degree if the worldly character of the produced thing—its location, function, and length of stay in the world—is not taken into account."
+      },
+      {
+        "claim": "The products of work guarantee the permanence and durability without which a world would not be possible at all, whereas consumer goods are for incessant consumption and lack stability.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Viewed as part of the world, the products of work—and not the products of labor—guarantee the permanence and durability without which a world would not be possible at all."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Things needed by our bodies and produced by laboring that have no stability of their own and appear and disappear for incessant consumption.",
+        "term": "Consumer goods"
+      },
+      {
+        "definition": "Things in an environment that are used rather than consumed, to which men become accustomed, and which give rise to the familiarity of the world, its customs, and habits.",
+        "term": "Use objects"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Consumer goods are for incessant consumption to assure life's survival and disappear, whereas use objects are items in an environment that are used rather than consumed and provide familiarity and stability.",
+        "item_a": "Consumer goods",
+        "item_b": "Use objects"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The distinction between labor and work depends on the worldly character and permanence of the things produced.",
+      "Products of action, speech, and thought are unworldly and futile, depending on reification (materialization into tangible things like books, monuments, or art) to remain in the world."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The author defines and distinguishes consumer goods, use objects, and the products of action and speech based on their worldly character, durability, and dependence on reification.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"The author defines and distinguishes consumer goods, use objects, and the products of action and speech based on their worldly character, durability, and dependence on reification.\",\n  \"claims\": [\n    {\n      \"claim\": \"The distinction between labor and work becomes merely a difference in degree if the worldly character, location, function, and length of stay of the produced thing are not taken into account.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"It seems that the distinction between labor and work, which our theorists have so obstinately neglected and our languages so stubbornly preserved, indeed becomes merely a difference in degree if the worldly character of the produced thing—its location, function, and length of stay in the world—is not taken into account.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The products of work guarantee the permanence and durability without which a world would not be possible at all, whereas consumer goods are for incessant consumption and lack stability.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Viewed as part of the world, the products of work—and not the products of labor—guarantee the permanence and durability without which a world would not be possible at all.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Consumer goods\",\n      \"definition\": \"Things needed by our bodies and produced by laboring that have no stability of their own and appear and disappear for incessant consumption.\"\n    },\n    {\n      \"term\": \"Use objects\",\n      \"definition\": \"Things in an environment that are used rather than consumed, to which men become accustomed, and which give rise to the familiarity of the world, its customs, and habits.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Consumer goods\",\n      \"item_b\": \"Use objects\",\n      \"distinction\": \"Consumer goods are for incessant consumption to assure life's survival and disappear, whereas use objects are items in an environment that are used rather than consumed and provide familiarity and stability.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The distinction between labor and work depends on the worldly character and permanence of the things produced.\",\n    \"Products of action, speech, and thought are unworldly and futile, depending on reification (materialization into tangible things like books, monuments, or art) to remain in the world.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 622,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2607,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2607
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3229,
+    "traffic_type": null
+  }
+}

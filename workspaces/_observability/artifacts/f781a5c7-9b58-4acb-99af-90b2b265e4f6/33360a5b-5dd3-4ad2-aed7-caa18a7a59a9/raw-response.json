@@ -1,0 +1,77 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"index\",\n  \"claims\": [\n    {\n      \"claim\": \"The index entries cover key terms, historical figures, and philosophical concepts related to Hannah Arendt's analysis of the vita activa, including action, alienation, animal laborans, and the Archimedean point.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"action, 175–247 ; the agent as disclosed in, 175–81 ... alienation: earth alienation, 264–65 ... animal laborans: abundance as ideal of, 126 , 134 ... Archimedean point: applying to man himself, 248 , 322–23\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The block is an alphabetical index containing page number references for various concepts, individuals, and works spanning Abraham to Aristotle.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Index entries for Arendtian concepts such as action, animal laborans, and Archimedean point.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPZx4CZC3oE2iZr9nz1Eq7k2cgxMLp5kOyGmbQ82CzdYSt5NrQeDSpZMB64JnT",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The index entries cover key terms, historical figures, and philosophical concepts related to Hannah Arendt's analysis of the vita activa, including action, alienation, animal laborans, and the Archimedean point.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "action, 175–247 ; the agent as disclosed in, 175–81 ... alienation: earth alienation, 264–65 ... animal laborans: abundance as ideal of, 126 , 134 ... Archimedean point: applying to man himself, 248 , 322–23"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Index entries for Arendtian concepts such as action, animal laborans, and Archimedean point."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "index",
+    "unresolved_context": [
+      "The block is an alphabetical index containing page number references for various concepts, individuals, and works spanning Abraham to Aristotle."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"index\",\n  \"claims\": [\n    {\n      \"claim\": \"The index entries cover key terms, historical figures, and philosophical concepts related to Hannah Arendt's analysis of the vita activa, including action, alienation, animal laborans, and the Archimedean point.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"action, 175–247 ; the agent as disclosed in, 175–81 ... alienation: earth alienation, 264–65 ... animal laborans: abundance as ideal of, 126 , 134 ... Archimedean point: applying to man himself, 248 , 322–23\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The block is an alphabetical index containing page number references for various concepts, individuals, and works spanning Abraham to Aristotle.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Index entries for Arendtian concepts such as action, animal laborans, and Archimedean point.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 300,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 6062,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 6062
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 6362,
+    "traffic_type": null
+  }
+}

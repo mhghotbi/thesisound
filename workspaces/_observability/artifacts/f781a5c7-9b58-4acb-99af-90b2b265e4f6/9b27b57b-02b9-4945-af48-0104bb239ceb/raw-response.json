@@ -1,0 +1,68 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"text representation of Unicode escape sequences\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"The block consists entirely of encoded Unicode representation strings such as 2uFEE22uFEB/2uFEF/2uFEDF, preventing meaningful semantic extraction under brief constraints.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Preserve raw Unicode encoding block data if downstream tasks require exact character-level sequence matching.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIP3IwHWoJ1fCdSLPd6p4avzgJHQ66wMG0X0bjfixF48Mwf6SyRbGyamyvGEMcY",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Preserve raw Unicode encoding block data if downstream tasks require exact character-level sequence matching."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "text representation of Unicode escape sequences",
+    "unresolved_context": [
+      "The block consists entirely of encoded Unicode representation strings such as 2uFEE22uFEB/2uFEF/2uFEDF, preventing meaningful semantic extraction under brief constraints."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"text representation of Unicode escape sequences\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"The block consists entirely of encoded Unicode representation strings such as 2uFEE22uFEB/2uFEF/2uFEDF, preventing meaningful semantic extraction under brief constraints.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Preserve raw Unicode encoding block data if downstream tasks require exact character-level sequence matching.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 128,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 6133,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 6133
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 6261,
+    "traffic_type": null
+  }
+}

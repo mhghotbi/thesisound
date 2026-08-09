@@ -1,0 +1,87 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"Providing endnotes containing textual references, historical citations, and elaborations on concepts such as the creation story, Augustinian anthropology, and classical understandings of freedom and slavery.\",\n  \"claims\": [\n    {\n      \"claim\": \"Augustine distinguishes between the question 'Who am I?', directed by man at himself, and 'What am I?', addressed to God.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"He distinguishes between the questions of “Who am I?” and “What am I?” the first being directed by man at himself (“And I directed myself at myself and said to me: You, who are you? And I answered: A man”— tu, quis es? [ Confessiones x. 6]) and the second being addressed to God (“What then am I, my God? What is my nature?”— Quid ergo sum, Deus meus? Quae natura sum? [x. 17]).\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"William L. Westermann argues that Aristotle's statement regarding craftsmen living in limited slavery implies that temporary work contracts forfeit specific elements of free status by volition.\",\n      \"claim_type\": \"scholarly_interpretation\",\n      \"supporting_excerpt\": \"William L. Westermann (“Between Slavery and Freedom,” American Historical Review , Vol. L [1945]) holds that the “statement of Aristotle . . . that craftsmen live in a condition of limited slavery meant that the artisan, when he made a work contract, disposed of two of the four elements of his free status [viz., of freedom of economic activity and right of unrestricted movement], but by his own volition and for a temporary period”\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"Citing William L. Westermann's historical interpretation\"\n      ],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"Various bibliographic references, source citations, and quotations from historical texts ranging from theological works (Augustine, Genesis) to classical philosophy (Aristotle) and modern historical commentary.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The block consists entirely of scholarly endnotes supplementing prior text in the work.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPMMujFFU2Aa_qE4gZKk7J2CMN5lcyeRwId0X27Gz4rmp1Mx4bhljp_Ebg6rlF",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Augustine distinguishes between the question 'Who am I?', directed by man at himself, and 'What am I?', addressed to God.",
+        "claim_type": "historical_context",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "He distinguishes between the questions of “Who am I?” and “What am I?” the first being directed by man at himself (“And I directed myself at myself and said to me: You, who are you? And I answered: A man”— tu, quis es? [ Confessiones x. 6]) and the second being addressed to God (“What then am I, my God? What is my nature?”— Quid ergo sum, Deus meus? Quae natura sum? [x. 17])."
+      },
+      {
+        "claim": "William L. Westermann argues that Aristotle's statement regarding craftsmen living in limited slavery implies that temporary work contracts forfeit specific elements of free status by volition.",
+        "claim_type": "scholarly_interpretation",
+        "confidence": 1.0,
+        "qualifications": [
+          "Citing William L. Westermann's historical interpretation"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "William L. Westermann (“Between Slavery and Freedom,” American Historical Review , Vol. L [1945]) holds that the “statement of Aristotle . . . that craftsmen live in a condition of limited slavery meant that the artisan, when he made a work contract, disposed of two of the four elements of his free status [viz., of freedom of economic activity and right of unrestricted movement], but by his own volition and for a temporary period”"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The block consists entirely of scholarly endnotes supplementing prior text in the work."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Providing endnotes containing textual references, historical citations, and elaborations on concepts such as the creation story, Augustinian anthropology, and classical understandings of freedom and slavery.",
+    "unresolved_context": [
+      "Various bibliographic references, source citations, and quotations from historical texts ranging from theological works (Augustine, Genesis) to classical philosophy (Aristotle) and modern historical commentary."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"Providing endnotes containing textual references, historical citations, and elaborations on concepts such as the creation story, Augustinian anthropology, and classical understandings of freedom and slavery.\",\n  \"claims\": [\n    {\n      \"claim\": \"Augustine distinguishes between the question 'Who am I?', directed by man at himself, and 'What am I?', addressed to God.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"He distinguishes between the questions of “Who am I?” and “What am I?” the first being directed by man at himself (“And I directed myself at myself and said to me: You, who are you? And I answered: A man”— tu, quis es? [ Confessiones x. 6]) and the second being addressed to God (“What then am I, my God? What is my nature?”— Quid ergo sum, Deus meus? Quae natura sum? [x. 17]).\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"William L. Westermann argues that Aristotle's statement regarding craftsmen living in limited slavery implies that temporary work contracts forfeit specific elements of free status by volition.\",\n      \"claim_type\": \"scholarly_interpretation\",\n      \"supporting_excerpt\": \"William L. Westermann (“Between Slavery and Freedom,” American Historical Review , Vol. L [1945]) holds that the “statement of Aristotle . . . that craftsmen live in a condition of limited slavery meant that the artisan, when he made a work contract, disposed of two of the four elements of his free status [viz., of freedom of economic activity and right of unrestricted movement], but by his own volition and for a temporary period”\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"Citing William L. Westermann's historical interpretation\"\n      ],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"Various bibliographic references, source citations, and quotations from historical texts ranging from theological works (Augustine, Genesis) to classical philosophy (Aristotle) and modern historical commentary.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The block consists entirely of scholarly endnotes supplementing prior text in the work.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 573,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 3268,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 3268
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3841,
+    "traffic_type": null
+  }
+}

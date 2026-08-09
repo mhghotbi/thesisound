@@ -1,0 +1,42 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Arendt's account of the earth-bound creature does not necessarily result in a problematic fetishization of immediate knowledge or an earthly nature prior to the human artifice, but instead highlights the narrowing of human receptivity to an unpredictable reality.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Arendt ’s account of the importance of the “bodybound senses ” of an “earth-bound creature ” need not result in the problematic fetishization of immediate rather than mediated knowledge, or of an “earthly nature” supposedly prior to and independent of the human arti ﬁce, but can draw attention to the narrowing of human beings ’“ angle of receptivity ” to a surprising and unpredictable reality ."
+      },
+      {
+        "claim": "Arendt used the term earth to refer both to the planet and to make a theoretical point about the relationship between the given and the made.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The most straightforward answer is that Arendt used the term “earth” not only to refer to the planet, but also to advance a more general theoretical point about the relationship between what, in these opening pages of her book, she called the “given” and the “made.”"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "A term used by Arendt to refer to the planet as well as to a general theoretical point about the relationship between the given and the made.",
+        "term": "earth"
+      }
+    ],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "article introduction and initial textual analysis of Hannah Arendt's concept of the earth in The Human Condition",
+    "unresolved_context": []
+  }
+}

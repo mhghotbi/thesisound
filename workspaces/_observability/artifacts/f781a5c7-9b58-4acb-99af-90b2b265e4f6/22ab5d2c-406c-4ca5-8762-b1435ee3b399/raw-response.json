@@ -1,0 +1,110 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"Discusses the distinction between social and political animal classifications, analyzing how Aristotle's zōon politikon became translated as animal socialis and contrasting the private household with the public political realm of the polis.\",\n  \"claims\": [\n    {\n      \"claim\": \"Action is the exclusive prerogative of man and is entirely dependent upon the constant presence of others, whereas labor and fabrication do not strictly require human company in the same manner.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, and only action is entirely dependent upon the constant presence of others.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"Labor does not need the presence of others\",\n        \"A fabricator working alone would lose specifically human quality or resemble a divine demiurge\"\n      ],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"The translation of Aristotle's zōon politikon as animal socialis and homo est naturaliter politicus, id est, socialis reflects a loss of the original Greek understanding of politics.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"The word 'social' is Roman in origin and lacks an equivalent in Greek language or thought\"\n      ],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"vita activa\",\n      \"definition\": \"Human life in so far as it is actively engaged in doing something, always rooted in a world of men and man-made things.\"\n    },\n    {\n      \"term\": \"bios politikos\",\n      \"definition\": \"A second life received alongside private life upon the rise of the city-state, constituted by action (praxis) and speech (lexis).\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Political association (polis)\",\n      \"item_b\": \"Natural association centered on the home and family (oikia)\",\n      \"distinction\": \"According to Greek thought, the human capacity for political organization stands in direct opposition to the natural association of the home whose center is the family.\"\n    },\n    {\n      \"item_a\": \"What is one's own (idion)\",\n      \"item_b\": \"What is communal (koinon)\",\n      \"distinction\": \"A citizen belongs to two orders of existence, creating a sharp distinction between private personal life and communal existence.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Distinction between zōon politikon and animal socialis\",\n    \"Exclusion of the merely necessary or useful from the bios politikos\",\n    \"The relationship between action, speech, and the presence of others\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPGpEoM09yqf6RjwmSg7-_EqECqpIzV4kaPIrj48nwDhDS1tJWq3azDi52sx3k",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Action is the exclusive prerogative of man and is entirely dependent upon the constant presence of others, whereas labor and fabrication do not strictly require human company in the same manner.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "Labor does not need the presence of others",
+          "A fabricator working alone would lose specifically human quality or resemble a divine demiurge"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, and only action is entirely dependent upon the constant presence of others."
+      },
+      {
+        "claim": "The translation of Aristotle's zōon politikon as animal socialis and homo est naturaliter politicus, id est, socialis reflects a loss of the original Greek understanding of politics.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "The word 'social' is Roman in origin and lacks an equivalent in Greek language or thought"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Human life in so far as it is actively engaged in doing something, always rooted in a world of men and man-made things.",
+        "term": "vita activa"
+      },
+      {
+        "definition": "A second life received alongside private life upon the rise of the city-state, constituted by action (praxis) and speech (lexis).",
+        "term": "bios politikos"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "According to Greek thought, the human capacity for political organization stands in direct opposition to the natural association of the home whose center is the family.",
+        "item_a": "Political association (polis)",
+        "item_b": "Natural association centered on the home and family (oikia)"
+      },
+      {
+        "distinction": "A citizen belongs to two orders of existence, creating a sharp distinction between private personal life and communal existence.",
+        "item_a": "What is one's own (idion)",
+        "item_b": "What is communal (koinon)"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Distinction between zōon politikon and animal socialis",
+      "Exclusion of the merely necessary or useful from the bios politikos",
+      "The relationship between action, speech, and the presence of others"
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Discusses the distinction between social and political animal classifications, analyzing how Aristotle's zōon politikon became translated as animal socialis and contrasting the private household with the public political realm of the polis.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"Discusses the distinction between social and political animal classifications, analyzing how Aristotle's zōon politikon became translated as animal socialis and contrasting the private household with the public political realm of the polis.\",\n  \"claims\": [\n    {\n      \"claim\": \"Action is the exclusive prerogative of man and is entirely dependent upon the constant presence of others, whereas labor and fabrication do not strictly require human company in the same manner.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, and only action is entirely dependent upon the constant presence of others.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"Labor does not need the presence of others\",\n        \"A fabricator working alone would lose specifically human quality or resemble a divine demiurge\"\n      ],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"The translation of Aristotle's zōon politikon as animal socialis and homo est naturaliter politicus, id est, socialis reflects a loss of the original Greek understanding of politics.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"The word 'social' is Roman in origin and lacks an equivalent in Greek language or thought\"\n      ],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"vita activa\",\n      \"definition\": \"Human life in so far as it is actively engaged in doing something, always rooted in a world of men and man-made things.\"\n    },\n    {\n      \"term\": \"bios politikos\",\n      \"definition\": \"A second life received alongside private life upon the rise of the city-state, constituted by action (praxis) and speech (lexis).\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Political association (polis)\",\n      \"item_b\": \"Natural association centered on the home and family (oikia)\",\n      \"distinction\": \"According to Greek thought, the human capacity for political organization stands in direct opposition to the natural association of the home whose center is the family.\"\n    },\n    {\n      \"item_a\": \"What is one's own (idion)\",\n      \"item_b\": \"What is communal (koinon)\",\n      \"distinction\": \"A citizen belongs to two orders of existence, creating a sharp distinction between private personal life and communal existence.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Distinction between zōon politikon and animal socialis\",\n    \"Exclusion of the merely necessary or useful from the bios politikos\",\n    \"The relationship between action, speech, and the presence of others\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 719,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2705,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2705
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3424,
+    "traffic_type": null
+  }
+}

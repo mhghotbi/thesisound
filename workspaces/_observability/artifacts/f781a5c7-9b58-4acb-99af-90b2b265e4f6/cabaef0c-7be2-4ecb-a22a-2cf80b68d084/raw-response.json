@@ -1,0 +1,96 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"abstract and introduction of article examining Hannah Arendt's political thought, the concepts of earth and world, and human adaptation to a warming planet\",\n  \"claims\": [\n    {\n      \"claim\": \"The article uses a phenomenological distinction between outdoors and indoors to examine three likely types of artificial adaptation to a warming planet.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"this article draws on The Human Condition and some of Arendt ’s ancient and modern sources to answer this question, using a phenomenological distinction between outdoors and indoors to make sense of three likely types of arti ﬁcial adaptation to a warming planet.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Arendt used the term earth to refer not only to the planet but also to the relationship between the given and the made.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The most straightforward answer is that Arendt used the term “earth” not only to refer to the planet, but also to advance a more general theoretical point about the relationship between what, in these opening pages of her book, she called the “given” and the “made.”\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Earth\",\n      \"definition\": \"A term used by Arendt not only to refer to the planet, but also to advance a theoretical point about the relationship between the given and the made.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"given\",\n      \"item_b\": \"made\",\n      \"distinction\": \"The relationship between human existence as it has been given versus something man has made himself.\"\n    }\n  ],\n  \"unresolved_context\": [\n    \"Details on the specific three types of artificial adaptation and how planetary-scale ecological inequality limits Arendt's framework.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Patchen Markell's framing of Arendt's relevance to a warming planet through indoors and outdoors distinctions.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPJcBTPTVC65toum_9XPLj4jDPlMXFokYAGPZqEFFvKx7XlXxb6zXNXdhfqptQ",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The article uses a phenomenological distinction between outdoors and indoors to examine three likely types of artificial adaptation to a warming planet.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "this article draws on The Human Condition and some of Arendt ’s ancient and modern sources to answer this question, using a phenomenological distinction between outdoors and indoors to make sense of three likely types of arti ﬁcial adaptation to a warming planet."
+      },
+      {
+        "claim": "Arendt used the term earth to refer not only to the planet but also to the relationship between the given and the made.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The most straightforward answer is that Arendt used the term “earth” not only to refer to the planet, but also to advance a more general theoretical point about the relationship between what, in these opening pages of her book, she called the “given” and the “made.”"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "A term used by Arendt not only to refer to the planet, but also to advance a theoretical point about the relationship between the given and the made.",
+        "term": "Earth"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "The relationship between human existence as it has been given versus something man has made himself.",
+        "item_a": "given",
+        "item_b": "made"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Patchen Markell's framing of Arendt's relevance to a warming planet through indoors and outdoors distinctions."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "abstract and introduction of article examining Hannah Arendt's political thought, the concepts of earth and world, and human adaptation to a warming planet",
+    "unresolved_context": [
+      "Details on the specific three types of artificial adaptation and how planetary-scale ecological inequality limits Arendt's framework."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"abstract and introduction of article examining Hannah Arendt's political thought, the concepts of earth and world, and human adaptation to a warming planet\",\n  \"claims\": [\n    {\n      \"claim\": \"The article uses a phenomenological distinction between outdoors and indoors to examine three likely types of artificial adaptation to a warming planet.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"this article draws on The Human Condition and some of Arendt ’s ancient and modern sources to answer this question, using a phenomenological distinction between outdoors and indoors to make sense of three likely types of arti ﬁcial adaptation to a warming planet.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Arendt used the term earth to refer not only to the planet but also to the relationship between the given and the made.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The most straightforward answer is that Arendt used the term “earth” not only to refer to the planet, but also to advance a more general theoretical point about the relationship between what, in these opening pages of her book, she called the “given” and the “made.”\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Earth\",\n      \"definition\": \"A term used by Arendt not only to refer to the planet, but also to advance a theoretical point about the relationship between the given and the made.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"given\",\n      \"item_b\": \"made\",\n      \"distinction\": \"The relationship between human existence as it has been given versus something man has made himself.\"\n    }\n  ],\n  \"unresolved_context\": [\n    \"Details on the specific three types of artificial adaptation and how planetary-scale ecological inequality limits Arendt's framework.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Patchen Markell's framing of Arendt's relevance to a warming planet through indoors and outdoors distinctions.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 523,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2916,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2916
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3439,
+    "traffic_type": null
+  }
+}

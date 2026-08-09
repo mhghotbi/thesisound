@@ -1,0 +1,40 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The increase in human power over worldly things arises from world alienation, stemming from the distance man places between himself and the world.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The increase in power of man over the things of this world springs in either case from the distance which man puts between himself and the world, that is, from world alienation."
+      },
+      {
+        "claim": "Marx's work remained firmly rooted in the extreme subjectivism of the modern age despite occasional considerations of world alienation.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "However, such occasional considerations play a minor role in his work, which remained firmly rooted in the modern age’s extreme subjectivism."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Connection between world alienation and increased power over worldly things",
+      "Marx's engagement with and limitations regarding world alienation"
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "notes and supplementary commentary on Chapter 6 discussing themes of world alienation, Max Weber, Marx, and the historical context of modern science and capitalism",
+    "unresolved_context": []
+  }
+}

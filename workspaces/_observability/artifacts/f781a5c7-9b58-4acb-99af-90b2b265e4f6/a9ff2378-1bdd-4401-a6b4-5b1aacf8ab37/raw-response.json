@@ -1,0 +1,98 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Marx defined labor as man's metabolism with nature where nature's material is adapted to human wants, indicating a physiological process closely linked to biological consumption.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"When Marx defined labor as “man’s metabolism with nature,” in whose process “nature’s material [is] adapted by a change of form to the wants of man,” so that “labour has incorporated itself with its subject,” he indicated clearly that he was “speaking physiologically” and that labor and consumption are but two stages of the ever-recurring cycle of biological life.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"referencing Marx's definition\"\n      ],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Locke, Adam Smith, and Marx each held that labor was the supreme world-building capacity of man, leading them into contradictions due to the equation of work with labor.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"all three, though Marx with greatest force and consistency, held that labor was considered to be the supreme world-building capacity of man... each of them... found himself in the grip of certain genuine contradictions. It seems to lie in the very nature of this matter that the most obvious solution of these contradictions... is their equation of work with labor\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"Marx with greatest force and consistency\"\n      ],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Labor\",\n      \"definition\": \"An activity whose products are meant to be fed into the human life process almost immediately as part of the cycle of biological life and consumption.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Labor\",\n      \"item_b\": \"Work\",\n      \"distinction\": \"Labor prepares matter for incorporation and eventual destruction through consumption, whereas work changes matter into material in order to work upon it and use the finished product without preparing it for immediate destruction.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Equation of work with labor leads to absurdities by attributing work's lasting productivity to labor which is consumed.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPxMjx2F8Q5ZnFpr0ZUYIyU8kNjtmLEXVBd7w_b6hnGVXw62zKQnPRRg8XJHHp",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Marx defined labor as man's metabolism with nature where nature's material is adapted to human wants, indicating a physiological process closely linked to biological consumption.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "referencing Marx's definition"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "When Marx defined labor as “man’s metabolism with nature,” in whose process “nature’s material [is] adapted by a change of form to the wants of man,” so that “labour has incorporated itself with its subject,” he indicated clearly that he was “speaking physiologically” and that labor and consumption are but two stages of the ever-recurring cycle of biological life."
+      },
+      {
+        "claim": "Locke, Adam Smith, and Marx each held that labor was the supreme world-building capacity of man, leading them into contradictions due to the equation of work with labor.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "Marx with greatest force and consistency"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "all three, though Marx with greatest force and consistency, held that labor was considered to be the supreme world-building capacity of man... each of them... found himself in the grip of certain genuine contradictions. It seems to lie in the very nature of this matter that the most obvious solution of these contradictions... is their equation of work with labor"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "An activity whose products are meant to be fed into the human life process almost immediately as part of the cycle of biological life and consumption.",
+        "term": "Labor"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Labor prepares matter for incorporation and eventual destruction through consumption, whereas work changes matter into material in order to work upon it and use the finished product without preparing it for immediate destruction.",
+        "item_a": "Labor",
+        "item_b": "Work"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Equation of work with labor leads to absurdities by attributing work's lasting productivity to labor which is consumed."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Marx defined labor as man's metabolism with nature where nature's material is adapted to human wants, indicating a physiological process closely linked to biological consumption.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"When Marx defined labor as “man’s metabolism with nature,” in whose process “nature’s material [is] adapted by a change of form to the wants of man,” so that “labour has incorporated itself with its subject,” he indicated clearly that he was “speaking physiologically” and that labor and consumption are but two stages of the ever-recurring cycle of biological life.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"referencing Marx's definition\"\n      ],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Locke, Adam Smith, and Marx each held that labor was the supreme world-building capacity of man, leading them into contradictions due to the equation of work with labor.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"all three, though Marx with greatest force and consistency, held that labor was considered to be the supreme world-building capacity of man... each of them... found himself in the grip of certain genuine contradictions. It seems to lie in the very nature of this matter that the most obvious solution of these contradictions... is their equation of work with labor\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"Marx with greatest force and consistency\"\n      ],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Labor\",\n      \"definition\": \"An activity whose products are meant to be fed into the human life process almost immediately as part of the cycle of biological life and consumption.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Labor\",\n      \"item_b\": \"Work\",\n      \"distinction\": \"Labor prepares matter for incorporation and eventual destruction through consumption, whereas work changes matter into material in order to work upon it and use the finished product without preparing it for immediate destruction.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Equation of work with labor leads to absurdities by attributing work's lasting productivity to labor which is consumed.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 568,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2624,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2624
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3192,
+    "traffic_type": null
+  }
+}

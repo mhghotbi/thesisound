@@ -1,0 +1,59 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The term vita activa designates three fundamental human activities: labor, work, and action.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "With the term vita activa , I propose to designate three fundamental human activities: labor, work, and action."
+      },
+      {
+        "claim": "Action corresponds to the human condition of plurality and is specifically the condition of all political life.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Action, the only activity that goes on directly between men without the intermediary of things or matter, corresponds to the human condition of plurality, to the fact that men, not Man, live on the earth and inhabit the world. While all aspects of the human condition are somehow related to politics, this plurality is specifically the condition—not only the conditio sine qua non , but the conditio per quam —of all political life."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The activity corresponding to the biological process of the human body, bound to vital necessities, whose human condition is life itself.",
+        "term": "Labor"
+      },
+      {
+        "definition": "The activity corresponding to the unnaturalness of human existence that provides an artificial world of things meant to outlast and transcend individuals, with the condition of worldliness.",
+        "term": "Work"
+      },
+      {
+        "definition": "The only activity that goes on directly between men without the intermediary of things or matter, corresponding to human plurality.",
+        "term": "Action"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Labor corresponds to the biological process and vital necessities of the human body, whereas work corresponds to the unnaturalness of human existence and provides an artificial world of things distinct from natural surroundings.",
+        "item_a": "Labor",
+        "item_b": "Work"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection of all three activities to birth and death, natality and mortality.",
+      "The conceptualization of men as conditioned beings."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Define the vita activa, its three fundamental activities (labor, work, action), their corresponding human conditions, and their relationship to natality, mortality, and general human conditioning.",
+    "unresolved_context": []
+  }
+}

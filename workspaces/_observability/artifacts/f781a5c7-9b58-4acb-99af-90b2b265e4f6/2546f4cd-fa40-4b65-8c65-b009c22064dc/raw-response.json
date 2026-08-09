@@ -1,0 +1,286 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"working_thesis\": \"Action and speech, rooted in human plurality and natality, reveal the unique distinctness of human agents and generate power and stories, but their inherent unpredictability, irreversibility, and boundlessness lead to historical perils that traditional political thought has attempted to remedy through rule, making, and fabrication.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-98863830-00077-5e4939c361c7\",\n        \"blk-98863830-00078-5653b51ca68d\"\n      ],\n      \"title\": \"The Conditions of Action and Speech: Plurality, Natality, and Revelation\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"Human plurality\",\n        \"Equality and distinction\",\n        \"Uniqueness\",\n        \"Natality\",\n        \"Initiative and beginning\",\n        \"Disclosure of the 'who'\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-98863830-00079-d88c7d1cf9a9\",\n        \"blk-98863830-00080-56048fc53d98\",\n        \"blk-98863830-00081-40d4d7350bb0\",\n        \"blk-98863830-00082-f63270da96ee\"\n      ],\n      \"title\": \"The Web of Relationships and the Enacted Stories\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Sheer human togetherness\",\n        \"The web of human relationships\",\n        \"Enacted stories\",\n        \"The hero without an author\",\n        \"Intangibility of human affairs\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-98863830-00083-50aedfaf5211\",\n        \"blk-98863830-00084-b85c260fac7b\"\n      ],\n      \"title\": \"The Frailty, Boundlessness, and Unpredictability of Human Affairs\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Frailty of human affairs\",\n        \"Boundlessness of action\",\n        \"Chain reactions\",\n        \"Unpredictability\",\n        \"Hubris and moderation\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-98863830-00085-6ee8c471e473\",\n        \"blk-98863830-00086-91c82aeb577e\",\n        \"blk-98863830-00087-bb5f87340bb1\"\n      ],\n      \"title\": \"The Greek Solution: The Polis and the Agonal Spirit\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"The polis\",\n        \"Sharing of words and deeds\",\n        \"Space of appearance\",\n        \"Immortality and remembrance\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-98863830-00088-a8f21f4e7a68\",\n        \"blk-98863830-00089-3d55d9c818ec\",\n        \"blk-98863830-00090-f8be348ef42a\"\n      ],\n      \"title\": \"Power, Violence, and Energeia\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"Power (dynamis / potentia)\",\n        \"Tyranny and isolation\",\n        \"Violence versus power\",\n        \"Energeia and actuality\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-004\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-006\",\n      \"source_block_ids\": [\n        \"blk-98863830-00091-f8ee3a7ac3d0\",\n        \"blk-98863830-00092-9337c543230a\"\n      ],\n      \"title\": \"Homo Faber and the Space of Appearance\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Homo faber\",\n        \"Alienation\",\n        \"Common sense\",\n        \"The exchange market\",\n        \"Genius and workmanship\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": false,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-007\",\n      \"source_block_ids\": [\n        \"blk-98863830-00093-04225164222d\",\n        \"blk-98863830-00094-b63e40e75606\",\n        \"blk-98863830-00095-5ce307767181\"\n      ],\n      \"title\": \"The Labor Movement and the Sameness of Society\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Animal laborans\",\n        \"Labor gang and sameness\",\n        \"Emancipation of labor\",\n        \"People's councils\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-006\"\n      ],\n      \"required_for_global_understanding\": false,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-008\",\n      \"source_block_ids\": [\n        \"blk-98863830-00096-fcce8a507720\",\n        \"blk-98863830-00097-c807df4ea8b3\",\n        \"blk-98863830-00098-7a2891ea9fde\",\n        \"blk-98863830-00099-fcccca03da2f\",\n        \"blk-98863830-00100-44b7dec21c02\"\n      ],\n      \"title\": \"The Traditional Substitution of Making for Acting\",\n      \"function\": \"objection\",\n      \"key_concepts\": [\n        \"Substitution of making for acting\",\n        \"Monarchy and rule\",\n        \"Plato's Statesman and Republic\",\n        \"Instrumentality and means-ends category\",\n        \"Process character of action and science\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\",\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-009\",\n      \"source_block_ids\": [\n        \"blk-98863830-00101-19f60938cfbd\",\n        \"blk-98863830-00102-38d13fb4d7a8\",\n        \"blk-98863830-00103-9dabc8aa9052\",\n        \"blk-98863830-00104-16bdc218816d\",\n        \"blk-98863830-00105-972f311af8fd\",\n        \"blk-98863830-00106-91a43b94f2cf\",\n        \"blk-98863830-00107-4ccb8c9f0388\"\n      ],\n      \"title\": \"Remedies of Action: Forgiving, Promising, and Natality\",\n      \"function\": \"response\",\n      \"key_concepts\": [\n        \"Sovereignty versus freedom\",\n        \"Faculty of forgiving\",\n        \"Faculty of making promises\",\n        \"Respect\",\n        \"Miracle of natality\",\n        \"Faith and hope\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-003\",\n        \"sec-008\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Action and Making (Praxis vs. Poiēsis)\",\n      \"section_ids\": [\n        \"sec-005\",\n        \"sec-006\",\n        \"sec-008\"\n      ],\n      \"description\": \"The persistent historical tendency to misunderstand or replace the sheer actuality of action (praxis) with the instrumentality of making and fabrication (poiēsis).\"\n    },\n    {\n      \"label\": \"Plurality and Sovereignty\",\n      \"section_ids\": [\n        \"sec-001\",\n        \"sec-008\",\n        \"sec-009\"\n      ],\n      \"description\": \"The tension between human plurality (where no single person is sovereign) and the traditional philosophical quest for individual or single-rule sovereignty.\"\n    }\n  ],\n  \"warnings\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIP6nuFpz-bEYjzzSnXHiLIdIT7NsvUSIb3ZTmn6Kp42CI3VBV2ZZTZSHfYHR9w",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "cross_section_threads": [
+      {
+        "description": "The persistent historical tendency to misunderstand or replace the sheer actuality of action (praxis) with the instrumentality of making and fabrication (poiēsis).",
+        "label": "Action and Making (Praxis vs. Poiēsis)",
+        "section_ids": [
+          "sec-005",
+          "sec-006",
+          "sec-008"
+        ]
+      },
+      {
+        "description": "The tension between human plurality (where no single person is sovereign) and the traditional philosophical quest for individual or single-rule sovereignty.",
+        "label": "Plurality and Sovereignty",
+        "section_ids": [
+          "sec-001",
+          "sec-008",
+          "sec-009"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "depends_on_section_ids": [],
+        "function": "definition",
+        "key_concepts": [
+          "Human plurality",
+          "Equality and distinction",
+          "Uniqueness",
+          "Natality",
+          "Initiative and beginning",
+          "Disclosure of the 'who'"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-001",
+        "source_block_ids": [
+          "blk-98863830-00077-5e4939c361c7",
+          "blk-98863830-00078-5653b51ca68d"
+        ],
+        "title": "The Conditions of Action and Speech: Plurality, Natality, and Revelation",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "Sheer human togetherness",
+          "The web of human relationships",
+          "Enacted stories",
+          "The hero without an author",
+          "Intangibility of human affairs"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-002",
+        "source_block_ids": [
+          "blk-98863830-00079-d88c7d1cf9a9",
+          "blk-98863830-00080-56048fc53d98",
+          "blk-98863830-00081-40d4d7350bb0",
+          "blk-98863830-00082-f63270da96ee"
+        ],
+        "title": "The Web of Relationships and the Enacted Stories",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-002"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "Frailty of human affairs",
+          "Boundlessness of action",
+          "Chain reactions",
+          "Unpredictability",
+          "Hubris and moderation"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-003",
+        "source_block_ids": [
+          "blk-98863830-00083-50aedfaf5211",
+          "blk-98863830-00084-b85c260fac7b"
+        ],
+        "title": "The Frailty, Boundlessness, and Unpredictability of Human Affairs",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-002",
+          "sec-003"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "The polis",
+          "Sharing of words and deeds",
+          "Space of appearance",
+          "Immortality and remembrance"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-004",
+        "source_block_ids": [
+          "blk-98863830-00085-6ee8c471e473",
+          "blk-98863830-00086-91c82aeb577e",
+          "blk-98863830-00087-bb5f87340bb1"
+        ],
+        "title": "The Greek Solution: The Polis and the Agonal Spirit",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-004"
+        ],
+        "function": "definition",
+        "key_concepts": [
+          "Power (dynamis / potentia)",
+          "Tyranny and isolation",
+          "Violence versus power",
+          "Energeia and actuality"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-005",
+        "source_block_ids": [
+          "blk-98863830-00088-a8f21f4e7a68",
+          "blk-98863830-00089-3d55d9c818ec",
+          "blk-98863830-00090-f8be348ef42a"
+        ],
+        "title": "Power, Violence, and Energeia",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-005"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "Homo faber",
+          "Alienation",
+          "Common sense",
+          "The exchange market",
+          "Genius and workmanship"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-006",
+        "source_block_ids": [
+          "blk-98863830-00091-f8ee3a7ac3d0",
+          "blk-98863830-00092-9337c543230a"
+        ],
+        "title": "Homo Faber and the Space of Appearance",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-006"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "Animal laborans",
+          "Labor gang and sameness",
+          "Emancipation of labor",
+          "People's councils"
+        ],
+        "required_for_global_understanding": false,
+        "section_id": "sec-007",
+        "source_block_ids": [
+          "blk-98863830-00093-04225164222d",
+          "blk-98863830-00094-b63e40e75606",
+          "blk-98863830-00095-5ce307767181"
+        ],
+        "title": "The Labor Movement and the Sameness of Society",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-003",
+          "sec-005"
+        ],
+        "function": "objection",
+        "key_concepts": [
+          "Substitution of making for acting",
+          "Monarchy and rule",
+          "Plato's Statesman and Republic",
+          "Instrumentality and means-ends category",
+          "Process character of action and science"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-008",
+        "source_block_ids": [
+          "blk-98863830-00096-fcce8a507720",
+          "blk-98863830-00097-c807df4ea8b3",
+          "blk-98863830-00098-7a2891ea9fde",
+          "blk-98863830-00099-fcccca03da2f",
+          "blk-98863830-00100-44b7dec21c02"
+        ],
+        "title": "The Traditional Substitution of Making for Acting",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-003",
+          "sec-008"
+        ],
+        "function": "response",
+        "key_concepts": [
+          "Sovereignty versus freedom",
+          "Faculty of forgiving",
+          "Faculty of making promises",
+          "Respect",
+          "Miracle of natality",
+          "Faith and hope"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-009",
+        "source_block_ids": [
+          "blk-98863830-00101-19f60938cfbd",
+          "blk-98863830-00102-38d13fb4d7a8",
+          "blk-98863830-00103-9dabc8aa9052",
+          "blk-98863830-00104-16bdc218816d",
+          "blk-98863830-00105-972f311af8fd",
+          "blk-98863830-00106-91a43b94f2cf",
+          "blk-98863830-00107-4ccb8c9f0388"
+        ],
+        "title": "Remedies of Action: Forgiving, Promising, and Natality",
+        "unresolved_context": []
+      }
+    ],
+    "warnings": [],
+    "working_thesis": "Action and speech, rooted in human plurality and natality, reveal the unique distinctness of human agents and generate power and stories, but their inherent unpredictability, irreversibility, and boundlessness lead to historical perils that traditional political thought has attempted to remedy through rule, making, and fabrication."
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"working_thesis\": \"Action and speech, rooted in human plurality and natality, reveal the unique distinctness of human agents and generate power and stories, but their inherent unpredictability, irreversibility, and boundlessness lead to historical perils that traditional political thought has attempted to remedy through rule, making, and fabrication.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-98863830-00077-5e4939c361c7\",\n        \"blk-98863830-00078-5653b51ca68d\"\n      ],\n      \"title\": \"The Conditions of Action and Speech: Plurality, Natality, and Revelation\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"Human plurality\",\n        \"Equality and distinction\",\n        \"Uniqueness\",\n        \"Natality\",\n        \"Initiative and beginning\",\n        \"Disclosure of the 'who'\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-98863830-00079-d88c7d1cf9a9\",\n        \"blk-98863830-00080-56048fc53d98\",\n        \"blk-98863830-00081-40d4d7350bb0\",\n        \"blk-98863830-00082-f63270da96ee\"\n      ],\n      \"title\": \"The Web of Relationships and the Enacted Stories\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Sheer human togetherness\",\n        \"The web of human relationships\",\n        \"Enacted stories\",\n        \"The hero without an author\",\n        \"Intangibility of human affairs\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-98863830-00083-50aedfaf5211\",\n        \"blk-98863830-00084-b85c260fac7b\"\n      ],\n      \"title\": \"The Frailty, Boundlessness, and Unpredictability of Human Affairs\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Frailty of human affairs\",\n        \"Boundlessness of action\",\n        \"Chain reactions\",\n        \"Unpredictability\",\n        \"Hubris and moderation\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-98863830-00085-6ee8c471e473\",\n        \"blk-98863830-00086-91c82aeb577e\",\n        \"blk-98863830-00087-bb5f87340bb1\"\n      ],\n      \"title\": \"The Greek Solution: The Polis and the Agonal Spirit\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"The polis\",\n        \"Sharing of words and deeds\",\n        \"Space of appearance\",\n        \"Immortality and remembrance\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-98863830-00088-a8f21f4e7a68\",\n        \"blk-98863830-00089-3d55d9c818ec\",\n        \"blk-98863830-00090-f8be348ef42a\"\n      ],\n      \"title\": \"Power, Violence, and Energeia\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"Power (dynamis / potentia)\",\n        \"Tyranny and isolation\",\n        \"Violence versus power\",\n        \"Energeia and actuality\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-004\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-006\",\n      \"source_block_ids\": [\n        \"blk-98863830-00091-f8ee3a7ac3d0\",\n        \"blk-98863830-00092-9337c543230a\"\n      ],\n      \"title\": \"Homo Faber and the Space of Appearance\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Homo faber\",\n        \"Alienation\",\n        \"Common sense\",\n        \"The exchange market\",\n        \"Genius and workmanship\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": false,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-007\",\n      \"source_block_ids\": [\n        \"blk-98863830-00093-04225164222d\",\n        \"blk-98863830-00094-b63e40e75606\",\n        \"blk-98863830-00095-5ce307767181\"\n      ],\n      \"title\": \"The Labor Movement and the Sameness of Society\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Animal laborans\",\n        \"Labor gang and sameness\",\n        \"Emancipation of labor\",\n        \"People's councils\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-006\"\n      ],\n      \"required_for_global_understanding\": false,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-008\",\n      \"source_block_ids\": [\n        \"blk-98863830-00096-fcce8a507720\",\n        \"blk-98863830-00097-c807df4ea8b3\",\n        \"blk-98863830-00098-7a2891ea9fde\",\n        \"blk-98863830-00099-fcccca03da2f\",\n        \"blk-98863830-00100-44b7dec21c02\"\n      ],\n      \"title\": \"The Traditional Substitution of Making for Acting\",\n      \"function\": \"objection\",\n      \"key_concepts\": [\n        \"Substitution of making for acting\",\n        \"Monarchy and rule\",\n        \"Plato's Statesman and Republic\",\n        \"Instrumentality and means-ends category\",\n        \"Process character of action and science\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\",\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-009\",\n      \"source_block_ids\": [\n        \"blk-98863830-00101-19f60938cfbd\",\n        \"blk-98863830-00102-38d13fb4d7a8\",\n        \"blk-98863830-00103-9dabc8aa9052\",\n        \"blk-98863830-00104-16bdc218816d\",\n        \"blk-98863830-00105-972f311af8fd\",\n        \"blk-98863830-00106-91a43b94f2cf\",\n        \"blk-98863830-00107-4ccb8c9f0388\"\n      ],\n      \"title\": \"Remedies of Action: Forgiving, Promising, and Natality\",\n      \"function\": \"response\",\n      \"key_concepts\": [\n        \"Sovereignty versus freedom\",\n        \"Faculty of forgiving\",\n        \"Faculty of making promises\",\n        \"Respect\",\n        \"Miracle of natality\",\n        \"Faith and hope\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-003\",\n        \"sec-008\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Action and Making (Praxis vs. Poiēsis)\",\n      \"section_ids\": [\n        \"sec-005\",\n        \"sec-006\",\n        \"sec-008\"\n      ],\n      \"description\": \"The persistent historical tendency to misunderstand or replace the sheer actuality of action (praxis) with the instrumentality of making and fabrication (poiēsis).\"\n    },\n    {\n      \"label\": \"Plurality and Sovereignty\",\n      \"section_ids\": [\n        \"sec-001\",\n        \"sec-008\",\n        \"sec-009\"\n      ],\n      \"description\": \"The tension between human plurality (where no single person is sovereign) and the traditional philosophical quest for individual or single-rule sovereignty.\"\n    }\n  ],\n  \"warnings\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 2723,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 47341,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 47341
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 50064,
+    "traffic_type": null
+  }
+}

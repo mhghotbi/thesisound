@@ -1,0 +1,95 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"working_thesis\": null,\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-98863830-00182-055e917c9509\",\n        \"blk-98863830-00183-97b57759bf03\",\n        \"blk-98863830-00184-2b799bca5c3b\",\n        \"blk-98863830-00185-c8c8aaf02230\",\n        \"blk-98863830-00186-4ef3b1a10267\",\n        \"blk-98863830-00187-ac363c3a2912\",\n        \"blk-98863830-00188-babd847c14fb\",\n        \"blk-98863830-00189-79a3fbf1ee49\",\n        \"blk-98863830-00190-d6ce3339ce17\",\n        \"blk-98863830-00191-f0f8c5349197\",\n        \"blk-98863830-00192-2545267a2692\",\n        \"blk-98863830-00193-b42fcf4c4f47\",\n        \"blk-98863830-00194-32134159f9b9\",\n        \"blk-98863830-00195-87d7f106e0ba\",\n        \"blk-98863830-00196-8b773ad9f351\",\n        \"blk-98863830-00197-1b33b31332b7\",\n        \"blk-98863830-00198-1f76da3fc86e\"\n      ],\n      \"title\": \"Index of Terms and Concepts\",\n      \"function\": \"other\",\n      \"key_concepts\": [\n        \"action\",\n        \"animal laborans\",\n        \"homo faber\",\n        \"labor\",\n        \"work\",\n        \"vita activa\",\n        \"polis\",\n        \"public realm\",\n        \"private realm\"\n      ],\n      \"required_for_global_understanding\": true\n    }\n  ],\n  \"cross_section_threads\": [],\n  \"warnings\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPNqHjVecRiZ1OXnmN_4bl49boN0vQvh6heWLNCqgSxC6RbbXc44jzPMYC7-dP",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "cross_section_threads": [],
+    "sections": [
+      {
+        "function": "other",
+        "key_concepts": [
+          "action",
+          "animal laborans",
+          "homo faber",
+          "labor",
+          "work",
+          "vita activa",
+          "polis",
+          "public realm",
+          "private realm"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-001",
+        "source_block_ids": [
+          "blk-98863830-00182-055e917c9509",
+          "blk-98863830-00183-97b57759bf03",
+          "blk-98863830-00184-2b799bca5c3b",
+          "blk-98863830-00185-c8c8aaf02230",
+          "blk-98863830-00186-4ef3b1a10267",
+          "blk-98863830-00187-ac363c3a2912",
+          "blk-98863830-00188-babd847c14fb",
+          "blk-98863830-00189-79a3fbf1ee49",
+          "blk-98863830-00190-d6ce3339ce17",
+          "blk-98863830-00191-f0f8c5349197",
+          "blk-98863830-00192-2545267a2692",
+          "blk-98863830-00193-b42fcf4c4f47",
+          "blk-98863830-00194-32134159f9b9",
+          "blk-98863830-00195-87d7f106e0ba",
+          "blk-98863830-00196-8b773ad9f351",
+          "blk-98863830-00197-1b33b31332b7",
+          "blk-98863830-00198-1f76da3fc86e"
+        ],
+        "title": "Index of Terms and Concepts"
+      }
+    ],
+    "warnings": [],
+    "working_thesis": null
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"working_thesis\": null,\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-98863830-00182-055e917c9509\",\n        \"blk-98863830-00183-97b57759bf03\",\n        \"blk-98863830-00184-2b799bca5c3b\",\n        \"blk-98863830-00185-c8c8aaf02230\",\n        \"blk-98863830-00186-4ef3b1a10267\",\n        \"blk-98863830-00187-ac363c3a2912\",\n        \"blk-98863830-00188-babd847c14fb\",\n        \"blk-98863830-00189-79a3fbf1ee49\",\n        \"blk-98863830-00190-d6ce3339ce17\",\n        \"blk-98863830-00191-f0f8c5349197\",\n        \"blk-98863830-00192-2545267a2692\",\n        \"blk-98863830-00193-b42fcf4c4f47\",\n        \"blk-98863830-00194-32134159f9b9\",\n        \"blk-98863830-00195-87d7f106e0ba\",\n        \"blk-98863830-00196-8b773ad9f351\",\n        \"blk-98863830-00197-1b33b31332b7\",\n        \"blk-98863830-00198-1f76da3fc86e\"\n      ],\n      \"title\": \"Index of Terms and Concepts\",\n      \"function\": \"other\",\n      \"key_concepts\": [\n        \"action\",\n        \"animal laborans\",\n        \"homo faber\",\n        \"labor\",\n        \"work\",\n        \"vita activa\",\n        \"polis\",\n        \"public realm\",\n        \"private realm\"\n      ],\n      \"required_for_global_understanding\": true\n    }\n  ],\n  \"cross_section_threads\": [],\n  \"warnings\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 709,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 82955,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 82955
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 83664,
+    "traffic_type": null
+  }
+}

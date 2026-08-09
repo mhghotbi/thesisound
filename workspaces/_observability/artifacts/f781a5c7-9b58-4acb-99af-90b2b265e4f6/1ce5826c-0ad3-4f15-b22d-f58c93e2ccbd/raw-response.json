@@ -1,0 +1,88 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"Examines the epistemological implications of modern mathematical physics, the rise of the experiment, and the historical reversal of the traditional hierarchical order between the vita contemplativa and the vita activa.\",\n  \"claims\": [\n    {\n      \"claim\": \"The reversal of the hierarchical order between the vita contemplativa and the vita activa is the most momentous and unavoidable spiritual consequence of modern discoveries.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Perhaps the most momentous of the spiritual consequences of the discoveries of the modern age and, at the same time, the only one that could not have been avoided, since it followed closely upon the discovery of the Archimedean point and the concomitant rise of Cartesian doubt, has been the reversal of the hierarchical order between the vita contemplativa and the vita activa.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"concomitant with the rise of Cartesian doubt and the discovery of the Archimedean point\"\n      ],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Modern technology originated from a non-practical search for useless knowledge rather than a pragmatic desire to improve conditions on earth.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"It is a matter of historical record that modern technology has its origins not in the evolution of those tools man had always devised for the twofold purpose of easing his labors and erecting the human artifice, but exclusively in an altogether non-practical search for useless knowledge.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"as a matter of historical record regarding the origins of modern technology\"\n      ],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The reversal of the hierarchical order between the vita contemplativa and the vita activa is linked directly to Cartesian doubt and the Archimedean point.\",\n    \"Modern technology originates from a non-practical search for useless knowledge rather than practical instincts.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPjrGP-0QM-PPnbE9EnSV7jQ70iRDGXlLVPJAIAUGffrdB2HqUlNufhAX1rfG4",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The reversal of the hierarchical order between the vita contemplativa and the vita activa is the most momentous and unavoidable spiritual consequence of modern discoveries.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "concomitant with the rise of Cartesian doubt and the discovery of the Archimedean point"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Perhaps the most momentous of the spiritual consequences of the discoveries of the modern age and, at the same time, the only one that could not have been avoided, since it followed closely upon the discovery of the Archimedean point and the concomitant rise of Cartesian doubt, has been the reversal of the hierarchical order between the vita contemplativa and the vita activa."
+      },
+      {
+        "claim": "Modern technology originated from a non-practical search for useless knowledge rather than a pragmatic desire to improve conditions on earth.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "as a matter of historical record regarding the origins of modern technology"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "It is a matter of historical record that modern technology has its origins not in the evolution of those tools man had always devised for the twofold purpose of easing his labors and erecting the human artifice, but exclusively in an altogether non-practical search for useless knowledge."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The reversal of the hierarchical order between the vita contemplativa and the vita activa is linked directly to Cartesian doubt and the Archimedean point.",
+      "Modern technology originates from a non-practical search for useless knowledge rather than practical instincts."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Examines the epistemological implications of modern mathematical physics, the rise of the experiment, and the historical reversal of the traditional hierarchical order between the vita contemplativa and the vita activa.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"Examines the epistemological implications of modern mathematical physics, the rise of the experiment, and the historical reversal of the traditional hierarchical order between the vita contemplativa and the vita activa.\",\n  \"claims\": [\n    {\n      \"claim\": \"The reversal of the hierarchical order between the vita contemplativa and the vita activa is the most momentous and unavoidable spiritual consequence of modern discoveries.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Perhaps the most momentous of the spiritual consequences of the discoveries of the modern age and, at the same time, the only one that could not have been avoided, since it followed closely upon the discovery of the Archimedean point and the concomitant rise of Cartesian doubt, has been the reversal of the hierarchical order between the vita contemplativa and the vita activa.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"concomitant with the rise of Cartesian doubt and the discovery of the Archimedean point\"\n      ],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Modern technology originated from a non-practical search for useless knowledge rather than a pragmatic desire to improve conditions on earth.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"It is a matter of historical record that modern technology has its origins not in the evolution of those tools man had always devised for the twofold purpose of easing his labors and erecting the human artifice, but exclusively in an altogether non-practical search for useless knowledge.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"as a matter of historical record regarding the origins of modern technology\"\n      ],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The reversal of the hierarchical order between the vita contemplativa and the vita activa is linked directly to Cartesian doubt and the Archimedean point.\",\n    \"Modern technology originates from a non-practical search for useless knowledge rather than practical instincts.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 509,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2934,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2934
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3443,
+    "traffic_type": null
+  }
+}

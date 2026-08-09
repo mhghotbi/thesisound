@@ -1,0 +1,81 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"The victory of the Christian faith in the ancient world was likely driven by its reversal of values, promising a new hope and immortality.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"Historically, it is more than probable that the victory of the Christian faith in the ancient world was largely due to this reversal, which brought hope to those who knew that their world was doomed, indeed a hope beyond hope, since the new message promised an immortality they never had dared to hope for.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Individual life replaced the body politic as the central entity holding the position of immortality.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"It is precisely individual life which now came to occupy the position once held by the “life” of the body politic\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Christian reversal led to individual life becoming the highest good of man.\",\n    \"Political activity sank to an activity subject to necessity.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPN3rJpmEexNyyvjtJ44LJkH-leahEOrgM3XYJULNQhDQMX1kJquV3ZXMHQqgj",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The victory of the Christian faith in the ancient world was likely driven by its reversal of values, promising a new hope and immortality.",
+        "claim_type": "historical_context",
+        "confidence": 1,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Historically, it is more than probable that the victory of the Christian faith in the ancient world was largely due to this reversal, which brought hope to those who knew that their world was doomed, indeed a hope beyond hope, since the new message promised an immortality they never had dared to hope for."
+      },
+      {
+        "claim": "Individual life replaced the body politic as the central entity holding the position of immortality.",
+        "claim_type": "author_position",
+        "confidence": 1,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "It is precisely individual life which now came to occupy the position once held by the “life” of the body politic"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "must_not_be_lost": [
+      "Christian reversal led to individual life becoming the highest good of man.",
+      "Political activity sank to an activity subject to necessity."
+    ],
+    "references_to_other_sections": [],
+    "segment_function": "conclusion",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"The victory of the Christian faith in the ancient world was likely driven by its reversal of values, promising a new hope and immortality.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"Historically, it is more than probable that the victory of the Christian faith in the ancient world was largely due to this reversal, which brought hope to those who knew that their world was doomed, indeed a hope beyond hope, since the new message promised an immortality they never had dared to hope for.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Individual life replaced the body politic as the central entity holding the position of immortality.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"It is precisely individual life which now came to occupy the position once held by the “life” of the body politic\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Christian reversal led to individual life becoming the highest good of man.\",\n    \"Political activity sank to an activity subject to necessity.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 338,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2476,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2476
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2814,
+    "traffic_type": null
+  }
+}

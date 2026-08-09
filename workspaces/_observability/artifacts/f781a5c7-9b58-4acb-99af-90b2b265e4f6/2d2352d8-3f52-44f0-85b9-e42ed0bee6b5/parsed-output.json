@@ -1,0 +1,59 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Things needed for the life process itself possess the least durability among tangible items, being consumed, decaying, or perishing shortly after production in accordance with nature's cyclical movement.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "applies specifically to tangible things needed for the life process"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "The least durable of tangible things are those needed for the life process itself. Their consumption barely survives the act of their production... in accordance with the ever-recurrent cyclical movement of nature."
+      },
+      {
+        "claim": "Human life bounded by birth and death follows a linear movement driven by biological life's cyclical motor, and constitutes a worldly biography of events capable of being told as a story.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "distinguishes human biographical life from mere biological life"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Limited by a beginning and an end... it follows a strictly linear movement whose very motion nevertheless is driven by the motor of biological life... the chief characteristic of this specifically human life... is that it is itself always full of events which ultimately can be told as a story, establish a biography"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Specifically human life bounded by birth and death, full of events that form a story or biography and characterized as a kind of praxis.",
+        "term": "bios"
+      },
+      {
+        "definition": "Mere biological life shared with other living things, retaining the cyclical movement of nature.",
+        "term": "zōē"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Bios designates human life as a time interval between birth and death that forms a coherent story or biography, whereas zōe refers to the mere biological life shared with other living things that retains nature's cyclical movement.",
+        "item_a": "bios",
+        "item_b": "zōē"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Distinction between labor (bound to recurring biological cycles with no intrinsic end) and work (producing durable things with a definite end).",
+      "The role of human birth and death as worldly events presupposing a relative and durable permanence of the common world."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Examines the relationship between the human artifice of durable things, the cyclical biological life process, and the distinction between linear biographical life and nature's eternal recurrence.",
+    "unresolved_context": []
+  }
+}

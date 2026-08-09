@@ -1,0 +1,44 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "central_question_claim_ids": [
+      "clm-27d7960629cc8d70",
+      "clm-3a561b777e44ce86",
+      "clm-43c898a10d267e4a",
+      "clm-cdfd1f19002d9de1",
+      "clm-469d428f8dd902ee",
+      "clm-177abafe0237f1e2",
+      "clm-42387f05124f8d6c",
+      "clm-69fe45bd8b92b783",
+      "clm-f2514de064072149"
+    ],
+    "central_question_status": "well_covered",
+    "material_gaps": [],
+    "max_supported_minutes": 10,
+    "objective_coverage": [
+      {
+        "claim_ids": [
+          "clm-27d7960629cc8d70",
+          "clm-3a561b777e44ce86",
+          "clm-43c898a10d267e4a",
+          "clm-cdfd1f19002d9de1",
+          "clm-469d428f8dd902ee",
+          "clm-177abafe0237f1e2",
+          "clm-42387f05124f8d6c",
+          "clm-69fe45bd8b92b783",
+          "clm-f2514de064072149"
+        ],
+        "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+        "rationale": "مجموعه ادعاهای مستخرج به‌طور کامل ایده‌های محوری کتاب وضع بشر هانا آرنت مانند تمایز کار، ساختن و عمل، حوزه‌های عمومی و خصوصی، مفاهیم تکثر، زادینگی و بیگانگی از جهان و زمین را پوشش می‌دهند.",
+        "status": "well_covered"
+      }
+    ],
+    "recommendation": "continue",
+    "recommendation_reason": "ادعاهای معتبر و قوی موجود، تمام ابعاد سوال اصلی و هدف یادگیری را به اندازه ۱۰ دقیقه ارائه محتوای علمی بدون تکرار پشتیبانی می‌کنند."
+  }
+}

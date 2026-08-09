@@ -1,0 +1,66 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"bibliographic notes and references\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"Bibliographic notes and references regarding labor, work, the doctrine of ideas in Plato, and rhythms of labor.\"\n  ],\n  \"must_not_be_lost\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPuhKXf9ltX0RE2MaPHLRQvM8Ov8119dX8gYEK7KRAbM-WtzIu-V-aPbcOKS5X",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "bibliographic notes and references",
+    "unresolved_context": [
+      "Bibliographic notes and references regarding labor, work, the doctrine of ideas in Plato, and rhythms of labor."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"bibliographic notes and references\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"Bibliographic notes and references regarding labor, work, the doctrine of ideas in Plato, and rhythms of labor.\"\n  ],\n  \"must_not_be_lost\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 117,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 3088,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 3088
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3205,
+    "traffic_type": null
+  }
+}

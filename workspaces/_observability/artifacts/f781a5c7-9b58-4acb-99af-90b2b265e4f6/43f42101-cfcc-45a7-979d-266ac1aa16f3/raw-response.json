@@ -1,0 +1,83 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Ancient ancients did not despise labor and work simply because slaves were engaged in them; rather, they felt it necessary to possess slaves because all occupations serving the maintenance of life had a slavish nature.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The opinion that labor and work were despised in antiquity because only slaves were engaged in them is a prejudice of modern historians. The ancients reasoned the other way around and felt it necessary to possess slaves because of the slavish nature of all occupations that served the needs for the maintenance of life.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The institution of slavery in antiquity functioned as an attempt to exclude labor from the conditions of man's life rather than as a device for cheap labor or profit-driven exploitation.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The institution of slavery in antiquity, though not in later times, was not a device for cheap labor or an instrument of exploitation for profit but rather the attempt to exclude labor from the conditions of man’s life.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The enslavement to necessity in ancient thought and its relation to slavery and the vita activa.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPjZ80JjxB61PXyN21gqelRaiJhaA1yic3DqbSUkc4OV34M2n6uwdsXuD9zQVX",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Ancient ancients did not despise labor and work simply because slaves were engaged in them; rather, they felt it necessary to possess slaves because all occupations serving the maintenance of life had a slavish nature.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The opinion that labor and work were despised in antiquity because only slaves were engaged in them is a prejudice of modern historians. The ancients reasoned the other way around and felt it necessary to possess slaves because of the slavish nature of all occupations that served the needs for the maintenance of life."
+      },
+      {
+        "claim": "The institution of slavery in antiquity functioned as an attempt to exclude labor from the conditions of man's life rather than as a device for cheap labor or profit-driven exploitation.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The institution of slavery in antiquity, though not in later times, was not a device for cheap labor or an instrument of exploitation for profit but rather the attempt to exclude labor from the conditions of man’s life."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The enslavement to necessity in ancient thought and its relation to slavery and the vita activa."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Ancient ancients did not despise labor and work simply because slaves were engaged in them; rather, they felt it necessary to possess slaves because all occupations serving the maintenance of life had a slavish nature.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The opinion that labor and work were despised in antiquity because only slaves were engaged in them is a prejudice of modern historians. The ancients reasoned the other way around and felt it necessary to possess slaves because of the slavish nature of all occupations that served the needs for the maintenance of life.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The institution of slavery in antiquity functioned as an attempt to exclude labor from the conditions of man's life rather than as a device for cheap labor or profit-driven exploitation.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The institution of slavery in antiquity, though not in later times, was not a device for cheap labor or an instrument of exploitation for profit but rather the attempt to exclude labor from the conditions of man’s life.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The enslavement to necessity in ancient thought and its relation to slavery and the vita activa.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 365,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2547,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2547
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2912,
+    "traffic_type": null
+  }
+}

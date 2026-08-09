@@ -1,0 +1,57 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The distinction between labor and work proposed by the author is unusual and lacks substantial support in either the pre-modern tradition of political thought or modern labor theories.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "apart from a few scattered remarks that were never developed in authors' theories"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "The distinction between labor and work which I propose is unusual. The phenomenal evidence in its favor is too striking to be ignored, and yet historically it is a fact that apart from a few scattered remarks, which moreover were never developed even in the theories of their authors, there is hardly anything in either the pre-modern tradition of political thought or in the large body of modern labor theories to support it."
+      },
+      {
+        "claim": "Every European language, ancient and modern, contains two etymologically unrelated words for what is commonly thought of as the same activity and retains them despite synonymous usage.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Against this scarcity of historical evidence, however, stands one very articulate and obstinate testimony, namely, the simple fact that every European language, ancient and modern, contains two etymologically unrelated words for what we have to come to think of as the same activity, and retains them in the face of their persistent synonymous usage."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The ancient Greek term for craftsman, corresponding to the German Handwerker.",
+        "term": "cheirotechnēs"
+      },
+      {
+        "definition": "A later term used in the polis to describe artisans, denoting men whose chief interest is their craft and not the market place.",
+        "term": "banausoi"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Every European language contains two etymologically unrelated words for these activities, and the noun 'labor' never designates the finished product or result of laboring, whereas the product itself is invariably derived from the word for work.",
+        "item_a": "labor",
+        "item_b": "work"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The etymological persistence of two distinct words for labor and work across European languages despite synonymous usage.",
+      "The historical roots of ancient contempt for labor and physical exertion in the polis."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Introduction to the chapter on labor, addressing potential criticisms regarding the critique of Karl Marx, proposing a neglected etymological and phenomenal distinction between labor and work, and tracing the historical evolution of ancient contempt for labor and bodily exertion in the polis.",
+    "unresolved_context": []
+  }
+}

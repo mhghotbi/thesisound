@@ -1,0 +1,100 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Locke grounded private property in the body, treating labor as a world-appropriating activity rooted in the ultimate privacy of the human person.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Locke founded private property on the most privately owned thing there is, “the property [of man] in his own person,” that is, in his own body.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"applies specifically to Locke's philosophical justification of appropriation\"\n      ],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Hedonism and the pursuit of an absent of pain represent the most radical forms of a non-political, totally private way of life centered on bodily sensations.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Hedonism, the doctrine that only bodily sensations are real, is but the most radical form of a non-political, totally private way of life, the true fulfilment of Epicurus’ lathe biōsas kai mē politeuesthai (“live in hiding and do not care about the world”).\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"linked to consistent sensualism and the historical tradition of Epicurean and Stoic withdrawal\"\n      ],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Hedonism\",\n      \"definition\": \"The doctrine that only bodily sensations are real, serving as the most radical form of a non-political, totally private way of life.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"privacy of appropriation\",\n      \"item_b\": \"privacy of property\",\n      \"distinction\": \"Locke's argument for the privacy of appropriation rests on bodily activity, which is distinguished from the very different argument for the privacy of property.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Locke's derivation of private property from the body\",\n    \"The connection between bodily life, labor, and the modern growth of wealth\",\n    \"The characterization of hedonism and bodily pain as the basis for a totally private, non-political life\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPfcXWypoO0BqVO2LZ1rJd7JccGMskh9lz2QEIayNRGVRm_GoapYO8GoJCExSG",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Locke grounded private property in the body, treating labor as a world-appropriating activity rooted in the ultimate privacy of the human person.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "applies specifically to Locke's philosophical justification of appropriation"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Locke founded private property on the most privately owned thing there is, “the property [of man] in his own person,” that is, in his own body."
+      },
+      {
+        "claim": "Hedonism and the pursuit of an absent of pain represent the most radical forms of a non-political, totally private way of life centered on bodily sensations.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "linked to consistent sensualism and the historical tradition of Epicurean and Stoic withdrawal"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Hedonism, the doctrine that only bodily sensations are real, is but the most radical form of a non-political, totally private way of life, the true fulfilment of Epicurus’ lathe biōsas kai mē politeuesthai (“live in hiding and do not care about the world”)."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The doctrine that only bodily sensations are real, serving as the most radical form of a non-political, totally private way of life.",
+        "term": "Hedonism"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Locke's argument for the privacy of appropriation rests on bodily activity, which is distinguished from the very different argument for the privacy of property.",
+        "item_a": "privacy of appropriation",
+        "item_b": "privacy of property"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Locke's derivation of private property from the body",
+      "The connection between bodily life, labor, and the modern growth of wealth",
+      "The characterization of hedonism and bodily pain as the basis for a totally private, non-political life"
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Locke grounded private property in the body, treating labor as a world-appropriating activity rooted in the ultimate privacy of the human person.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Locke founded private property on the most privately owned thing there is, “the property [of man] in his own person,” that is, in his own body.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"applies specifically to Locke's philosophical justification of appropriation\"\n      ],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Hedonism and the pursuit of an absent of pain represent the most radical forms of a non-political, totally private way of life centered on bodily sensations.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Hedonism, the doctrine that only bodily sensations are real, is but the most radical form of a non-political, totally private way of life, the true fulfilment of Epicurus’ lathe biōsas kai mē politeuesthai (“live in hiding and do not care about the world”).\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"linked to consistent sensualism and the historical tradition of Epicurean and Stoic withdrawal\"\n      ],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Hedonism\",\n      \"definition\": \"The doctrine that only bodily sensations are real, serving as the most radical form of a non-political, totally private way of life.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"privacy of appropriation\",\n      \"item_b\": \"privacy of property\",\n      \"distinction\": \"Locke's argument for the privacy of appropriation rests on bodily activity, which is distinguished from the very different argument for the privacy of property.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Locke's derivation of private property from the body\",\n    \"The connection between bodily life, labor, and the modern growth of wealth\",\n    \"The characterization of hedonism and bodily pain as the basis for a totally private, non-political life\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 560,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2527,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2527
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3087,
+    "traffic_type": null
+  }
+}

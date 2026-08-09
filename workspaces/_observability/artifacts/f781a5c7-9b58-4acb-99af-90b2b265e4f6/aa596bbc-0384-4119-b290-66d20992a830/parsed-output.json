@@ -1,0 +1,40 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Three great events stand at the threshold of the modern age and determine its character: the discovery of America and the exploration of the earth, the Reformation's expropriation and social wealth accumulation, and the invention of the telescope with a new universe-viewing science.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Three great events stand at the threshold of the modern age and determine its character: the discovery of America and the ensuing exploration of the whole earth; the Reformation, which by expropriating ecclesiastical and monastic possessions started the twofold process of individual expropriation and the accumulation of social wealth; the invention of the telescope and the development of a new science that considers the nature of the earth from the viewpoint of the universe."
+      },
+      {
+        "claim": "The precursors associated with these three great events were not revolutionists, and their motives and intentions remained rooted in tradition.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "These precursors are not revolutionists, and their motives and intentions are still securely rooted in tradition."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Three great events determining the modern age: discovery of the earth, Reformation expropriation and wealth accumulation, invention of the telescope/new science.",
+      "The precursors of the modern age were not revolutionists and remained rooted in tradition."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Introducing the modern age and world alienation through three foundational historical events: the discovery of the earth, the Reformation's wealth accumulation and expropriation, and the rise of modern science, alongside the subsequent shrinkage of the globe through speed.",
+    "unresolved_context": []
+  }
+}

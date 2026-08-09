@@ -1,0 +1,57 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The distinction between labor and work becomes merely a difference in degree if the worldly character, location, function, and length of stay of the produced thing are ignored.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "conditioned on whether the worldly character of the produced thing is taken into account"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "It seems that the distinction between labor and work, which our theorists have so obstinately neglected and our languages so stubbornly preserved, indeed becomes merely a difference in degree if the worldly character of the produced thing—its location, function, and length of stay in the world—is not taken into account."
+      },
+      {
+        "claim": "Language and fundamental human experiences teach us that world things are of very different natures and produced by quite different activities, contrasting with subjective human-oriented theories.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "It is language, and the fundamental human experiences underlying it, rather than theory, that teaches us that the things of the world, among which the vita activa spends itself, are of a very different nature and produced by quite different kinds of activities."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Things needed by our bodies and produced by laboring that lack stability, appear and disappear for incessant consumption, and are used by life to assure the means of its own survival.",
+        "term": "Consumer goods"
+      },
+      {
+        "definition": "Durable things in the world that are not consumed but used, to which men become accustomed, and which give rise to the familiarity of the world and its customs.",
+        "term": "Use objects"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Consumer goods are needed by our bodies, produced by laboring, lack stability, and are incessantly consumed and disappear, whereas use objects belong to an environment of things that are not consumed but used, providing worldly stability and familiarity.",
+        "item_a": "Consumer goods",
+        "item_b": "Use objects"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Products of work guarantee permanence and durability necessary for a world.",
+      "Products of action and speech depend entirely upon human plurality and must be reified into things to remain in the world."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  }
+}

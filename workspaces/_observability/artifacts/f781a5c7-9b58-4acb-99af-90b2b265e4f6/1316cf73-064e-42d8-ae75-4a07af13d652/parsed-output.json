@@ -1,0 +1,55 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The second phase of the rise of modernity is characterized by earth alienation, which corresponds with the triumph of the laboring animal.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "ﻣﺮﺣﻠـ ة دوم از ﻇﻬﻮر ﻣﺪرﻧﯿﺘﻪ از آﻏﺎز ﻗﺮن بيستم متناظر با »زمين از بيگانگي« و »پيروزي حيوان زحمتکش« است"
+      },
+      {
+        "claim": "Labor is fundamentally non-political or anti-political because the laboring human confronts only their own body and the maintenance of life rather than others or the world.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "اﻣﺎ در زﺣﻤﺖ، ﺷﯿﻮة ﯾﻘﯿﻦ ﻏﯿﺮﺳﯿﺎﺳﯽ اﻣﺎ ﺑﻪ ﺗﻘﺮﯾﺐ ﺿﺪ ﺳﯿﺎﺳﯽ ﻣﻤﮑﻦ اﺳﺖ ﺑﺎﺷﺪ؛ زﯾﺮا؛ آدﻣﯽ ﻧﻪ ﺑﺎ دﯾﮕﺮان، ﺑﻠﮑﻪ ﺗﻨﻬﺎ ﺑﺎ ﺑﺪن ﺧﻮﯾﺶ در ﻣﻮاﺟﻬﻪ اﺳﺖ و در ﺗﻼش ﺑﺮاي زﻧﺪه ﻧﮕﻪ داﺷﺘن ﺧﻮد اﺳﺖ، ﻧﻪ ﺑﺎ ﺟﻬﺎن."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The next step in the process of alienation from the world, beginning with the discovery of America and the Earth, and culminating in the conquest of space and the desire to escape the limits and boundaries of the Earth.",
+        "term": "بيگانگي از زمين"
+      },
+      {
+        "definition": "The builder or maker who produces and crafts things, establishing exchange through products in the realm of action, acting as both lord of nature and lord of themselves.",
+        "term": "انسان سازنده (Homo Faber)"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Labor is tied to biological necessity and the maintenance of life through direct engagement with one's body rather than the shared world, whereas work (or the builder/maker) involves crafting things for the common world and interacting with others through products.",
+        "item_a": "زحمت (Labor)",
+        "item_b": "کار (Work)"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Arendt's characterization of earth alienation as a revolt against the human condition.",
+      "The distinction between labor and work in relation to political and non-political existence."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  }
+}

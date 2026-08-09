@@ -1,0 +1,24 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Bibliographic notes and references section."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "bibliographic notes and references",
+    "unresolved_context": [
+      "The target block consists entirely of endnotes and bibliographic references containing citations, textual notes, and historical commentary on terms such as erga, pragmata, societas, and the distinction between household and city in Greece and Rome."
+    ]
+  }
+}

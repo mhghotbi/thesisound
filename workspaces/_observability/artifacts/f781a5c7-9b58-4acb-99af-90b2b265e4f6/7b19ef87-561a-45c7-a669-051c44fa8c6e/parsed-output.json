@@ -1,0 +1,24 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Record that the block is encoded or unreadable in its current state."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The target block contains encoded or corrupted character representations that do not form intelligible prose, preventing direct semantic extraction.",
+    "unresolved_context": [
+      "The target semantic block consists entirely of encoded character sequences (e.g., 2uFEE7, 2u9609) preventing meaningful text analysis and claim extraction."
+    ]
+  }
+}

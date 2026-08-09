@@ -1,0 +1,95 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"The force that keeps people together in public space is mutual promise or contract, which generates a limited reality of sovereignty.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The force that keeps them together, as distinguished from the space of appearances in which they gather and the power which keeps this public space in existence, is the force of mutual promise or contract. Sovereignty, which is always spurious if claimed by an isolated single entity, be it the individual entity of the person or the collective entity of a nation, assumes, in the case of many men mutually bound by promises, a certain limited reality.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"applies when many are mutually bound by promises\",\n        \"sovereignty assumes a limited reality\"\n      ],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Action is the one miracle-working faculty of man that interrupts the automatic, inexorable course of daily life and historical fatality.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Action is, in fact, the one miracle-working faculty of man\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"seen from the viewpoint of automatic processes\"\n      ],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [\n    {\n      \"item_a\": \"sovereignty in the realm of action and human affairs\",\n      \"item_b\": \"mastership in the realm of making and the world of things\",\n      \"distinction\": \"sovereignty can only be achieved by the many bound together, whereas mastership is conceivable only in isolation.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The faculty of promising and forgiving as control mechanisms born directly out of living together.\",\n    \"Natality as the condition that men are born in order to begin rather than just to die.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPSYymxG_IgL0C-A8yQ7--6-kQJCgF9Sf6W-C94bkJ2AXUAvVXJgnfQHEgn41E",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The force that keeps people together in public space is mutual promise or contract, which generates a limited reality of sovereignty.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "applies when many are mutually bound by promises",
+          "sovereignty assumes a limited reality"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "The force that keeps them together, as distinguished from the space of appearances in which they gather and the power which keeps this public space in existence, is the force of mutual promise or contract. Sovereignty, which is always spurious if claimed by an isolated single entity, be it the individual entity of the person or the collective entity of a nation, assumes, in the case of many men mutually bound by promises, a certain limited reality."
+      },
+      {
+        "claim": "Action is the one miracle-working faculty of man that interrupts the automatic, inexorable course of daily life and historical fatality.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "seen from the viewpoint of automatic processes"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Action is, in fact, the one miracle-working faculty of man"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "distinction": "sovereignty can only be achieved by the many bound together, whereas mastership is conceivable only in isolation.",
+        "item_a": "sovereignty in the realm of action and human affairs",
+        "item_b": "mastership in the realm of making and the world of things"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The faculty of promising and forgiving as control mechanisms born directly out of living together.",
+      "Natality as the condition that men are born in order to begin rather than just to die."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "conclusion",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"The force that keeps people together in public space is mutual promise or contract, which generates a limited reality of sovereignty.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The force that keeps them together, as distinguished from the space of appearances in which they gather and the power which keeps this public space in existence, is the force of mutual promise or contract. Sovereignty, which is always spurious if claimed by an isolated single entity, be it the individual entity of the person or the collective entity of a nation, assumes, in the case of many men mutually bound by promises, a certain limited reality.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"applies when many are mutually bound by promises\",\n        \"sovereignty assumes a limited reality\"\n      ],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"Action is the one miracle-working faculty of man that interrupts the automatic, inexorable course of daily life and historical fatality.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Action is, in fact, the one miracle-working faculty of man\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"seen from the viewpoint of automatic processes\"\n      ],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [\n    {\n      \"item_a\": \"sovereignty in the realm of action and human affairs\",\n      \"item_b\": \"mastership in the realm of making and the world of things\",\n      \"distinction\": \"sovereignty can only be achieved by the many bound together, whereas mastership is conceivable only in isolation.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The faculty of promising and forgiving as control mechanisms born directly out of living together.\",\n    \"Natality as the condition that men are born in order to begin rather than just to die.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 514,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2494,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2494
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3008,
+    "traffic_type": null
+  }
+}

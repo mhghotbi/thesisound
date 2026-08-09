@@ -1,0 +1,77 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"The target block contains bibliographic notes, references, and citations rather than continuous prose, so no substantive claims are extracted from the reference section.\",\n      \"claim_type\": \"scholarly_interpretation\",\n      \"supporting_excerpt\": \"Arendt Hann ah (1973) the origins of totalitarianism, published by Harcourt Brace.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The block includes extensive bibliographic references and notes associated with a conclusion section.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The text block terminates with a bibliographic reference list.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPpvwM5USzWAuigQqW-UeDXBJRSraWVDm7AQAB0T8tTamDv8MD3jYwo12L_mPT",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The target block contains bibliographic notes, references, and citations rather than continuous prose, so no substantive claims are extracted from the reference section.",
+        "claim_type": "scholarly_interpretation",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Arendt Hann ah (1973) the origins of totalitarianism, published by Harcourt Brace."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The text block terminates with a bibliographic reference list."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "conclusion",
+    "unresolved_context": [
+      "The block includes extensive bibliographic references and notes associated with a conclusion section."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"The target block contains bibliographic notes, references, and citations rather than continuous prose, so no substantive claims are extracted from the reference section.\",\n      \"claim_type\": \"scholarly_interpretation\",\n      \"supporting_excerpt\": \"Arendt Hann ah (1973) the origins of totalitarianism, published by Harcourt Brace.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The block includes extensive bibliographic references and notes associated with a conclusion section.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The text block terminates with a bibliographic reference list.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 225,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 4357,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 4357
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 4582,
+    "traffic_type": null
+  }
+}

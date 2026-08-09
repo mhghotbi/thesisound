@@ -1,0 +1,45 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The force that keeps people together in public life and provides a limited reality of sovereignty is the mutual promise or contract.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "applies when many men are mutually bound by promises",
+          "sovereignty resulting from promises has a certain limited reality"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "The force that keeps them together, as distinguished from the space of appearances in which they gather and the power which keeps this public space in existence, is the force of mutual promise or contract."
+      },
+      {
+        "claim": "Action is characterized as a miracle-working faculty that interrupts the automatic, inexorable course of daily life and natural fatality.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "seen from the viewpoint of automatic processes"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Action is, in fact, the one miracle-working faculty of man, as Jesus of Nazareth... must have known very well when he likened the power to forgive to the more general power of performing miracles"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The faculty of making and keeping promises gives a limited independence from the incalculability of the future.",
+      "Action springs from natality (being born in order to begin) and interrupts the law of mortality."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Analyzing the faculties of promising and forgiving as inherent moral controls within human action that counter unpredictability, automatic necessity, and the law of mortality.",
+    "unresolved_context": []
+  }
+}

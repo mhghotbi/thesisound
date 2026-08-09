@@ -1,0 +1,53 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "In French (ouvrer) and German (werken), as distinguished from modern English usage of labor, the words travailler and arbeiten have largely lost their original connotations of pain and trouble.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "This is the case for the French ouvrer and the German werken. In both languages, as distinguished from the current English usage of the word “labor,” the words travailler and arbeiten have almost lost the original significance of pain and trouble"
+      },
+      {
+        "claim": "Greek public opinion in the city-states judged occupations based on the effort required and the time consumed.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "That Greek public opinion in the city-states judged occupations according to the effort required and the time consumed is supported by a remark of Aristotle about the life of shepherds"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "distinction": "Laziness retained negative connotations similar to modern ones, whereas a life of skholē—abstention from certain activities to enable a political life—was not considered a lazy life.",
+        "item_a": "aergia (laziness)",
+        "item_b": "skholē (leisure)"
+      },
+      {
+        "distinction": "The former arose from the enormous demands upon the time and energy of citizens in Greek city-states, while the latter is an earlier, more original, and more general contempt for opera servilia serving ad vitae sustentationem.",
+        "item_a": "contempt for non-political occupations",
+        "item_b": "contempt for activities serving only to sustain life"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The linguistic evolution of travailler and arbeiten away from pain and trouble.",
+      "The historical distinction between the Greek city-state contempt for non-political occupations due to time demands versus the older contempt for activities serving mere survival."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "notes and source citations regarding ancient Greek attitudes toward labor, work, leisure, and the distinction between political and non-political occupations",
+    "unresolved_context": [
+      "Discussion of Homeric self-sufficiency versus subjection to necessity, and Richard Harder's Eigenart der Griechen (1949)."
+    ]
+  }
+}

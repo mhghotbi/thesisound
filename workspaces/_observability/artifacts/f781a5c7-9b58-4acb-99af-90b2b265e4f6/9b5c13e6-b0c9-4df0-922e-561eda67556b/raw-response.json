@@ -1,0 +1,68 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"copyright and publication metadata\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The block contains copyright notices, publication dates, ISBN numbers, Library of Congress cataloging data, and book metadata for Hannah Arendt's The Human Condition, 2nd edition, with an introduction by Margaret Canovan.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Publication metadata indicates the work is Hannah Arendt's The Human Condition, originally published in 1958, with a 2nd edition introduction by Margaret Canovan published in 1998 by the University of Chicago Press.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPzKPSiLX63OnEUJWFAqAf-JUoPdvu8Zv36lj2t7gdIpUtoGtErdkKNBrVsHNl",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Publication metadata indicates the work is Hannah Arendt's The Human Condition, originally published in 1958, with a 2nd edition introduction by Margaret Canovan published in 1998 by the University of Chicago Press."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "copyright and publication metadata",
+    "unresolved_context": [
+      "The block contains copyright notices, publication dates, ISBN numbers, Library of Congress cataloging data, and book metadata for Hannah Arendt's The Human Condition, 2nd edition, with an introduction by Margaret Canovan."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"copyright and publication metadata\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The block contains copyright notices, publication dates, ISBN numbers, Library of Congress cataloging data, and book metadata for Hannah Arendt's The Human Condition, 2nd edition, with an introduction by Margaret Canovan.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Publication metadata indicates the work is Hannah Arendt's The Human Condition, originally published in 1958, with a 2nd edition introduction by Margaret Canovan published in 1998 by the University of Chicago Press.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 196,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2691,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2691
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2887,
+    "traffic_type": null
+  }
+}

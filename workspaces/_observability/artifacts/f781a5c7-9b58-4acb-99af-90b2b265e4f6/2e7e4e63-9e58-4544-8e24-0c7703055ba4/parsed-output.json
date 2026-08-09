@@ -1,0 +1,39 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The narrative of cultural criticism in Arendt's work converts into the narrative of political philosophy when examining the relation of natural and artificial.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Following the argumentation of The Human Condition concerning the relation of natural and artificial we arrived to a turning point where the narrative of cultural criticism converts into the narrative of political philosophy."
+      },
+      {
+        "claim": "Totalitarianism serves as the main evidence for the extreme consequences brought about by the processes of re-naturalization.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Totalitarianism, for Arendt, is the main evidence what extreme consequences may be brought into being by the processes of re-naturalization."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection between The Origins of Totalitarianism and The Human Condition regarding re-naturalization processes."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  }
+}

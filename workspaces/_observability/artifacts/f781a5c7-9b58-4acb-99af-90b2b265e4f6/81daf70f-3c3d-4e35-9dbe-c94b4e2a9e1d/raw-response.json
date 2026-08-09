@@ -1,0 +1,385 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"working_thesis\": \"The document provides an extensive set of scholarly notes tracking the historical transformations, definitions, arguments, examples, objections, and transitions surrounding the concepts of labor, work, action, and political thought from antiquity through the modern age.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-98863830-00143-e7291095b2a2\",\n        \"blk-98863830-00144-16b12e01b035\",\n        \"blk-98863830-00145-4f7835c33d22\"\n      ],\n      \"title\": \"Introduction and Chapter 1 Notes: Creation, The Human Condition, and the Vita Activa\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"Rockefeller Foundation proposal\",\n        \"biblical creation stories\",\n        \"anthropological question\",\n        \"vita activa\",\n        \"necessities of life\",\n        \"contemplation\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": [\n        \"References to earlier textual passages outside the scope of the notes.\"\n      ]\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-98863830-00145-4f7835c33d22\",\n        \"blk-98863830-00146-74fbdf17f664\",\n        \"blk-98863830-00147-79079d9f5094\"\n      ],\n      \"title\": \"Chapter 2 Notes Part 1: Public and Private Realms, Speech and Action\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Homeric gods and human affairs\",\n        \"societas\",\n        \"household versus city-state\",\n        \"speech and action\",\n        \"rhetoric and persuasion\",\n        \"paternal power and slavery\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-98863830-00147-79079d9f5094\",\n        \"blk-98863830-00148-25bac839ecd7\",\n        \"blk-98863830-00149-790d889bff76\"\n      ],\n      \"title\": \"Chapter 2 Notes Part 2: Property, Slavery, and Economic Theories\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"property and hearth\",\n        \"status of slaves\",\n        \"courage as a political virtue\",\n        \"political economy\",\n        \"collective housekeeping\",\n        \"division of labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-98863830-00150-0f3a9e3aed23\",\n        \"blk-98863830-00151-bff03997ac60\",\n        \"blk-98863830-00152-ff55653b5ce9\"\n      ],\n      \"title\": \"Chapter 2 Notes Part 3: Body, Pain, and the Rise of the Working Class\",\n      \"function\": \"objection\",\n      \"key_concepts\": [\n        \"pain and subjectivity\",\n        \"corpus politicum\",\n        \"peculium\",\n        \"nomos and lex\",\n        \"history of wage labor\",\n        \"property and tyranny\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-98863830-00153-ca797199e59c\",\n        \"blk-98863830-00154-4fd131b4a47a\"\n      ],\n      \"title\": \"Chapter 3 Notes Part 1: Etymologies of Labor and the Status of Artisans\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"capital and debt\",\n        \"etymologies of labor (ponos, travail, Arbeit)\",\n        \"dēmiourgoi\",\n        \"banausoi\",\n        \"skholē versus aergia\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-004\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-006\",\n      \"source_block_ids\": [\n        \"blk-98863830-00155-47b20935e369\",\n        \"blk-98863830-00156-84a20d6ee86e\",\n        \"blk-98863830-00157-73415661ecff\"\n      ],\n      \"title\": \"Chapter 3 Notes Part 2: Marx's Conception of Labor and Productive vs. Unproductive Work\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"animal laborans\",\n        \"productive and unproductive labor\",\n        \"physiocrats\",\n        \"alienation\",\n        \"locatio operarum versus locatio operis\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-007\",\n      \"source_block_ids\": [\n        \"blk-98863830-00158-a8532d6f1ba0\",\n        \"blk-98863830-00159-a6ffadfaa395\",\n        \"blk-98863830-00160-3e88b3f9f6ab\"\n      ],\n      \"title\": \"Chapter 3 Notes Part 3: Metabolism with Nature, Reification, and Hedonism\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"metabolism with nature\",\n        \"productive consumption\",\n        \"vergegenständlichung\",\n        \"curse of labor in the Old Testament\",\n        \"hedonism and cessation from pain\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-006\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-008\",\n      \"source_block_ids\": [\n        \"blk-98863830-00161-f638ca54ad73\",\n        \"blk-98863830-00162-5059c635c53f\",\n        \"blk-98863830-00163-3ad84664951c\"\n      ],\n      \"title\": \"Chapter 3 Notes Part 4: Modern Labor Idealizations, Hobbies, and Automation\",\n      \"function\": \"response\",\n      \"key_concepts\": [\n        \"humanisms of labor\",\n        \"role of the hobby\",\n        \"torture and truth\",\n        \"automation\",\n        \"frugality of Greek life\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-007\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-009\",\n      \"source_block_ids\": [\n        \"blk-98863830-00164-9d5a0fb35bbc\",\n        \"blk-98863830-00165-f6afc86861ff\",\n        \"blk-98863830-00166-15d4c346c292\"\n      ],\n      \"title\": \"Chapter 4 Notes: Homo Faber, Ideas, and the Industrial Revolution\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"faber and tektōn\",\n        \"Platonic doctrine of ideas\",\n        \"assembly line and automation\",\n        \"instrumentalism and means-end chains\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-010\",\n      \"source_block_ids\": [\n        \"blk-98863830-00167-845be5bd0ef9\",\n        \"blk-98863830-00168-7e391cc73ec7\",\n        \"blk-98863830-00169-79f4f85f24c7\"\n      ],\n      \"title\": \"Chapter 4 and Chapter 5 Notes Part 1: Value, Exchange, Speech, and Action\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"objective versus subjective value\",\n        \"just price\",\n        \"reification in art\",\n        \"sp spontaneity of speech and action\",\n        \"drama and imitation\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-009\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-011\",\n      \"source_block_ids\": [\n        \"blk-98863830-00170-8ba96b71ca2a\",\n        \"blk-98863830-00171-8f6adf2a2c73\",\n        \"blk-98863830-00172-161c9ebe9d12\"\n      ],\n      \"title\": \"Chapter 5 Notes Part 2: Energeia, Councils, and Tyranny\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"energeia and entelecheia\",\n        \"professional specialization vs division of labor\",\n        \"councils and revolutions\",\n        \"tyranny and kingship\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-010\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-012\",\n      \"source_block_ids\": [\n        \"blk-98863830-00173-420456daf1ef\",\n        \"blk-98863830-00174-d49b5a3edc1f\"\n      ],\n      \"title\": \"Chapter 5 Notes Part 3: Forgiveness, Promises, and the Human Condition\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"tragedy versus absurdity\",\n        \"power to forgive\",\n        \"making promises\",\n        \"world-creating faculty of love\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-011\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-013\",\n      \"source_block_ids\": [\n        \"blk-98863830-00175-9b33a8ef7563\",\n        \"blk-98863830-00176-0e7147ab86d4\",\n        \"blk-98863830-00177-1a7906a1baf0\"\n      ],\n      \"title\": \"Chapter 6 Notes Part 1: The Modern Age, Cartesian Doubt, and Science\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"world alienation\",\n        \"seventeenth-century scientific revolution\",\n        \"certitudo salutis\",\n        \"cogito ergo sum\",\n        \"objectivity\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-008\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-014\",\n      \"source_block_ids\": [\n        \"blk-98863830-00178-78c823a488ac\",\n        \"blk-98863830-00179-a35ffb89a0ad\",\n        \"blk-98863830-00180-0f692c0c3a73\",\n        \"blk-98863830-00181-03aa99c96d90\"\n      ],\n      \"title\": \"Chapter 6 Notes Part 2: Common Sense, Philosophy of History, and Utilitarianism\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"Archimedean point\",\n        \"philosophy of history\",\n        \"utilitarianism\",\n        \"Bentham and Helvétius\",\n        \"monastic rules and labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-013\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Concept of Labor and Animal Laborans\",\n      \"section_ids\": [\n        \"sec-006\",\n        \"sec-007\",\n        \"sec-008\"\n      ],\n      \"description\": \"Exploration of Marx's definition of man as animal laborans, the metabolism with nature, and the critique of modern labor idealizations.\"\n    },\n    {\n      \"label\": \"Ancient vs. Modern Science and World Alienation\",\n      \"section_ids\": [\n        \"sec-013\",\n        \"sec-014\"\n      ],\n      \"description\": \"Tracing the shift from ancient contemplation to modern Cartesian doubt, scientific experimentation, and world alienation.\"\n    }\n  ],\n  \"warnings\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPiQpr1xycD-wtnAgSpCuUiIamfdBXp6zlQniWq-Oo2bW6ctfCTCFUVgNSaQLG",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "cross_section_threads": [
+      {
+        "description": "Exploration of Marx's definition of man as animal laborans, the metabolism with nature, and the critique of modern labor idealizations.",
+        "label": "Concept of Labor and Animal Laborans",
+        "section_ids": [
+          "sec-006",
+          "sec-007",
+          "sec-008"
+        ]
+      },
+      {
+        "description": "Tracing the shift from ancient contemplation to modern Cartesian doubt, scientific experimentation, and world alienation.",
+        "label": "Ancient vs. Modern Science and World Alienation",
+        "section_ids": [
+          "sec-013",
+          "sec-014"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "depends_on_section_ids": [],
+        "function": "definition",
+        "key_concepts": [
+          "Rockefeller Foundation proposal",
+          "biblical creation stories",
+          "anthropological question",
+          "vita activa",
+          "necessities of life",
+          "contemplation"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-001",
+        "source_block_ids": [
+          "blk-98863830-00143-e7291095b2a2",
+          "blk-98863830-00144-16b12e01b035",
+          "blk-98863830-00145-4f7835c33d22"
+        ],
+        "title": "Introduction and Chapter 1 Notes: Creation, The Human Condition, and the Vita Activa",
+        "unresolved_context": [
+          "References to earlier textual passages outside the scope of the notes."
+        ]
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "Homeric gods and human affairs",
+          "societas",
+          "household versus city-state",
+          "speech and action",
+          "rhetoric and persuasion",
+          "paternal power and slavery"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-002",
+        "source_block_ids": [
+          "blk-98863830-00145-4f7835c33d22",
+          "blk-98863830-00146-74fbdf17f664",
+          "blk-98863830-00147-79079d9f5094"
+        ],
+        "title": "Chapter 2 Notes Part 1: Public and Private Realms, Speech and Action",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-002"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "property and hearth",
+          "status of slaves",
+          "courage as a political virtue",
+          "political economy",
+          "collective housekeeping",
+          "division of labor"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-003",
+        "source_block_ids": [
+          "blk-98863830-00147-79079d9f5094",
+          "blk-98863830-00148-25bac839ecd7",
+          "blk-98863830-00149-790d889bff76"
+        ],
+        "title": "Chapter 2 Notes Part 2: Property, Slavery, and Economic Theories",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-003"
+        ],
+        "function": "objection",
+        "key_concepts": [
+          "pain and subjectivity",
+          "corpus politicum",
+          "peculium",
+          "nomos and lex",
+          "history of wage labor",
+          "property and tyranny"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-004",
+        "source_block_ids": [
+          "blk-98863830-00150-0f3a9e3aed23",
+          "blk-98863830-00151-bff03997ac60",
+          "blk-98863830-00152-ff55653b5ce9"
+        ],
+        "title": "Chapter 2 Notes Part 3: Body, Pain, and the Rise of the Working Class",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-004"
+        ],
+        "function": "definition",
+        "key_concepts": [
+          "capital and debt",
+          "etymologies of labor (ponos, travail, Arbeit)",
+          "dēmiourgoi",
+          "banausoi",
+          "skholē versus aergia"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-005",
+        "source_block_ids": [
+          "blk-98863830-00153-ca797199e59c",
+          "blk-98863830-00154-4fd131b4a47a"
+        ],
+        "title": "Chapter 3 Notes Part 1: Etymologies of Labor and the Status of Artisans",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-005"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "animal laborans",
+          "productive and unproductive labor",
+          "physiocrats",
+          "alienation",
+          "locatio operarum versus locatio operis"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-006",
+        "source_block_ids": [
+          "blk-98863830-00155-47b20935e369",
+          "blk-98863830-00156-84a20d6ee86e",
+          "blk-98863830-00157-73415661ecff"
+        ],
+        "title": "Chapter 3 Notes Part 2: Marx's Conception of Labor and Productive vs. Unproductive Work",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-006"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "metabolism with nature",
+          "productive consumption",
+          "vergegenständlichung",
+          "curse of labor in the Old Testament",
+          "hedonism and cessation from pain"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-007",
+        "source_block_ids": [
+          "blk-98863830-00158-a8532d6f1ba0",
+          "blk-98863830-00159-a6ffadfaa395",
+          "blk-98863830-00160-3e88b3f9f6ab"
+        ],
+        "title": "Chapter 3 Notes Part 3: Metabolism with Nature, Reification, and Hedonism",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-007"
+        ],
+        "function": "response",
+        "key_concepts": [
+          "humanisms of labor",
+          "role of the hobby",
+          "torture and truth",
+          "automation",
+          "frugality of Greek life"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-008",
+        "source_block_ids": [
+          "blk-98863830-00161-f638ca54ad73",
+          "blk-98863830-00162-5059c635c53f",
+          "blk-98863830-00163-3ad84664951c"
+        ],
+        "title": "Chapter 3 Notes Part 4: Modern Labor Idealizations, Hobbies, and Automation",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-005"
+        ],
+        "function": "definition",
+        "key_concepts": [
+          "faber and tektōn",
+          "Platonic doctrine of ideas",
+          "assembly line and automation",
+          "instrumentalism and means-end chains"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-009",
+        "source_block_ids": [
+          "blk-98863830-00164-9d5a0fb35bbc",
+          "blk-98863830-00165-f6afc86861ff",
+          "blk-98863830-00166-15d4c346c292"
+        ],
+        "title": "Chapter 4 Notes: Homo Faber, Ideas, and the Industrial Revolution",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-009"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "objective versus subjective value",
+          "just price",
+          "reification in art",
+          "sp spontaneity of speech and action",
+          "drama and imitation"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-010",
+        "source_block_ids": [
+          "blk-98863830-00167-845be5bd0ef9",
+          "blk-98863830-00168-7e391cc73ec7",
+          "blk-98863830-00169-79f4f85f24c7"
+        ],
+        "title": "Chapter 4 and Chapter 5 Notes Part 1: Value, Exchange, Speech, and Action",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-010"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "energeia and entelecheia",
+          "professional specialization vs division of labor",
+          "councils and revolutions",
+          "tyranny and kingship"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-011",
+        "source_block_ids": [
+          "blk-98863830-00170-8ba96b71ca2a",
+          "blk-98863830-00171-8f6adf2a2c73",
+          "blk-98863830-00172-161c9ebe9d12"
+        ],
+        "title": "Chapter 5 Notes Part 2: Energeia, Councils, and Tyranny",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-011"
+        ],
+        "function": "conclusion",
+        "key_concepts": [
+          "tragedy versus absurdity",
+          "power to forgive",
+          "making promises",
+          "world-creating faculty of love"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-012",
+        "source_block_ids": [
+          "blk-98863830-00173-420456daf1ef",
+          "blk-98863830-00174-d49b5a3edc1f"
+        ],
+        "title": "Chapter 5 Notes Part 3: Forgiveness, Promises, and the Human Condition",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-008"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "world alienation",
+          "seventeenth-century scientific revolution",
+          "certitudo salutis",
+          "cogito ergo sum",
+          "objectivity"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-013",
+        "source_block_ids": [
+          "blk-98863830-00175-9b33a8ef7563",
+          "blk-98863830-00176-0e7147ab86d4",
+          "blk-98863830-00177-1a7906a1baf0"
+        ],
+        "title": "Chapter 6 Notes Part 1: The Modern Age, Cartesian Doubt, and Science",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-013"
+        ],
+        "function": "conclusion",
+        "key_concepts": [
+          "Archimedean point",
+          "philosophy of history",
+          "utilitarianism",
+          "Bentham and Helvétius",
+          "monastic rules and labor"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-014",
+        "source_block_ids": [
+          "blk-98863830-00178-78c823a488ac",
+          "blk-98863830-00179-a35ffb89a0ad",
+          "blk-98863830-00180-0f692c0c3a73",
+          "blk-98863830-00181-03aa99c96d90"
+        ],
+        "title": "Chapter 6 Notes Part 2: Common Sense, Philosophy of History, and Utilitarianism",
+        "unresolved_context": []
+      }
+    ],
+    "warnings": [],
+    "working_thesis": "The document provides an extensive set of scholarly notes tracking the historical transformations, definitions, arguments, examples, objections, and transitions surrounding the concepts of labor, work, action, and political thought from antiquity through the modern age."
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"working_thesis\": \"The document provides an extensive set of scholarly notes tracking the historical transformations, definitions, arguments, examples, objections, and transitions surrounding the concepts of labor, work, action, and political thought from antiquity through the modern age.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-98863830-00143-e7291095b2a2\",\n        \"blk-98863830-00144-16b12e01b035\",\n        \"blk-98863830-00145-4f7835c33d22\"\n      ],\n      \"title\": \"Introduction and Chapter 1 Notes: Creation, The Human Condition, and the Vita Activa\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"Rockefeller Foundation proposal\",\n        \"biblical creation stories\",\n        \"anthropological question\",\n        \"vita activa\",\n        \"necessities of life\",\n        \"contemplation\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": [\n        \"References to earlier textual passages outside the scope of the notes.\"\n      ]\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-98863830-00145-4f7835c33d22\",\n        \"blk-98863830-00146-74fbdf17f664\",\n        \"blk-98863830-00147-79079d9f5094\"\n      ],\n      \"title\": \"Chapter 2 Notes Part 1: Public and Private Realms, Speech and Action\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"Homeric gods and human affairs\",\n        \"societas\",\n        \"household versus city-state\",\n        \"speech and action\",\n        \"rhetoric and persuasion\",\n        \"paternal power and slavery\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-98863830-00147-79079d9f5094\",\n        \"blk-98863830-00148-25bac839ecd7\",\n        \"blk-98863830-00149-790d889bff76\"\n      ],\n      \"title\": \"Chapter 2 Notes Part 2: Property, Slavery, and Economic Theories\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"property and hearth\",\n        \"status of slaves\",\n        \"courage as a political virtue\",\n        \"political economy\",\n        \"collective housekeeping\",\n        \"division of labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-98863830-00150-0f3a9e3aed23\",\n        \"blk-98863830-00151-bff03997ac60\",\n        \"blk-98863830-00152-ff55653b5ce9\"\n      ],\n      \"title\": \"Chapter 2 Notes Part 3: Body, Pain, and the Rise of the Working Class\",\n      \"function\": \"objection\",\n      \"key_concepts\": [\n        \"pain and subjectivity\",\n        \"corpus politicum\",\n        \"peculium\",\n        \"nomos and lex\",\n        \"history of wage labor\",\n        \"property and tyranny\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-98863830-00153-ca797199e59c\",\n        \"blk-98863830-00154-4fd131b4a47a\"\n      ],\n      \"title\": \"Chapter 3 Notes Part 1: Etymologies of Labor and the Status of Artisans\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"capital and debt\",\n        \"etymologies of labor (ponos, travail, Arbeit)\",\n        \"dēmiourgoi\",\n        \"banausoi\",\n        \"skholē versus aergia\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-004\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-006\",\n      \"source_block_ids\": [\n        \"blk-98863830-00155-47b20935e369\",\n        \"blk-98863830-00156-84a20d6ee86e\",\n        \"blk-98863830-00157-73415661ecff\"\n      ],\n      \"title\": \"Chapter 3 Notes Part 2: Marx's Conception of Labor and Productive vs. Unproductive Work\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"animal laborans\",\n        \"productive and unproductive labor\",\n        \"physiocrats\",\n        \"alienation\",\n        \"locatio operarum versus locatio operis\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-007\",\n      \"source_block_ids\": [\n        \"blk-98863830-00158-a8532d6f1ba0\",\n        \"blk-98863830-00159-a6ffadfaa395\",\n        \"blk-98863830-00160-3e88b3f9f6ab\"\n      ],\n      \"title\": \"Chapter 3 Notes Part 3: Metabolism with Nature, Reification, and Hedonism\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"metabolism with nature\",\n        \"productive consumption\",\n        \"vergegenständlichung\",\n        \"curse of labor in the Old Testament\",\n        \"hedonism and cessation from pain\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-006\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-008\",\n      \"source_block_ids\": [\n        \"blk-98863830-00161-f638ca54ad73\",\n        \"blk-98863830-00162-5059c635c53f\",\n        \"blk-98863830-00163-3ad84664951c\"\n      ],\n      \"title\": \"Chapter 3 Notes Part 4: Modern Labor Idealizations, Hobbies, and Automation\",\n      \"function\": \"response\",\n      \"key_concepts\": [\n        \"humanisms of labor\",\n        \"role of the hobby\",\n        \"torture and truth\",\n        \"automation\",\n        \"frugality of Greek life\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-007\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-009\",\n      \"source_block_ids\": [\n        \"blk-98863830-00164-9d5a0fb35bbc\",\n        \"blk-98863830-00165-f6afc86861ff\",\n        \"blk-98863830-00166-15d4c346c292\"\n      ],\n      \"title\": \"Chapter 4 Notes: Homo Faber, Ideas, and the Industrial Revolution\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"faber and tektōn\",\n        \"Platonic doctrine of ideas\",\n        \"assembly line and automation\",\n        \"instrumentalism and means-end chains\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-010\",\n      \"source_block_ids\": [\n        \"blk-98863830-00167-845be5bd0ef9\",\n        \"blk-98863830-00168-7e391cc73ec7\",\n        \"blk-98863830-00169-79f4f85f24c7\"\n      ],\n      \"title\": \"Chapter 4 and Chapter 5 Notes Part 1: Value, Exchange, Speech, and Action\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"objective versus subjective value\",\n        \"just price\",\n        \"reification in art\",\n        \"sp spontaneity of speech and action\",\n        \"drama and imitation\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-009\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-011\",\n      \"source_block_ids\": [\n        \"blk-98863830-00170-8ba96b71ca2a\",\n        \"blk-98863830-00171-8f6adf2a2c73\",\n        \"blk-98863830-00172-161c9ebe9d12\"\n      ],\n      \"title\": \"Chapter 5 Notes Part 2: Energeia, Councils, and Tyranny\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"energeia and entelecheia\",\n        \"professional specialization vs division of labor\",\n        \"councils and revolutions\",\n        \"tyranny and kingship\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-010\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-012\",\n      \"source_block_ids\": [\n        \"blk-98863830-00173-420456daf1ef\",\n        \"blk-98863830-00174-d49b5a3edc1f\"\n      ],\n      \"title\": \"Chapter 5 Notes Part 3: Forgiveness, Promises, and the Human Condition\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"tragedy versus absurdity\",\n        \"power to forgive\",\n        \"making promises\",\n        \"world-creating faculty of love\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-011\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-013\",\n      \"source_block_ids\": [\n        \"blk-98863830-00175-9b33a8ef7563\",\n        \"blk-98863830-00176-0e7147ab86d4\",\n        \"blk-98863830-00177-1a7906a1baf0\"\n      ],\n      \"title\": \"Chapter 6 Notes Part 1: The Modern Age, Cartesian Doubt, and Science\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"world alienation\",\n        \"seventeenth-century scientific revolution\",\n        \"certitudo salutis\",\n        \"cogito ergo sum\",\n        \"objectivity\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-008\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-014\",\n      \"source_block_ids\": [\n        \"blk-98863830-00178-78c823a488ac\",\n        \"blk-98863830-00179-a35ffb89a0ad\",\n        \"blk-98863830-00180-0f692c0c3a73\",\n        \"blk-98863830-00181-03aa99c96d90\"\n      ],\n      \"title\": \"Chapter 6 Notes Part 2: Common Sense, Philosophy of History, and Utilitarianism\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"Archimedean point\",\n        \"philosophy of history\",\n        \"utilitarianism\",\n        \"Bentham and Helvétius\",\n        \"monastic rules and labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-013\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Concept of Labor and Animal Laborans\",\n      \"section_ids\": [\n        \"sec-006\",\n        \"sec-007\",\n        \"sec-008\"\n      ],\n      \"description\": \"Exploration of Marx's definition of man as animal laborans, the metabolism with nature, and the critique of modern labor idealizations.\"\n    },\n    {\n      \"label\": \"Ancient vs. Modern Science and World Alienation\",\n      \"section_ids\": [\n        \"sec-013\",\n        \"sec-014\"\n      ],\n      \"description\": \"Tracing the shift from ancient contemplation to modern Cartesian doubt, scientific experimentation, and world alienation.\"\n    }\n  ],\n  \"warnings\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 3869,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 82860,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 82860
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 86729,
+    "traffic_type": null
+  }
+}

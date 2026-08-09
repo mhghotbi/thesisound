@@ -1,0 +1,37 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "آرﻧﺖ در تحلیل خود در باب مدرنیته بر از دست دادن و زوال حوزه عمومی تأکید دارد، یعنی آن حوزه که قلمرو آزادی و برابری است.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "آرﻧﺖ در ﺗﺤﻠﯿﻞ ﺧﻮد در ﺑﺎب ﻣﺪرﻧﯿﺘﻪ ﻋﻤـﻮﻣﯽ ﺗﺄﮐﯿـﺪ    ةﺑﺮ از دﺳـﺖ دادن و زوال ﺣـﻮز  ، ﻋﻨـﻮان   ﻇﻬﻮر و ﺑﺮوزﯾﮑﻪ ﻗﻠﻤﺮو آزادي و ﺑﺮاﺑﺮي اﺳﺖ و آﻧﺠﺎ ﮐﻪ اﻓﺮاد ﺑـﻪ"
+      },
+      {
+        "claim": "پدیده از دست دادن عرصه عمومی به از دست دادن گسترده جهان یا بیگانگی از جهان مربوط است.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "ةﺧـﻮد ﺑـﺎ ﯾـﮏ ﭘﺪﯾـﺪ    ﻪ ﻧﻮﺑـ  ﻋﻤـﻮﻣﯽ ﺑـﻪ   ﮥاز دﺳﺖ دادن ﻋﺮﺻـ . و دوﺳﻮﯾﻪ در ﺗﻌﺎﻣﻞ ﻫﺴﺘﻨﺪ دادن   ﺗﺮ ﻣﺮﺗﺒﻂ اﺳﺖ ﮐﻪ آرﻧـﺖ آن را از دﺳـﺖ   ﮔﺴﺘﺮده »ﺟﻬـﺎن«و ﯾـﺎ ﺑﯿﮕـﺎﻧﮕﯽ از»ﺟﻬـﺎن«"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  }
+}

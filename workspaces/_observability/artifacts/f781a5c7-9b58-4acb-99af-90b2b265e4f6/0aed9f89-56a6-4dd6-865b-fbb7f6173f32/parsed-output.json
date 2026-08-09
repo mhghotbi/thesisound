@@ -1,0 +1,10 @@
+{
+  "channels": 1,
+  "chunk_id": "audio-0008",
+  "model": "gemini-3.1-flash-tts-preview",
+  "pcm_sha256": "fac6908d9e3c52a4adbff4d3eab0a027d837379839257c0ff97e0226a2977eb6",
+  "pcm_size_bytes": 702720,
+  "provider": "gemini",
+  "sample_rate_hz": 24000,
+  "sample_width_bytes": 2
+}

@@ -1,0 +1,59 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"The target block contains encoded scholarly, historical, or textual text utilizing unicode representations and reference notation.\",\n  \"claims\": [],\n  \"unresolved_context\": [\n    \"The target block consists of encoded strings and numeric identifiers that cannot be reliably interpreted without decoding or contextual translation.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPi_4QWwquZiA8wVid3sqSVcCdsH68xsOWfJvdut_AyFQPx1-eKPwm1sGSCRum",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "segment_function": "The target block contains encoded scholarly, historical, or textual text utilizing unicode representations and reference notation.",
+    "unresolved_context": [
+      "The target block consists of encoded strings and numeric identifiers that cannot be reliably interpreted without decoding or contextual translation."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"The target block contains encoded scholarly, historical, or textual text utilizing unicode representations and reference notation.\",\n  \"claims\": [],\n  \"unresolved_context\": [\n    \"The target block consists of encoded strings and numeric identifiers that cannot be reliably interpreted without decoding or contextual translation.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 72,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 7401,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 7401
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 7473,
+    "traffic_type": null
+  }
+}

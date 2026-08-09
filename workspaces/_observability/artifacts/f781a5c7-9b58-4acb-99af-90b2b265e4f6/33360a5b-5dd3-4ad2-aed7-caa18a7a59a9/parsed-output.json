@@ -1,0 +1,33 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The index entries cover key terms, historical figures, and philosophical concepts related to Hannah Arendt's analysis of the vita activa, including action, alienation, animal laborans, and the Archimedean point.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "action, 175–247 ; the agent as disclosed in, 175–81 ... alienation: earth alienation, 264–65 ... animal laborans: abundance as ideal of, 126 , 134 ... Archimedean point: applying to man himself, 248 , 322–23"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Index entries for Arendtian concepts such as action, animal laborans, and Archimedean point."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "index",
+    "unresolved_context": [
+      "The block is an alphabetical index containing page number references for various concepts, individuals, and works spanning Abraham to Aristotle."
+    ]
+  }
+}

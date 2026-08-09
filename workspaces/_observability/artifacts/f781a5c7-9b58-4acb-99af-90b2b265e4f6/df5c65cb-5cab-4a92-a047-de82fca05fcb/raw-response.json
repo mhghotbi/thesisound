@@ -1,0 +1,222 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"working_thesis\": \"Hannah Arendt's interpretation of the natural and artificial in The Human Condition integrates a narrative of cultural criticism with political philosophy, arguing that modernity is characterized not simply by technological de-naturalization and the dominance of artifacts, but by a dangerous process of re-naturalization where biological necessity and the life process threaten human plurality, freedom, and the artificial world.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00001-fe211b3390ab\"\n      ],\n      \"title\": \"Introduction and Contextual Background\",\n      \"function\": \"front_matter\",\n      \"key_concepts\": [\n        \"modernization\",\n        \"de-naturalization\",\n        \"re-naturalization\",\n        \"world-alienation\",\n        \"cultural criticism\",\n        \"political philosophy\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00002-31b1a9859865\"\n      ],\n      \"title\": \"Ontological Foundations: Labor and the Human Condition\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"spatial technology\",\n        \"Archimedean point\",\n        \"human artifice\",\n        \"animal laborans\",\n        \"metabolism with nature\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00003-72bb2365b274\"\n      ],\n      \"title\": \"The Spheres of Work and Action in Arendt's Tripartite Phenomenology\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"homo faber\",\n        \"human world\",\n        \"action\",\n        \"plurality\",\n        \"speech\",\n        \"spatial essentialism\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00004-dfa8bda206e5\"\n      ],\n      \"title\": \"The Role of Process and the Critique of Homo Faber's Fabrication\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"social versus political\",\n        \"necessity versus liberty\",\n        \"process\",\n        \"means-end rationality\",\n        \"reification\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00005-84f0f0ee154d\",\n        \"blk-187a0ac0-00006-361a0214c6d8\"\n      ],\n      \"title\": \"The Paradox of Modernity: From Homo Faber to Animal Laborans\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"violation and violence\",\n        \"Promethean revolt\",\n        \"second phase of modernity\",\n        \"productivity\",\n        \"consumption\",\n        \"pseudo-world\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-004\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-006\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00007-8a3c01755291\"\n      ],\n      \"title\": \"Totalitarianism, Process, and Political Philosophy\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"The Origins of Totalitarianism\",\n        \"imperialism\",\n        \"totalitarianism\",\n        \"technologies of re-naturalization\",\n        \"loss of action\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-007\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00008-ba6dc172e4b0\"\n      ],\n      \"title\": \"Conclusion: The Dual Narrative in The Human Condition\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"cultural criticism\",\n        \"political philosophy\",\n        \"re-naturalization\",\n        \"fading of action\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-006\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Natural vs. Artificial Dilemma\",\n      \"section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-004\",\n        \"sec-005\",\n        \"sec-007\"\n      ],\n      \"description\": \"The shifting boundaries and tensions between natural necessity and human-made artifice throughout Arendt's work.\"\n    },\n    {\n      \"label\": \"The Threat of Process and Re-naturalization\",\n      \"section_ids\": [\n        \"sec-004\",\n        \"sec-005\",\n        \"sec-006\",\n        \"sec-007\"\n      ],\n      \"description\": \"How impersonal processes and biological necessity undermine durable human artifice and political action.\"\n    }\n  ],\n  \"warnings\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPP9BazKkowYMAllzKqY16b_YhcztLiLjwR1x6pe9iem880j4cwOXk_RimM-Tx",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "cross_section_threads": [
+      {
+        "description": "The shifting boundaries and tensions between natural necessity and human-made artifice throughout Arendt's work.",
+        "label": "Natural vs. Artificial Dilemma",
+        "section_ids": [
+          "sec-001",
+          "sec-002",
+          "sec-004",
+          "sec-005",
+          "sec-007"
+        ]
+      },
+      {
+        "description": "How impersonal processes and biological necessity undermine durable human artifice and political action.",
+        "label": "The Threat of Process and Re-naturalization",
+        "section_ids": [
+          "sec-004",
+          "sec-005",
+          "sec-006",
+          "sec-007"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "depends_on_section_ids": [],
+        "function": "front_matter",
+        "key_concepts": [
+          "modernization",
+          "de-naturalization",
+          "re-naturalization",
+          "world-alienation",
+          "cultural criticism",
+          "political philosophy"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-001",
+        "source_block_ids": [
+          "blk-187a0ac0-00001-fe211b3390ab"
+        ],
+        "title": "Introduction and Contextual Background",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001"
+        ],
+        "function": "definition",
+        "key_concepts": [
+          "spatial technology",
+          "Archimedean point",
+          "human artifice",
+          "animal laborans",
+          "metabolism with nature"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-002",
+        "source_block_ids": [
+          "blk-187a0ac0-00002-31b1a9859865"
+        ],
+        "title": "Ontological Foundations: Labor and the Human Condition",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-002"
+        ],
+        "function": "definition",
+        "key_concepts": [
+          "homo faber",
+          "human world",
+          "action",
+          "plurality",
+          "speech",
+          "spatial essentialism"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-003",
+        "source_block_ids": [
+          "blk-187a0ac0-00003-72bb2365b274"
+        ],
+        "title": "The Spheres of Work and Action in Arendt's Tripartite Phenomenology",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-003"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "social versus political",
+          "necessity versus liberty",
+          "process",
+          "means-end rationality",
+          "reification"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-004",
+        "source_block_ids": [
+          "blk-187a0ac0-00004-dfa8bda206e5"
+        ],
+        "title": "The Role of Process and the Critique of Homo Faber's Fabrication",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-004"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "violation and violence",
+          "Promethean revolt",
+          "second phase of modernity",
+          "productivity",
+          "consumption",
+          "pseudo-world"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-005",
+        "source_block_ids": [
+          "blk-187a0ac0-00005-84f0f0ee154d",
+          "blk-187a0ac0-00006-361a0214c6d8"
+        ],
+        "title": "The Paradox of Modernity: From Homo Faber to Animal Laborans",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-005"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "The Origins of Totalitarianism",
+          "imperialism",
+          "totalitarianism",
+          "technologies of re-naturalization",
+          "loss of action"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-006",
+        "source_block_ids": [
+          "blk-187a0ac0-00007-8a3c01755291"
+        ],
+        "title": "Totalitarianism, Process, and Political Philosophy",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-006"
+        ],
+        "function": "conclusion",
+        "key_concepts": [
+          "cultural criticism",
+          "political philosophy",
+          "re-naturalization",
+          "fading of action"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-007",
+        "source_block_ids": [
+          "blk-187a0ac0-00008-ba6dc172e4b0"
+        ],
+        "title": "Conclusion: The Dual Narrative in The Human Condition",
+        "unresolved_context": []
+      }
+    ],
+    "warnings": [],
+    "working_thesis": "Hannah Arendt's interpretation of the natural and artificial in The Human Condition integrates a narrative of cultural criticism with political philosophy, arguing that modernity is characterized not simply by technological de-naturalization and the dominance of artifacts, but by a dangerous process of re-naturalization where biological necessity and the life process threaten human plurality, freedom, and the artificial world."
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"working_thesis\": \"Hannah Arendt's interpretation of the natural and artificial in The Human Condition integrates a narrative of cultural criticism with political philosophy, arguing that modernity is characterized not simply by technological de-naturalization and the dominance of artifacts, but by a dangerous process of re-naturalization where biological necessity and the life process threaten human plurality, freedom, and the artificial world.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00001-fe211b3390ab\"\n      ],\n      \"title\": \"Introduction and Contextual Background\",\n      \"function\": \"front_matter\",\n      \"key_concepts\": [\n        \"modernization\",\n        \"de-naturalization\",\n        \"re-naturalization\",\n        \"world-alienation\",\n        \"cultural criticism\",\n        \"political philosophy\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00002-31b1a9859865\"\n      ],\n      \"title\": \"Ontological Foundations: Labor and the Human Condition\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"spatial technology\",\n        \"Archimedean point\",\n        \"human artifice\",\n        \"animal laborans\",\n        \"metabolism with nature\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00003-72bb2365b274\"\n      ],\n      \"title\": \"The Spheres of Work and Action in Arendt's Tripartite Phenomenology\",\n      \"function\": \"definition\",\n      \"key_concepts\": [\n        \"homo faber\",\n        \"human world\",\n        \"action\",\n        \"plurality\",\n        \"speech\",\n        \"spatial essentialism\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00004-dfa8bda206e5\"\n      ],\n      \"title\": \"The Role of Process and the Critique of Homo Faber's Fabrication\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"social versus political\",\n        \"necessity versus liberty\",\n        \"process\",\n        \"means-end rationality\",\n        \"reification\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00005-84f0f0ee154d\",\n        \"blk-187a0ac0-00006-361a0214c6d8\"\n      ],\n      \"title\": \"The Paradox of Modernity: From Homo Faber to Animal Laborans\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"violation and violence\",\n        \"Promethean revolt\",\n        \"second phase of modernity\",\n        \"productivity\",\n        \"consumption\",\n        \"pseudo-world\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-004\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-006\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00007-8a3c01755291\"\n      ],\n      \"title\": \"Totalitarianism, Process, and Political Philosophy\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"The Origins of Totalitarianism\",\n        \"imperialism\",\n        \"totalitarianism\",\n        \"technologies of re-naturalization\",\n        \"loss of action\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-005\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-007\",\n      \"source_block_ids\": [\n        \"blk-187a0ac0-00008-ba6dc172e4b0\"\n      ],\n      \"title\": \"Conclusion: The Dual Narrative in The Human Condition\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"cultural criticism\",\n        \"political philosophy\",\n        \"re-naturalization\",\n        \"fading of action\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-006\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Natural vs. Artificial Dilemma\",\n      \"section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-004\",\n        \"sec-005\",\n        \"sec-007\"\n      ],\n      \"description\": \"The shifting boundaries and tensions between natural necessity and human-made artifice throughout Arendt's work.\"\n    },\n    {\n      \"label\": \"The Threat of Process and Re-naturalization\",\n      \"section_ids\": [\n        \"sec-004\",\n        \"sec-005\",\n        \"sec-006\",\n        \"sec-007\"\n      ],\n      \"description\": \"How impersonal processes and biological necessity undermine durable human artifice and political action.\"\n    }\n  ],\n  \"warnings\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 1612,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 10400,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 10400
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 12012,
+    "traffic_type": null
+  }
+}

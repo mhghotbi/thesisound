@@ -1,0 +1,84 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Works of art are strictly without utility, unexchangeable, and must be removed from ordinary use and daily life.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Among the things that give the human artifice the stability without which it could never be a reliable home for men are a number of objects which are strictly without any utility whatsoever and which, moreover, because they are unique, are not exchangeable and therefore defy equalization through a common denominator such as money... By the same token, it must be removed from the exigencies and wants of daily life, with which it has less contact than any other thing.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Works of art possess a higher order of durability that transcends natural processes and use by living creatures, representing the sheer stability and non-mortal home of the human artifice.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures... Thus, their durability is of a higher order than that which all things need in order to exist at all; it can attain permanence throughout the ages.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Works of art are useless and unexchangeable.\",\n    \"Art possesses a higher order of durability representing worldly stability.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPlJVuffanXljRD4R2XLs8C9bjmryj9UJXeNPcmsev63eBQiHhUBC5skFuffuq",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Works of art are strictly without utility, unexchangeable, and must be removed from ordinary use and daily life.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Among the things that give the human artifice the stability without which it could never be a reliable home for men are a number of objects which are strictly without any utility whatsoever and which, moreover, because they are unique, are not exchangeable and therefore defy equalization through a common denominator such as money... By the same token, it must be removed from the exigencies and wants of daily life, with which it has less contact than any other thing."
+      },
+      {
+        "claim": "Works of art possess a higher order of durability that transcends natural processes and use by living creatures, representing the sheer stability and non-mortal home of the human artifice.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures... Thus, their durability is of a higher order than that which all things need in order to exist at all; it can attain permanence throughout the ages."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Works of art are useless and unexchangeable.",
+      "Art possesses a higher order of durability representing worldly stability."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Works of art are strictly without utility, unexchangeable, and must be removed from ordinary use and daily life.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Among the things that give the human artifice the stability without which it could never be a reliable home for men are a number of objects which are strictly without any utility whatsoever and which, moreover, because they are unique, are not exchangeable and therefore defy equalization through a common denominator such as money... By the same token, it must be removed from the exigencies and wants of daily life, with which it has less contact than any other thing.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Works of art possess a higher order of durability that transcends natural processes and use by living creatures, representing the sheer stability and non-mortal home of the human artifice.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures... Thus, their durability is of a higher order than that which all things need in order to exist at all; it can attain permanence throughout the ages.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Works of art are useless and unexchangeable.\",\n    \"Art possesses a higher order of durability representing worldly stability.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 424,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2423,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2423
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2847,
+    "traffic_type": null
+  }
+}

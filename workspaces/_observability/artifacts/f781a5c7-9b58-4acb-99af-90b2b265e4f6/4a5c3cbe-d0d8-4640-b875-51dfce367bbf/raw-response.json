@@ -1,0 +1,59 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"notes_and_citations\",\n  \"claims\": [],\n  \"unresolved_context\": [\n    \"The target block consists of endnotes and bibliographical references containing citations from Aristotle, historical observations on language, Vernant, Burckhardt, Heichelheim, and Richard Harder regarding Greek antiquity, labor, work, and social status.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIP22MpwQb-lZ235s2NgKpdEhQoL3_V1abQUJZ3-X3ZJ9TdWhwGqRwdZ2ix5B5v",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "segment_function": "notes_and_citations",
+    "unresolved_context": [
+      "The target block consists of endnotes and bibliographical references containing citations from Aristotle, historical observations on language, Vernant, Burckhardt, Heichelheim, and Richard Harder regarding Greek antiquity, labor, work, and social status."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"notes_and_citations\",\n  \"claims\": [],\n  \"unresolved_context\": [\n    \"The target block consists of endnotes and bibliographical references containing citations from Aristotle, historical observations on language, Vernant, Burckhardt, Heichelheim, and Richard Harder regarding Greek antiquity, labor, work, and social status.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 86,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2999,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2999
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3085,
+    "traffic_type": null
+  }
+}

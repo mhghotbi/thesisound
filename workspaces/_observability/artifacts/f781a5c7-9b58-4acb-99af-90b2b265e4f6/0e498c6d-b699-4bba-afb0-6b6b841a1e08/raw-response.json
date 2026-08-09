@@ -1,0 +1,68 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"The target block contains a mixture of corrupted or unrendered Unicode escape sequences interspersed with identifiable numbers, punctuation, and terms such as \\u0391\\u0399\\u0396\\u0394\\u0391\\u0392\\u0393 variants and a concluding reference line referencing '1. \\u0391\\u0396\\u0394\\u0392\\u0393\\u0391 \\u0393 /Kosmos'.\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The block text is dominated by raw or corrupted character encoding sequences (e.g., 2uFE992u96/92uFEF/...) that impede direct semantic extraction, apart from a few isolated numbers, citations (e.g., 1344 : 23 815, 1342 : 35), and the final line '1. \\u0391\\u0396\\u0394\\u0392\\u0393\\u0391 \\u0393 /Kosmos'.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Preserve the textual sequence or note the unrendered encoding present in the source block.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIP7qwYf6oOZ2t_Lci5iPZ-WHGy7agucR19t5Outw2oxHXXQiI63IIdOhwACPY3",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Preserve the textual sequence or note the unrendered encoding present in the source block."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The target block contains a mixture of corrupted or unrendered Unicode escape sequences interspersed with identifiable numbers, punctuation, and terms such as ΑΙΖΔΑΒΓ variants and a concluding reference line referencing '1. ΑΖΔΒΓΑ Γ /Kosmos'.",
+    "unresolved_context": [
+      "The block text is dominated by raw or corrupted character encoding sequences (e.g., 2uFE992u96/92uFEF/...) that impede direct semantic extraction, apart from a few isolated numbers, citations (e.g., 1344 : 23 815, 1342 : 35), and the final line '1. ΑΖΔΒΓΑ Γ /Kosmos'."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"The target block contains a mixture of corrupted or unrendered Unicode escape sequences interspersed with identifiable numbers, punctuation, and terms such as \\u0391\\u0399\\u0396\\u0394\\u0391\\u0392\\u0393 variants and a concluding reference line referencing '1. \\u0391\\u0396\\u0394\\u0392\\u0393\\u0391 \\u0393 /Kosmos'.\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The block text is dominated by raw or corrupted character encoding sequences (e.g., 2uFE992u96/92uFEF/...) that impede direct semantic extraction, apart from a few isolated numbers, citations (e.g., 1344 : 23 815, 1342 : 35), and the final line '1. \\u0391\\u0396\\u0394\\u0392\\u0393\\u0391 \\u0393 /Kosmos'.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Preserve the textual sequence or note the unrendered encoding present in the source block.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 367,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 4837,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 4837
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 5204,
+    "traffic_type": null
+  }
+}

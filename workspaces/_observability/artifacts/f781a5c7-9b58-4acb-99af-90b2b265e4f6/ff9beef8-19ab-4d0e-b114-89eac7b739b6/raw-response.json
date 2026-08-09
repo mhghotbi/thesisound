@@ -1,0 +1,66 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"Providing reference notes and scholarly citations for the Introduction and Chapters 1 and 2, including discussions on creation narratives, Augustinian anthropology, and classical views on freedom and slavery.\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"Notes containing bibliographic citations, historical commentary, and textual elaborations relating to the text's introductory and early chapters.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPGvyQMiFKv3VksRSlJILnV7nBedEYeG6WFDGtgjt6i3evZqovXkZS36xR40tI",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Providing reference notes and scholarly citations for the Introduction and Chapters 1 and 2, including discussions on creation narratives, Augustinian anthropology, and classical views on freedom and slavery.",
+    "unresolved_context": [
+      "Notes containing bibliographic citations, historical commentary, and textual elaborations relating to the text's introductory and early chapters."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"Providing reference notes and scholarly citations for the Introduction and Chapters 1 and 2, including discussions on creation narratives, Augustinian anthropology, and classical views on freedom and slavery.\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"Notes containing bibliographic citations, historical commentary, and textual elaborations relating to the text's introductory and early chapters.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 104,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 3268,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 3268
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3372,
+    "traffic_type": null
+  }
+}

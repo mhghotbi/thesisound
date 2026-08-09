@@ -1,0 +1,24 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Preserve block text as bibliographic or reference metadata rather than generating unsupported claims."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The target block contains unparsed text and Unicode escape sequences corresponding to bibliographic notes, citations, or references, precluding substantive claim extraction.",
+    "unresolved_context": [
+      "The target block consists entirely of unparsed Unicode escape sequences and bibliographic or reference-like content that cannot be reliably interpreted as prose claims under the given grounding rules."
+    ]
+  }
+}

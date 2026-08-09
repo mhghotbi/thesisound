@@ -1,0 +1,44 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The main narrative of The Origins of Totalitarianism is a getting free of processes which demolish the artificial public realm of European nation-states.",
+        "claim_type": "scholarly_interpretation",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "it is enough, for the aim of this paper, to remind that the main narrative of The Origins of Totalitarianism is a getting free of processes which demolish the building of European nation-states erected in the former centuries. In the nation states, in the terms of the Arendtian political philosophy, an artifice of public realm as a stage for action had been created and maintained. But the aggressive unleashed processes of the 20th century destroyed this artificial public realm."
+      },
+      {
+        "claim": "In The Human Condition, Arendt's implicit presupposition is that despite the defeat of Nazi totalitarianism, the processes of re-naturalization continue to endanger the shrinking artificial man-made world.",
+        "claim_type": "scholarly_interpretation",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "In The Human Condition Arendt is conspicuously silent about totalitarianism; the term itself appears only once during the argumentation (Arendt 1958: 216). But the implicit presupposition of the book is Arendt’s deep conviction that, in spite of the defeat of Nazi totalitarianism, the threat is not over; the processes of re-naturalization are endangering the shrinking terrain of artificial, man-made world."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection drawn between totalitarianism as a process of re-naturalization and the ongoing threats to the man-made world in The Human Condition."
+    ],
+    "objections": [],
+    "references_to_other_sections": [
+      "The Origins of Totalitarianism",
+      "The Human Condition"
+    ],
+    "responses": [],
+    "segment_function": "The block analyzes the transition from cultural criticism to political philosophy in Arendt's work, linking the concept of process and re-naturalization in The Origins of Totalitarianism to the implicit threats facing the artificial human world in The Human Condition.",
+    "unresolved_context": [
+      "The continuation of the sentence starting with 'The only warran -' at the end of the block."
+    ]
+  }
+}

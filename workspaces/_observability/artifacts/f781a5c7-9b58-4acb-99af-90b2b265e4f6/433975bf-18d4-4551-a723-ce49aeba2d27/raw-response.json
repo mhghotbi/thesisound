@@ -1,0 +1,88 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\"central_question_status\":\"well_covered\",\"central_question_claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-cdfd1f19002d9de1\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-69fe45bd8b92b783\",\"clm-f2514de064072149\"],\"objective_coverage\":[{\"objective\":\"فهم روشن موضوع و ایده‌های اصلی آن\",\"status\":\"well_covered\",\"claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-cdfd1f19002d9de1\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-469d428f8dd902ee\",\"clm-69fe45bd8b92b783\",\"clm-f2514de064072149\",\"clm-12d66b0d3864127f\"],\"rationale\":\"ادعاهای مستخرج به‌طور کامل مفاهیم کلیدی کتاب وضع بشر شامل فعالیت‌های سه‌گانه انسانی (زحمت، کار، عمل)، قلمروهای عمومی و خصوصی، تکثر، ناتالیتی، و بیگانگی از جهان و زمین را تبیین می‌کنند.\"}],\"material_gaps\":[],\"max_supported_minutes\":10,\"recommendation\":\"continue\",\"recommendation_reason\":\"پوشش ادعاها برای تبیین موضوعات اصلی کتاب وضع بشر هانا آرنت در طول زمان ۱۰ دقیقه کافی و مستند است.\"}",
+            "thought": null,
+            "thought_signature": "EugfCuUfARFNMg8v5Pfq9JnrRP4bv-KxkQyj9upeTe2GkepBDFGI1M8WA5mWDsXOmXCzgsxwixVEh_NOSwCKFb6CWOaTjDJ0KfhzKFucexyH1TGUcIAJWkDi6jdB5ZkBcsuW6R0vM3gbAxJEctH8IDZKj3suY7xEbN3GOlgoMr_VswB2JjfHbTU-OPi-K5Q4NA7h3Zs0bEiASuMzUW0cX8GPo3ZAfHDNe5hYKcyHfb3_Xz4JVR6-yujQQrxd6eG4Oa1ekuNtyt_YmtGlS57l8A4dgpYo2Lp9cTWVdy2m7yQc96VPmmF9yri84GEU288XAlReTKVK_k-apN_CiTW_CzNo3AmnEoSO7SJ9Nu-pydNj5xhot-bSL6oeuEde3Tlp7sBrtGaLOVIhvTmdJVFsLmBJ3TnPpPLe3T7BDk4bapdb3qURvCcb-bC5Hvaj2iyQH9Edy06YRq6enSeLECbRBfm0VCA1z1sFLhQcbpq7uzz0pjQ1Gk-SZUqsr0CgPxw5AwbfIg9EAzA6CrlI4LWtG0Bfvrd3Y0kfiMQ4bYyymviwlHL0YCyNLW1LzdtmkPEl9ULOW_TRrEzEaGA3pGVjJZAreI0qcOUdW7FYs9BPL2b1L60Lqg5_9QkHqk7vVUiVfrUC2D3_53Xe2LhELAWkqsq2Y2rnG0fRI_POsTBSOl90Jpjff0x_rkee7AlVEaFpudSDtVnQRT26tFSKx2u3z_apTPhOO-A5_KETw0xAXoD4_MaKOxMqcguPYG1DYSCnJsCzzLYLGDt1dTR_NVck-yUTv43Bg1RWr9qOIPnbzkvHFjYG4k-5CJ_stesDqvogf9KGj-lugiVYbvDHja4z3Zp6Z6vG2khSfVqAamLc7IIsl-h59Wb_QjtF7hpwF9Duj-jlayowrS_HtR16bF9tM_9ANXy_aZMJYTV3m1JbERO8QoShPMo2WE7VmthPRi2QQuGwYxXXt_9KGEElJT21rQAkDMi9LOYyBhkfiQ-dis87Kw6EDquSGf-yK7exeeD_BgGEOLb6LZ9l8W9sCRzeRPFwbu7QCSIFXd9haC32siPqV4vgckNaXR8lnND-nUSQc7yPkpYohEYGgwjSQDSvjXFVA7kJRNaYq03jv4R4gZqwx8pz4rynJs1rBgUxNkmcByibeDzvSHTlXyQioDoow2fxErRdsTUzBttbW2v5wq1CibPZJGoYNiu9btAHJDCHjs2Z_D4plderLIaU8t1b8hdhbCcd0F5qnDP5PL2JqXLwk8iY62On1vYwznnymqgjqUwunIzI4f70e5j1cGlsjwhI7TVvwZRQ1j6q9FUW3Fidrc5AlZsLSH6FFosv2q8Ct4S1ZBSepqMlAg7gRVkztloVt4ekTaXbxQ4Q9BM2hIRf-VvWulFeGTVr-dw1SVP4dlGXm-nmV9SjSXtQPxzHrafnTyCN-osFoZyIEmfFGMXyHAwP0PEFRyWP_FWwtI64GEQFENmGAviQ9ZWj7nF6WJ57gq6S-TN287vqsbpZUMCcR8Ha6MpMGKpn5T-1ZIfDh2fyn6qJS8KvoQLCo0KhtseYNDBN80HBguxCapWhiv42BLDJLYxQ7p_ELyrApAOxMOPqlIQ87E-ymeAqUm1yms5QGtYE-ZmWqsZbzVkOPXy0H9zuZHv6Y0_BIadh0blaWw3Us6EhjhOeOsmg8AtaBVq9kVeDuI8V6y4XExO6OUzehZyrw8osrkHe_YzAEtvVo92F81oQZ47MndB5VY5Gsz9IFDhBIONZZlMlEdpzl9cgmm6fY9SKAXMNmBgwYrOk5LPe61yjFLZcCU4i9hsHqV2YH3mTgLhyJjUywvWxIe3DAHrBz-tumR5avpNGgIz8h5xDWIvgIaqg-fqBjV6UtK7nuj-wdSjkhZmDH3J8T-MSogDLS0643uEFgXsixpOjDatzwwD9nFrRGd2iOLtSH1K4Ua6vYSlYCyUegnfdvtnjTmloGSqV0bq_AF0sEiwoKW9gMxTs69Heo09C6igyuggjiClToGJHEc60g5sVzUsoZPsaHpAuwNpFO9Gmby6Ie3lCFkaS6i8WRn6ZGsuOV8FFWD045eof7r51C9Gn3JMxtbHruwxKfXfLDqun8Gmc6SZPIO0dC_VDH79VWEhfe_ln6CEGOeauHTT01qL91OU5Ux6135bOysvbFKKQM0M5KxisQ5qq4hR5ST0lLXDZaCKPHsxF4e4JJF-LRSi-NTJGC6s_J03J7ohJewL1kIXrneLV_jAFlnqb3GYg5Fvtp3iMQg8gByLEj72tAga5UfliecxlNCfVddDq43DpiYBN8R_Jfl8yAcMMduYCnwlqvZtNhDoq8yVKRjW2hw0bPbEfz2sOyTiFLLjRBvis37I2UCvh9IhnlS_zjV5H_OQGBEoaQBsmqRqzCB2QmTg2KwmucVFeb0yWjYnj6PxgGNMs4yK4kQDX8MCBjHmjQDwenc_rf1Ac1iMXYIujcHEm-E95XhbQltXwsMmBGoHEQH2SL0sks0ue2KjmIviv4gpQGmhatMKuwYzuJ9I9d0s4pEJWEBNZQgJdxSZy6b5aBUngx8InRm0_CtZa2wSdm2_IF_-h-BHQeFB7e6uQWpkLYNrgyfEpFMxSo41eYm_3EDwdv4C1l7gWoqft8uzHeKBFhaSeE59OCP6I3uJJxYLCZ0JqQ9V92tH-uvN4ShGEq99mbYEfTgVKM_3dHk0Sdadb_46ktHsyK2E4wF59n0ty3pDEVaHXv-VDaRHS9D4WDOvPajeOyKgr4W19eYkgfQ2UgmyTGGr0BfgoXcaYZyT2v-uXM5vdb4MSCWDRBkxHgM6906RtfMr2km__Q6hcHdH8OJNVDWP-PsxUanhT5xpaSXbjizfwNHfdwNKomFl7JMiqQjkWMaNJTzYO7IA4IlFPyJBaib49f9EbMV48Gv4mhf0UhhRhSjJCjbG3De6jSxasEZ-Y-ZpaEUZ8h6M29MAzR2ffYcfjhpbBokyUkHriTfe1H9rm9remdCEoB6FaaqsZJ9VngBxatzVgvvv60xGudwBdYC8kMCf5vSwsd7FcyjI4eDnoejgX5BrNefOCh_JOdwJcEhxGdL3fxnAny02XTu_JIFYvefm2cXC6tGob7mGdDF4dN3QqyL56eemqvsWENEwiDCjOUDZ7QJgBPDIA56yGiyUokEFeeYdxAmQoCJH1ZydPN_OlkvLLMWm2dpjxwwJt5MCChBHUwfcQzRr6AHFb31bYOeBGn9NANTx922ms1bE-xoqDC9cy0t46iu4oyHECmtFVZqrIkIMwX_DOwyolCAcbLwGnLtNJ2xTTmDz1HnJAIWgBC2Uw9i7FO7h3jJPikXeVcBwa3iFFKkGFVPQgU1KPpk_V4R9ZQkRES7VasigMz-C9sahR7EpTESG_MD6_xrQCf1N-Xwhmjuec8dqeMR91X5tLArrT5CLr_X-69ybXq3uRB0A8Qwklr4kBGBpVxaky1GMVB1PsX8hNVcFxq-Zq_dIY9wrZnzvuo7NqsDjW0w-64EEGBCyMQfxn7eXAeP_Nd20IC2WPyxOmZrgGs9ozjJRMLRJ0gHxQRT8hnKyqIQXK78ccO2k9ufEzYwR2tFoqD2E8aNPcBRJC2mrcVFPLE9KwnKtKR0jgr36IKVoCNZQ5LGT-BwarNlloffsgCRLhnNzgNIyUaarnmDpKAPqcKEH-9uck2LAPDdHu3174RPECO__QVXQIbXjxJNdgePLhkRpLgTiM3KQKr3sWKEeQeZ_e7hYUXrKHbyqrm1QllaR4ix0Bp2CgbnhKvlxDc78CzZH8dyqR9Rme4wOloZ-DjrnQT2j4VAk-MZGlzuRqsmMVXn3H4O65yLhy0GP-ESLpn8D-hjZeQcXb0qRUaU6Wrj_AkcsrcNMJ-aWY8beMiLXS1O1SoZvAZDJGNa-rzmISLcuw36FLMataeKLDAgSq8_3QeqEZNrVV28htNCxiw2bDJcc3OlKYge30dzQaNOuFvwib0ZtlrKjBOGKKdNlHV4kcURgEbMBFyXudne4G5lz1PkhgU9EUCGRkcmcXPVIcbyjBLtevcovf4cyiQy2PCIgz8_3QP2IByu3Hg_12X8QPRfdq7WdkfTWKBEfVbx6eGvGf2flIAAApPfROERVD8usZurROudiPv68SZuM4GOP65Ii3AdHqmZV398D9DHZqoRhqA2CjRT5AdU451RJ0H6NT6ymraIJp1ZEDIDYnEjrcaRZKU49IIxLQEJURooZ6wTGtNXHDfni3IAhBG8INjqZgiMh2Naa1oUEpOFltBprP0ygXEWdPUB66GbQq27xidsuKz2qf6BXCqOYX-j-X1Gc3BMwqMvu9g72t4X-ppru1_4OeslFvQyjC8Yy-cFi_KvwcUjCxlrt1-1q12HOulI_hCd6gf540YIC_7nXqJWNKm9fAFz-SFFuGSFtN3AtMY2jheYP86IKQ4oKwYEJFMY9hJNucR2qfYRQkH2TAbCydBoZo93gvJvpAhP0xZ0u-VKKpBc3YCbo0nbcs7WBh-O7WNPUs1XMte6GAzipZGtgfCWrjHaY9dDgXn6lxLfmyTrAQKsYPIevAe1wpDeP6rGxBJO2Br9Qa1cSeImRDju38sZ7Ig83MGa08ytU4YYIMx8XZRO3O0p8KMk092WDQncKNko81lQ6e5r1oFf5ASdRV4PtBGO3nwup7E5uS6nwfSwixzakpsWAshHDGWh9tQcmAqzsbCYRnxAZORUZcBMyBPIfFt_2zt1UPrCVVU8iJRHkAhHkcCI_-mTbBH_M9b2LPpYA_GSXWCbROZXXdThD0Za34xLa_lZkTxqHTklEzp7ZJwI2P-uxtBow3MbORHOW7AjOYAWcLAoKYpA6UIn4efqUJEMggMLw7xF3g7AtJO-z6l0X2FUplpdHefCBkArqnoF4Jpg9JuU6e1PN_XujeeB1FYfuS1X6IYc5EFLyA0zCdXdsOc6dd0mgIaC6nutvr5cbBHhLXIk8ibchsD8tvSy68XD0jRbvGRFvCqZqyFlwlhdBbWQfkcPg87vU_itOzE0SU99kKlRlsnyOcVglBNt7dqml-WBDZanR8YpscJ7_weyMIAyEBWypv6by8WbbkNQpbImAvjVrtJx9-OlghP97gDqKSf8RPN2TuQBrJuXx25CmyrWUks0Ce_LP2y2rD6nez1ILt7wkvy4s1TNG0y7QCIVdcgTB5wlvM9rqcQ1BNsIy9VXLiM1lFMBzMu_Bpw_Pe15O5qdO_X-6K0Km_RSP3sZfq7mx65rGRHd_ULeLdUQTmHdAjTE2btQNpcUlswWlMLAHEvdHcBsXIfdDngi29Vq3DTPwnrZMnCWgkTsZfoFc-kCt2OBv2-8tJUAHTsin45ODvxVVGBk2iuNESc55aujYlfbpj_sxLo6JZmE4b_QfyhBL0a58pecTP9pSyem4Q6Yl6JMM4r_dUtkY25jStSw==",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "central_question_claim_ids": [
+      "clm-27d7960629cc8d70",
+      "clm-3a561b777e44ce86",
+      "clm-43c898a10d267e4a",
+      "clm-cdfd1f19002d9de1",
+      "clm-177abafe0237f1e2",
+      "clm-42387f05124f8d6c",
+      "clm-69fe45bd8b92b783",
+      "clm-f2514de064072149"
+    ],
+    "central_question_status": "well_covered",
+    "material_gaps": [],
+    "max_supported_minutes": 10,
+    "objective_coverage": [
+      {
+        "claim_ids": [
+          "clm-27d7960629cc8d70",
+          "clm-3a561b777e44ce86",
+          "clm-43c898a10d267e4a",
+          "clm-cdfd1f19002d9de1",
+          "clm-177abafe0237f1e2",
+          "clm-42387f05124f8d6c",
+          "clm-469d428f8dd902ee",
+          "clm-69fe45bd8b92b783",
+          "clm-f2514de064072149",
+          "clm-12d66b0d3864127f"
+        ],
+        "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+        "rationale": "ادعاهای مستخرج به‌طور کامل مفاهیم کلیدی کتاب وضع بشر شامل فعالیت‌های سه‌گانه انسانی (زحمت، کار، عمل)، قلمروهای عمومی و خصوصی، تکثر، ناتالیتی، و بیگانگی از جهان و زمین را تبیین می‌کنند.",
+        "status": "well_covered"
+      }
+    ],
+    "recommendation": "continue",
+    "recommendation_reason": "پوشش ادعاها برای تبیین موضوعات اصلی کتاب وضع بشر هانا آرنت در طول زمان ۱۰ دقیقه کافی و مستند است."
+  },
+  "prompt_feedback": null,
+  "text": "{\"central_question_status\":\"well_covered\",\"central_question_claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-cdfd1f19002d9de1\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-69fe45bd8b92b783\",\"clm-f2514de064072149\"],\"objective_coverage\":[{\"objective\":\"فهم روشن موضوع و ایده‌های اصلی آن\",\"status\":\"well_covered\",\"claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-cdfd1f19002d9de1\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-469d428f8dd902ee\",\"clm-69fe45bd8b92b783\",\"clm-f2514de064072149\",\"clm-12d66b0d3864127f\"],\"rationale\":\"ادعاهای مستخرج به‌طور کامل مفاهیم کلیدی کتاب وضع بشر شامل فعالیت‌های سه‌گانه انسانی (زحمت، کار، عمل)، قلمروهای عمومی و خصوصی، تکثر، ناتالیتی، و بیگانگی از جهان و زمین را تبیین می‌کنند.\"}],\"material_gaps\":[],\"max_supported_minutes\":10,\"recommendation\":\"continue\",\"recommendation_reason\":\"پوشش ادعاها برای تبیین موضوعات اصلی کتاب وضع بشر هانا آرنت در طول زمان ۱۰ دقیقه کافی و مستند است.\"}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 505,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 8286,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 8286
+      }
+    ],
+    "thoughts_token_count": 1548,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 10339,
+    "traffic_type": null
+  }
+}

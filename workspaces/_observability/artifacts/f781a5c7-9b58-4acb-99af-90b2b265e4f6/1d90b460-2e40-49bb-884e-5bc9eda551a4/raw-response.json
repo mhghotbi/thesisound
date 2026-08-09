@@ -1,0 +1,88 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"Structures of inequality and domination might be or become axes of political conflict and struggle, a possibility not fully confronted by Wallace-Wells.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Still, even Wallace-Wells never quite confronts the possibility that, beyond being vectors of unequal suffering or sources of war and disorder, these structures of inequality and domination might be or become axes of political conflict and struggle.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"In eighteenth-century North America, the term out of doors was frequently used to describe people acting outside of legal representative institutions through mobs, crowds, or extralegal associations.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"In eighteenth-century North America, the term “out of doors” was frequently used to characterize the people of the British colonies, and then of the postrevolutionary United States, acting “outside of the legal representative institutions” by which they were governed, sometimes in mobs and crowds and sometimes through “extralegal associations.”\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"out of doors\",\n      \"definition\": \"A term used in eighteenth-century North America to characterize the people acting outside of the legal representative institutions by which they were governed, sometimes in mobs and crowds and sometimes through extralegal associations.\"\n    }\n  ],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The connection between the literal meaning of out of doors and its figurative use for action and association outside of official channels.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPZq3apBTbCLQ25WiofFAyVvLFUxz4APOfgHsXzfpvkKCOMUDulpta6J8zbV34",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Structures of inequality and domination might be or become axes of political conflict and struggle, a possibility not fully confronted by Wallace-Wells.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Still, even Wallace-Wells never quite confronts the possibility that, beyond being vectors of unequal suffering or sources of war and disorder, these structures of inequality and domination might be or become axes of political conflict and struggle."
+      },
+      {
+        "claim": "In eighteenth-century North America, the term out of doors was frequently used to describe people acting outside of legal representative institutions through mobs, crowds, or extralegal associations.",
+        "claim_type": "historical_context",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "In eighteenth-century North America, the term “out of doors” was frequently used to characterize the people of the British colonies, and then of the postrevolutionary United States, acting “outside of the legal representative institutions” by which they were governed, sometimes in mobs and crowds and sometimes through “extralegal associations.”"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "A term used in eighteenth-century North America to characterize the people acting outside of the legal representative institutions by which they were governed, sometimes in mobs and crowds and sometimes through extralegal associations.",
+        "term": "out of doors"
+      }
+    ],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection between the literal meaning of out of doors and its figurative use for action and association outside of official channels."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "conclusion",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"Structures of inequality and domination might be or become axes of political conflict and struggle, a possibility not fully confronted by Wallace-Wells.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Still, even Wallace-Wells never quite confronts the possibility that, beyond being vectors of unequal suffering or sources of war and disorder, these structures of inequality and domination might be or become axes of political conflict and struggle.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"In eighteenth-century North America, the term out of doors was frequently used to describe people acting outside of legal representative institutions through mobs, crowds, or extralegal associations.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"In eighteenth-century North America, the term “out of doors” was frequently used to characterize the people of the British colonies, and then of the postrevolutionary United States, acting “outside of the legal representative institutions” by which they were governed, sometimes in mobs and crowds and sometimes through “extralegal associations.”\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"out of doors\",\n      \"definition\": \"A term used in eighteenth-century North America to characterize the people acting outside of the legal representative institutions by which they were governed, sometimes in mobs and crowds and sometimes through extralegal associations.\"\n    }\n  ],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The connection between the literal meaning of out of doors and its figurative use for action and association outside of official channels.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 433,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2062,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2062
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2495,
+    "traffic_type": null
+  }
+}

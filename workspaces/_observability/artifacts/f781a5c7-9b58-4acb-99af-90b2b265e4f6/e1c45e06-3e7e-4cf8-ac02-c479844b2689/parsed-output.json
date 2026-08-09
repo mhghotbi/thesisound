@@ -1,0 +1,41 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Arendt analyzes the loss of the public realm as a domain of freedom and equality where individuals reveal unique identities through speech and persuasion and make decisions on common concerns through mutual collective deliberation.",
+        "claim_type": "scholarly_interpretation",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "آرﻧﺖ در ﺗﺤﻠﯿﻞ ﺧﻮد در ﺑﺎب ﻣﺪرﻧﯿﺘﻪ، ﺑﺮ از دﺳﺖ دادن و زوال ﺣﻮزۀ ﻋﻤﻮﻣﯽ ﺗﺄﮐﯿﺪ دارد، ﯾﻌﻨﯽ آن ﺣﻮزۀ ﻇﻬﻮر و ﺑﺮوزﯾﮑﻪ ﻗﻠﻤﺮو آزادي و ﺑﺮاﺑﺮي اﺳﺖ و آﻧﺠﺎ ﮐﻪ اﻓﺮاد ﺑﻪ واﺳﻄۀ ﮔﻔﺘﺎر واﺳﻄﻪﻫﺎﯾﯽ ﭼﻮن اﻗﻨﺎع و ﻓﺎش ﮐﺮدن ﻫﻮﯾﺖﻫﺎي ﻣﻨﺤﺼﺮﺑﻪ ﻓﺮد و ﺗﺼﻤﯿﻢ ﮔﺮﻓﺘﻨ درﺑﺎرۀ ﻣﺴﺎﺋﻞ و دﻏﺪﻏﻪﻫﺎي ﻣﺸﺘﺮك از ﻃﺮﯾﻖ ﺷﻮر ﺟﻤﻌﯽ ﺑﻪ ﺻﻮرت ﻣﺘﻘﺎﺑﻞ و دوﺳﻮﯾﻪ در ﺗﻌﺎﻣﻞ ﻫﺴﺘﻨﺪ."
+      },
+      {
+        "claim": "Modern alienation from the world involves the loss of the common world of human artifacts and institutions that separate humans from nature and provide a stable framework for human activity.",
+        "claim_type": "scholarly_interpretation",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "آرﻧﺖ ﺑﻪ از دﺳﺖ دادن ﺟﻬﺎن ﻣﺸﺘﺮك ﻣﺼﻨﻮﻋﺎت و ﻧﻬﺎدﻫﺎي اﻧﺴﺎﻧﯽ اﺷﺎره ﻣﯽﮐﻨﺪ ﮐﻪ اﻧﺴﺎن را از ﻃﺒﯿﻌﺖ ﺟﺪا ﻣﯽﮐﻨﺪ و ﯾﮏ زﻣﯿﻨۀ ﻣﺴﺎﻋﺪ ﺑﺮاي ﻓﻌﺎﻟﯿﺖﻫﺎﯾﺶ ﻓﺮاﻫﻢ ﻣﯽآورد."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection between the destruction of the public space, totalitarian terror, and world alienation."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The block analyzes Hannah Arendt's conception of the public realm, the space of appearance, and the loss of the common world through alienation, mass society, and totalitarian domination.",
+    "unresolved_context": [
+      "References to Arendt's specific texts and page numbers such as Arendt, 1958 and Arendt, 1973."
+    ]
+  }
+}

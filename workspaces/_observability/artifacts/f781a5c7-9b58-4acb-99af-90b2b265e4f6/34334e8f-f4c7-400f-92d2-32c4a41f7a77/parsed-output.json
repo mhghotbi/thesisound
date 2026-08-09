@@ -1,0 +1,51 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Human lives tell stories and history becomes the storybook of mankind because both are the outcome of action, resulting in stories with many actors and speakers yet without any tangible authors.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "the reason why each human life tells its story and why history ultimately becomes the storybook of mankind, with many actors and speakers and yet without any tangible authors, is that both are the outcome of action."
+      },
+      {
+        "claim": "Plato invented the metaphor of an actor behind the scenes pulling the strings because human affairs and the outcome of action lack a single author, leading him to view human affairs as lacking great seriousness.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Plato, who had no inkling of the modern concept of history, should have been the first to invent the metaphor of an actor behind the scenes who, behind the backs of acting men, pulls the strings and is responsible for the story."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "distinction": "The fictional story was made up by an author who pulls the strings and directs the play, whereas the real story has no visible or invisible maker because it is not made at all.",
+        "item_a": "real story",
+        "item_b": "fictional story"
+      },
+      {
+        "distinction": "Who somebody is can only be known by knowing the story of which he is the hero, whereas everything else known about him, including the work he produced, tells us only what he is or was.",
+        "item_a": "who somebody is",
+        "item_b": "what somebody is"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The distinction between real stories without an author and fictional stories with a maker.",
+      "The role of action in producing history and human biographies."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Analyzing why human affairs lack a tangible author and how philosophies of history and political philosophy invent the metaphor of an invisible maker.",
+    "unresolved_context": []
+  }
+}

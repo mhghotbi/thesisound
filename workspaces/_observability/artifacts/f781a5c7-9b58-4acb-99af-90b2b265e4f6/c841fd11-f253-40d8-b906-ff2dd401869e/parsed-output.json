@@ -1,0 +1,156 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "cross_section_threads": [
+      {
+        "description": "The traditional subordination of action and labor to contemplation, and Arendt's challenge to this hierarchical order.",
+        "label": "The Hierarchy of Vita Activa and Vita Contemplativa",
+        "section_ids": [
+          "sec-001",
+          "sec-003"
+        ]
+      },
+      {
+        "description": "The historical expansion of the social realm, the transformation of public space into housekeeping, and the resulting modern predicament.",
+        "label": "The Rise of Society and World Alienation",
+        "section_ids": [
+          "sec-001",
+          "sec-002",
+          "sec-004"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "depends_on_section_ids": [],
+        "function": "front_matter",
+        "key_concepts": [
+          "vita activa",
+          "labor, work, action",
+          "plurality",
+          "world alienation",
+          "earth alienation",
+          "animal laborans",
+          "homo faber"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-001",
+        "source_block_ids": [
+          "blk-98863830-00001-d63e18794c51",
+          "blk-98863830-00002-9f16d7964abd",
+          "blk-98863830-00003-a7d0021b37df",
+          "blk-98863830-00004-a1c4a049193c",
+          "blk-98863830-0005-9503519b95b8",
+          "blk-98863830-00006-ad83a09f8711",
+          "blk-98863830-00007-ef27bc8317db",
+          "blk-98863830-00008-bc48a961db74",
+          "blk-98863830-00009-d379d7f1d990",
+          "blk-98863830-00010-b07f10ee6718"
+        ],
+        "title": "Front Matter and Margaret Canovan's Introduction",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "space satellite",
+          "automation",
+          "earthly nature",
+          "thoughtlessness",
+          "thinking what we are doing"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-002",
+        "source_block_ids": [
+          "blk-98863830-00011-cfc985d154bc",
+          "blk-98863830-00012-e43525f478a5",
+          "blk-98863830-00013-ee676e873bdc"
+        ],
+        "title": "Prologue",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-002"
+        ],
+        "function": "definition",
+        "key_concepts": [
+          "labor",
+          "work",
+          "action",
+          "natality",
+          "mortality",
+          "plurality",
+          "bios politikos",
+          "vita contemplativa",
+          "immortality versus eternity"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-003",
+        "source_block_ids": [
+          "blk-98863830-00014-2929fc16d449",
+          "blk-98863830-00015-0dc93405ad60",
+          "blk-98863830-00016-0bae9913560f",
+          "blk-98863830-00017-8d2b21d55a85",
+          "blk-98863830-00018-c110ef9718e2",
+          "blk-98863830-00019-87eeca01511a"
+        ],
+        "title": "Chapter I: Vita Activa and the Human Condition",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-003"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "animal socialis",
+          "zōon politikon",
+          "polis and household",
+          "rise of the social",
+          "conformism",
+          "public realm and the common",
+          "private realm and property",
+          "goodness and hiddenness"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-004",
+        "source_block_ids": [
+          "blk-98863830-00020-b6939d12c2ab",
+          "blk-98863830-00021-62fc4bace9d3",
+          "blk-98863830-00022-360c6289622f",
+          "blk-98863830-00023-5f79e4666b2e",
+          "blk-98863830-00024-2933cef84dd9",
+          "blk-98863830-00025-9be9277af64f",
+          "blk-98863830-00026-980ba5e99a46",
+          "blk-98863830-00027-5c53f02a15fc",
+          "blk-98863830-00028-9b4ca688b49a",
+          "blk-98863830-00029-f36b56728386",
+          "blk-98863830-00030-2024aaf66660",
+          "blk-98863830-00031-75f26de0f939",
+          "blk-98863830-00032-eee5696a79ca",
+          "blk-98863830-00033-0410164c12b2",
+          "blk-98863830-00034-2759e45d7054",
+          "blk-98863830-00035-bcf4009bded8",
+          "blk-98863830-00036-4bda9e090bb2",
+          "blk-98863830-00037-12ec6df6a76f",
+          "blk-98863830-00038-4bcfb6bf2ad4",
+          "blk-98863830-00039-6411020c333a",
+          "blk-98863830-00040-90b0c6194a41"
+        ],
+        "title": "Chapter II: The Public and the Private Realm",
+        "unresolved_context": []
+      }
+    ],
+    "warnings": [],
+    "working_thesis": "Hannah Arendt's The Human Condition provides a phenomenological and historical analysis of the vita activa (labor, work, and action), challenging the traditional subordination of activity to contemplation, diagnosing the modern rise of society and alienation, and examining the loss and necessity of the public and private realms."
+  }
+}

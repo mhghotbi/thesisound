@@ -1,0 +1,22 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "notes_and_citations",
+    "unresolved_context": [
+      "The target block consists of bibliographic notes, citations, and references rather than continuous prose, so no substantive claims are extracted."
+    ]
+  }
+}

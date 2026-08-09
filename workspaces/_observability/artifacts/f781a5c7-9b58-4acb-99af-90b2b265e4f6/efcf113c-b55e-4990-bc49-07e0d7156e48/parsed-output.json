@@ -1,0 +1,38 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The concept of citizenship in Hannah Arendt's thought can be employed as an alternative to counter the current crisis of human world-alienation.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [
+          "Through a critical reading of Arendt's texts and her interpreters"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "ﺗﻮان از اﯾﻦ ﻣﻔﻬﻮم ﺑﻪ ﻋﻨﻮان ﯾﮏ آﻟﺘﺮﻧـﺎﺗﯿﻮ در ﻣﻘﺎﺑـﻞ  ﻣﯽ  ﻧﺸﺎن داد ﮐﻪ، در اداﻣﻪ ﺧﻮاﻫﺪ آﻣﺪ  در ﺧﻮاﻧﺸـﯽ اﻧﺘﻘـﺎدي از ﻣﻔﻬـﻮم  . ﺑﻬﺮه ﺟﺴﺖ، اﺳﺖﺑﺤﺮان ﺣﺎﺿﺮ ﮐﻪ از ﺟﻬﺎن ﺑﯿﮕﺎﻧﮕﯽ ﺑﺸﺮ  ﮐﻮﺷﺶ ﺷﺪ ﺗﺎ وﺟﻮه ﮔﻮﻧﺎﮔﻮن اﯾﻦ ﻧﻮع ﺷﻬﺮوﻧﺪي ، ﺷﻬﺮوﻧﺪي و از ﻣﯿﺎن ﻣﺘﻮن ﮔﻮﻧﺎﮔﻮن آرﻧﺖ"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "ﺗﺮﮐﯿﺒـﯽ از ﺣﻘـﻮق و وﻇـﺎﯾﻒ ﻣـﺪﻧﯽ و ﺳﯿﺎﺳـﯽ  و  ﺟﺎﻣﻌـﻪ   يﺗﻤـﺎﻣﯽ اﻋﻀـﺎ   ﺑﻪﺷﺄن و ﻋﻀﻮﯾﺖ اﺟﺘﻤﺎﻋﯽ ، ﻣﺜﺎﺑﻪ ﻧﻮﻋﯽ ﭘﺎﯾﮕﺎه اﺟﺘﻤﺎﻋﯽ اﺳﺖ",
+        "term": "ﺷﻬﺮوﻧﺪي"
+      }
+    ],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Arendt's perspective on modern human alienation and the normative alternative of citizenship."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Research question and critical theoretical approach regarding human alienation and Arendtian citizenship",
+    "unresolved_context": []
+  }
+}

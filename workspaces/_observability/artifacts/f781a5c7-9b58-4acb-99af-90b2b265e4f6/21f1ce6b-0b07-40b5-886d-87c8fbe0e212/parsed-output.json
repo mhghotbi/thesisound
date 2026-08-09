@@ -1,0 +1,55 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Division of labor grows directly out of the laboring process and must be distinguished from the specialization of work.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Division of labor indeed grows directly out of the laboring process and should not be mistaken for the apparently similar principle of specialization which prevails in working processes and with which it is usually equated."
+      },
+      {
+        "claim": "Specialization of work is guided by the finished product requiring different pooled skills, whereas division of labor presupposes qualitative equivalence and exchangeability of activities requiring no special skill.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "specialization of work is essentially guided by the finished product itself, whose nature it is to require different skills which then are pooled and organized together, division of labor, on the contrary, presupposes the qualitative equivalence of all single activities for which no special skill is required"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "A principle based on the qualitative equivalence of all single activities requiring no special skill, representing amounts of labor power added together in a purely quantitative way.",
+        "term": "Division of labor"
+      },
+      {
+        "definition": "A principle prevailing in working processes that is guided by the finished product, requiring different skills which are pooled and organized together.",
+        "term": "Specialization of work"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Division of labor presupposes the qualitative equivalence of all single activities requiring no special skill and is based on a collective labor force, whereas specialization is guided by a finished product requiring different pooled skills.",
+        "item_a": "Division of labor",
+        "item_b": "Specialization of work"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Division of labor and specialization share only a general principle of organization rooted in the political capacity to act together.",
+      "Mass production depends on replacing workmen and specialization with laborers and the division of labor."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "To analyze and distinguish the division of labor from the specialization of work, contrasting their underlying principles, outcomes, and roles in modern mass production.",
+    "unresolved_context": []
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The narrative of cultural criticism concerning the relation of natural and artificial turns into a narrative of political philosophy when examining Arendt's work.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Following the argumentation of The Human Condition concerning the relation of nat-\nural and artificial we arrived to a turning point where the narrative of cultural criti -\ncism converts into the narrative of political philosophy."
+      },
+      {
+        "claim": "Totalitarianism represents the end-result of processes of re-naturalization, aiming to change the human race into an animal species and kill human individuality.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [
+          "required an arsenal of new technologies including modern telecommunication, psycho-technologies, and organizational-institutional technologies"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "It is important concerning the subject of this paper that totalitarianism was the\nend-result of the processes of re-naturalization. For the introduction of this unprec -\nedented political form an arsenal of new technologies was needed."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection between The Origins of Totalitarianism and The Human Condition regarding the process of re-naturalization and the threat to the man-made world."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Discussing the transition from cultural criticism to political philosophy by examining Arendt's previous work The Origins of Totalitarianism, focusing on the concepts of process, imperialism, and re-naturalization.",
+    "unresolved_context": []
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Works of art possess a durability of a higher order and are untouched by natural processes of use, which would destroy them rather than actualize their purpose.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures, a use which, indeed, far from actualizing their own inherent purpose—as the purpose of a chair is actualized when it is sat upon—can only destroy them.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"The immediate source of the art work is the human capacity for thought.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The immediate source of the art work is the human capacity for thought, as man’s “propensity to truck and barter” is the source of exchange objects, and as his ability to use is the source of use things.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Works of art are strictly without utility and unique, defying equalization through money.\",\n    \"Thought transforms mute feelings and allows them to be reified into the world.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIP_CflZMRgbj11CTkLKXVFIZpmTRSsm1nzRYhALM0f6TsH0CzrN-7-8le36lw-",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Works of art possess a durability of a higher order and are untouched by natural processes of use, which would destroy them rather than actualize their purpose.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures, a use which, indeed, far from actualizing their own inherent purpose—as the purpose of a chair is actualized when it is sat upon—can only destroy them."
+      },
+      {
+        "claim": "The immediate source of the art work is the human capacity for thought.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The immediate source of the art work is the human capacity for thought, as man’s “propensity to truck and barter” is the source of exchange objects, and as his ability to use is the source of use things."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Works of art are strictly without utility and unique, defying equalization through money.",
+      "Thought transforms mute feelings and allows them to be reified into the world."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Works of art possess a durability of a higher order and are untouched by natural processes of use, which would destroy them rather than actualize their purpose.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures, a use which, indeed, far from actualizing their own inherent purpose—as the purpose of a chair is actualized when it is sat upon—can only destroy them.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"The immediate source of the art work is the human capacity for thought.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The immediate source of the art work is the human capacity for thought, as man’s “propensity to truck and barter” is the source of exchange objects, and as his ability to use is the source of use things.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Works of art are strictly without utility and unique, defying equalization through money.\",\n    \"Thought transforms mute feelings and allows them to be reified into the world.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 413,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2508,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2508
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2921,
+    "traffic_type": null
+  }
+}

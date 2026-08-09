@@ -1,0 +1,183 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"working_thesis\": \"Hannah Arendt's phenomenological distinctions regarding earth, world, and the embodied senses—specifically through the lens of indoor and outdoor spaces—can help interpret the implications of artificial adaptations to a warming planet (carapace, prosthesis, and enclosure) and reveal both the insights and limits of The Human Condition for addressing contemporary climate politics and inequality.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00001-7298e5ea8cd4\",\n        \"blk-376ff90d-00002-74f2d41a414a\",\n        \"blk-376ff90d-00003-f6b5a6df6cca\",\n        \"blk-376ff90d-00004-9a7e6878483b\",\n        \"blk-376ff90d-00005-3e747666d842\"\n      ],\n      \"title\": \"Introduction: Arendt, Climate Change, and the Given Earth\",\n      \"function\": \"front_matter\",\n      \"key_concepts\": [\n        \"earth and world\",\n        \"given versus made\",\n        \"Sputnik and the desire to escape the earth\",\n        \"thin envelope of atmosphere\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00006-e081988bcc67\",\n        \"blk-376ff90d-00007-8d7e230c2896\",\n        \"blk-376ff90d-00008-ece30cb8e406\",\n        \"blk-376ff90d-00009-f70bf8ca3f7b\",\n        \"blk-376ff90d-00010-fdf4d786aed6\"\n      ],\n      \"title\": \"Three Types of Artificial Adaptation: Carapace, Prosthesis, and Enclosure\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"carapace\",\n        \"prosthesis\",\n        \"enclosure\",\n        \"warming planet\",\n        \"mediation versus immediacy\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00011-7432997194b8\",\n        \"blk-376ff90d-00012-2a26c9836c14\",\n        \"blk-376ff90d-00013-7f5850933ee8\"\n      ],\n      \"title\": \"The House, the Cave, and the Sky: Tracing Indoors and Outdoors in Arendt and Plato\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"polis and oikos\",\n        \"allegory of the cave\",\n        \"eyes of the mind\",\n        \"Bertolt Brecht's sky\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00014-d7bb6394ca13\",\n        \"blk-376ff90d-00015-2282b17b9eda\",\n        \"blk-376ff90d-00016-18116660a5cf\",\n        \"blk-376ff90d-00017-e927089ab909\"\n      ],\n      \"title\": \"Angles of Receptivity: The Phenomenological Difference of the Outdoors\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"interstitiality of outdoor space\",\n        \"embodied senses\",\n        \"angle of receptivity\",\n        \"sensory restriction under adaptation\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-002\",\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00018-c61b1502f42f\",\n        \"blk-376ff90d-00019-e93de1376b2d\"\n      ],\n      \"title\": \"Conclusion: The People Out of Doors and the Limits of The Human Condition\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"social inequality and climate caste system\",\n        \"rule by nobody\",\n        \"people out of doors\",\n        \"limits of generalization\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-003\",\n        \"sec-004\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Indoors and Outdoors Phenomenological Thread\",\n      \"section_ids\": [\n        \"sec-002\",\n        \"sec-003\",\n        \"sec-004\",\n        \"sec-005\"\n      ],\n      \"description\": \"The tracking of the distinction between indoor and outdoor spaces, moving from physical climate adaptations to philosophical sources (Plato, Brecht, architecture) and concluding with political action by the 'people out of doors'.\"\n    }\n  ],\n  \"warnings\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPZHUqVl0lKWQaZRYtxTFQWQdOOeQua3CBLFML6ioJYFEeDHe5-BzQM-EWMS7g",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "cross_section_threads": [
+      {
+        "description": "The tracking of the distinction between indoor and outdoor spaces, moving from physical climate adaptations to philosophical sources (Plato, Brecht, architecture) and concluding with political action by the 'people out of doors'.",
+        "label": "Indoors and Outdoors Phenomenological Thread",
+        "section_ids": [
+          "sec-002",
+          "sec-003",
+          "sec-004",
+          "sec-005"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "depends_on_section_ids": [],
+        "function": "front_matter",
+        "key_concepts": [
+          "earth and world",
+          "given versus made",
+          "Sputnik and the desire to escape the earth",
+          "thin envelope of atmosphere"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-001",
+        "source_block_ids": [
+          "blk-376ff90d-00001-7298e5ea8cd4",
+          "blk-376ff90d-00002-74f2d41a414a",
+          "blk-376ff90d-00003-f6b5a6df6cca",
+          "blk-376ff90d-00004-9a7e6878483b",
+          "blk-376ff90d-00005-3e747666d842"
+        ],
+        "title": "Introduction: Arendt, Climate Change, and the Given Earth",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "carapace",
+          "prosthesis",
+          "enclosure",
+          "warming planet",
+          "mediation versus immediacy"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-002",
+        "source_block_ids": [
+          "blk-376ff90d-00006-e081988bcc67",
+          "blk-376ff90d-00007-8d7e230c2896",
+          "blk-376ff90d-00008-ece30cb8e406",
+          "blk-376ff90d-00009-f70bf8ca3f7b",
+          "blk-376ff90d-00010-fdf4d786aed6"
+        ],
+        "title": "Three Types of Artificial Adaptation: Carapace, Prosthesis, and Enclosure",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-002"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "polis and oikos",
+          "allegory of the cave",
+          "eyes of the mind",
+          "Bertolt Brecht's sky"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-003",
+        "source_block_ids": [
+          "blk-376ff90d-00011-7432997194b8",
+          "blk-376ff90d-00012-2a26c9836c14",
+          "blk-376ff90d-00013-7f5850933ee8"
+        ],
+        "title": "The House, the Cave, and the Sky: Tracing Indoors and Outdoors in Arendt and Plato",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-002",
+          "sec-003"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "interstitiality of outdoor space",
+          "embodied senses",
+          "angle of receptivity",
+          "sensory restriction under adaptation"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-004",
+        "source_block_ids": [
+          "blk-376ff90d-00014-d7bb6394ca13",
+          "blk-376ff90d-00015-2282b17b9eda",
+          "blk-376ff90d-00016-18116660a5cf",
+          "blk-376ff90d-00017-e927089ab909"
+        ],
+        "title": "Angles of Receptivity: The Phenomenological Difference of the Outdoors",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-002",
+          "sec-003",
+          "sec-004"
+        ],
+        "function": "conclusion",
+        "key_concepts": [
+          "social inequality and climate caste system",
+          "rule by nobody",
+          "people out of doors",
+          "limits of generalization"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-005",
+        "source_block_ids": [
+          "blk-376ff90d-00018-c61b1502f42f",
+          "blk-376ff90d-00019-e93de1376b2d"
+        ],
+        "title": "Conclusion: The People Out of Doors and the Limits of The Human Condition",
+        "unresolved_context": []
+      }
+    ],
+    "warnings": [],
+    "working_thesis": "Hannah Arendt's phenomenological distinctions regarding earth, world, and the embodied senses—specifically through the lens of indoor and outdoor spaces—can help interpret the implications of artificial adaptations to a warming planet (carapace, prosthesis, and enclosure) and reveal both the insights and limits of The Human Condition for addressing contemporary climate politics and inequality."
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"working_thesis\": \"Hannah Arendt's phenomenological distinctions regarding earth, world, and the embodied senses—specifically through the lens of indoor and outdoor spaces—can help interpret the implications of artificial adaptations to a warming planet (carapace, prosthesis, and enclosure) and reveal both the insights and limits of The Human Condition for addressing contemporary climate politics and inequality.\",\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00001-7298e5ea8cd4\",\n        \"blk-376ff90d-00002-74f2d41a414a\",\n        \"blk-376ff90d-00003-f6b5a6df6cca\",\n        \"blk-376ff90d-00004-9a7e6878483b\",\n        \"blk-376ff90d-00005-3e747666d842\"\n      ],\n      \"title\": \"Introduction: Arendt, Climate Change, and the Given Earth\",\n      \"function\": \"front_matter\",\n      \"key_concepts\": [\n        \"earth and world\",\n        \"given versus made\",\n        \"Sputnik and the desire to escape the earth\",\n        \"thin envelope of atmosphere\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00006-e081988bcc67\",\n        \"blk-376ff90d-00007-8d7e230c2896\",\n        \"blk-376ff90d-00008-ece30cb8e406\",\n        \"blk-376ff90d-00009-f70bf8ca3f7b\",\n        \"blk-376ff90d-00010-fdf4d786aed6\"\n      ],\n      \"title\": \"Three Types of Artificial Adaptation: Carapace, Prosthesis, and Enclosure\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"carapace\",\n        \"prosthesis\",\n        \"enclosure\",\n        \"warming planet\",\n        \"mediation versus immediacy\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00011-7432997194b8\",\n        \"blk-376ff90d-00012-2a26c9836c14\",\n        \"blk-376ff90d-00013-7f5850933ee8\"\n      ],\n      \"title\": \"The House, the Cave, and the Sky: Tracing Indoors and Outdoors in Arendt and Plato\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"polis and oikos\",\n        \"allegory of the cave\",\n        \"eyes of the mind\",\n        \"Bertolt Brecht's sky\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00014-d7bb6394ca13\",\n        \"blk-376ff90d-00015-2282b17b9eda\",\n        \"blk-376ff90d-00016-18116660a5cf\",\n        \"blk-376ff90d-00017-e927089ab909\"\n      ],\n      \"title\": \"Angles of Receptivity: The Phenomenological Difference of the Outdoors\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"interstitiality of outdoor space\",\n        \"embodied senses\",\n        \"angle of receptivity\",\n        \"sensory restriction under adaptation\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-002\",\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-005\",\n      \"source_block_ids\": [\n        \"blk-376ff90d-00018-c61b1502f42f\",\n        \"blk-376ff90d-00019-e93de1376b2d\"\n      ],\n      \"title\": \"Conclusion: The People Out of Doors and the Limits of The Human Condition\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"social inequality and climate caste system\",\n        \"rule by nobody\",\n        \"people out of doors\",\n        \"limits of generalization\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-003\",\n        \"sec-004\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Indoors and Outdoors Phenomenological Thread\",\n      \"section_ids\": [\n        \"sec-002\",\n        \"sec-003\",\n        \"sec-004\",\n        \"sec-005\"\n      ],\n      \"description\": \"The tracking of the distinction between indoor and outdoor spaces, moving from physical climate adaptations to philosophical sources (Plato, Brecht, architecture) and concluding with political action by the 'people out of doors'.\"\n    }\n  ],\n  \"warnings\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 1614,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 23835,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 23835
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 25449,
+    "traffic_type": null
+  }
+}

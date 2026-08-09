@@ -1,0 +1,45 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Arendt regards world-alienation and alienation from the earth as central concerns of modernity, linked to the loss of the public realm where individuals can appear and manifest themselves.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "آرﻧﺖ ﻧﺎﻗﺪ وﺿﻊ ﻣﻮﺟﻮد ﺑﺸﺮ در ﺟﻮاﻣﻊ ﺻﻨﻌﺘﯽ اﺳﺖ . او ﺑﯿﮕﺎﻧﮕﯽ از زﻣﯿﻦ و ﺟﻬﺎن« ﻫﻢ ﻣﺪرﻧﯿﺘﻪ »ﺗﺄﮐﯿﺪ ﻋﻤﺪه . ﺑﻮد » از ﺟﻬﺎن ﺑﯿﮕﺎﻧﮕﯽ« ﺗﻌﺮﯾﻒ ، ﮐﻪ ﻓﺮد ﺑﺘﻮاﻧﺪ در آن ﻇﻬـﻮر و ﺑـﺮوز ﯾﺎﺑـﺪ ﻋﻤﻮﻣﯽﻪ را ﺑﺎ ﻓﻘﺪان ﻋﺮﺻ"
+      },
+      {
+        "claim": "Natality is conceptualized as the human capacity for beginning and acting, rooted in the human condition rather than being determined externally by nature or history.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "زادﮔﯽ« ﻗﺪرﺗﯽ ﺑﺮاي آﻏﺎزﯾﺪن و ﻋﻤﻞ ﮐﺮدن اﺳﺖ ﮐﻪ ﺑﺨﺸـﯽ از وﺿـﻊ » ، ﮐﻨﺪ ﯾﺎد ﻣﯽ ﻫـﺎﯾﯽ ﻗـﺪرت ﻪ وﺳـﯿﻠ ﺳﺖ ﮐﻪ ﻇﺮﻓﯿﺖ ﻣﺎ ﻫﺮﮔﺰ ﺻﺮﻓﺎً ﺑﻪاﯾﻦ ﺑﺪﯾﻦ ﻣﻌﻨﺎ. ﺷﻮد ﺸﺮ ﻣﺤﺴﻮب ﻣﯽﺑ ﮕﯽ و از ﺧﻮدﺑﯿﮕـﺎﻧ ﻫﻤﭽـﻮن ﻣﺎﻧﻨـﺪ ﻃﺒﯿﻌـﺖ و ﺗـﺎرﯾﺦ و ﯾـﺎ از ﭼﯿـﺰي درون ﻣـﺎ ، ﺑﯿﺮون از ﻣﺎ ﺑﻠﮑﻪ ﻣﺎ ﺑﺎ ﻇﺮﻓﯿﺖ و اﺳﺘﻌﺪادي ﺑﺮاي آزادي و ﺑﺎ ﺗﻮاﻧﺎﯾﯽ آﻏﺎز ﮐﺮدن ؛ ﺷﻮد ﺗﻌﯿﯿﻦ ﻧﻤﯽ ﺎاﻣﯿﺪيﻧ"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "قدرتی برای آغاز کردن و عمل کردن که بخشی از وضع بشر محسوب می‌شود.",
+        "term": "زادﮔﯽ"
+      }
+    ],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Arendt's use of phenomenological hermeneutics and Heidegger's deconstructive reading of tradition.",
+      "The connection between citizenship, political responsibility, and the preservation of the world against totalitarian alienation."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  }
+}

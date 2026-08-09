@@ -1,0 +1,42 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "central_question_claim_ids": [
+      "clm-27d7960629cc8d70",
+      "clm-cdfd1f19002d9de1",
+      "clm-3a561b777e44ce86",
+      "clm-43c898a10d267e4a",
+      "clm-177abafe0237f1e2",
+      "clm-42387f05124f8d6c",
+      "clm-69fe45bd8b92b783",
+      "clm-12d66b0d3864127f",
+      "clm-033a1f2ba7f72f4a"
+    ],
+    "central_question_status": "well_covered",
+    "material_gaps": [],
+    "max_supported_minutes": 10,
+    "objective_coverage": [
+      {
+        "claim_ids": [
+          "clm-cdfd1f19002d9de1",
+          "clm-3a561b777e44ce86",
+          "clm-43c898a10d267e4a",
+          "clm-177abafe0237f1e2",
+          "clm-42387f05124f8d6c",
+          "clm-69fe45bd8b92b783",
+          "clm-12d66b0d3864127f"
+        ],
+        "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+        "rationale": "ادعاهای مستخرج به خوبی مفاهیم اصلی کتاب مانند تقسیم‌بندی سه سطحی فعالیت‌های انسانی (زحمت، کار، عمل)، مفاهیم کثرت و زادمندی، و آسیب‌شناسی مدرنیته و بیگانگی از جهان را پوشش می‌دهند.",
+        "status": "well_covered"
+      }
+    ],
+    "recommendation": "continue",
+    "recommendation_reason": "شواهد ادعایی موجود به صورت کامل و مستند پاسخگوی پرسش مرکزی و هدف یادگیری بوده و ظرفیت تولید ۱۰ دقیقه محتوای مستند را دارند."
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Action is entirely dependent upon the constant presence of others and is the exclusive prerogative of man.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, 1 and only action is entirely dependent upon the constant presence of others.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"The translation of Aristotle's zōon politikon as animal socialis reflects a loss of the original Greek understanding of politics.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"societas\",\n      \"definition\": \"An alliance between people for a specific purpose, such as organizing in order to rule others or to commit a crime.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"what is one's own ( idion )\",\n      \"item_b\": \"what is communal ( koinon )\",\n      \"distinction\": \"A sharp distinction in a citizen's life between private existence and communal existence (bios politikos) made possible by the rise of the city-state.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Distinction between natural merely social companionship and the political capacity of man.\",\n    \"Exclusion of the merely necessary or useful from the bios politikos.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPhRQ9Wpm6xp6vNl7niJQ64YpCRW52Bo0WyAQL2CasrEqY_2o_DCibHZelEKhQ",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Action is entirely dependent upon the constant presence of others and is the exclusive prerogative of man.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "support_kind": "direct",
+        "supporting_excerpt": "Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, 1 and only action is entirely dependent upon the constant presence of others."
+      },
+      {
+        "claim": "The translation of Aristotle's zōon politikon as animal socialis reflects a loss of the original Greek understanding of politics.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "support_kind": "direct",
+        "supporting_excerpt": "More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "An alliance between people for a specific purpose, such as organizing in order to rule others or to commit a crime.",
+        "term": "societas"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "A sharp distinction in a citizen's life between private existence and communal existence (bios politikos) made possible by the rise of the city-state.",
+        "item_a": "what is one's own ( idion )",
+        "item_b": "what is communal ( koinon )"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Distinction between natural merely social companionship and the political capacity of man.",
+      "Exclusion of the merely necessary or useful from the bios politikos."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Action is entirely dependent upon the constant presence of others and is the exclusive prerogative of man.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, 1 and only action is entirely dependent upon the constant presence of others.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"The translation of Aristotle's zōon politikon as animal socialis reflects a loss of the original Greek understanding of politics.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"societas\",\n      \"definition\": \"An alliance between people for a specific purpose, such as organizing in order to rule others or to commit a crime.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"what is one's own ( idion )\",\n      \"item_b\": \"what is communal ( koinon )\",\n      \"distinction\": \"A sharp distinction in a citizen's life between private existence and communal existence (bios politikos) made possible by the rise of the city-state.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Distinction between natural merely social companionship and the political capacity of man.\",\n    \"Exclusion of the merely necessary or useful from the bios politikos.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 467,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2855,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2855
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3322,
+    "traffic_type": null
+  }
+}

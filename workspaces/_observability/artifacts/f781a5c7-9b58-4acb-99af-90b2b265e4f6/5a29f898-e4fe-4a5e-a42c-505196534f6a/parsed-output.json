@@ -1,0 +1,37 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Arendt's concepts of publicity and privacy are connected only loosely and connotatively to outdoor and indoor spaces and their associations with exposure and shelter respectively.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "her concepts seem only loosely and connotatively connected to outdoor and\nindoor spaces, and to their association of these spaces with exposure and\nshelter respectively ."
+      },
+      {
+        "claim": "Arendt interpreted Plato's allegory of the cave flatly as a celebratory account of the philosopher's flight from the dark cave of human affairs to the bright sky of ideas.",
+        "claim_type": "scholarly_interpretation",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Arendt read this allegory , ﬂatly ,\nas Plato ’s celebratory account of the philosopher ’s ﬂight from the “dark\ncave of human affairs, ” where everything is mere appearance, into the\n“bright sky of ideas ” where the “true essence of Being ” can be seen"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "finish_reason": "STOP",
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "detected_language": "fa",
+    "speaker": "B",
+    "transcript": "با این حساب جهانی که انسان سازنده می‌سازد بستری برای فعالیت عالی‌تر می‌شود. آن فعالیت برتر چیست و چه رابطه‌ای با آزادی دارد؟"
+  },
+  "text": "{\"transcript\":\"با این حساب جهانی که انسان سازنده می‌سازد بستری برای فعالیت عالی‌تر می‌شود. آن فعالیت برتر چیست و چه رابطه‌ای با آزادی دارد؟\",\"detected_language\":\"fa\",\"speaker\":\"B\"}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 47,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 399,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 33
+      },
+      {
+        "modality": "AUDIO",
+        "token_count": 366
+      }
+    ],
+    "thoughts_token_count": 181,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 627,
+    "traffic_type": null
+  }
+}

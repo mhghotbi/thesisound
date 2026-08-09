@@ -1,0 +1,24 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Retain the recognition that this block is non-prose metadata or bibliographic content lacking direct semantic claims."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The target block contains encoded text strings and formatting that represent unparsed bibliographic references, citations, or metadata notes rather than interpretable prose.",
+    "unresolved_context": [
+      "The block consists entirely of unparsed encoded strings (such as 2uFEE7, 2u9609, etc.), making it a list of bibliographic references or unrendered source data rather than substantive prose."
+    ]
+  }
+}

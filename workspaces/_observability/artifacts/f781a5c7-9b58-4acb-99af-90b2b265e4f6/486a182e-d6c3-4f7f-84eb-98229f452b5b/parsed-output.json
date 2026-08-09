@@ -1,0 +1,39 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Marx defined labor as man's metabolism with nature where nature's material is adapted to human wants, indicating a physiological perspective where labor and consumption are stages of the biological life cycle.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "When Marx defined labor as “man’s metabolism with nature,” in whose process “nature’s material [is] adapted by a change of form to the wants of man,” so that “labour has incorporated itself with its subject,” he indicated clearly that he was “speaking physiologically” and that labor and consumption are but two stages of the ever-recurring cycle of biological life."
+      },
+      {
+        "claim": "Locke discovered that labor is the source of all property, initiating the rise of labor from a despised position to high esteem.",
+        "claim_type": "historical_context",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The sudden, spectacular rise of labor from the lowest, most despised position to the highest rank, as the most esteemed of all human activities, began when Locke discovered that labor is the source of all property."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Marx, Locke, and Smith all equated work with labor, leading to contradictions regarding labor's world-building capacity."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  }
+}

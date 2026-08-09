@@ -1,0 +1,61 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"bibliographic_notes\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"The target block is a list of bibliographic notes and citations rather than prose, and consequently contains no authorial primary claims for extraction under the analysis profile.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPxxb4BB2Ec3d17TR1sc4gkIbg0gAgrcMqiUx8DcFMJNv7eUpqQYWnQsg4ZFza",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "segment_function": "bibliographic_notes",
+    "unresolved_context": [
+      "The target block is a list of bibliographic notes and citations rather than prose, and consequently contains no authorial primary claims for extraction under the analysis profile."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"bibliographic_notes\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"The target block is a list of bibliographic notes and citations rather than prose, and consequently contains no authorial primary claims for extraction under the analysis profile.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 81,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 3353,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 3353
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3434,
+    "traffic_type": null
+  }
+}

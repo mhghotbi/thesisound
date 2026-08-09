@@ -1,0 +1,22 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "unreadable encoded text block",
+    "unresolved_context": [
+      "The target semantic block consists of encoded string representations rather than readable prose or structured text."
+    ]
+  }
+}

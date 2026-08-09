@@ -1,0 +1,32 @@
+{
+  "finish_reason": "STOP",
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "detected_language": "fa",
+    "speaker": "B",
+    "transcript": "یعنی تفکیک قلمرو خصوصی از قلمرو عمومی کاملاً بر نوع فعالیت انسانی در هرکدام متکی است؟ چطور روش پدیدارشناختی او و این دسته‌بندی سگانه به فهم دقیق‌تر شرایط انسان در عصر جدید کمک می‌کنند؟"
+  },
+  "text": "{\"transcript\": \"یعنی تفکیک قلمرو خصوصی از قلمرو عمومی کاملاً بر نوع فعالیت انسانی در هرکدام متکی است؟ چطور روش پدیدارشناختی او و این دسته‌بندی سگانه به فهم دقیق‌تر شرایط انسان در عصر جدید کمک می‌کنند؟\", \"detected_language\": \"fa\", \"speaker\": \"B\"}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 74,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 538,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 33
+      },
+      {
+        "modality": "AUDIO",
+        "token_count": 505
+      }
+    ],
+    "thoughts_token_count": 334,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 946,
+    "traffic_type": null
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"Prologue setting out the reaction to the first man-made satellite and introducing the themes of earth-alienation, scientific tampering with the human condition, and the political urgency of evaluating these developments.\",\n  \"claims\": [\n    {\n      \"claim\": \"The immediate reaction to the launch of the man-made satellite was not triumphal pride, but rather relief at taking a first step toward escaping human imprisonment to the earth.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The immediate reaction, expressed on the spur of the moment, was relief about the first “step toward escape from men’s imprisonment to the earth.”\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The earth is described as the quintessence of the human condition, providing the only known habitat where humans can move and breathe without artificial aids.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The earth is the very quintessence of the human condition, and earthly nature, for all we know, may be unique in the universe in providing human beings with a habitat in which they can move and breathe without effort and without artifice.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Earth\",\n      \"definition\": \"The very quintessence of the human condition and unique provider of a natural habitat for human movement and respiration.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Human artifice of the world\",\n      \"item_b\": \"Life itself\",\n      \"distinction\": \"The human artifice separates human existence from mere animal environment, whereas life itself remains outside this artificial world and connects man to all other living organisms.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The desire to escape the human condition through scientific interventions like creating artificial life or altering human biological limits.\",\n    \"The assertion that deciding whether to use scientific and technical knowledge to remake human existence is a political question of the first order.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPCrCp_RS1Rm3xfBcc_T2g8MH-hY5JxmIiw9mf4I7wkYR-95ccWz0nBAWZ__7k",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The immediate reaction to the launch of the man-made satellite was not triumphal pride, but rather relief at taking a first step toward escaping human imprisonment to the earth.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The immediate reaction, expressed on the spur of the moment, was relief about the first “step toward escape from men’s imprisonment to the earth.”"
+      },
+      {
+        "claim": "The earth is described as the quintessence of the human condition, providing the only known habitat where humans can move and breathe without artificial aids.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The earth is the very quintessence of the human condition, and earthly nature, for all we know, may be unique in the universe in providing human beings with a habitat in which they can move and breathe without effort and without artifice."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The very quintessence of the human condition and unique provider of a natural habitat for human movement and respiration.",
+        "term": "Earth"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "The human artifice separates human existence from mere animal environment, whereas life itself remains outside this artificial world and connects man to all other living organisms.",
+        "item_a": "Human artifice of the world",
+        "item_b": "Life itself"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The desire to escape the human condition through scientific interventions like creating artificial life or altering human biological limits.",
+      "The assertion that deciding whether to use scientific and technical knowledge to remake human existence is a political question of the first order."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Prologue setting out the reaction to the first man-made satellite and introducing the themes of earth-alienation, scientific tampering with the human condition, and the political urgency of evaluating these developments.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"Prologue setting out the reaction to the first man-made satellite and introducing the themes of earth-alienation, scientific tampering with the human condition, and the political urgency of evaluating these developments.\",\n  \"claims\": [\n    {\n      \"claim\": \"The immediate reaction to the launch of the man-made satellite was not triumphal pride, but rather relief at taking a first step toward escaping human imprisonment to the earth.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The immediate reaction, expressed on the spur of the moment, was relief about the first “step toward escape from men’s imprisonment to the earth.”\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The earth is described as the quintessence of the human condition, providing the only known habitat where humans can move and breathe without artificial aids.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The earth is the very quintessence of the human condition, and earthly nature, for all we know, may be unique in the universe in providing human beings with a habitat in which they can move and breathe without effort and without artifice.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"Earth\",\n      \"definition\": \"The very quintessence of the human condition and unique provider of a natural habitat for human movement and respiration.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"Human artifice of the world\",\n      \"item_b\": \"Life itself\",\n      \"distinction\": \"The human artifice separates human existence from mere animal environment, whereas life itself remains outside this artificial world and connects man to all other living organisms.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The desire to escape the human condition through scientific interventions like creating artificial life or altering human biological limits.\",\n    \"The assertion that deciding whether to use scientific and technical knowledge to remake human existence is a political question of the first order.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 513,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2588,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2588
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3101,
+    "traffic_type": null
+  }
+}

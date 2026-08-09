@@ -1,0 +1,222 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\"title\": \"بررسی اندیشه هانا آرنت در کتاب «وضع بشر»\", \"listener_outcome\": \"فهم روشن موضوع، ایده‌های اصلی و چارچوب مفهومی کتاب وضع بشر هانا آرنت\", \"segments\": [{\"title\": \"پدیدارشناسی وضع بشر و سطوح فعالیت‌های انسانی\", \"purpose\": \"معرفی رویکرد پدیدارشناختی آرنت و تفکیک اولیه عرصه عمومی و خصوصی\", \"target_minutes\": 2.5, \"claim_ids\": [\"clm-27d7960629cc8d70\", \"clm-cdfd1f19002d9de1\"], \"prerequisite_claim_ids\": [], \"key_question\": \"آرنت از چه روشی برای تحلیل وضع بشر استفاده می‌کند و فعالیت‌های انسانی را چگونه دسته‌بندی می‌نماید؟\", \"speaker_dynamic\": \"explanation\"}, {\"title\": \"حیات فعال: ساخت کار، عمل، تکثر و زادمندی\", \"purpose\": \"تبیین جایگاه Homo Faber، عمل به عنوان عالی‌ترین فعالیت انسانی و مفاهیم تکثر و زادمندی\", \"target_minutes\": 3.0, \"claim_ids\": [\"clm-3a561b777e44ce86\", \"clm-43c898a10d267e4a\", \"clm-177abafe0237f1e2\", \"clm-42387f05124f8d6c\", \"clm-469d428f8dd902ee\"], \"prerequisite_claim_ids\": [\"clm-cdfd1f19002d9de1\"], \"key_question\": \"چرا کنش و گفتار عالی‌ترین تجلی آزادی انسان هستند و زادمندی چه نقشی در حوزه عمومی دارد؟\", \"speaker_dynamic\": \"explanation\"}, {\"title\": \"نقد مدرنیته: بیگانگی از جهان و زمین\", \"purpose\": \"بررسی آسیب‌شناسی آرنت از مدرنیته و زوال عرصه عمومی\", \"target_minutes\": 3.0, \"claim_ids\": [\"clm-69fe45bd8b92b783\", \"clm-12d66b0d3864127f\", \"clm-f2514de064072149\"], \"prerequisite_claim_ids\": [\"clm-43c898a10d267e4a\"], \"key_question\": \"مدرنیته چگونه با غلبه ضرورت طبیعی باعث بیگانگی انسان از جهان و زمین می‌شود؟\", \"speaker_dynamic\": \"critique\"}, {\"title\": \"نتیجه‌گیری و بازبازیابی شهروندی\", \"purpose\": \"جمع‌بندی پیام اصلی کتاب و ارائه راهکار آرنت برای مقابله با بیگانگی از جهان\", \"target_minutes\": 1.5, \"claim_ids\": [\"clm-2b6b35a1238d355c\"], \"prerequisite_claim_ids\": [\"clm-69fe45bd8b92b783\"], \"key_question\": \"چگونه مفهوم شهروندی می‌تواند جایگزینی برای برون‌رفت از بحران بیگانگی جهانی باشد؟\", \"speaker_dynamic\": \"recap\"}], \"deliberately_omitted_claims\": [{\"claim_id\": \"clm-74ed3707d91940af\", \"reason\": \"خارج از دامنه اصلی معرفی کتاب آرنت؛ مربوط به تعمیم مفهوم پدیدارشناختی فضای بیرونی/درونی در تحلیل‌های مدرن اقلیمی.\"}, {\"claim_id\": \"clm-11b14ac83eb6456f\", \"reason\": \"جزئیات تحلیل ثانویه در مقاله جانبی درباره مفهوم زمین.\"}, {\"claim_id\": \"clm-c405f8caef2c5a76\", \"reason\": \"مربوط به مباحث ثانویه سازگاری با تغییرات اقلیمی.\"}, {\"claim_id\": \"clm-d537dadeb42ec902\", \"reason\": \"جزئیات مفهوم زره/سازگاری شخصی در نقد نئولیبرالیسم.\"}, {\"claim_id\": \"clm-67d13f10775f9275\", \"reason\": \"تحلیل معمارانه فضاهای محصور خارج از موضوع اصلی اپیزود.\"}, {\"claim_id\": \"clm-033a1f2ba7f72f4a\", \"reason\": \"تفسیر ثانویه درباره عقلانیت ابزاری و تکنولوژی.\"}, {\"claim_id\": \"clm-b0019526b05f33be\", \"reason\": \"جزئیات مربوط به جدایی حسانی انسان از دادگی زمین.\"}, {\"claim_id\": \"clm-9a8edde50b72b48b\", \"reason\": \"موضوع واسطه‌مندی ابزارهای علمی مدرن خارج از اولویت ۱۰ دقیقه‌ای.\"}, {\"claim_id\": \"clm-f70049469025113b\", \"reason\": \"مباحث جزئی فضایی درباره امور عمومی و خصوصی.\"}, {\"claim_id\": \"clm-6c742521f52c76c9\", \"reason\": \"تفسیر آرنت از تمثیل غار افلاطون که فرعی محسوب می‌شود.\"}, {\"claim_id\": \"clm-18a2868e055746da\", \"reason\": \"مباحث جزئی در خصوص طراحی فضاهای داخلی و خارجی.\"}, {\"claim_id\": \"clm-f8752aeecf6ca906\", \"reason\": \"مباحث پدیدارشناختی حسانی در محیط بیرونی.\"}, {\"claim_id\": \"clm-f1bcfb3974cafbd9\", \"reason\": \"جزئیات نقد آرنت پیرامون ضرورت طبیعی در برابر آزادی.\"}, {\"claim_id\": \"clm-9a6cfd871a2dbcc7\", \"reason\": \"مثال تاریخی پرتاب ماهواره مصنوعی به عنوان نقطه عطف.\"}, {\"claim_id\": \"clm-dffb6f228cecb331\", \"reason\": \"تعریف فنی مفهوم فرآیند در برابر کنش.\"}, {\"claim_id\": \"clm-7a6bf87729c605be\", \"reason\": \"جزئیات مرحله اول مدرنیته و خشونت انسان سازنده علیه طبیعت.\"}, {\"claim_id\": \"clm-c3ff138ff14a48c9\", \"reason\": \"بحث شیء‌انگاری طبیعت توسط انسان سازنده.\"}, {\"claim_id\": \"clm-2f4d7c52e35b88e2\", \"reason\": \"جزئیات مرحله دوم مدرنیته و غلبه انسان زحمت‌کش.\"}, {\"claim_id\": \"clm-3a162f5404f08e78\", \"reason\": \"مباحث روش‌شناختی پیرامون روایت نقد فرهنگی و فلسفه سیاسی.\"}, {\"claim_id\": \"clm-7c56f868013911c8\", \"reason\": \"ارتباط توتالیالیسم با بازطبیعی‌سازی که خارج از scope عمومی اپیزود است.\"}, {\"claim_id\": \"clm-d426d716a069cea0\", \"reason\": \"تحلیل روایت دوگانه فلسفه سیاسی و نقد فرهنگی.\"}, {\"claim_id\": \"clm-188940a4b928c242\", \"reason\": \"بررسی جزئیات فصل پایانی کتاب در مقایسه با آلودگی محیط زیست.\"}, {\"claim_id\": \"clm-b04f8f757be082ca\", \"reason\": \"نقد تفصیلی آرنت به دیدگاه مارکس و هگل درباره نیروی کار.\"}, {\"claim_id\": \"clm-43a32889e3db4a7b\", \"reason\": \"مقایسه تاریخی انقلاب آمریکا و فرانسه.\"}, {\"claim_id\": \"clm-8508e2335e88195b\", \"reason\": \"یادداشت متاداده‌ای درباره بخش منابع.\"}], \"follow_up_topics\": [\"مقایسه مفهوم «کار»، «صنعت» و «کنش» در اندیشه آرنت و مارکس\", \"بررسی نقش انقلاب‌های مدرن در شکل‌گیری حوزه عمومی از دیدگاه آرنت\", \"بیگانگی از زمین و نسبت آن با بحران‌های زیست‌محیطی معاصر\"]}",
+            "thought": null,
+            "thought_signature": "EqBICp1IARFNMg9UsVOycoDjQoJ6ERCeout6XpDq-6wVZDjPKZvdklMx8nMH6v4wF9gVYePcoVfgLWAq2fTQ4NchXIEUXVTZeY_eeX4915USZiJmb2wzlAdHx6RhlvSanwx6VI-yy4MQHYoYmBb95qwzSl1HIZoBWDhwdUxIoN2uASkXOdl6C9va2sCMpkHyS0KRRi-IpcBRTItwwNBygIctw_fCQTwI3bWbgLt7GRKzDaNMbLs_BUuydImiHfIMPrzFSiyx6QdJmWFbwsERaVuGdSUd8ZHyQThVwYxY2Lr4bNNCrtzzD8YaZocrqGa4ATni1KnYS_jtFbkKq2LhP5NdxaePvpWPm0W29K3Xj1quNP6ZpTbjwk8EEf-4UEGEktCJmtt-ezyCM7JWijtodAx_a224vWPL0R9RLMrrV85pJw6uw21KpqdDiols6JFvYAtT1mJn4YaPu17Cx44w4Q52kot5DbzGRn4q3KTjsCzlDNlMtKd6kZGFHIiMx2kKAJKO2b3WDm2B0xYqks_o9L_V4wvy4zp0EC3KCMT-Sk3WXbKZnaEeX1W6R2zvrhVkzerT6aGTMByIKz9dzRrWhveHJSVYv85f9AcMVF8SoAPxBEVNTlVIIzvWQm_Tf0BiItzbPXM9zXri8X7uAzKyTQRqZOXgfjYJ4oKN7IaLgEW03NLHMeBzExoyWlBiaJET4FL5Fz1tCPJwTbqDBNs-IPHV1ln8dRaCRsCixGw4idMFzeFShqkSNQu7xKknSHRp4MeDd-ZB0UEItiPwZvdAd5g-9FlG6pmPljnWDfvhwIgQHCuqCcw0hHgJygxppN27fCmqf_u1AgCmNnAdqDa5_H9B_JxN7AlSBR_g3pKGDNOXzMnwrt6qgqw1U_J4XVjWZh2qXSxq4xMk_i2VXO_RjzjoMPTJTxddYPOCIxOdemZk-hXzlxnkwoGUZSy46HiBlHXf1sDTqgvhijZs7HU5RKMmOT3aogkDaI9QAWU2BBuFAC396LR1vVgiKn4sgGmdPOooLdPhhMbhqzbBqpfHTPJhes_cQTfrdt1OvRUZss5hwWbUCrFE2W5okFZctn2qZ1rD6LXDSwbKueV0kgmBRyQ27dtiEEliZF6unRGUFReHIzrt3rPCL9r2DHz1WCblwk-pOKS9iV_Uh7Fbl_F3cDm_AI53lmDr884xmEHTsCevvr6lJj2pFcuEPlsCqez_-1IBO4W3OZULKlWaTmhaiuniib3k2e3CLViGsQBGqaCpyd5nKBw_86Mezwr0ZUmjAdhXREfk8j15y3DgLzEYPZNEpgC2hvdc9BM7FBgSiKZnwWw1VYvzcLvU1cspqE1n4V4a4j7AMeRa3GPcFyUzZgnp3RLDPljWV4pqXvfpwqcDvzQUaosMm9Whkdy3K2Fu19OB5zZ_0F6YfRzVUDQTeO9I3WnJ4fXXPiBSXcLwaoszvtiCNdpp9iIo72EEHXzy5r0-WYbXZ4ViJNcllv40GtZFxnd-ZqqKtcWehkHj6N874WqVZDsrHoj_fy1ALPnFLsDdxgCULgwu883HJsDeSR8YCG68fLgTD2sboLJ2z31S1f1jZs5_Jm5Vtis6sX9nzax-SZnqwof1ViqLQXAYU9nwv1tqTL48DzepiOmeiS5Ltyks3_HBxLnXngV42B1AuLfm5s1QN_s6nxalwOKVCSkrMigpIyZqZrEzhngo3S4uOrZMe8TlmopE2fYD8goaI3xDHyyajq2qun2gneYPPQ7Hn0OsDkKVoqVjv-ufZ--PJPUoCL1EFFbrTIN8Oo1rVp4munuA2wgj-sh71Bjkocv8ewj9GkJf-RGr7t7uyya5YmV1trn3RTZKmkx0KYjW4sEfawB599vBSrCE_7TVAimTX8EfwTylm5wIOgFHFHpltbPOGUPQxgvxHGX2mxr5tmeggzz1Y7o53PJ_-pqviPAhbQxjzrpybCmXD5hUSAdxrAY4aRhpTG1PccQ5sgsERwW7H6_-B8U2d_bPJfbKKi8U1aaqNRfp0h6AX4Di_3f69fLt_f0PDET1BiPchKomH4xKODgDHmhIkDgiQfUEPT9wnUfSXed2nPae09ZDGk_leNtMiOt6WSNPLcm7s4KUpbrJfvmt5ve-9IJTtbqy-UR6czKKCPs2_941bsGqrhWB3zXSHJeJ1MsP0J5TGPjfxpQoDHvYxIc3dFg-Atl7s8wOy2bKJ6v94GBO40yFrgrbi81gfvJv8hzB_2MCxzOMQh-KR35SihVSwCr0IkgvmBCg3rJTd_Tpo7aLsfQMT2rgxKW7LQiFTRQDVxDElnNdPaIZ1qor7z8t5l720k3v1LqOVT-UBRKakuZQNWoGIpdBqFS-DJNLQL1iXC1A6FwMwMG0VM6rYP6l0SjcfAr9AI9K76H71thiBjRSshoT5ee6ZZNpjVki3CjaNnRky0PAecCkxaVSKJi23mNH-laqomgP6XiAGPbRdxMrlPuFCc-0Ha2lAFq8MM5ZsCRkBNCNF-WlYs8iLfJbSN4Nrik7tAQkh3wZLa3hxurqngSpNB549A68cjKMAeh6X9_bQvRGO5SmMjIqzmq-R0HHZdcU-9iS8BMVNqUIz_CsNXi5E94Bz7brsRQsCCSkLC29ec4rfmVbLkDvAJ_AHH8QRSC0YfEIbV5741wbfM4elNnuFHJYfdeIjZJEG-NcaCdQr1808wXsQSmkr3rOTx8GjNmegmYmbNAjYvxqjZ-f06IL1vLRIjyfuUwiaWVeOgPozNE6g-dWUK6w0FIvmL7g_Dwudx65MJAlTyzeihfkCltbyVCLN72CKIVB92Vmjh21w1qGGQqr8obkXgVtA1HYgSdKhRbwY-aoCmQLm3LrCvFFGbQtHQYq4WnMO73VyqoZcNt7oMMQVl3O7gf8i3GYYLVu5TZU1viEJYKVsYaddHLhrCbshepVeVY8HdqQ0vIDsS9hWUuHWqDtOOxRxExnvR070G8gjJfg4qxz7d8UE3d_L_-L_R2BrlGr5jSe1AgmNjJ-3VPmRHWWYD6aTkz_e7UuwweCq5AjOt2C9XDNCgxf3HYGuBzJAesufPlNhy-XDXRSSX9eSGGqq03UT1ONFYy7A_4yuJzzOJiGho9BadU8jb8mt9RVShDIlL35tJAd_9vEosC97JBw1MyzpDvSbygArYPYsYferGfX3ZBXScPG15SXXFP9RzdCkBNHCx9cWGuODFufMrJtd0trB90aLOyYaJY1xHw-BGsyFWr-WYxGPTSdFQLyfsuTKXTg38lC7drj7W7hSDeHzrtEbfJV8C9JyzIjGYsS_Bv6tqhEW_XMyg0jNBh-Wop2COG3XfNR1sIACUjKNbm1uFBIXj1f6q47wzhYWSOiYhDlc1vwd-4bHGcAuyT1Sb-CKb9d6F7Rhf1DO30UUKgM6KiZySGWbY76ZNpG9BafRsaEuUh1yiTSr68ct7BWucRKEinwGATHBxexYzQPKXRcuGx09WOYQxqpGy-M2LmSkQTiJej9iV0YKwFGWnX733tFC7E5sb2MNy89Wym1IIrMA8rZuAwCWuqkpzMmTcmOg0tm4X7JRHaRrg9xEgDpKdNfeYhBpK2BFL1F3kn4_KHfBPSArigO4PoMJT_VDm29pj6fQ2WUChn5cPb2lC7qnAtZ5w_9bCQossfyBq0MPVoSjQZxGh3_fyknMxpkfyXv95RXONTSP3HVj1Dw0GjiRDrsemR4GY4Erg4SD4Q-DG82Ks82iHa8MTAZTzF_FOBXkDzlk9OP0mDM7KLyRK4yz8y_v14-PkAZSWNYNus3mbj17mo-Xs5T8iTajX5ekkhOIKYMpgdZUAf0Oe6H8rdKmu1SZyGhd1sA_9dtb-9bErCPcdqlofzvzhL2Gqb-Xaj9eaxFf22yjOYn7OSjt0-DlCnYdpPrZTKUpPtHv8XfqyWf2aNIYxZtwZr4YrlNq3A3M30ztwub8Co4kDEYDLFaffwEAGUj-xjfPvLeKvx5mWy4rgfWSRqATvM7EdovnNo2UyuAClxfgtAgfDNvn2fMkuwm4CQiCbFuDNRt-bo5URYSryHFKB5vdbGIrUm0JaVPUSNFfsCX_5AMy3M4mNVgaYT2n09cNVNVCAxsYWedpeS4IHgLeyfn5XSlGUBk9rHhhQ4BCIZmkHSqeIlXrUoD2Az_zwt6Pxfiy3rtkgrrGSql-b6eiyeO2q0CIz236cT0meUsiDuwd1Kog3nQgsvsXp9WROgh-Y3rpilS5MwqbtaqVx-P_cNEewj8A6lG_kjaxCgbf2f3avM3L9HBY7h8QVPKZeWR98dBAcZYNKOlDVe7WDlWuwnlHx-BnF6BXsD_mBj6WKeXkuavZl0jNucpHaJZ3eHwRT8ixSYSasG2UMyvlnjE2Y9a5e10a57iZKh2SW8zKt5G00POr4c7XUrOPjMHnOm-L9fGseiXHDOdR_9pkXzhlb2YRBHu9aWGsCj9I1ldRyRnOeHqID1tItlYCY7IsBWnvuh7FVOlVsimLH6SOkAS7izoFc8gSNyXTZPKA8Px1PPexM7STbHrdUrP8xV_li-C-9qi4l6SteEd4vCXONdys5p_CLTYSgYIjaztBXNVi_bgRcAGL0Za1DJLKLr_bMCXeKsczA4IMOwKMEvik5KnsQkDyKN19XCp8OrAqZTL8ZYQFIl72t2VQY3fp5YtDNk6tRYi9UBIYgUaCdqkhv02bzPErWbtbGaS2h1RPV5E0p_d1VrWI3m5gUVvGDhvUfPltHGj8BWlLGFCpypJDJhFA6Z0n5Wn76UkFqKNjFSDxdwchDNxBSi_Fv6Kwr-HL0F_MzwxMISqYcr_-mgE51oS0XmqgasfCpsf3umXBK1xvZ-jvCMtyNI-1UFyBgHME7PDJBWxbxs549zHk5h7uqTl2dFC7PM9hnJxWDjT1b1VVEcxpqyksNaB_1O3dbIHc2SJK0iEFQ1758Lo3-RlI50Nu9BlPfYkKU63jb4SntrT7493sXZ_76XnOwXir3XhuODzidbigNcUgBMCOTzSekLgS60vj-LnCU5rtjdygSnoFNpm5vH7cNO9BdlVqd2M7YGvRogRv_OBpDyvLLOgcJ5RWIrIfL-dgyOI1op2LimE-GEf-_eDfg4BgC06Oe6PBepDTABgMDhKiHnKtVcsu6U9EmyXnN_1FZ5oaggz4UstcluPOlA53nT5ElPQ51bPBtCHuLb9oZ8l0W5wG4L_Yy9nsdHgvJMJ_kWtnIEE1W4FCGs3_ARKgM8bZpFTKDiSys_JQwIyY3kUcbo1neJqlfZ8rwnSo9aTsbHvMSs6BcIenX7fZHbE34MyZoqL5hON-BprIuXOAF8iSNGTKnE22UI_aQGrnV0VcqUNB018Nzinxo7l2oiKZ39l0Mr6rQCCpKOnFaT0a0qxmrX7HwXz-ftO5BcvczFILsbTwzGdlza45RAANAURWv1ABGt2xQ1HKcl1ZHEQdtj-zz-KB9fAOuhboTDTZLNhQhyokvPEdwsCurRdAUrMSyPv2gmJPoprtVJwvGXVIAMl6GnJP8gHYsCM0bEhmk6s_Sy0ujYR-WvKOFp-_FCQNdaQsepmhOWTnP4hbrHZwaQSAHKVvl5Lqy29Jf2-gvZsfdXVQa7k-vV2YQWN_uWcgffmDhR8PWil3olf2TZdADuaypclC8mcgwZP3ZJHslw88xwWuSAABzDuV3LjtrAkV99Ayt49bVQ1RhoO8Zg0PXXcLt2IkfDa6W2ZSeqtI4mMUD-XGkcYYlFTjyTdIubezy6jxEYIsEZrqx2plNUuJeIt2lmFn7tHTxf3jHxhBAgZN9Zk5Afb2vjUm8BlRPSVMv64lytyfRKh7MSf-nsPfiK3LdT7EVJLZ-xtLSMGh4IvY0M2VSrlo52RfGWnhdJHqp1OlzHev_E-tN4NsqAUGlnAKiYMxRCQrDLYkMCvsR9ZjX-ugjClEmLZPFPq1OgpraUE5ItFWZq2Lj43VnZa0mdd_gZbdYGG8pfCWdCNL3mzTk72TiCkeepmthS0ZMmDBlJHKS-5AMdrMT4zgrohQxnQxpyl6CCqZyRc9keT3GB6a3EgDZw_T__JNHcxhO94wO9EqsoDS9KiqAGzZODezwr_QejaNohc3falBG1DfLi6DhONocC9Nb1aKM9UxdPascrddNXlShHV7V0u3C35foTye12AD9qS38y-Sqz3hf7Sw5av7V2xM41rEdhtl4fl1R_byrFUqDBFViFVrhQwW7-YV39_qtJ81ocBnfwCSvasCRDEN-L2GjE6cx1wIlvHpGBdrPKVValE8qJw29UfFy0tG1yJdLVQBFcUYZK9jLoY3XihFKYSozIDOMq46WJsM8aS6B0P9LfMMCXXxXWhwznLLquXF7IVOumu5HxVGiZgvFF0OAa0FF67qqZBcaQalxdlc3-nMrBHoMKYAn3JdDrU6n9N3bNxXTTy30ZDOSBE0HUi9maTowyDq7LVNht4FKXPI-UCUIgBhqXAWSflmL7tZwfoKepyeTUIs_psTRIwY4wuT7LUHZbZfeckjj7PnUb7I3mbHejX80Rx7IT4TZp-u-vCaryjzCF-0tsRIY8zsD4aY6riv_4CIRJ9x5WkJFZJJENLPI6Vltg26QLL8S4kjHmODyKV4w2X_LNeC0g4SeulLU1mnrCuPN663xnRfV2Y52VCWvH0U4BgdwPYFSl1IbFabVZc7qYY0j---ShnDrU4Mu4yxib28v6TOkfcn_Ye4dySqk1nmBJEb3LAJZYIRAVBqTu2gIbbCBhAVitPCk3O_BgbdJLWvUpY6YX5k1YAYyxqmXu-fzDvp-0f3Y_t7-AdRBaAbFrcz7wf8bp-zlkWoQMzX1ftZc080cDV9SCVskBUp5Fd2WgwIb21CFWr2udmjSRG0Y0zgzNB0QOyaSvfdo-5vUYqEV-V0lxvx7-qQoodjvOXkIb2wunP8iQxAuFlrU36FIHbX1KZfX6_OgvA7nd0UKzsRRLxbpnmvuw0dbLIQsMHZuzttgmCQzWpUkcx5_4h43sk6pp_cZy9YsK02zhQyI1pfVTp8ndWCdcpo-u2ukdIfOeQdskWDT5MRTmmgCH_q5knNQ1vmerCf9iNM7FwldjrWFquqbhDbi8KdlN4wfxE5b4OpCiSce7CwbL0QTzBPEQo5sUcKB5Ju8YuBhY0CYk0UrIzicWwBDfktkPGM-lbYjfZU-ZKtX_T2JthK666Sy4BcGjxIq5fGA1xIqIzpJWIlS5x5MGBzKA3eyvtbZkM57wxrJdIMR07vTspmtXFWHXA-M7_yklwol1ldx-p9a4oy4FDF-US7Ka_nwV3faeSmbl2bGvxnixT5Ll3iBX2HMq6X9Pu_Tzi5X5XTbbovCqVZYaLdwjNkYyYkZh8pJ3k_NykU0YKGMW95ifLyeIkoZ9kTQRviPCxPj6dqWmq3ALfnrgMnrm8DwvHgv96apHfWpdE6YGdJX85IIKkb78eWkBqYEtQxyDHq2ssrXnjAwn8bo4vnPDw8T4z6koCEN-Fqd2Fau3yQIxXEajN_2jjU_ZjAqk8QXzCJrJrbhrnngEsAWgMB-tmmjtQbUnxVQIbZgVr2lNh6E60uNCXxsayQ9-QjtthrKdgTPWNt-o8IL5IaOR5u9FRUbFiqZ-vqE2u8bdJvIBMihuWIshz65lqy7EOY8YHyuVUrdiGKh2oR1sM1usDoYCwFi_t8BpD9S9M2DvMUsUnmXw1pACF45062dUVtmoqVcTsbCTAH0jo59NxzPdOwpO8q0cBDhca6o_A2EcZNRqgdfY2OIQgQk9mNsEWt5iRjq1HpfusOGZyjaQUqaKiMf1IK9K-mOlNaT8w-IN-B22sa4vXxbd0FwL0qlqLAxvjM0UK126fUIzu5zWEH1u-EmBvLDeyvWFCbC7p7U_PqDKFdgYIYEJ64qsUX0P-4dgKQIbNBJh2D8XqVIiYEqZ8xIwLhEaW5pw52sZwnpCUmhFLrXEd--xOR1Pt42orAZcXfH8lh59A-QaAqFNaZDmaRXO1QcDvHbRxPpG6puCTxp6hdXWnMrYAYPf_0TDmxdKriW2JNcsb5p-u_opTd7zUpRKa4r3csEYJRieeRmOPbKrJQLiIScGEDrvm6KxI4eusbd25DyhNNp7FltYJNr71-TD_4vPFPfsroR-kWSTfd8M815OOTGQJNvceOReCE_Cl4kpK22oG4lYg-lyICp94i-CYyB1qNYY3i-YFQVSuHkSQY_cvvMyvKieeBE88JomdVyGVVcWCbXEZd6H4Lm9wyTNvdbgo7pI2gTZx0iXxtWdtwFVy12VbpfFFCV6dD2x8PP3CIsdZmb2VTO5PZ6sWo5tYWK_4BHC27esl0RDGLFX35Fou-kiUrkgkxVcrEOk7NQT4TG4IGvlOEmzUhImDqxirLW8u6a0JTCNUxEfbJKeM30Ry9L7q41TXFOJzY_7Yy5QL7Uw75QU25ZbuRcElytL-mXsoMiRb6pE-f-VtgvsxTN8zu16zwytynGqsBiXAEpMxJrbgzioiA1nrGiREo3IIyg32UMHtG_DLWhCWHJlWqUCv95nJKEDOfQ9Ul4v59UXKXZ_M-FHXl7AG0TdppauAcIdeSjGZ_65gYXFfFw936AbyL3sjPx69LAp8mvtBJorcZmsP0drYXAW-3-uIaCE-x4BaZvTTNpOdsRTKE6t9l3ZbUQcGb-Jcnh0WYDcb46CMEKPuxvOw1QgaSEKITDKeq_gl8zAV1PLNuuQTvTXBKzaHJpgAdpFmPf01YrBBRN0Eitnq3X7-_dUSIhnJ3Rmc_QdgvMPTEWU7SokoFlO_2tJSm2YfWB_NoawTrD7-pYyrRvMl4UZI9aCjkOOXKWs86o3yIP1uS4dglmzYjvxfUiH-jEVLW4wVQGv_QoniTiw9p85ZvY1aC9vqGx1wzo6r82-GbQLTm89AEIqcd2yigF17EhRybFDsgNMkonrUEINIX5WPH6P0pPCp9qgU2rkyjzaPI4WK8VCt92gFVBMkx-gz0DViXw2XPeTTUQMmy7SeWYVrK_CsyZjqpjCOaNLJxPI-yhoX4uWgLQ7DaQDFTVTthgxiIa4TTrkPixuqsyxn1IDctDeDCpARoKs87r6TsZGtZI61EaHrCgIHruLAPZFibscFekq0XHZ_bsZ9WaGleANd1SE7EFRYcsAGqSRENFD3yb-CW0NvuJc31fbeecW0I44qAiw25kB4eWetpvqrKGnB5lVfifje8sCk3mt_sNKP-it-7gyBCd8_BvVB6tGhTOp8ldh2A_-FUEkByxVl8aMWkTvc3AaJKBEWqiQQQviOvlMFUfQFVANNtR-n-mw-2So4B4P5j0YAg98dchmh-sShgOKANbPJ7uoKVgwDrDmIXpoVo0hCqfZlTH_xUJrV_wMTkoVKJyoos6fyKRrCaLQmlKhHmNdAN56QplM5bnWqOiPEaR6psVTAy4-ij7EZaGyXcy9OREpiGKgRWPlfehcsOhVDiU9qVwet9H6Yi4l7OcSSuipcJtT5gYbM4zuUX7o7OwKzX9XF_TmZIVtv5kHU0_kDMDlJSTzhB24U_HSLGXRmB7actth-uVKl5d-0z2wfnfh6tYpl3PjOGM7OHQWcH_w7LzYC5kJ64Uem3hosgQ0NniVrIoCMSRw-oPxOBtmMXx4dhY4BIZaCxYN_pd0wrn730Xa7stoyBpWqYf8OYWhcEi4tkgWtOFB_E0ijipQQS54MIEGjZ6CSyGOjHM47iXs006z20nJNTuiC1MTgfi4FnoiCnFPWWATMXA1CpQFRLBSFb1gjo1FJ3QfpNk2q5w3F2a53v67dhiAzS8Nndafg_2RpaTD2C8sYiZXOJFSzxBuWLLUPa0fQ7cugE-sThIuJWdxqt37vD6ppxt8moagKP2UOw9L27EYWjTOTLSCjankjvDiFjLBGP4oqiv-70jNLiAnLnS0UHfsQZWmsLgWGZbBbzvcDLWzcvBR70Nnygsxn2Uo9kpEETexTdVZFjFduA4TdRqcYeaX88e5Lb5Mr8sDfS1cOokgz7pb2wVc5uKuxEzZPJctovF9eO6HPLiOjU9YNWaaIQd8m4QmedIkpAia8M2Qj-im8m6uSQKuzGBlRwA0IixTSmnQ8_V8H7HkfbuzRBjiEi2XF8sMD1pgWedL6f5zsUL5bYXWRHlub9tros9R_eqV0zfM6uA7dfsrCFUhPbE4sQ3MhrhYdemejN-uGY2j0xW41W15j-vhBRq00cp-M2pnjv9D90NbM56oO_7AAeN8PaweQktN1QTJOuC08n4f1ANGKJheMTiW_-pZgjHhJ7cP4AckM-REuSulgpoG9DgWBW1IpvRbIZQcE49Iba4pZgDxvy7Ieo67JA0TY2RCdW8ta_JSB3mSFO8SfykZL08-RkSvHkgteBx4k-LBg14mYVY4TdnxRs_LjwxSezlbVbMWcnXuJXg7VzfqBdsqj2dd3U14zqokr3C7riqadJJKbaOdZg1O3Dx1-Tmu0SscWV6yfG2nGjMIzVz0SuGh0-UtxViHT61_EEuOUFLfMcyD59c_pW58GPVg6Smhe_3hZmi5jV-LrMoFozbK1f0eTM3JNSb2Fry066IkyuzA_rRVVDR9IIE9SklB9GCb1DXOa-FiayoQ7xon7Lr8jyTZhOsGTsH_B1tFkpOEz3lpmOiIs5fZb5ZPurtxkyMJ-NtzqhM3SqsBso-HU-mHHxTbb43vurECuaoCgwzmahX936mlRT0iegZMh8ch6Ui2kHEEQrKK0OP8eyTjniwUhwaH9BzsOYrJeDBohfI720oR1SQeZwpepsmoXumrRmCspsRQ3i4v_bP5M1Oqw9xs6zoG_h3OVRAZLC_WpO9abUktCp5VGQQ75iL3JYsFHFicxBGowM35Dkw_5oK-FR55w72LgiAqHCp5kdUZfWqUHOy4zq2cEdhIf6bKXzh4oEoW20Xgjmg1kj1RqUFjn5TIk1IEPSWYzTxM8s4pe-djn00TtwB4HegKJmWJiS9A4_XRNAo7iw36RHgKYFut7RpFtWZ3Z0o2Jr7SWF_PHUwaZKda2sGq9elCim-s8V5Mqzf16jliFQ_U35CGDFu9LZcYGpPVa6CahBSjUImij2f4gvX8RNUY-vageAiSifqgM-7NfOsl3qnXN7QtuZp3_qVWL-q1ZPT6a13e4LNGN68AgO0OYOurkLIdO48NTKYf1f-weiIHRiEXSh0OBasu63M5r5bvev-_mOJJ6Z19ARHxnWv4ai_cj_4y1tH9Bvc2GHAyXYYHK5DwvuMdocMoqfWJag3lwW52LNi1rugdjg_O7mWExLYHKAXtBRwPLBjmI4gotjTnw02rEtjiV7k5EmZmQ9nnoLGN5MV32BJojpXiHwUN5hKn0Oe3dQ2aOt-yNNqFrMen34FQ7XpeprMtE3leyZMvLuuQg8p6ySZKm07BEnsl8g3VBTRFRiOhC0wmswykuIFQFmcxuidJk_Qrgzo247wjxh1Zppebkq333OkQp58inDwERAjeZeKtJiauxVG37Y22NilvihEYYL9yp1fQAkl9A-uiicPV1cweYZq07xVIolAAVkjclNrCQPD5RmJTY30PP2M05cPCt8WFRKtc3f4fSQsIHZtXUPDB6mjgjh92VFggekq4IznnokpkqmAH035Yl21c5RVutOKDNNPTgLwUx2BMMvOKxZvnjylqRCMek-nwlHLEjFbWHXzMyw2yUg6Ij8i401q3Ra546R89thIdOQ1TYVvTajKB8Q8ZiZ1aYsRaOBISOT52Mwn__e-Uksgld2nyrLNxtD64WKT_0yVq-YSF3KW0r1DQZklT25XaoR8Wh7wQ7UFT6bYBYvmtx_jEtmja1E9lVqyYp4Cmchk1Pg8RDINDFvBSNW7XuW0_ES1WlPwG9qhkhxUgMMowm5diL1jgdag5aa9GEGsKhFWO-bKticQLmlJ__Mifq_0Y-m1jFhOtok7cB1ypdTXjTfUl3MNhWB1hrf9v3TARpMGoRnhOXdfkW6FvLpR63Dzi9uI-Kmjjbt0RsoIHxGm_pruySpi9cEh0qk6a9PIVrbhztgd2dETrA67EiJ3yXrYEK_dzZMjdmtf29cjHqb-tJNWJN_RSJrqXlDSQWWs9TNggi6BajT-tWDUfB2QhZbVGc20uxWOvxRFr3Q_MoZg7P_g6HSiHg_2YMQMFkhlzapt6Fw7fVCPabrbhefJzq3opai2Zexy7axb9kPJVOpulqi0_AmEe1sDO-MXqpsn1xhUYCYdLovuEbYoP4r_0VLuEXhbB3E7Y8_fEFPhO86VeAMIIwPzLgmXrEXuo0A1RVXu4dBX3D4TLf6zupTBAovKQySRDy0-UFfvZHpwZv3xK4CoM61JpMvZ3cqW1nQq8KFwJ891v6GOYibGP6v_o=",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "deliberately_omitted_claims": [
+      {
+        "claim_id": "clm-74ed3707d91940af",
+        "reason": "خارج از دامنه اصلی معرفی کتاب آرنت؛ مربوط به تعمیم مفهوم پدیدارشناختی فضای بیرونی/درونی در تحلیل‌های مدرن اقلیمی."
+      },
+      {
+        "claim_id": "clm-11b14ac83eb6456f",
+        "reason": "جزئیات تحلیل ثانویه در مقاله جانبی درباره مفهوم زمین."
+      },
+      {
+        "claim_id": "clm-c405f8caef2c5a76",
+        "reason": "مربوط به مباحث ثانویه سازگاری با تغییرات اقلیمی."
+      },
+      {
+        "claim_id": "clm-d537dadeb42ec902",
+        "reason": "جزئیات مفهوم زره/سازگاری شخصی در نقد نئولیبرالیسم."
+      },
+      {
+        "claim_id": "clm-67d13f10775f9275",
+        "reason": "تحلیل معمارانه فضاهای محصور خارج از موضوع اصلی اپیزود."
+      },
+      {
+        "claim_id": "clm-033a1f2ba7f72f4a",
+        "reason": "تفسیر ثانویه درباره عقلانیت ابزاری و تکنولوژی."
+      },
+      {
+        "claim_id": "clm-b0019526b05f33be",
+        "reason": "جزئیات مربوط به جدایی حسانی انسان از دادگی زمین."
+      },
+      {
+        "claim_id": "clm-9a8edde50b72b48b",
+        "reason": "موضوع واسطه‌مندی ابزارهای علمی مدرن خارج از اولویت ۱۰ دقیقه‌ای."
+      },
+      {
+        "claim_id": "clm-f70049469025113b",
+        "reason": "مباحث جزئی فضایی درباره امور عمومی و خصوصی."
+      },
+      {
+        "claim_id": "clm-6c742521f52c76c9",
+        "reason": "تفسیر آرنت از تمثیل غار افلاطون که فرعی محسوب می‌شود."
+      },
+      {
+        "claim_id": "clm-18a2868e055746da",
+        "reason": "مباحث جزئی در خصوص طراحی فضاهای داخلی و خارجی."
+      },
+      {
+        "claim_id": "clm-f8752aeecf6ca906",
+        "reason": "مباحث پدیدارشناختی حسانی در محیط بیرونی."
+      },
+      {
+        "claim_id": "clm-f1bcfb3974cafbd9",
+        "reason": "جزئیات نقد آرنت پیرامون ضرورت طبیعی در برابر آزادی."
+      },
+      {
+        "claim_id": "clm-9a6cfd871a2dbcc7",
+        "reason": "مثال تاریخی پرتاب ماهواره مصنوعی به عنوان نقطه عطف."
+      },
+      {
+        "claim_id": "clm-dffb6f228cecb331",
+        "reason": "تعریف فنی مفهوم فرآیند در برابر کنش."
+      },
+      {
+        "claim_id": "clm-7a6bf87729c605be",
+        "reason": "جزئیات مرحله اول مدرنیته و خشونت انسان سازنده علیه طبیعت."
+      },
+      {
+        "claim_id": "clm-c3ff138ff14a48c9",
+        "reason": "بحث شیء‌انگاری طبیعت توسط انسان سازنده."
+      },
+      {
+        "claim_id": "clm-2f4d7c52e35b88e2",
+        "reason": "جزئیات مرحله دوم مدرنیته و غلبه انسان زحمت‌کش."
+      },
+      {
+        "claim_id": "clm-3a162f5404f08e78",
+        "reason": "مباحث روش‌شناختی پیرامون روایت نقد فرهنگی و فلسفه سیاسی."
+      },
+      {
+        "claim_id": "clm-7c56f868013911c8",
+        "reason": "ارتباط توتالیالیسم با بازطبیعی‌سازی که خارج از scope عمومی اپیزود است."
+      },
+      {
+        "claim_id": "clm-d426d716a069cea0",
+        "reason": "تحلیل روایت دوگانه فلسفه سیاسی و نقد فرهنگی."
+      },
+      {
+        "claim_id": "clm-188940a4b928c242",
+        "reason": "بررسی جزئیات فصل پایانی کتاب در مقایسه با آلودگی محیط زیست."
+      },
+      {
+        "claim_id": "clm-b04f8f757be082ca",
+        "reason": "نقد تفصیلی آرنت به دیدگاه مارکس و هگل درباره نیروی کار."
+      },
+      {
+        "claim_id": "clm-43a32889e3db4a7b",
+        "reason": "مقایسه تاریخی انقلاب آمریکا و فرانسه."
+      },
+      {
+        "claim_id": "clm-8508e2335e88195b",
+        "reason": "یادداشت متاداده‌ای درباره بخش منابع."
+      }
+    ],
+    "follow_up_topics": [
+      "مقایسه مفهوم «کار»، «صنعت» و «کنش» در اندیشه آرنت و مارکس",
+      "بررسی نقش انقلاب‌های مدرن در شکل‌گیری حوزه عمومی از دیدگاه آرنت",
+      "بیگانگی از زمین و نسبت آن با بحران‌های زیست‌محیطی معاصر"
+    ],
+    "listener_outcome": "فهم روشن موضوع، ایده‌های اصلی و چارچوب مفهومی کتاب وضع بشر هانا آرنت",
+    "segments": [
+      {
+        "claim_ids": [
+          "clm-27d7960629cc8d70",
+          "clm-cdfd1f19002d9de1"
+        ],
+        "key_question": "آرنت از چه روشی برای تحلیل وضع بشر استفاده می‌کند و فعالیت‌های انسانی را چگونه دسته‌بندی می‌نماید؟",
+        "prerequisite_claim_ids": [],
+        "purpose": "معرفی رویکرد پدیدارشناختی آرنت و تفکیک اولیه عرصه عمومی و خصوصی",
+        "speaker_dynamic": "explanation",
+        "target_minutes": 2.5,
+        "title": "پدیدارشناسی وضع بشر و سطوح فعالیت‌های انسانی"
+      },
+      {
+        "claim_ids": [
+          "clm-3a561b777e44ce86",
+          "clm-43c898a10d267e4a",
+          "clm-177abafe0237f1e2",
+          "clm-42387f05124f8d6c",
+          "clm-469d428f8dd902ee"
+        ],
+        "key_question": "چرا کنش و گفتار عالی‌ترین تجلی آزادی انسان هستند و زادمندی چه نقشی در حوزه عمومی دارد؟",
+        "prerequisite_claim_ids": [
+          "clm-cdfd1f19002d9de1"
+        ],
+        "purpose": "تبیین جایگاه Homo Faber، عمل به عنوان عالی‌ترین فعالیت انسانی و مفاهیم تکثر و زادمندی",
+        "speaker_dynamic": "explanation",
+        "target_minutes": 3.0,
+        "title": "حیات فعال: ساخت کار، عمل، تکثر و زادمندی"
+      },
+      {
+        "claim_ids": [
+          "clm-69fe45bd8b92b783",
+          "clm-12d66b0d3864127f",
+          "clm-f2514de064072149"
+        ],
+        "key_question": "مدرنیته چگونه با غلبه ضرورت طبیعی باعث بیگانگی انسان از جهان و زمین می‌شود؟",
+        "prerequisite_claim_ids": [
+          "clm-43c898a10d267e4a"
+        ],
+        "purpose": "بررسی آسیب‌شناسی آرنت از مدرنیته و زوال عرصه عمومی",
+        "speaker_dynamic": "critique",
+        "target_minutes": 3.0,
+        "title": "نقد مدرنیته: بیگانگی از جهان و زمین"
+      },
+      {
+        "claim_ids": [
+          "clm-2b6b35a1238d355c"
+        ],
+        "key_question": "چگونه مفهوم شهروندی می‌تواند جایگزینی برای برون‌رفت از بحران بیگانگی جهانی باشد؟",
+        "prerequisite_claim_ids": [
+          "clm-69fe45bd8b92b783"
+        ],
+        "purpose": "جمع‌بندی پیام اصلی کتاب و ارائه راهکار آرنت برای مقابله با بیگانگی از جهان",
+        "speaker_dynamic": "recap",
+        "target_minutes": 1.5,
+        "title": "نتیجه‌گیری و بازبازیابی شهروندی"
+      }
+    ],
+    "title": "بررسی اندیشه هانا آرنت در کتاب «وضع بشر»"
+  },
+  "prompt_feedback": null,
+  "text": "{\"title\": \"بررسی اندیشه هانا آرنت در کتاب «وضع بشر»\", \"listener_outcome\": \"فهم روشن موضوع، ایده‌های اصلی و چارچوب مفهومی کتاب وضع بشر هانا آرنت\", \"segments\": [{\"title\": \"پدیدارشناسی وضع بشر و سطوح فعالیت‌های انسانی\", \"purpose\": \"معرفی رویکرد پدیدارشناختی آرنت و تفکیک اولیه عرصه عمومی و خصوصی\", \"target_minutes\": 2.5, \"claim_ids\": [\"clm-27d7960629cc8d70\", \"clm-cdfd1f19002d9de1\"], \"prerequisite_claim_ids\": [], \"key_question\": \"آرنت از چه روشی برای تحلیل وضع بشر استفاده می‌کند و فعالیت‌های انسانی را چگونه دسته‌بندی می‌نماید؟\", \"speaker_dynamic\": \"explanation\"}, {\"title\": \"حیات فعال: ساخت کار، عمل، تکثر و زادمندی\", \"purpose\": \"تبیین جایگاه Homo Faber، عمل به عنوان عالی‌ترین فعالیت انسانی و مفاهیم تکثر و زادمندی\", \"target_minutes\": 3.0, \"claim_ids\": [\"clm-3a561b777e44ce86\", \"clm-43c898a10d267e4a\", \"clm-177abafe0237f1e2\", \"clm-42387f05124f8d6c\", \"clm-469d428f8dd902ee\"], \"prerequisite_claim_ids\": [\"clm-cdfd1f19002d9de1\"], \"key_question\": \"چرا کنش و گفتار عالی‌ترین تجلی آزادی انسان هستند و زادمندی چه نقشی در حوزه عمومی دارد؟\", \"speaker_dynamic\": \"explanation\"}, {\"title\": \"نقد مدرنیته: بیگانگی از جهان و زمین\", \"purpose\": \"بررسی آسیب‌شناسی آرنت از مدرنیته و زوال عرصه عمومی\", \"target_minutes\": 3.0, \"claim_ids\": [\"clm-69fe45bd8b92b783\", \"clm-12d66b0d3864127f\", \"clm-f2514de064072149\"], \"prerequisite_claim_ids\": [\"clm-43c898a10d267e4a\"], \"key_question\": \"مدرنیته چگونه با غلبه ضرورت طبیعی باعث بیگانگی انسان از جهان و زمین می‌شود؟\", \"speaker_dynamic\": \"critique\"}, {\"title\": \"نتیجه‌گیری و بازبازیابی شهروندی\", \"purpose\": \"جمع‌بندی پیام اصلی کتاب و ارائه راهکار آرنت برای مقابله با بیگانگی از جهان\", \"target_minutes\": 1.5, \"claim_ids\": [\"clm-2b6b35a1238d355c\"], \"prerequisite_claim_ids\": [\"clm-69fe45bd8b92b783\"], \"key_question\": \"چگونه مفهوم شهروندی می‌تواند جایگزینی برای برون‌رفت از بحران بیگانگی جهانی باشد؟\", \"speaker_dynamic\": \"recap\"}], \"deliberately_omitted_claims\": [{\"claim_id\": \"clm-74ed3707d91940af\", \"reason\": \"خارج از دامنه اصلی معرفی کتاب آرنت؛ مربوط به تعمیم مفهوم پدیدارشناختی فضای بیرونی/درونی در تحلیل‌های مدرن اقلیمی.\"}, {\"claim_id\": \"clm-11b14ac83eb6456f\", \"reason\": \"جزئیات تحلیل ثانویه در مقاله جانبی درباره مفهوم زمین.\"}, {\"claim_id\": \"clm-c405f8caef2c5a76\", \"reason\": \"مربوط به مباحث ثانویه سازگاری با تغییرات اقلیمی.\"}, {\"claim_id\": \"clm-d537dadeb42ec902\", \"reason\": \"جزئیات مفهوم زره/سازگاری شخصی در نقد نئولیبرالیسم.\"}, {\"claim_id\": \"clm-67d13f10775f9275\", \"reason\": \"تحلیل معمارانه فضاهای محصور خارج از موضوع اصلی اپیزود.\"}, {\"claim_id\": \"clm-033a1f2ba7f72f4a\", \"reason\": \"تفسیر ثانویه درباره عقلانیت ابزاری و تکنولوژی.\"}, {\"claim_id\": \"clm-b0019526b05f33be\", \"reason\": \"جزئیات مربوط به جدایی حسانی انسان از دادگی زمین.\"}, {\"claim_id\": \"clm-9a8edde50b72b48b\", \"reason\": \"موضوع واسطه‌مندی ابزارهای علمی مدرن خارج از اولویت ۱۰ دقیقه‌ای.\"}, {\"claim_id\": \"clm-f70049469025113b\", \"reason\": \"مباحث جزئی فضایی درباره امور عمومی و خصوصی.\"}, {\"claim_id\": \"clm-6c742521f52c76c9\", \"reason\": \"تفسیر آرنت از تمثیل غار افلاطون که فرعی محسوب می‌شود.\"}, {\"claim_id\": \"clm-18a2868e055746da\", \"reason\": \"مباحث جزئی در خصوص طراحی فضاهای داخلی و خارجی.\"}, {\"claim_id\": \"clm-f8752aeecf6ca906\", \"reason\": \"مباحث پدیدارشناختی حسانی در محیط بیرونی.\"}, {\"claim_id\": \"clm-f1bcfb3974cafbd9\", \"reason\": \"جزئیات نقد آرنت پیرامون ضرورت طبیعی در برابر آزادی.\"}, {\"claim_id\": \"clm-9a6cfd871a2dbcc7\", \"reason\": \"مثال تاریخی پرتاب ماهواره مصنوعی به عنوان نقطه عطف.\"}, {\"claim_id\": \"clm-dffb6f228cecb331\", \"reason\": \"تعریف فنی مفهوم فرآیند در برابر کنش.\"}, {\"claim_id\": \"clm-7a6bf87729c605be\", \"reason\": \"جزئیات مرحله اول مدرنیته و خشونت انسان سازنده علیه طبیعت.\"}, {\"claim_id\": \"clm-c3ff138ff14a48c9\", \"reason\": \"بحث شیء‌انگاری طبیعت توسط انسان سازنده.\"}, {\"claim_id\": \"clm-2f4d7c52e35b88e2\", \"reason\": \"جزئیات مرحله دوم مدرنیته و غلبه انسان زحمت‌کش.\"}, {\"claim_id\": \"clm-3a162f5404f08e78\", \"reason\": \"مباحث روش‌شناختی پیرامون روایت نقد فرهنگی و فلسفه سیاسی.\"}, {\"claim_id\": \"clm-7c56f868013911c8\", \"reason\": \"ارتباط توتالیالیسم با بازطبیعی‌سازی که خارج از scope عمومی اپیزود است.\"}, {\"claim_id\": \"clm-d426d716a069cea0\", \"reason\": \"تحلیل روایت دوگانه فلسفه سیاسی و نقد فرهنگی.\"}, {\"claim_id\": \"clm-188940a4b928c242\", \"reason\": \"بررسی جزئیات فصل پایانی کتاب در مقایسه با آلودگی محیط زیست.\"}, {\"claim_id\": \"clm-b04f8f757be082ca\", \"reason\": \"نقد تفصیلی آرنت به دیدگاه مارکس و هگل درباره نیروی کار.\"}, {\"claim_id\": \"clm-43a32889e3db4a7b\", \"reason\": \"مقایسه تاریخی انقلاب آمریکا و فرانسه.\"}, {\"claim_id\": \"clm-8508e2335e88195b\", \"reason\": \"یادداشت متاداده‌ای درباره بخش منابع.\"}], \"follow_up_topics\": [\"مقایسه مفهوم «کار»، «صنعت» و «کنش» در اندیشه آرنت و مارکس\", \"بررسی نقش انقلاب‌های مدرن در شکل‌گیری حوزه عمومی از دیدگاه آرنت\", \"بیگانگی از زمین و نسبت آن با بحران‌های زیست‌محیطی معاصر\"]}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 1993,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 11946,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 11946
+      }
+    ],
+    "thoughts_token_count": 3372,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 17311,
+    "traffic_type": null
+  }
+}

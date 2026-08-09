@@ -1,0 +1,48 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "All human activities are conditioned by human togetherness, but only action exclusively depends upon the constant presence of others.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "All human activities are conditioned by the fact that men live together, but it is only action that cannot even be imagined outside the society of men."
+      },
+      {
+        "claim": "The translation of Aristotle's zōon politikon as animal socialis reflects a loss of the original Greek understanding of politics.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Human life in so far as it is actively engaged in doing something, always rooted in a world of men and man-made things.",
+        "term": "vita activa"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "A sharp distinction in a citizen's life between private existence and communal existence corresponding to the household versus the city-state.",
+        "item_a": "idion (what is one's own)",
+        "item_b": "koinon (what is communal)"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Introduction of Chapter II, discussing the relation between the vita activa and human togetherness, and examining the translation and historical evolution of animal socialis versus zōon politikon.",
+    "unresolved_context": []
+  }
+}

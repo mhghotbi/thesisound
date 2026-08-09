@@ -1,0 +1,32 @@
+{
+  "finish_reason": "STOP",
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "detected_language": "fa",
+    "speaker": "B",
+    "transcript": "این پرسش‌های پدیدارشناختی بسیار کلیدی هستند. اما آرنت بر اساس این نگاه فعالیت‌های گوناگون انسان و عرصه‌های زندگی او را چگونه دسته‌بندی می‌کند؟ آیا تمام سطوح رفتار و کنش انسانی از نظر او ارزش یکسانی دارند؟"
+  },
+  "text": "{\n  \"transcript\": \"این پرسش‌های پدیدارشناختی بسیار کلیدی هستند. اما آرنت بر اساس این نگاه فعالیت‌های گوناگون انسان و عرصه‌های زندگی او را چگونه دسته‌بندی می‌کند؟ آیا تمام سطوح رفتار و کنش انسانی از نظر او ارزش یکسانی دارند؟\",\n  \"detected_language\": \"fa\",\n  \"speaker\": \"B\"\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 86,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 577,
+    "prompt_tokens_details": [
+      {
+        "modality": "AUDIO",
+        "token_count": 544
+      },
+      {
+        "modality": "TEXT",
+        "token_count": 33
+      }
+    ],
+    "thoughts_token_count": 255,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 918,
+    "traffic_type": null
+  }
+}

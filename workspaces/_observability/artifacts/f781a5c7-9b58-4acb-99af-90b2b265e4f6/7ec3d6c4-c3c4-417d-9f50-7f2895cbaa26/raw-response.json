@@ -1,0 +1,34 @@
+{
+  "audio_parts": [
+    {
+      "mime_type": "audio/l16; rate=24000; channels=1",
+      "sha256": "45c56bbedce565caf2a7eab9bf4da79d4a5b63ca872854bdb32dfc971d47ee4f",
+      "size_bytes": 2232960
+    }
+  ],
+  "finish_reason": "STOP",
+  "model_version": "gemini-3.1-flash-tts-preview",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 1489,
+    "candidates_tokens_details": [
+      {
+        "modality": "AUDIO",
+        "token_count": 1489
+      }
+    ],
+    "prompt_token_count": 212,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 212
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 1701,
+    "traffic_type": null
+  }
+}

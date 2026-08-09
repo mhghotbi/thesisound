@@ -1,0 +1,66 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The target block contains unicode-escaped text representations and symbols that cannot be reliably parsed into substantive claims under the strict grounding rules.\"\n  ],\n  \"must_not_be_lost\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPAKvrrxQ2DF9JHTXkkktVmH1yaPPtkD0Z5nzjR8b74ESsW4FU3FjKUUuT1JUm",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "conclusion",
+    "unresolved_context": [
+      "The target block contains unicode-escaped text representations and symbols that cannot be reliably parsed into substantive claims under the strict grounding rules."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The target block contains unicode-escaped text representations and symbols that cannot be reliably parsed into substantive claims under the strict grounding rules.\"\n  ],\n  \"must_not_be_lost\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 117,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 7164,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 7164
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 7281,
+    "traffic_type": null
+  }
+}

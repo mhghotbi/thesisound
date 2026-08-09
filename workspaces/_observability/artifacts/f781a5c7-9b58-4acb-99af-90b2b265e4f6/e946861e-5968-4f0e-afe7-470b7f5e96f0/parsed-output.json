@@ -1,0 +1,51 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Modern labor tools and mute robots have eased the effort of sustaining life and giving birth, but they have not eliminated necessity or compulsion from human life.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "It is true that the enormous improvement in our labor tools—the mute robots with which homo faber has come to the help of the animal laborans ... has made the twofold labor of life, the effort of its sustenance and the pain of giving birth, easier and less painful than it has ever been. This, of course, has not eliminated compulsion from the laboring activity or the condition of being subject to need and necessity from human life."
+      },
+      {
+        "claim": "Tools and instruments are products of work rather than labor, belonging to the world of use objects rather than the process of consumption.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Tools and instruments which can ease the effort of labor considerably are themselves not a product of labor but of work; they do not belong in the process of consumption but are part and parcel of the world of use objects."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Human, speaking instruments, such as slaves in ancient households, required by the man of action to rule and oppress in order to liberate the animal laborans from its bondage.",
+        "term": "instrumentum vocale"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Tools of workmanship result in something more than the mere use of the instrument with a predictable end, whereas instruments of the household are tied to the endless, consuming process of living.",
+        "item_a": "Tools and instruments of workmanship",
+        "item_b": "Instruments of the household"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Man cannot be free if he does not know that he is subject to necessity.",
+      "Slaves are not instruments of making things or of production, but of living."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "To analyze the role of tools, instruments, and robotic assistance in relation to labor and work, distinguishing them from human instruments and explaining why gadgets cannot fully replace living human service in the endless process of life.",
+    "unresolved_context": []
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "For Arendt, the central issue of the modern age is world alienation rather than self-alienation.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "، اﺻﻠﯽ دوران ﻣﺪرنﻪ ﻣﺴﺌﻠ، ﺑﺮ بۆ آرﻧﺖ »ﺟﻬـﺎن از ﺑﯿﮕـﺎﻧﮕﯽ «اﺳـﺖ . او در ﮐﺘـﺎب »وﺿـﻊ ﺑﺸﺮ«دﻫﺪ ﮐﻪ »دوران ﻪ ﺑﯿﮕﺎﻧﮕﯽ و ﻧﻪ از ﺧﻮد ﺑﯿﮕـﺎﻧﮕﯽ دارد ﺑـﻪ ﻣﺸﺨﺼـ    از ﺟﻬﺎن ﺷﻮد ﻣﺪرن ﺗﺒﺪﯾﻞ ﻣﯽ «"
+      },
+      {
+        "claim": "World alienation results in the loss of the common and public world, isolating individuals into private spheres and inwardness.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "ﺟﻬـﺎن ، ﻫﻤﭽﻨﯿﻦ ﯾﮑﯽ دﯾﮕﺮ از ﻋﻮاﻗﺐ ﺑﯿﮕﺎﻧﮕﯽ از ﺟﻬﺎن اﯾﻦ اﺳﺖ ﮐﻪ ﻓﺮد. ﮐﻨﺪ ﻧﯿﺰ ﺧﺼﻮﺻـﯽ ﺧـﻮد   ةﺣـﻮز ﺳـﻮي ﺧـﻮد و    از ﺟﻬﺎن ﺑـﻪ  دﻫﺪ و ﻣﺸﺘﺮك و ﻋﻤﻮﻣﯽ را از دﺳﺖ ﻣﯽ"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The condition in the modern age where people lose their connection to a common, intersubjectively constituted world, resulting in the loss of meaning of existence and shared reality.",
+        "term": "ﺟﻬﺎن ﺑﯿﮕﺎﻧﮕﯽ (World alienation)"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Arendt argues that modernity is characterized by alienation from the world rather than alienation from the self.",
+        "item_a": "ﺑﯿﮕﺎﻧﮕﯽ از ﺟﻬﺎن (World alienation)",
+        "item_b": "ﺑﯿﮕﺎﻧﮕﯽ از ﺧﻮد (Self-alienation)"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The distinction between world alienation and self-alienation in Arendt's thought.",
+      "The connection between world alienation, the loss of the public realm, and the erosion of shared reality."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "To analyze Hannah Arendt's concept of world alienation as the central problem of modernity and its relation to political and philosophical traditions.",
+    "unresolved_context": [
+      "Discussion of Kafka's perspective on modernity and the Archimedean point, and the historical roots of world alienation in Plato's cave allegory."
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Aristotle distinguished three ways of life chosen in freedom: the life of enjoying bodily pleasures, the life devoted to the matters of the polis producing beautiful deeds, and the life of the philosopher devoted to the contemplation of things eternal.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The remaining three ways of life have in common that they were concerned with the “beautiful,” that is, with things neither necessary nor merely useful: the life of enjoying bodily pleasures in which the beautiful, as it is given, is consumed; the life devoted to the matters of the polis , in which excellence produces beautiful deeds; and the life of the philosopher devoted to inquiry into, and contemplation of, things eternal, whose everlasting beauty can neither be brought about through the producing interference of man nor be changed through his consumption of them."
+      },
+      {
+        "claim": "With the disappearance of the ancient city-state, the term vita activa lost its specifically political meaning to denote all active engagements, while contemplation remained the only truly free way of life.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "With the disappearance of the ancient city-state—Augustine seems to have been the last to know at least what it once meant to be a citizen—the term vita activa lost its specifically political meaning and denoted all kinds of active engagement in the things of this world. To be sure, it does not follow that work and labor had risen in the hierarchy of human activities and were now equal in dignity with a life devoted to politics. It was, rather, the other way round: action was now also reckoned among the necessities of earthly life, so that contemplation (the bios theōrētikos , translated into the vita contemplativa ) was left as the only truly free way of life."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Denoted explicitly only the realm of human affairs, stressing the action, praxis, needed to establish and sustain it.",
+        "term": "bios politikos"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "The Aristotelian bios politikos explicitly denoted only the realm of human affairs and action, whereas the later medieval term vita activa lost its specifically political meaning and denoted all kinds of active engagement in earthly things.",
+        "item_a": "Aristotelian bios politikos",
+        "item_b": "Later medieval use of vita activa"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The superiority of contemplation over activity is traced back to Plato and Aristotle rather than originating strictly in Christianity."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Tracing the historical development and traditional hierarchy of the ways of life (bioi), comparing Aristotelian, medieval, and philosophical conceptions of the vita activa versus contemplation.",
+    "unresolved_context": []
+  }
+}

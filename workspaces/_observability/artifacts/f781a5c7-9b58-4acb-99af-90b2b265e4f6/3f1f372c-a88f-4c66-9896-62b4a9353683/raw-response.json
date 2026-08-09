@@ -1,0 +1,83 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"Works of art possess outstanding permanence and durability because they are not subject to the destructive use of living creatures, achieving a higher order of durability that represents the stability of the human artifice.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures, a use which, indeed, far from actualizing their own inherent purpose—as the purpose of a chair is actualized when it is sat upon—can only destroy them.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"their durability is almost untouched by the corroding effect of natural processes\"\n      ],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The immediate source of the work of art is the human capacity for thought, which transforms mute and inarticulate feelings until they are reified into worldly things.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The immediate source of the art work is the human capacity for thought, as man’s “propensity to truck and barter” is the source of exchange objects, and as his ability to use is the source of use things.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Works of art are unique, useless, non-exchangeable objects that are removed from daily utility.\",\n    \"Art permanence provides a tangible premonition of immortality achieved by mortal hands within the world.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPJspUk7kFu8TQG7JVrKouwx5mZvVlNI3bQgfRvYKsn06jw_31-O4LijSEdOyv",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Works of art possess outstanding permanence and durability because they are not subject to the destructive use of living creatures, achieving a higher order of durability that represents the stability of the human artifice.",
+        "claim_type": "author_position",
+        "confidence": 1,
+        "qualifications": [
+          "their durability is almost untouched by the corroding effect of natural processes"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures, a use which, indeed, far from actualizing their own inherent purpose—as the purpose of a chair is actualized when it is sat upon—can only destroy them."
+      },
+      {
+        "claim": "The immediate source of the work of art is the human capacity for thought, which transforms mute and inarticulate feelings until they are reified into worldly things.",
+        "claim_type": "author_position",
+        "confidence": 1,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The immediate source of the art work is the human capacity for thought, as man’s “propensity to truck and barter” is the source of exchange objects, and as his ability to use is the source of use things."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "must_not_be_lost": [
+      "Works of art are unique, useless, non-exchangeable objects that are removed from daily utility.",
+      "Art permanence provides a tangible premonition of immortality achieved by mortal hands within the world."
+    ],
+    "references_to_other_sections": [],
+    "segment_function": "conclusion",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"Works of art possess outstanding permanence and durability because they are not subject to the destructive use of living creatures, achieving a higher order of durability that represents the stability of the human artifice.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Because of their outstanding permanence, works of art are the most intensely worldly of all tangible things; their durability is almost untouched by the corroding effect of natural processes, since they are not subject to the use of living creatures, a use which, indeed, far from actualizing their own inherent purpose—as the purpose of a chair is actualized when it is sat upon—can only destroy them.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [\n        \"their durability is almost untouched by the corroding effect of natural processes\"\n      ],\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The immediate source of the work of art is the human capacity for thought, which transforms mute and inarticulate feelings until they are reified into worldly things.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The immediate source of the art work is the human capacity for thought, as man’s “propensity to truck and barter” is the source of exchange objects, and as his ability to use is the source of use things.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Works of art are unique, useless, non-exchangeable objects that are removed from daily utility.\",\n    \"Art permanence provides a tangible premonition of immortality achieved by mortal hands within the world.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 443,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2612,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2612
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3055,
+    "traffic_type": null
+  }
+}

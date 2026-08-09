@@ -1,0 +1,11 @@
+{
+  "chunk_hash": "17bac63a209c65efc63d3a24485386b2ef0c7afee010635c4affa2d3a11a58b7",
+  "chunk_id": "audio-0022",
+  "expected_speaker": "B",
+  "language": "fa",
+  "model": "gemini-3.6-flash",
+  "prompt": "گفتار این فایل را بدون خلاصه‌سازی و بدون اصلاح محتوایی رونویسی کن. زبان مورد انتظار fa و گوینده مورد انتظار B است.",
+  "timeout_ms": 180000,
+  "wav_sha256": "d6545535d81440b7ec315c91a67bbd0ce4bcdd025a6d2873911e730e574f16da",
+  "wav_size_bytes": 526124
+}

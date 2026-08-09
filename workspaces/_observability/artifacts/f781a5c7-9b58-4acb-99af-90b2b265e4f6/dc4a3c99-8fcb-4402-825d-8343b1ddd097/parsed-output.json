@@ -1,0 +1,13 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "issues": [],
+    "unsupported_claim_ratio": 0.0,
+    "verdict": "pass"
+  }
+}

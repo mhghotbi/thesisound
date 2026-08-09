@@ -1,0 +1,48 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The actual work of fabrication is guided by a model that precedes the process and exists outside the fabricator.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The actual work of fabrication is performed under the guidance of a model in accordance with which the object is constructed. This model can be an image beheld by the eye of the mind or a blueprint in which the image has already found a tentative materialization through work. In either case, what guides the work of fabrication is outside the fabricator and precedes the actual work process"
+      },
+      {
+        "claim": "The process of making is entirely determined by the categories of means and end.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The process of making is itself entirely determined by the categories of means and end."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Multiplies something that already possesses a relatively stable, relatively permanent existence in the world, distinct from mere repetition.",
+        "term": "Multiplication"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Multiplication multiplies something possessing relatively permanent existence in the world, whereas repetition is urged upon and remains subject to the biological cycle of the human body.",
+        "item_a": "Multiplication",
+        "item_b": "Repetition"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Examines the role of models, means-end categories, and the distinction between multiplication and repetition in the work of fabrication within the vita activa.",
+    "unresolved_context": []
+  }
+}

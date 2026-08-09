@@ -1,0 +1,33 @@
+{
+  "grounding_mode": "google_search",
+  "grounding_urls": [],
+  "model": "gemini-3.5-flash-lite",
+  "output_schema": {
+    "properties": {
+      "cautions": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Cautions",
+        "type": "array"
+      },
+      "overview": {
+        "title": "Overview",
+        "type": "string"
+      }
+    },
+    "required": [
+      "overview"
+    ],
+    "title": "SearchSynthesis",
+    "type": "object"
+  },
+  "system_prompt": "Use Google Search to find high-quality sources for the requested research purpose. Do not invent URLs. Summarize the search space; the application will trust only URLs returned in grounding metadata.",
+  "timeout_ms": 120000,
+  "tools": [
+    {
+      "google_search": {}
+    }
+  ],
+  "user_prompt": "Query: کتاب «وضع بشر» هانا آرنت درباره چه صحبت می‌کند؟\nPurpose: Find credible sources that can materially support the project's central question and declared scope.\nDesired source role: reference\nLanguage: fa"
+}

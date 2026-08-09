@@ -1,0 +1,51 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The force that keeps people together in public space is mutual promise or contract, which generates a limited reality of sovereignty.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "applies when many are mutually bound by promises",
+          "sovereignty assumes a limited reality"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "The force that keeps them together, as distinguished from the space of appearances in which they gather and the power which keeps this public space in existence, is the force of mutual promise or contract. Sovereignty, which is always spurious if claimed by an isolated single entity, be it the individual entity of the person or the collective entity of a nation, assumes, in the case of many men mutually bound by promises, a certain limited reality."
+      },
+      {
+        "claim": "Action is the one miracle-working faculty of man that interrupts the automatic, inexorable course of daily life and historical fatality.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "seen from the viewpoint of automatic processes"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Action is, in fact, the one miracle-working faculty of man"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [
+      {
+        "distinction": "sovereignty can only be achieved by the many bound together, whereas mastership is conceivable only in isolation.",
+        "item_a": "sovereignty in the realm of action and human affairs",
+        "item_b": "mastership in the realm of making and the world of things"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The faculty of promising and forgiving as control mechanisms born directly out of living together.",
+      "Natality as the condition that men are born in order to begin rather than just to die."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "conclusion",
+    "unresolved_context": []
+  }
+}

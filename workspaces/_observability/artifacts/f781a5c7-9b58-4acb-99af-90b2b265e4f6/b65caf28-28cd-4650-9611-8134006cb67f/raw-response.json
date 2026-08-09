@@ -1,0 +1,717 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\"claims\":[{\"claim\":\"The immediate reaction to the launch of the man-made satellite was not triumphal pride, but relief regarding the first step toward escaping human imprisonment to the earth.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-1b64e887fe3efc4a\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The question of whether to use new scientific and technical knowledge to alter human existence and escape the human condition cannot be decided by scientific means and is fundamentally a political question.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-cc62d06bf4c20e7a\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The term vita activa designates three fundamental human activities: labor, work, and action, each corresponding to a basic condition under which life on earth is given.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9f02fb7b35c018a1\"],\"support_status\":\"strong\",\"qualifications\":[\"limited to labor, work, and action\"]},{\"claim\":\"Plurality is the specific condition of all political life and is the condition of human action because humans are fundamentally alike yet individually unique.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-952e7399875e4ce7\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Aristotle distinguished three ways of life available in freedom: the life of enjoying bodily pleasures, the life devoted to the matters of the polis, and the life of the philosopher devoted to the contemplation of eternal things.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-a97d1bac503b806f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The historical shift from the ancient bios politikos to the medieval vita activa resulted in action being reckoned among earthly necessities, leaving contemplation as the sole truly free way of life.\",\"claim_type\":\"historical_context\",\"evidence_ids\":[\"ev-57b3d3a347effb59\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Action is entirely dependent upon the constant presence of others and is the exclusive prerogative of man.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0ea1339f2db2f5f8\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The translation of Aristotle's zōon politikon as animal socialis reflects a loss of the original Greek understanding of politics.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0c97f3ccde64312f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"At the root of Greek political consciousness lies a distinct separation between activities sustaining the life process and the political realm, prohibiting activities serving only to make a living from entering the political sphere.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-be60309d0a4c21c1\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The emergence of society from the household into the public sphere has blurred the borderline between private and political and transformed the meaning and significance of both terms.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-c8c0848f603a49e3\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The public realm signifies the common world of human artifacts and affairs that both relates and separates human beings.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-5e33c5625359f6a6\"],\"support_status\":\"strong\",\"qualifications\":[\"distinguished from our privately owned place\",\"not identical with the earth or with nature\"]},{\"claim\":\"Mass society becomes difficult to bear because the common world has lost its power to gather people together and to relate and separate them.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0c96c57fb4373610\"],\"support_status\":\"strong\",\"qualifications\":[\"not primarily the number of people involved\"]},{\"claim\":\"The distinction between labor and work proposed by the author is unusual and lacks substantial support in either the pre-modern tradition of political thought or modern labor theories.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9bbeb313849f0059\"],\"support_status\":\"strong\",\"qualifications\":[\"apart from a few scattered remarks that were never developed in authors' theories\"]},{\"claim\":\"Every European language, ancient and modern, contains two etymologically unrelated words for what is commonly thought of as the same activity and retains them despite synonymous usage.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-a56bf693a10c4c19\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Ancient estimates of human activities rested on the conviction that body labor necessitated by biological needs is slavish.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-eee073c1e82183fd\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Slavery in antiquity was instituted not for cheap labor or profit, but as an attempt to exclude labor from human life conditions.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-bea46b1fc84e9e65\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Both Adam Smith and Karl Marx shared the modern public contempt for unproductive labor, treating it as parasitical and noting that menial servants leave nothing behind in return for their consumption.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-c585294168591504\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The productivity of labor power lies not in durable external products but in the human power to produce a surplus beyond what is required for its own reproduction.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-3266dead854f2abb\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The distinction between labor and work becomes merely a difference in degree if the worldly character of the produced thing is ignored.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-5c174abb8305ea9f\"],\"support_status\":\"strong\",\"qualifications\":[\"Conditional on whether the worldly character of the produced thing is taken into account.\"]},{\"claim\":\"The products of work guarantee the permanence and durability necessary for a world to exist, distinguishing them from the products of labor.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-a64e42fd96f964eb\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The least durable tangible things are those required for the life process, which are consumed by use or decay rapidly and return to the natural process.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9ecc13fb8ae43372\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Laboring activities are endlessly repetitive and bound to the recurring cycles of the biological life process, unlike working, which concludes when an object is finished.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0ea1e22640abcfaa\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Marx defined labor physiologically as man's metabolism with nature, placing labor and consumption as two stages in the cyclical process of biological life.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-2891464f3e7c40d5\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Locke, Smith, and Marx held that labor was the supreme world-building capacity of man, leading them into contradictions due to equating work with labor.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-bafcd3c2be3f263f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The emergence of nineteenth-century evolution and development theories shared a common foundational concept of process across sciences like economics, history, biology, and geology, which was virtually unknown before the modern age.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-d44b854092b4c026\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"A mass society of laborers, or socialized mankind, consists of worldless specimens of the human species who are oblivious to the world due to labor's exclusive concentration on life and its maintenance.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-46ac8002bf8aa45f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Improvements in labor tools and mute robots have eased the effort of sustaining life and giving birth, but have not eliminated the underlying compulsion of labor or the human condition of subjection to need and necessity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-5bf2957dfdb8f0bb\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Tools and instruments used to ease labor are themselves products of work rather than labor, belonging to the world of use objects rather than the consumption process.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-cb14451673da2463\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The ideals of permanence, stability, and durability associated with homo faber have been sacrificed to the ideal of abundance associated with the animal laborans.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-6297c8a1a4822bf2\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"A consumers' society is equivalent to a society of laborers because labor and consumption are two stages of the same biological necessity-driven process.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-05409bcb9417e6e7\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Homo faber makes and works upon things, distinguishing this activity from animal laborans which labors and mixes with things.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-c84273aaa2994cf0\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Durability gives the things of the world relative independence and objectivity, allowing them to withstand the biological needs of their makers and stabilize human identity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-ed6df05baf76a36c\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The work of fabrication is guided by a mental image or blueprint that precedes the actual work process.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-497c08ce1a69f45a\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The process of making is entirely governed by the categories of means and end, resulting in a durable end product.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-84bd4735f96e9507\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Consistent utilitarianism suffers from an innate incapacity to distinguish between utility and meaningfulness, trapping itself in an unending chain of means and ends without a justifying principle.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-b20224cd145663b6\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"When anthropocentric utilitarianism establishes man as the ultimate end and measure of all things, it reduces nature and valuable things to mere means, thereby robbing them of their independent dignity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-462f55951449eeae\"],\"support_status\":\"strong\",\"qualifications\":[\"applies when man the user is made the highest end and measure of all things\"]},{\"claim\":\"Works of art possess outstanding permanence and durability because they are not subject to the destructive use of living creatures, achieving a higher order of durability that represents the stability of the human artifice.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-998a56bfc8ab14e2\"],\"support_status\":\"strong\",\"qualifications\":[\"their durability is almost untouched by the corroding effect of natural processes\"]},{\"claim\":\"The immediate source of the work of art is the human capacity for thought, which transforms mute and inarticulate feelings until they are reified into worldly things.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-ad8a4f3d2a3ff6ad\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Human plurality is the basic condition of both action and speech, possessing a twofold character of equality and distinction.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-7518b4b45b74445d\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Speech and action reveal unique human distinctness, serving as the modes in which human beings appear to each other qua men rather than as physical objects.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-db91c0271bcf12d8\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The revelatory quality of speech and action emerges in sheer human togetherness where people are neither for nor against each other.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-6ff3860e9ef96f6d\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Attempts to verbally express who somebody is inevitably lead to describing what he is through shared qualities, causing his unique specificity to escape.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-4f0faa5618655290\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Greek and Latin languages contain two distinct, interrelated words for the verb to act, designating beginnings and achievements respectively.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-eb271f8bde2366d4\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Because action always occurs in relation to other acting beings, the actor is simultaneously a doer and a sufferer, and the consequences of action are boundless due to endless chain reactions.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-6c3a7f7a99934581\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The Greeks did not count legislating among political activities, treating the lawmaker like a craftsman or architect whose work had to be finished before political activity could begin.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-6505459bd22c4fc7\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Plato and Aristotle turned to legislating and city-building, which were prepolitical to the Greeks, because they wished to turn against politics and action in favor of the greater reliability of making (poiēsis).\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-4fce7dd42db2f483\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The indispensable material factor in the generation of power is the living together of people, and whoever isolates himself forfeits power and becomes impotent.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-4a779dcf636a0bca\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Tyranny rests on isolation and contradicts the essential human condition of plurality, generating impotence rather than power.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-fc2cd95489e7cf4a\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The traditional escape from the frailty of human affairs into stability is characterized by the concept of rule, which assumes that political community requires some to command and others to obey.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-388cae9a2b3f34de\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Plato introduced a division between those who know and do not act and those who act and do not know, separating the initiative of beginning (archein) from the execution (prattein).\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-7cde1af72bb53ced\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Action possesses an enormous capacity for endurance and an unlimited process that can grow while consequences multiply, unlike the strength of the production process which is absorbed in its end product.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-2d2b5a519b403df4\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The traditional identification of sovereignty with freedom is erroneous because sovereignty, conceived as uncompromising self-sufficiency and mastership, contradicts the human condition of plurality.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-ba21e6f4a5687ee2\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Three major events marking the threshold of the modern age are the discovery of America and exploration of the earth, the Reformation's expropriation and accumulation of wealth, and the invention of the telescope along with modern science.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9d6324c384ad7bc0\"],\"support_status\":\"strong\",\"qualifications\":[\"cannot be called modern events as we know them since the French Revolution\",\"motives and intentions of their precursors are still securely rooted in tradition\"]},{\"claim\":\"The technological conquest of space through speed has rendered geographical distance meaningless in human life.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-b0437b696824e0ab\"],\"support_status\":\"strong\",\"qualifications\":[\"finds its limit at the unconquerable boundary of the simultaneous presence of one body at two different places\"]},{\"claim\":\"Galileo's use of the telescope delivered the secrets of the universe to human cognition with the certainty of sense-perception, doing what no one had done before.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-77b80686fef4373e\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Prior to Galileo's telescopic discoveries, the philosophical and astronomical speculations of thinkers like Bruno and Copernicus lacked factual confirmation and would have been dismissed as ungrounded imagination.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0c25b0a1335db3e3\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The modern age's development was made possible by abolishing the old dichotomy between earth and sky and unifying the universe, subjecting all earthly events to a universally valid law.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-da3dca3a9c0e6a65\"],\"support_status\":\"strong\",\"qualifications\":[\"valid beyond human sense experience, human memory, the appearance of mankind, organic life, and the earth herself\"]},{\"claim\":\"Modern science's natural development has been underpinned by an earth alienation that surpasses the world alienation produced by expropriation and wealth accumulation or the withdrawal from terrestrial proximity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-c25f79f40170e82f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Modern philosophy began with Descartes' universal doubt, which replaced the ancient Greek wonder (thaumazein) as the central motor of all philosophical thought.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-1b0f2466e767c54d\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Cartesian doubt emerged in response to a new reality where man-made instruments like the telescope proved that neither truth nor reality are immediately given to human senses or reason without active interference.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-2baf8b7a4ffe1fed\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The most momentous spiritual consequence of modern scientific discoveries, closely following Cartesian doubt and the Archimedean point, was the reversal of the hierarchical order between the vita contemplativa and the vita activa.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-67b772eb49faae60\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Modern technology originated exclusively from a non-practical search for useless knowledge rather than a pragmatic desire to improve earthly living conditions.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-da63451fe8d79314\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The modern age shifted the object of knowledge from eternal things or motions to processes, making history and development central to both the historical and physical sciences.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-7360809a6ea88239\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Modern philosophy's turn exclusively to man-made things and history stemmed from despair over human reason when confronted with non-man-made objects.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9080621c590738f4\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Characteristics of the modern age include the typical attitudes of homo faber such as instrumentalization, the means-end category, the principle of utility, and the identification of fabrication with action.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-a0e234f914950836\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The elevation of laboring to the highest position in the hierarchical order of the vita activa was preceded by deviations from the traditional mentality of homo faber brought on by the central position of the concept of process in modernity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-eab76e2a63b5be18\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The victory of the Christian faith in the ancient world likely owed much to a reversal that promised immortality to those whose world was doomed.\",\"claim_type\":\"historical_context\",\"evidence_ids\":[\"ev-02bd3b4b78912cd7\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The rise of Christian individual immortality as the central creed of Western mankind resulted in life on earth becoming man's highest good.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0474c635dffbb477\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Marx's early consideration of world alienation in the 1842 article on the wood theft law played a minor role in his work, which remained rooted in the modern age's extreme subjectivism.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-f5e357b6a3c5cc12\"],\"support_status\":\"strong\",\"qualifications\":[\"referring to the writings and thought of the young Marx\"]},{\"claim\":\"World alienation is even more present in Marx's ideal society than it was before, since men will use production to objectify and actualize their true being.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-de7ef70a15e65337\"],\"support_status\":\"strong\",\"qualifications\":[]}],\"unresolved_evidence_ids\":[],\"warnings\":[]}",
+            "thought": null,
+            "thought_signature": "Eq6EAQqqhAEBEU0yD4XlGNPuP9xOJZr4yCyslVH2wUkGz6NqB8v2j8topWT69QMpiFidZGfX-ok-CYD3CpUNnpfjs7VaoiJUHEV2kGje-_VlaLHMfUeJRnCR6mRHExlDNL7PV92nwMHZOVZP98LTNpfDbQ25Jh7ezL8ca9mBaGd0ZjCmzbNsgkaykQf58mBMPcTYeuakH4HT4CwUS7g54Pdw0y9RzDldeTxcQv3AP25wZgp8YP8sqClVLjF7bY2RNA7wXdZiC5DAk0O2eimKGutzqPRjXIqM8FzGqJ6QLeszLxII7BY6G3Fk8CS1gz3Zqe9T_HjVXwTGqsApFK2c6A020PUyJA3UjCkzINwq5rDmZ25FP-HDP3BcxocSuMz2CaI6lBGRIPnRhdtkamgt9rUZb_MMSepNPZ7hmDVZ4GgYw2pPFJba3O2XyqDEbAtDZ6DaTBPr_qWkgKVfkAo_cHiI_WIdNU8s1firJXdqb9DbHjhSzrGi5-JyYUjV4HG5jlqFaXIpJW82C32_Dl-Z3k7VoSGz_bcuuBqlLkxdPTOSnhxWUroyUXOxq-p8DFprNaDUlt74qA4Jg7DkuZ5hVKcLeIofs0_sitL4K250H61HSaBXDGD8M3bb9dOuC2kJY6x4Kqv2atJ9CPm7pc2KA3U12jFJz8TLN_dw6zRF2AG2JnwDwx95nbgG8av7UGRxe0ENbjZSrnuMuHrda4i8TCsm9P2p552oj889Rj1xZzcowlpD2uNc6njdtP473ZxfixDoN9OuLSvhDDXctAZv1pKs05CpRi0HFmVDB3wv3xUAGJtNEuZSShL1fUVgQDEuOLfDr1pC_JBSUIXoWGPEuXo6JgMk-D8MTUaqaNijZ_MMDqqgdMEgMNccXr1QQe0T6arQtLq8mkXYf5PDKY0xHYgPLxW0XSUFkLefRjDrv_g6rT8qjkDXmhKJ6ZHn-5IQqpKdZwrzryJWzLErMGbwAKyndbA5Y5ZyYA_UFw0WU6teAZ36QojYqdb_KfH_1YrojBh07OX3yydyHosu9A_3FaihJTRU7HlZzfHlBUJzjZ_b9aNgRAQ77QevLvWmqCtA8t8GX_3OFPsMs2X-nJ5IxntukkV2s9sXYe93eggPgYLlSOHvR7u0gS0MDgSI1AvWKmUKRz3qaFR-4nWxeH6wPbfBaKwG0VQOa3RK5IGp9hPGrU7hmGFzymGqOxVz1ZsKNlCahTsOdRcP26R6wUsSSrWSR1SvK77ZaERD4dkbBXO9D8TPKNAVrZQ9rfEYZEuPJks_s0oIUiNO7Hwx9H33S_5uvQZFVJfQsE0CuWkGIYxHmEtsufJYD04Djsqrje83Ufblqk7ura0tmXKUU2uQ9Yjku72-eOSkBpVApxz37ssnB_wcBJ5A0Cf0cRoa6hG5EliZfLt3ACWCn55GHNRvSI9HJenp8sxFcKmZ-jJlzrWZIl2_ytDmHenqXi9y87UYKuil8UZxwov9EzIaB-zh4QeTYNmMRRajjvNsL3W6vlTueewA4kMR2qA-cH0HOZ7P4Z4Q5O6xk5Qiu74vxmaDzfhjzqKQkcJusTy3AsQ_1MDoda3i-nsxGJlh2suM4Z6rQ7OhlsRIdx_4IvHFbdu3zGH4tuM775Cnq0dngIcZqj5Z_TXjDgTL1Ir97HV6m-F_B8OQ6N_0xBo2-1gE2lmbvWlt1YtPk7HnHOiVvUBELyiWG5SobjBKHJ_KaDTRDxc7KyxmVR_-pXivj8Dmi9ercg9L-AAtYTjdvQcr7u9b0cd8ys80-JSzEyyoFd27mUG30bmqSTsZcIosz3mZgxA_C3PuRY8Gcm6b3S4GKQ7xSU-H2qU7Rwlf6aA0tsmFqZeglOJiDOzBrynt-IhblBepbFtbE7WhfqdyO5TfaHYYI-71C_eJwM2W6T7e_Z6XOkffAL7IuWZc5MlvBdeIkHK8k0zRjC9KXqHwOM0PX8TjZLTxKaZONm_VJoRAYL54jvFms_EDGLDAzwjH-lpNUAD8QPtlBebFc3tt5VTlLsP3sL8N3ptw2E8Xk58nMKXXTUfFICXz-_BC1_cLrzW8POPiGT0MqhjSJsG6WrrBIF89IkhLxrfHdiYjL4Fu6iE6b1sxr0Al0Y75v9KrQzWQbPEW7L02bO0AWLkiVYV-jvJe2CyESOeBi9HqQuWdGnjX9rzkr4q0BulKCpteUsraCQwNDpRF43KXOd0VZ1g6h5KpHei4dbixUc4mT2nUgjbei-jrqyUJXYXyul_BMoxy2_dZ1uMtyiObGtLXOAWzPWWqbkhyEaJd_-Dhcmd1bIWE772NtZg-cuyNNKW18sNNVOuwI2Xa7KaolCmVUBq1AzzMhjtnU0Qi4_-bYZOG0O1esk7f3pVPUMJv9KoYvPGwwswaMs2QEl6_z6KKZlKHgLGf_AcCvsFIsDbHorV3IvW0MQ6S8Gm3EtgHWLsvCkUg6Tz5j5qCYeBReQGhkQEfccKV3aoedRMBHYWS8ArLesr6nAIbbH2Sef2RXxZ9erQwyLJf4BbdbCLqJmsHzkY_UwNV3KyWnldP7Cbq8mJ7IpyHNPeMZiqDA-QN1FYGc5Ef2yXSV5zqALZc1AX0lkTN-pXRdto_FryEUvzRdM0gODxr-takXkO3lT8-S6d5mmScHXbx4all9JlWX4WloVWNHVGNJA0on_boh6jL3xQpk3XWhI43C92NN9yMtafYUriYNXQXQFZMD4ufr-72k8Ko37CZq0MbbEtuVEet4kGBL87cFy_DAkHYqlAvvIayhDdZqEkWRv1mSq5RKhkNigIwURdVaqeU8GY90uytJlhG86P5sgiwXyqb9HsLkWnJl-UBMt4ioQbQJ8GjYpukflz1BmlfAep9onepqdQPDFdqrcL31-DNIklKQSKLpVRsgmHzjZbmAo2V8zhXx8w5-8wkbri7COqvnhhFLtikRBSeu2oqFJ9ut1WLVqSMl8Slrekx22n3EXioJXxYy3gk2GM669ZxvLs8uFqLwPvLiL9T59a3kO8Ru6QlEFGChEoYZqwANWDCnNXcoNdET3rV28tV99GOeqx6s9nnpPblMoAOYJXVkmL8ydkrdrc4dI44KP_Tc5wKSDqyxc5rjzSrmWT18e1uDZoMIWMwVAoFFAXXbYPDxVV3Ga776lIcArOEnjAxlY32sCzvkqCRW1lrq3v530XQ29wzlXnrjdwgqfIoFN6fFAu9G0xdoqGmP_ebYjd0cNTspuEbz1eYUuAnKPpt95kM4UZIVWC4-PRL68PEI3rz2nWBa-y0PPN2JSGRI2vwANhDKI6rero8Nl8tUg7IZYGT8y-ik2dNtFbsgy9AJbHDJsOQjg9OfNnAf9eB1oOBvtCMumj7RsE3JPqDwoMrYnSioTm0PQicdN5-bwhuiGOJmE-QhikzE9dWeqpk1cKX1pYqlLZJKzZojCpGqhcX5is-cTgjpwNv-CikntHPvVH3QsGTt912b_AEhWrkIt81DOOusliOtwWPtiDMHODh5b-Ro-2BuGBbY3nHUrB7Yg6wMYQ92BWknFHzME3C8FU6aWJcH_x65LvbOYODpL9OOR2L-y8cYuWCn4jPh4Ler6vkHE9UAH33KpidPOLmf0PFyIQKbDrcBswyAN4O9ZTZD21DMNROic9XPM9bqd3PoiC7MQ9TVd2yxjOQDjUgwZix4l66p0K_0dFDV4wF36N5EUMHvf4mvAt1bSNw4_vz3vTOfPOAKw9LuQs2WQ8_lLfnK7xJipwUx7d72V144TZWHSiWitMKMexJuj5GabGIc6qwgk6wOSiR0Xxt_cxJyjvyxHtjJjduwfDygDXL1JZwhxqxkQ3swDYg4KZcYzJh7uSrD_ZdRWT0t-LK5Ac0FzHDcnuVuT7bsxPKm3Kaainbzne39kvtnDjLA56IBY9-Q4YAxaFn2urzbxgMsi7mZtFeXeWY5nKKjqvzO_kis-P-iaY4rGBLIMQWJiacfsiUOmFXGZqkbKBxkCX31OPNEdAGC8liwQtX3Z5ExJiYcHnV-rSgbX78UaZgqPb-frF7AkNGd7_jn5DA1EJXzCs6iZnGzU7pUOyb7FG7Dbou1D4aqiELzPVodv78PGFMxVSMauesqVS_MsybHH6go_Kcsh9uSCqReYqniF-4Ye5A1xdaq-KvdebpESfpvujfzHe2IG2n_vFm7C0j6uNmvAxWMEbRDCXQQU0nr3if_743pSBXimTRECyCDYRZKENqmUVKCIdOfdsDraJUewPey_8qhM2yA7ZmFaRZTPUDaP-q3j00C7TSoUZ3HWt4m-3WqHXX8j1EjcWRArJimY-r870jfOedG5rcaOSlF3vCFNwWCSB9rwQWJmlfWSxrenf-41Pez9cp7qOiUBZIJ9cpAg5G4IpuQVwoyPVrHCpgf22v5vfNEJBhGJQvGlcatYFwva1UJAIWrUZrDfxWc7XyKV2rP7juWdX5BYFkXGQM0rwCEDzQACdjzlGXvSDmE3Gbn8tcHHlMG3_5FcyemliG9vm-6hdkY_aUXWnfVDrN5Ihu7f5Y74FR_SV7nYuIwyuzt-iKFqEc1JN5rimU0_PDXHFFUchdqfHHr2PJ_0YJ9pw8XoBvVl7xTbs_cdlwDoXysKkQT9fNE3PQf6ds7AspAbe0HqHvCrNGkbgWkXTR9bniQPp4PcST5Y0bOQkZUhUhP0Oe_TEzicT58JSI-RIyw1vHb1VkAkqN1G29L6pgsqed4M1p-xjnQU27kTF-QGoIf7aR5gOskX46mrq_PxkCzTJJGOXruHhKoBInHNef6vLbkDwEtQsHQm_8YMj8aWnZ9nijfwgT7yo5-eDR2lU_YYxRZqyorkS53eC_hqQZUiWuoe4z_VLSQETinQem5ockBeJZXxvnTWz-im6XfK24VgamIoxib-mYw0Kaq5QwrpPVXL7Tq4DtzLccH4FSVH4Sd7nPFAZBIVjP_JdzL7xhCJkdYGFIunz_Ww7zSMw7ep477otJepFji-GSlfF1elxEmM8_9RBK31KdVidREAfy7s-2H5inRRqoLtLdGHuOrA_xhizr4j8rgA8J8TZfQNquDcR4HXuQiWZL4ujMV_ybl5-bLX1D0kVVeVniJAKOhTqG6tnox6nZT3Ntpo2Nsei2rfsUQ0FqPjem_KLAtXZ1Mt3wlUzJWw-okiX2HRBsr20jPjjX1QLIumEKTEu_uQui2zu9eaRirkfrfGkQj2-dsUOqnF_RFp5ZJFK3G3o73cJTxvRq6WaZOulPcle5ol_HQeDP3u45MaS1Shhj1whLzb9QbqR_TJrMnHwHIyrWPz9C9FSb17Ts1QSY4Npqx02zwAlc2W3tCp9Q2wQIIIjXqAlldLpxM-NInAr93zhnj_3QIiVLhT_4sepPyjSvZ-7TepFvySct2NaBpE2eButFcHdAConKCqcR1DlEj3B7xSJeSQbqFPFQVjQ907fwE_nXzHGftihKN-Ty22Pm26e8KslVzVEzbhC_5GlxByfmfShVrOnbJGHi47pnFsAWN0uAYh95Pjx8zKVXLQDH7GHLVuny_-Bgk8U2dc2auO72mrYbwTGaPBAVFVoVOAZD5lWIL7ejHXRd2aUALHKwIGZmvXjhU4VpV-JdGEwAhXWjyoqaboZeBuWTBDUNxmzmpQOLO1VOM6JJyIVHgTauF6TdfGTwGygmHW3-ZhqXWDGUr7MM514rhcznW8C0qBAo_evwbJtJlPLqyGWOnVgkxI2f-WD7ntKrsoxHKkuuvBvGW84v7mAe-88i2G-ojfwcJ6OMsJ1Q4HjYv-ihyINk3LKvyy3aDw2itMPzeomNCxD0jVquTYd44c-qjjAgua-zAfAlZzYm2r0Q_sNueZw-wDINnAZnqSqTZUlsxpvQnYThAiU1ZnhzAlxP2SAi36y-6aEToIRbBeKpTZ4tSES65udWf6HEjWogrEPH6UjFTLGKwfAF3f6pNgTN2t5xoCfITRxTvjq6qc1fvCzBs8mGhPpE30f7g6UgKBqTpGPQwTlViUPF0WHRo4gplzRRNp8-GpAd1EcjnzS5jExvNxJ9HxH92-gyEfiKtJPFcxb6dHzRwbjz2esqjyWKXis6gNb0RHgERCDTjjNuCGHRuxo5dBIl4qsQmcYnJg8Z2y0oBgpvoFifSJuD6WOjjFo7GZUAM614uPUNbO_SjT4QnHLgGf6aTDmYuqCUA41Vmf39u8ERPidF15E6JKBZWkaJit31XSKNp6-vJi5kpMIKt4Q7r_n9tyIM68jqSiJ2f7dG4xeuG-rpyeb-QmZ4G2D4MoWQVuIjZKDvRVNVHWcFsXDM1ExAjg_7h3sESbcNxhvnJNiG66mZSZ1N2lsCMYQgS-_j0pmTXEXhnTIuSIW1UL3J2GANYiqm0uZPdWiqwRy2JS_Hqi-6ffNHjkQTj6SShl5Ve-wL2jKvBpbKDEPDONSH3MOxyCVvikGYC21PlPdc5funP78zmPLa6hPQhKb8CI4OaUdahjVHv_SK4j9KCD9rghRVHZo4Ne9Pni-WEZlNC5nVRC1jbO2LhipsCgHbcE2K6oMagQhukaKM-dtJszopwwzwz5JUHyEpLx5fvk3U_52jiaysMeRKd9FC7pUFLleKoAdDdTXdtf6mqZ6EB-frD8ZsKjeq0Dpec342lBoOt6HRFA_Im3XFPRZFj_vX-zlVMjQsmqE8kfdXl9SbgSOkm3wYh-VOQUvd16u8H8MD8V0aEmhBuojkPVjgQTKNyLL5u4DFovHSJm81V4n7aRrA_anZWxCI9ZwafP3rZbLvtZv_pSRGXhxo8K6pjbaH9ZEVjHicXQYITLSzYEj7PVicTO-JFZ0cbp6LQCthmE_8xm43e9dEjwQ44Nw3k13hEZVT4wroCypfhhoAUVgyNDge3B198yb5NU1ZrZet3Cgtl0wwt02duuztkK_G_Ma8WM59tiDQCrjLNwjGfur2nqEICLqit4qOFem0yNYn5oudyDNcTo2MhoSKV-_TStnAPllXSd7g6db8bhZrUVLGqsAbKWkbTU1CkFpF1inzOW-zK8RaUEaRP0blJuYkJQJZyuBcAyOi1bnN_E8f694m_Yx1OZyYiLDzJV7sq6ADJ2-bIMtDQW3A-pVMHsXCGwXbR_2S2Uw-EO7IQgKKOaFahRvirLAPsUHAjASVs9SKOUrfqR0fFvsIb-86JUNAuiVHa6KXxQ_RK_ANb1mFfF07ZwilHa5HBm-VhC3qAuQIbr1zX7RIrJQYKqFAagR4XzVdjD5RE6uXwfDoGSuGnY86LO5v_4iIVf3gaT4xkIVZmpXrU-_fIaxhegk4HQ4K_udx_vGhxvee4oo-YEYcsl5h55V539En-RMXTvE_z5ZmoHb8pkbqyDmyV8KwzRMWusUTFGyChoyk_2GdPQy50ze58cXPY3lSK8ZvvlHOXLnTeC-sv6FCRc80J7YJU82GkeIyEMLgvnWrqeCsLR1EiWdmvspmR8GOVaYaI4SkZRURqrdgSoReOhDoDkx1hl3loEfM84mPI2w2Jg1ilcekqCLf9MAaC82ueonrvR64KUj-yVIgc5u10JfF7FSBSAAqSpMguSp12gKGtd6Vl7aHY1Ctq2mG8b64_p0tc1sBzqHzEIgQlnVhgCZKdKiUDBkY_OrDIN4LmIOb1DA-EZkXTOFtxuImN7PlwCHGO08IDuMKNcSGc_oJ3ia5QjBAKfwO-LKgxvUl9klE_fjnlup_nLv-4WhPzyhqoMZznqEgsujrDmrNCH4JvNB0pJlsNv8kvRTkdcd3T4g6t_UHd_g4mWAMu2bJqv8C7H_LpNbNlKbGdWxBO3NsWlSIOiozvxSIJFuQMIEzlXUA1Hi0iXNg3OWpuIRbHj8iX-QB9Iy4-pWirQUsF-4J_7-I3uJtW6horgDAu3oblBbkosPgsenCKWbHTNvDw74Mh3b0-go1ff3EfLNeReDZHTQnBjkSlSkqSuoyklx0bmyUSlp0KdQ8gdxiaG0KRMNq9SQBublHHq42H6uf2s01sdb4F7acOceaZFA3iyeyPHJdLZn3ZBhLyMdS6asTRsL-jKBmY7beDv0yxGcolRvmr6HSepZ_JceXp1osIBdN_erqUTOddwB94G_CLrfsmm0-Dh0--GqtzBz_vl7wfX-tsGLWaoww1rxJdF3vd5u_NJeOiU0cU0BGXvaXPQooy32-djn14O1St2TlqOT6kr45ta7fYMvbVDji6DUEIjhP67GGpTN0r92cNiP2Lh0A5KIkTg0rp_640az9_GiMsKsFnZXN91TzdUqbZaOPlgmZZGGp2bLFr4Rnqf4sZBGTXelo7_kRk5lDkf54sb37izcNmcjVAAJyeh_OQxvfAM3TBiP8zytTiOMCqS3fOd-fmDmILzPQiYJpHhbWltXlremlxnzX-u5qERbcgbGFFjiERZIi1UuyKyWRvQSlt9FRRpFSMRPAWbkYhMf7sHx6QtsVSFIjpN-lBfLubm4vNWIFZegp5MYGx_JIsTHEGQRPzIhn3dvdqtROvSSoq3IDMIE1ORRRhW5iEyU_FR_ZtPAJWcz9WFF9Jh6NdR1HLiWItLOb_kOtOshRwCCmOKP5o221k4J87fShxgUPXloJTSlXPE8oEQBjYXZ3D_ndcT1B9-InsNSdDP3cDVAi5CFR0eBMPGjQaMxHEDJx5uzK-stqOfJhzw0MHckIFq6pHbyoXXQLbIMopr80uQ530ikuMvovDN9fpr3JI1zX65F6rsHeHYtSSH93QXPJDQLq4pCg8-kTtRnFepLTVJsYYa9srciml8m1LNPr79uBVm4xxhrViVEaL6DlQ-tY_0rkHlqzWNwFH9o000gHSRD97WL2tBW4J6_WKIhX2he-98oo9FTNG4deCMEFBU9hi7f5_E2Wii3n0SCd_4JoIGfLz_s2j2HYY7c7zbdQL3VsIqH4SfeaS07jHvGvMDB2dA4qDJZQIOOV6BxZ2BjAVO5BuA5K_Yofuk-_RqoHGMvKLpnrUZQXFcNNabFyiLNlGXkhq3jM3ljwVfOLzE8gs6hHubQFcEP3hWebbSSw2gCn7O8xBdOVDgdUwz65rYt0FRgRB1kYeTGNcMK2BuqYw6RVI96Or9lAd3wrsjI9NSU_tkbqRIT1PhfjHDHVJp2hg1E7c4IjuTMq4Q4xIQR4M7UMFqxhkLNyFEzIl58MZKqLms48i7os_en-LsKDmP9W3CoJ1mYCMByXEgVftMf97Ecu_NOrzUdO-569rfWjFLbigsDjE7vbZ4wNS2bof42OYf_2RsRyEaBLfN7rra7bj1JcJv40MbzlBeoyzPieY_XOBTtuc687HBnK1PgANff7NXIj9oQ8cujjF4ckmgh4nLbJo7XmVgxgS_QT0yOC0LxNjUitZ6bBWD4yabmE-LwBys9RAUcROaYw3AftL6U0sLBYEKeKp1BnoUGd2yrRg6itgmjcflqMEag7pPJWLGFbEHmxa1Xwx3rSQOWv65MDauSKqnGHCalZWIn19lPZNXV03NvHr6KVdyH8zYzpmc2k75-8U17LHobzgQdHAtp3lEOqeggVVflZaF3iVI0FNATBqv_8WmFa63z3yYHtJnPC7XxqTIksQgCRs1_iz_1zZ1P1x0oYguNThibOHjf6X4uZTnr2dlW2c31ovQV9l7T1jSsd3RprDpKPIB3jPx9h28SJgingTgAiKLrruiSLdz1K5JkygHHmTcw_6bujo_QWBQq0c2JqmH_McF2MXT7krm7m187I1Ze27j7EzTiAOzmtbP5eoAzMLA6TKtzEpPRkG335LUh6RWgHvrT0twEIJstGJY-Oj4Nu68IDysa20z9M8gU-4nI4JcfHpqWUjC-00Yprje1wapR18uRFbMwLDveW0RCHjW2pOf6X8hJwHPVk8W3CHkshudhHYw28EOtfci13Sd2WhVgFD5zsRdeumt3RYQMMjhsbHTsFFtQEiNqVU9btIBrCuPfWywfL1TG3GZSsNVjrEH7HqRh0GzxK07OGZGK9LOgAYvwWIqKB62RH0HkWTfCsmGP6BLDySc2GwQDAPtwaojgKTQj-bZqclnIKzMX1lQnQf2_KuWnhs5bniHPH8-xP182IPBVqyP8htXJkRcc8hYiQnenWCg94acU1neBPu66De_ls_s7EFIc66ZtCEdXgNhqg4KgrBN3amXsaSLWuFb7APjze54n_3vA1kHVLsVbA_GD-L12vC1a1IDovUZVPESuE4_F1kRBPTdVW88Git9_tQ-CaFbkHVWS7LWeS6AufYllcADAtciRK4Y4ucDRzpDvGIfhKN3yX2wJZFUR67zf06jtzSstT1KrIzpbziiQ9sY99hF_aiMMEMztP-4_6esEhZqGqWXOIACOmeXRcEpnYZ3PHLnioLgdfA9fVN6NiFdDlIr9PfS6yG89jOOetuceWPo98I3YeCsePwYwdL4iJLBQnVeTbwxy2fRrTPJJZBBv4ALipBvfFndMBe_eQAyArJ5f7nxBEIjkMOGJbTkTDVH3MW7jba5VbsJU_C0eAMgjWdipy748c3Md7ZmDbK-tTSA8-qfXO_Dl6PJtGnAGdzUlY3RqT11jGeH8jnxE27k0tUPk1IFRIbYHHid-6BJ-xwU9L_bKvfWKUcPmn7HOKjIRkSEkhhx59TILusak5AeoYQf3KqCAiQtTuWBaR2bBdidTtuiS05po8w1bIPwES6sZSij-0igim-HSw0AhO4kIxPIjaWAJjI4kBvRWzN6rpe0DNFl1gAKMIjDfmtejgTE-Zh_50zj5GDe32_dfNgnkyDc4Mh0XHsZUgO62MTeqo1xNN8BIhQmdhN53YL8fa2tD6Co7vascJPgTCSFswqHpkgUsJaoJ3WHj9aq6j1MWw03_QFaWTL89W8e0HMQ_W94EKhf_9Qabk2E0jY5bvTy49BAdlVIOeDm80qqZFD5K5wy1EuKUYUWRjY1235lkW4rbBs0AYf1arRVKmq8NfM9-YHDCv__OVvhM5fnXg3aBLCXlL5g_FHjp8tKAyjbG3kWQgiMjqsUnGYLWG0OayoDenQqLt67NGtoBDQtDgZ3kuVvMEMevmTOvxkeWK46s03BXdcVbnQb3qLOa8PZTyCa5_vgvGUE80NtqbYSYywrzM4JPpAaeuAIbtvWassThTtlLsMVirjwIFfzvICjjI-HA73C6gqowZUeycmGBpcY1I-FkO4klg-kbBudmkWJy284t9QQFuoQwE2iVAgEp6cxS9lRyTrCAX8fPM4oxEMVCSiJA0B6J8etIlDreFAHWNjCnVXFda24_3Tmx30m3p_x219j_tz6GJvaYCvmhqv5a5MwtK3EhMo-vwR4TdMxFMupAtVyX2Mx7nz4AbQjbXbvhNaw16c6TfbRTZNQbJStSulfZKd5dsbxO03sr-0l7Fe9HB9bzY45ZbFEjSyGwA5Fsu-U9OGz5IyXkh7N3FRBHKmu9r05HOEpXuEZKaTXcwD4w575KQbC2f0_tfxupiV_QfDBvvtH21Mrk7LboqIMiGWeWYlMKBqaOxWSVa28jucJRLfavJSy8y5Fkc4ySoXx57rb6OwlXoOdP8WPfTt_cbnpYjwL4b79Q1eN1CFlWVZW-Z7AIwHgF6FFgLlaAFAE09RdKJKicaPuUTzRKZK010Q2MNVmWouGE0iLVo4qr95E5gSdZKV21UV6EMXj1BJkTRwF6QFMF1GJlvf-C0GE-o44vfAoBxo-wNX5EWu_IhmywoRxVuCfXqqwF_eQicxO4KDbyKn-paAbv0rLRYFXKts3TI6IWLJRk1LCytYiprtDA5tRA0G7Au_bsKM2ywjYHq66lRPpXMzrLMr6Xfl0EdrCU380ZVRbLlk2QLwqBKWgefGlVS5IUWyvjmwb7ShZYllPF1yQM0pDICYmYAjCKDUoAcupWPvx_tQMEnbamGcABPKsQo8p81J6Wp1F_vRZ_M9D1f3eulg6Nh55NKv4M3-VKXphwnweHYtLvOUw-lHmiiPLMkPJGYWnjwdKiJxy2M0SznLLY-CbJXOHw-l9n7cgwA814ee_IAvrs2AJEqiPMrTwBqoo5cM24XGodav4oitF06dLPSfD54vRA6kRNogBjDlcFoHlWFvh79wztjLqO8XnjhJBzvDOZTlQuiLukASUyWOsAwiRI0CsxtIn45Id5vR1lqcexTiQfk_Em-Ex_4ct7JI7X5UTiBEcNkOipgPmXZx9EkjyxJUMZ0r1bdq7eYVEdPLUG7bouFlI8npnSLIO4VKH7vAh11LGr6283Mq-KPSEc6VeXDd3xZqdzQD_CfqQXS8711yHzw-8jZSecTTuXYE7XMmGMH_rz2lskoGXt3_PxWGKjHkpY9mK1WDPGzxzXU2d3n0IJAUntgy3fvg_kYsbGcrmLgEDDnB0Scocy_FAMCNEgc0lFUpZ000r7V8X6NTa1MELo8-4HyujTFh2W4D-o-4tGGepo94xNkNSjWLDitoTV3Qb4uIUF0ncKD5exFdYEv-qt-fO91B4Ul5zNa5IqJT-csWvzyW7oQxbBTd5AG0XAX8VF_ClLP1gQ5svE4s4FMFfJzE-QmJ4fYtcnK66pHqwi5oecijzYSHHkGuta421Po88zZVViAhL-Oo-mEe4Uy54NqQGXI0gPhGs7I3Ve8h4ZWJP-b1bMSOrpnBUTDenKYRhXxcScV1g8AArvFEkqp6rvwutnstFEZuwaZ28PEbo7376ggFLAj-R3ExxWaflwbxGDa2ddGtjwRFSKN8dmVR5lyuh652XI2NaqW_9cN_ZmMnFKEDeRxz5-y6Ts8p_gTmzDSnZ0RQlwlarqqVHn0R4A7Rpulv2hEhII8xOQL0iKyvlSPXNlIY6ukN2hIHglaLk1IAuIpvMfGc1EyopF04quvm1ga2ilTrV3ASNewEO9BfORCt43LRv8Uop7XiviWHNECQJFosDqoJRkJY2H0M5XIcKr11eYOqfHGoTuYu2JEjIzu_Y12oRfpNR33J033QYcd_j8AM5LOMq_MXEY3A_e51ZO3obRGvaTPTQ27HXJFsQbAsa1mfYHWRyc1s8RrNMPNv7zcygznaY1l7XvSpkcdAtzT6A6OwZol3zg6Q8BIkZe_VX5eIvXI3EEjNzKu5VBwPj9ssVyKwGfeghvDwQXryxmSl90voMdDWOWdwK0LWgjug93ip6sG6-4dZ8uxmPK-t9ORh0p-YKR6zg5cSyZu3SICE_-UPnEZ37jUzdDQqIE9u6YbZeWO-KvBqG9eJq_0KeEe2AWDeHBZ7jmn00_KPQE_ifFBY8uIaE5Jt6DRENde89LrrpcUi9CnF2r4jKl_Il1FTTU1UjiWLUedfs4PKHT_KLZ4B3QBZDqI4kWtFYbAgYVaq9dGIyfConu-f7xa4qwlLayU0bj_Ep0Zpd3VrIbICHXeqZ_XTzhymM99VxwN6QtS91wCc9K7RP2vui2gSrOLoQFclwVPyU_lt-7v6zVb-eAvHVPrbWphm-tOsBKoSk7muLdiW0ugAE0zeGxiItLWXdDD6dxTwHOUUFdHXio-hC8r7kEoqyDZuEMo9XkBYYjJjoAwr9vruyykhHu_p-DYuJSUFtzj6Ao5RrXFvjM9J_dgHPEVS5dxji9L1XZ3kZT4hE8L3M4WH6e9vw1e-CgyJgYapInE5yp1otcGSpU5eJclB-iVJy8fTA1GlBlA7vpLhTA59fursfO8ojIGDSyr0pzMhgDOO-mu59YpNUTglu2hlTyK7BwCBrnAIa0f4RtYKXbI0XwQaCcjfJ8gp6OsxZ9Uc8WqYa3HHZxaZja71L2oBZ-3FyEy7PsLuAW_yx-GeIVlJ468IUc-JEs5xjs8cutUVJ75womQEivTSee8HSrNruLkJGQa6lAuBo6-n3VxIGx4dEB-NPmLDsQOd_c_5Pioiw6dymlEPesFUIA9ZoZ7IWuDHXtphvqEWhE-W1sQ6euJ8plm89EnpNei8ZnCatNRUYhMt3VgHgdjIxHn1U7J3fi6A4g_2ujJGyZLYT3ekN-9k7paD8uwEhBoq1YxmdAhutdN9hlprh-ROjnI9LeQO_4FuPfReZpCRpSMZpzBYyi0qmt40_VlqxbL24MRyyeZffWo4XEaLZr99GsdYmZwXtNf7Z8J7vZUc251jKYm5F9VN7kCGwtum_fdY9wl5dtM6Y_CcEFOtOB4uIPwet3lgkI8riDfgwViyfppZZWfDx1sWV5jxlTQehd3NU4JG3TOWh-lBlcNWiovYJMcIQ58GUB_Y9-Jb5nu0p0wZ7ysDslHtsCNeNAmmPUV7znafQB7aV4N6tNbzIeK4Qv0d-G24YZoIyhGFxmjssPHIx2zRqGTBgTtRXNi8EJVGZTXlQjI7yJPj02NpH7tFHg0hNGLnGrGk31W_6WnUX5i3s2dxzwLV1-gkdUpRU5dp3nrE00Bd9WfrRQOlU3aVEHXI6FXWJEaX3I8BFeLXYzLoRrpo1xecZv6uaSx7WYfriASmp1hWUzQrEeS8Cek3l5qMszYqdlSriQ6DZP5IsEAdWerpX4rl0PcwafAPkA613mCZT5F8sVUlfB9GMxQLDUjEJ1pAcYvJ8MYgyFY3UEeJu82Cpw0j8ZvKdV3cr7tlaV75MTQrE0qph9RsdvbQkR6NRtZPRbFnlRtgnr5i1MaTrrKS9tKYONlFeK3mcmn8I9dZSnKaBzQ-ZE7HeY1EPSzdlrrrmbiqdRRDD421SlM2GiYxu1Oe116M82-7FQlr-58W5hfwfyW1elq_xQnyvhDdAGCBv2JBvjeIbgLP3b66RAHi3ZHFo4C7dXTE21i59ujA_OLbNha8tn7hwATDzC_yIvqMo9mrtLl_rEp3xOi8ucIpc69ZyJMekpHlsupmjiIlaQLvXY5UtCmBd9A__2jcijsSJMrf4fxZ_gBSrtZ7n4HWB8E7V6AktJ247cuCnCy965-ABLZzeB1OZLJzjOfX_jRMPnV6ncZaQIkYkWdRTKfOYJThru0l1nUmfxvRR_5oa38voJZlw2P-uhSjxOXkOiHn7aAHZJV0X9iM9AdG_a81DHef5WhP-bV5qYbA1wh0X5jBAMxmgDx9uLsiGsbSEM_5Jsgy6andCeQNzIPAF6x71ivXVyCbAYAY8Ho0kbitD2K-HEq4xQYCMW6_Q5_yrHXwdRCfa9_13EetkZzUlOjPztvCxDWQGRYEEsP8ha-VjLrRLDA-EzOet5jZ7JH9X7Wt5LD4t6ybAxLg-hdXDbF9iCZ4Jrc3eEFw3unmO_ixQZJum5LI-v8U5T2AKehqRkMRIHE_JhAi1n072g2QADu7Zvo8mBa4qEeIG6rqLtL9uFTshq2ozRQvnUEaW29gGcVlkPJFWRKAmxDVzK3nyjieAqZoMZRFY3-Yta3Ee5Ph0TqXjyTcMU2InKAF2z2h5Ek70TARZ9Xoyj-quqyvAf10ZK7p9R_2Zw5MsjhRwMwpBUB_OMditX2SpC3-Wsjx7ljNDYdk_aZlHxm6N1L4GQWcfPgEwZc7FVkBB1dYsq5kxJC20c6Wc_YVfuq3seKd8-iknlGXDXTNZ7Nn-SgD8xaumBxTr1OwiqF83a5JrnWh_l-2B8k971u3bCErUIQlUhJiy-U0z--sRM81Wy8TDzy0sw-46l3aq4HOn08SiXj_q0pPvKAtFkAb1lCDF-dfx86spWJPuI5hgnrd13wIOiF0OfM2RxOQ___1Ewytw8da6nYkGlY2upzvZHXq2Acl99mJNL9vR1lqO8Oc-1rOfJJ_ZkClTTuYL3s8X80UoLGTZAQei1Mg8-TF7Uo9FtDQ6vbS4rJRLKgPaZQzeIYl017aew6iuiAgELhCVjHUrpq10aYKtosZFWsnRKlmj2rf8AZSypDPkRZdIJfPbx_tlR2IKlm3fqXo3ODBmxFwVhty7FEBmuv3EOuACRtoG3PHFG-znZQ5KlShQcV5QwI8JnAZNQWHYbMrhj99lc5KmVvmizOIS4SkruS-ZKUSS5ItA-6iT43id43E4SQQyt075ygubRykeOdxWZIPfAkYlKDh5P76FuY856hE63x-E5iCBp-Os2S4frb8h3cQqegwRxDbPM67SV27IfDzQAZIoljP0xEQeCx9LKb2kdu3t8nDe18G3FFlBMveGR_PUI4zFQ5Mcmb3mmZrGay3Gqe7oZTjw2MXP-DVweRQ6bZr2uc0S2Y0ea1Qc6GYKYn8gP_hQSZ6HppTwM2cUhfsC13n2f8_kvE0AnHKgMmKAaJy87csBvxRL3NfNcASqF5dq0Kd6318dEmlRhLwCaQx8FViXW799tZIX4SPpc7AXEQaC_B_ozlfBePbqKXozf_FmMU7Bg5kQzjPj1V7dBQEvY-bp5aqJrWKkUZ5vE3J_vb1vo9EO264jtUGy86k8MH9-RbTUZR97HCkWnHui53_qQJAEWkBRUtjXVVrJTtmO8L6hNMU6gEooGtd7zUgpMTWVEh5bwMwJTxx2i_rHgTcte-Jp6LZCeaKu0l3EnZnCkFCc8c7_0Id4CSjSm4c87Onhk9hmoDephohHNjgqboZMqqrbcJYTJZ3RHaN5Nf4_-AAh7W5q1tSFfTGSo0wCaOMVZPuvWsEZYZp-rRSu6E0JxScXuI7C5UOxCxXJPLFL7Uuut9sVj2cS1ZCbjRha2qqSOxVZL0T3gXHexZXwuUHJvL3GxFweo_N-CXpAwCZzNqpjOCzL17hCXh4KAm_Bj7WFfSPW6U8XET7WWAMZQmfzoojaDA8KCwmpCl351RytIgLQiPwIfebnUvbk-cURRWpWVtC6jsUmGlsO1BeKCZw9lnWcQOPFcIxasAH116qz8Nxw6OV7QvWG3if49_K0SfIwkTGAnmTKSsTb-JhKWY1SaxARNWOSzVLJEjGM1QiKEqGelUHfSn_GhFE8yzHE0J_NoacRVy5yuuqSwIv_9r9rkTsei-veM1h7dnXy7y9jLo2nIKDWuxo5Q114MoABlozSoCCg8OZgligdiECMVJVaGWW2a78DRojlxWvTzqmrF8Y8Y3QX2B-_sxlgvkvXqaYMg9Q3in3u5k8SPOYUsV3DjFtTHyr5wTWV1dY5ZvPoh71VWu-jl5sJRu2JrRXRJ8XIHBK68zjsNUJ0LNmhOcUWuHd91Gzr3C719gTgmkTR0yMiPjPcNhk6LP3i9yyYLgMRYN3AV04wDu0HcRWccUCw41PoMlRRUZCKa1irxcppIJZoIB38FBe3R7ULb1kAhPISrpPiK_HTCc39Mzn8pkx7_vWMbocPcr4b4Nu4PKgP1kZLyOFNIB32qlpVYKLDopDWwaYDtJ0BRHgQpqJpKd6H3q8yL46q2J8xdilTGQca1k0pN-WWTJbfG5okDefzUCQfZA3ed0Tw7Br3C8nt7Uxt6wooOY1CEfrdHqeT7PmxDHFL-oEm_ATvTCx5scq2yM9vyGzWnOejlpjHhnoeIEomEcyxsEashxkfgFZiMOAPzo_m-piGdJLH2fdLYlZ9YDQY99SWPfArbh7rWNbQdN-Ppug1z6TdKXX5eXTg9-msZUsRg58qU3Q0gtQlHzu0862gaCS-sTmCj7RfcHXOlu8D8lXdzyJddUVc-wCE2DRKOGDeTKK76w00qozr-IaIlx6SelWnTccujP4k3sRflobHK6M5P8zMbTxLDzVXyJe8gUJrGOh9q1WnbQjI91usyKTulMdDSoB-ezMJdS2SadL88V63K_IwV-ADdh2b0GBA5ri536swmGzSOhrJKM9lpWV9r6c8JXZtwF6IWHEQK40TVePJQatbBSe1V3GkkHUFs_G9_VeYL8VxndgYlihIXtKAjIyuQTo16KixMHz0QbT9dp1f1Oyp42nrJmLxRpuoebuWcDDhlFB822ZkRgVx_K80cloZ7wg_NOvBdwd4-Kh5pyteLq9apjoVbe1U462USAj_LHEUwrqTn04kmKOFGCKXaYqUF3DZrybY2aF6-nYkGYI8n0u8MfNJ2rK8b5BunHKLJiSISRAaYH_obkaP2Vh_WD9avRcr5i_JfUxV7qvDSrfaDQ4-cxnPTxVxh3CMRlZI8lp2cb7zOyNMAsrj_vTXeFHJd5p3o-aYu2IVmgHpAcs5Aj-Lo3rpWSpTUEqkTETDFXl56izGdTWhD1SHrjo_XiZXsfaE4uCN3EoZEe2o7pG5Qf3W427rN8t9VC-4jJKxjksHLz5bCpIxw1We7_Fo_6F2hD8Zn5hIPAPOSvnJYSfXBW2VIcLEAxYZtgRRTX90ZMdpY5AbfgT7g9LoM1sBoq4PA256ATUHbGlNogeWve_o0mZdwoXDIhTVfQ7ZLxMxTk6haJeuvzotinwgET0mDmCpLP8qH_BgutRDrKHJaVidvQgIlvCXG8xjUKjD7Ybk8kZv8xy4J1ufgbySXr5CS4gz1fnn3yT_Nu3RCJkIxNSPMtEota_t481LCrWeTrNTwcTphaZ2Wlsim7i8V09TjZNXq6in_c4iN3MMdzGNZg_CG6RGkiAuLEbGpRAYRhzbC7XW9batSA9TiZ2PiLvjMoTFxsOzT5AS2FntNiQ1Nm3jV7Q0pIKVC01He4U7koszeIDPg-wD8lhD_iYMPnsRvfDJK-zhKSzrjh9KtY1bt6-ASK6JbbgydFjOzTKjm18Vk8dz7ub6DiGbX-FvN3nyHNqrlYGzFtbEGg6cFrrnTaXt9-9Lg0PFA7gYayAa_6_-axvZCifiTivdVMEVoBvc34oZxQTmyBFPzaScD3f6swXLeRcy9dVQenqQYM_A3tpJWADF2vfCMQqbMjul27l-1kPpIRknePStZGJoBxAoqp67uR-GZbQDdwLTi_ybT5rIt8wS9Xutpla7p9UKPtm8Yf-InCTeh9QbyuCcBLkJIQfuitDr-UvRBK0gx5UflC-VSkUFo-lGPirT_uvU_uWHxP9yvEy6jEpPfDSeItjOxLBl9wFmVVj1FMoC7XbxYpAOy8iSVGJ_fmraYHELbSuXwZ3dV2Qs5_cCB7eTcIDR-4NLTL_0RLC7j665Dqr2bS_aw36Sha4KkO9V2tL_KTJPIbmrcj-LzLhUFxUSlTmNFgk_6gO1mdlxvIr0QAMcRQsnfYy4tMFClD2divs-nz8fpj0RuniDHi4XV2Jml4rEP_ZibHHTRqVt6A7rLhliX3AAivvl3eY0EZTgUDgicWtZeNJsyPnkjHbFnCloZCUX05AWuELzLRymRXlBrUWSg-P2zb3w2hwjz3L0uPD4pObSuKkF9Kzb5PVBzycTuVvYoyvY4CBerERsYld54dcequqF96BSdl6vBPRaYa7cLUDrX-x2Az5PQWw0bRNLEY0QN8CqnX4IOeMRo84G7pWZE4shQI2int1Iwg37s2_QXaUBMa3MmaV5q4UTHLSM_JbpA0n_dUIg4ruXOVUw82WHptpJ68fvfaSrlCEmqRiM_oSwZ4piheg3v_kfgd5dZaDwrBVxpd9aL9t1HBWlRp5zjziySoCeD4VmKFl17fgSfrg6JFs5cwEDDRv8njYf0kuOx_A2qb2iZAR1-uBOKFbvZqtpEWNroLZo3mHloA3XrZjyeaxQ5XaXp3tTgmJwpcS_dlBQHnffTgewURmtMqZv0AUq0sHheFIBX60NBFTCJfXgxP5znFZ1TxUGALzeRh0_AwR4xpelfh2STjJy48i8BK91MvJLpvD3wDyf-PznibXGgwTKVih2Ztc5UmIq5Z34y5redKRHcC5Vhr709KHbSADa16FLInb6eK7E3h8mTnbk2nB2tLKa-eHBD3Iv0mrseemwGwHFVgOjzHpbKes6zmrK4BCupC4pu3r5VCIHcxxgu8D26Uo0oQJc_JZ6h5xm4Ozdwm_8E9XQ_n3MrNRVLAY6jjVUwKNxE0A-JNlgWqxCcBCcwT0jnLT1bmKpcLPd96Oa8pmlbHCQA5iPiSN388OjYIXMy2ubQD-C4Aesp-cjXXjidBuhojDJ3Gmx0shftwNLOdkj7UqPS4Zu0p94G8YVE67wGQnyfm2zMJqsE4CZLDlu8Wcov5a8KERVvXio4t__uBO-Dyya6jFC0skQiIFqMIbga71O6fDPFmt0RGJwqFv0-ar3oR85OfqMB5DvyuKpMMjTUxYkpoHJ44vN3acfrS8AFZYP32MVm1XK28IbrMl-ZPc_6adoaqxkHE-b-k2QaP3EwNJDfKJ1PFHNpJ35QKMcR8sjMg8fUD2B4hkzC0t6pMlIUzkU3tSmcdESNQbmdrkeJ2Lwr1pj2jm_aArzJjqPdjQSc712tpJGi0WEDiZjIWtQH8wExr4pq9oyBUzSzICHwGOgtbE6wwl5mb_Yh0afZxxRcRt0p5M_Cgxsyij9aHE2zxoLBCPlbTFv3GlP7nVIZbCiIJTRAogKMgE6Elnu173BCq_Gdxz9eL1M8s6caeSrVJenBmoyJxeUglvrRFXyoc5Soqceoc_kpMPFj6P33TU0MkWDo81etrXEmaS4wp31a616XE7S6_d6IV4YjEcayHgHEAI9ndT4FWO2EcqLICtSPjTtjfU4WJLPEo9XW1HqiuYWcS20jkQBkTE8aV06iVE-83stcQF_kUImoWmJsuNytFQ39yI4XxvyYS9DsnVRtPkWoQt6H9CXZRhaufbAiI9iB0FliYPVEodWfXWRq5Rn7rxQXXhVgy1G7FySwX2lKzeKtIkjJOkIVWnt5yT2yiA0yQ6yRu5rLRpg5ZvqWx8TtAsit8GjuV8OgYH5A99b7NUV0mqGKQ9DukJ9D2TaVtCkhFRg3tKP9y-jor_fhYBlohfvIqZYLBt8Qn14iuFCKqD2RB4_Swo6t3dEnogfnfa_VDY24rPkpoajAMRlLjGzbJp0GjD-yfUsIW4XuCPM1A04jf1bPX5VBdRcqaqxJb6qMV5_UKvg2HNg1sNe6Blqfca9oYbjWtQCo9ONQ7QykCxCwEWGl5RcNEjFYuI-wYyNlXg_X86QRPTd7H6WWeuA_NlyTLR52_TiAyuKAm8nafF9dvopZJiwlkSBO7HB7XjAsC98H_-ip8GgO7ZF7jQ-bWABPH0ah7kKniNxugdPOIGd2o31UdGkrgpb-VGiMmz6l1sPd1Qm_k51wnywHp6exqlI5mnjM0BazcXh-HGcBb9MRpt5q_JoolX8He496mIk4jOxrr6cftjWSJ7izqffoZvuDwcxt_at_Z7X1y2NEfA77_KMN-48bmp5BTSZCsxqwTh6WiKC5x_eOOJUAxErRXHU45oaZJoXElAZLvhplO34S7pqop1Pb51xex6WHKVrCMZRqioXgn_-6AXbMqLOszIuCT6U3Tja3Q-YmGi4DXOqPlVMLJyJTPw_14nlkmAdI4E1o0fG1p7dUKNL9wrbmoOVoa4dPq4NO2vb2yXFBpHjqFFOh8RPNvq4fPaUxfztLPniDUNh0rNOg0N1N12x1GoQ3SrZu_ZHRRD-ybthZbQH0HgHN9HlmRvf7nyDli2Ab8NRqTEpg5paSgVotY40ZqSqJ-DZ-5yRU3LiyX198L4q5sTkFqe-iPDWl3W1qksTVEeAj09vFTpqMUKgCQU0yr7LyMtt-yTk9tlNNOCZveo-7yDYLm4CIdpql5FQPmbe7oSLeRjK79cLgM79ej3wAKhO6jF9eCILRCP3U0Xr-1B9PKjkKMYfN7PsKG8oXxLaenV90cnSIAFngRoYKz3pLXfjAVO7qqW80p7TKIxm4deIav7o8sUYWCpGp2VNgN0uYpmi-zf3i0CMN0jAQeLFz_zw7R1mUKUxPvSX5yU_vkgOVKjFy_PGw3Uzj27Rxs2S_r9DDOirsm47uuHyay6eZ0iWnOEG-LqEG6sNIlgTqUvNQgd2EU9-XbLtgIx2LlIKRyShgvDTkNfGzzfDPyBZMfc1Cn9KwfxJEWi8sXecy6Sg6pyXxs22f84XoNgyStyeXIqhrqvd2zu73TvZLMb_cSrnEzcmgr6TAjv1-T6ctFtlsfExkFELkP2CRxX_R2xXNoc5Ch_1tfujVcgc1O5piEJdNVJ5e_VTQL21VyNpM2zOg6qMeIAinPyJjkg5HCatzbqq-giD1uvxFvlIEHvyws0ypZbOKJzXwysrGqsSn9P8ey9ErAt9DXRCBcKkEnXAPPUSqorTJjrbyVio_F9Dq_HX25dwiXMpXAaFFiu6pw-5yhesEl7t3pANV5dqKdFlp7Giuk9Vrd9cSYHJFBMBtzUqY4a3zXBuS88ilrsR_iE04pslEsUsSCaEVuPc6Wvu3zB1JCRRjapRwGLIxEwA5PxD5HjVxG6FF2rXSaij9KWazyHbuB_R5jUtdLKTwKX5vwXuwh7HgQzSRY9jcoVVhgRdnnSoU-Htevl-dVH40uEvU2p3jugCgMIV82aZb81SHlEJAAW7WfBUS1nfEcZ02IsrswTbyYuqFGXqiw1EJRBV1Qf1JROVtpG3WAZU4-lquxvqVAtvkERDtj-FSugBCGjGruMdBjZqDzCgb6Ij82k6_lDEN_NrNBewM3b8gRZbZXYZM2Ju9KU8RbMzMzAKQmGP1R49nZFaMhNYoMPKyy3verNVTpBuFfDhtjkhQY24cmcQVl1cqM6Xq2K5uvKAWx8Bb2F14E3bwKqLssDhT0FydhkSqNgkFkLp0JMCCEBSwL4BQLwmw7RTEC3tX522WzgGOZIhTYsZHIqN81_s-W1a_90a2VGiFn44VVRThPrvICLU-jUxWARPUjln4ZKbRYdXB5x4Dew1iEQAoR84J2R4RUQLTSQoBC_mmAd3KhMk1URUlsqqQ=",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The immediate reaction to the launch of the man-made satellite was not triumphal pride, but relief regarding the first step toward escaping human imprisonment to the earth.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-1b64e887fe3efc4a"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The question of whether to use new scientific and technical knowledge to alter human existence and escape the human condition cannot be decided by scientific means and is fundamentally a political question.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-cc62d06bf4c20e7a"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The term vita activa designates three fundamental human activities: labor, work, and action, each corresponding to a basic condition under which life on earth is given.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-9f02fb7b35c018a1"
+        ],
+        "qualifications": [
+          "limited to labor, work, and action"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Plurality is the specific condition of all political life and is the condition of human action because humans are fundamentally alike yet individually unique.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-952e7399875e4ce7"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Aristotle distinguished three ways of life available in freedom: the life of enjoying bodily pleasures, the life devoted to the matters of the polis, and the life of the philosopher devoted to the contemplation of eternal things.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-a97d1bac503b806f"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The historical shift from the ancient bios politikos to the medieval vita activa resulted in action being reckoned among earthly necessities, leaving contemplation as the sole truly free way of life.",
+        "claim_type": "historical_context",
+        "evidence_ids": [
+          "ev-57b3d3a347effb59"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Action is entirely dependent upon the constant presence of others and is the exclusive prerogative of man.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-0ea1339f2db2f5f8"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The translation of Aristotle's zōon politikon as animal socialis reflects a loss of the original Greek understanding of politics.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-0c97f3ccde64312f"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "At the root of Greek political consciousness lies a distinct separation between activities sustaining the life process and the political realm, prohibiting activities serving only to make a living from entering the political sphere.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-be60309d0a4c21c1"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The emergence of society from the household into the public sphere has blurred the borderline between private and political and transformed the meaning and significance of both terms.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-c8c0848f603a49e3"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The public realm signifies the common world of human artifacts and affairs that both relates and separates human beings.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-5e33c5625359f6a6"
+        ],
+        "qualifications": [
+          "distinguished from our privately owned place",
+          "not identical with the earth or with nature"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Mass society becomes difficult to bear because the common world has lost its power to gather people together and to relate and separate them.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-0c96c57fb4373610"
+        ],
+        "qualifications": [
+          "not primarily the number of people involved"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The distinction between labor and work proposed by the author is unusual and lacks substantial support in either the pre-modern tradition of political thought or modern labor theories.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-9bbeb313849f0059"
+        ],
+        "qualifications": [
+          "apart from a few scattered remarks that were never developed in authors' theories"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Every European language, ancient and modern, contains two etymologically unrelated words for what is commonly thought of as the same activity and retains them despite synonymous usage.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-a56bf693a10c4c19"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Ancient estimates of human activities rested on the conviction that body labor necessitated by biological needs is slavish.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-eee073c1e82183fd"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Slavery in antiquity was instituted not for cheap labor or profit, but as an attempt to exclude labor from human life conditions.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-bea46b1fc84e9e65"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Both Adam Smith and Karl Marx shared the modern public contempt for unproductive labor, treating it as parasitical and noting that menial servants leave nothing behind in return for their consumption.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-c585294168591504"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The productivity of labor power lies not in durable external products but in the human power to produce a surplus beyond what is required for its own reproduction.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-3266dead854f2abb"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The distinction between labor and work becomes merely a difference in degree if the worldly character of the produced thing is ignored.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-5c174abb8305ea9f"
+        ],
+        "qualifications": [
+          "Conditional on whether the worldly character of the produced thing is taken into account."
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The products of work guarantee the permanence and durability necessary for a world to exist, distinguishing them from the products of labor.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-a64e42fd96f964eb"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The least durable tangible things are those required for the life process, which are consumed by use or decay rapidly and return to the natural process.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-9ecc13fb8ae43372"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Laboring activities are endlessly repetitive and bound to the recurring cycles of the biological life process, unlike working, which concludes when an object is finished.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-0ea1e22640abcfaa"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Marx defined labor physiologically as man's metabolism with nature, placing labor and consumption as two stages in the cyclical process of biological life.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-2891464f3e7c40d5"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Locke, Smith, and Marx held that labor was the supreme world-building capacity of man, leading them into contradictions due to equating work with labor.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-bafcd3c2be3f263f"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The emergence of nineteenth-century evolution and development theories shared a common foundational concept of process across sciences like economics, history, biology, and geology, which was virtually unknown before the modern age.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-d44b854092b4c026"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "A mass society of laborers, or socialized mankind, consists of worldless specimens of the human species who are oblivious to the world due to labor's exclusive concentration on life and its maintenance.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-46ac8002bf8aa45f"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Improvements in labor tools and mute robots have eased the effort of sustaining life and giving birth, but have not eliminated the underlying compulsion of labor or the human condition of subjection to need and necessity.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-5bf2957dfdb8f0bb"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Tools and instruments used to ease labor are themselves products of work rather than labor, belonging to the world of use objects rather than the consumption process.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-cb14451673da2463"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The ideals of permanence, stability, and durability associated with homo faber have been sacrificed to the ideal of abundance associated with the animal laborans.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-6297c8a1a4822bf2"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "A consumers' society is equivalent to a society of laborers because labor and consumption are two stages of the same biological necessity-driven process.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-05409bcb9417e6e7"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Homo faber makes and works upon things, distinguishing this activity from animal laborans which labors and mixes with things.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-c84273aaa2994cf0"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Durability gives the things of the world relative independence and objectivity, allowing them to withstand the biological needs of their makers and stabilize human identity.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-ed6df05baf76a36c"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The work of fabrication is guided by a mental image or blueprint that precedes the actual work process.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-497c08ce1a69f45a"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The process of making is entirely governed by the categories of means and end, resulting in a durable end product.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-84bd4735f96e9507"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Consistent utilitarianism suffers from an innate incapacity to distinguish between utility and meaningfulness, trapping itself in an unending chain of means and ends without a justifying principle.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-b20224cd145663b6"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "When anthropocentric utilitarianism establishes man as the ultimate end and measure of all things, it reduces nature and valuable things to mere means, thereby robbing them of their independent dignity.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-462f55951449eeae"
+        ],
+        "qualifications": [
+          "applies when man the user is made the highest end and measure of all things"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Works of art possess outstanding permanence and durability because they are not subject to the destructive use of living creatures, achieving a higher order of durability that represents the stability of the human artifice.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-998a56bfc8ab14e2"
+        ],
+        "qualifications": [
+          "their durability is almost untouched by the corroding effect of natural processes"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The immediate source of the work of art is the human capacity for thought, which transforms mute and inarticulate feelings until they are reified into worldly things.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-ad8a4f3d2a3ff6ad"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Human plurality is the basic condition of both action and speech, possessing a twofold character of equality and distinction.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-7518b4b45b74445d"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Speech and action reveal unique human distinctness, serving as the modes in which human beings appear to each other qua men rather than as physical objects.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-db91c0271bcf12d8"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The revelatory quality of speech and action emerges in sheer human togetherness where people are neither for nor against each other.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-6ff3860e9ef96f6d"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Attempts to verbally express who somebody is inevitably lead to describing what he is through shared qualities, causing his unique specificity to escape.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-4f0faa5618655290"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Greek and Latin languages contain two distinct, interrelated words for the verb to act, designating beginnings and achievements respectively.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-eb271f8bde2366d4"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Because action always occurs in relation to other acting beings, the actor is simultaneously a doer and a sufferer, and the consequences of action are boundless due to endless chain reactions.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-6c3a7f7a99934581"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The Greeks did not count legislating among political activities, treating the lawmaker like a craftsman or architect whose work had to be finished before political activity could begin.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-6505459bd22c4fc7"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Plato and Aristotle turned to legislating and city-building, which were prepolitical to the Greeks, because they wished to turn against politics and action in favor of the greater reliability of making (poiēsis).",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-4fce7dd42db2f483"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The indispensable material factor in the generation of power is the living together of people, and whoever isolates himself forfeits power and becomes impotent.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-4a779dcf636a0bca"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Tyranny rests on isolation and contradicts the essential human condition of plurality, generating impotence rather than power.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-fc2cd95489e7cf4a"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The traditional escape from the frailty of human affairs into stability is characterized by the concept of rule, which assumes that political community requires some to command and others to obey.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-388cae9a2b3f34de"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Plato introduced a division between those who know and do not act and those who act and do not know, separating the initiative of beginning (archein) from the execution (prattein).",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-7cde1af72bb53ced"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Action possesses an enormous capacity for endurance and an unlimited process that can grow while consequences multiply, unlike the strength of the production process which is absorbed in its end product.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-2d2b5a519b403df4"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The traditional identification of sovereignty with freedom is erroneous because sovereignty, conceived as uncompromising self-sufficiency and mastership, contradicts the human condition of plurality.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-ba21e6f4a5687ee2"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Three major events marking the threshold of the modern age are the discovery of America and exploration of the earth, the Reformation's expropriation and accumulation of wealth, and the invention of the telescope along with modern science.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-9d6324c384ad7bc0"
+        ],
+        "qualifications": [
+          "cannot be called modern events as we know them since the French Revolution",
+          "motives and intentions of their precursors are still securely rooted in tradition"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The technological conquest of space through speed has rendered geographical distance meaningless in human life.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-b0437b696824e0ab"
+        ],
+        "qualifications": [
+          "finds its limit at the unconquerable boundary of the simultaneous presence of one body at two different places"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Galileo's use of the telescope delivered the secrets of the universe to human cognition with the certainty of sense-perception, doing what no one had done before.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-77b80686fef4373e"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Prior to Galileo's telescopic discoveries, the philosophical and astronomical speculations of thinkers like Bruno and Copernicus lacked factual confirmation and would have been dismissed as ungrounded imagination.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-0c25b0a1335db3e3"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The modern age's development was made possible by abolishing the old dichotomy between earth and sky and unifying the universe, subjecting all earthly events to a universally valid law.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-da3dca3a9c0e6a65"
+        ],
+        "qualifications": [
+          "valid beyond human sense experience, human memory, the appearance of mankind, organic life, and the earth herself"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Modern science's natural development has been underpinned by an earth alienation that surpasses the world alienation produced by expropriation and wealth accumulation or the withdrawal from terrestrial proximity.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-c25f79f40170e82f"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Modern philosophy began with Descartes' universal doubt, which replaced the ancient Greek wonder (thaumazein) as the central motor of all philosophical thought.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-1b0f2466e767c54d"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Cartesian doubt emerged in response to a new reality where man-made instruments like the telescope proved that neither truth nor reality are immediately given to human senses or reason without active interference.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-2baf8b7a4ffe1fed"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The most momentous spiritual consequence of modern scientific discoveries, closely following Cartesian doubt and the Archimedean point, was the reversal of the hierarchical order between the vita contemplativa and the vita activa.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-67b772eb49faae60"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Modern technology originated exclusively from a non-practical search for useless knowledge rather than a pragmatic desire to improve earthly living conditions.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-da63451fe8d79314"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The modern age shifted the object of knowledge from eternal things or motions to processes, making history and development central to both the historical and physical sciences.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-7360809a6ea88239"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Modern philosophy's turn exclusively to man-made things and history stemmed from despair over human reason when confronted with non-man-made objects.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-9080621c590738f4"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Characteristics of the modern age include the typical attitudes of homo faber such as instrumentalization, the means-end category, the principle of utility, and the identification of fabrication with action.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-a0e234f914950836"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The elevation of laboring to the highest position in the hierarchical order of the vita activa was preceded by deviations from the traditional mentality of homo faber brought on by the central position of the concept of process in modernity.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-eab76e2a63b5be18"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The victory of the Christian faith in the ancient world likely owed much to a reversal that promised immortality to those whose world was doomed.",
+        "claim_type": "historical_context",
+        "evidence_ids": [
+          "ev-02bd3b4b78912cd7"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "The rise of Christian individual immortality as the central creed of Western mankind resulted in life on earth becoming man's highest good.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-0474c635dffbb477"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      },
+      {
+        "claim": "Marx's early consideration of world alienation in the 1842 article on the wood theft law played a minor role in his work, which remained rooted in the modern age's extreme subjectivism.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-f5e357b6a3c5cc12"
+        ],
+        "qualifications": [
+          "referring to the writings and thought of the young Marx"
+        ],
+        "support_status": "strong"
+      },
+      {
+        "claim": "World alienation is even more present in Marx's ideal society than it was before, since men will use production to objectify and actualize their true being.",
+        "claim_type": "author_position",
+        "evidence_ids": [
+          "ev-de7ef70a15e65337"
+        ],
+        "qualifications": [],
+        "support_status": "strong"
+      }
+    ],
+    "unresolved_evidence_ids": [],
+    "warnings": []
+  },
+  "prompt_feedback": null,
+  "text": "{\"claims\":[{\"claim\":\"The immediate reaction to the launch of the man-made satellite was not triumphal pride, but relief regarding the first step toward escaping human imprisonment to the earth.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-1b64e887fe3efc4a\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The question of whether to use new scientific and technical knowledge to alter human existence and escape the human condition cannot be decided by scientific means and is fundamentally a political question.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-cc62d06bf4c20e7a\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The term vita activa designates three fundamental human activities: labor, work, and action, each corresponding to a basic condition under which life on earth is given.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9f02fb7b35c018a1\"],\"support_status\":\"strong\",\"qualifications\":[\"limited to labor, work, and action\"]},{\"claim\":\"Plurality is the specific condition of all political life and is the condition of human action because humans are fundamentally alike yet individually unique.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-952e7399875e4ce7\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Aristotle distinguished three ways of life available in freedom: the life of enjoying bodily pleasures, the life devoted to the matters of the polis, and the life of the philosopher devoted to the contemplation of eternal things.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-a97d1bac503b806f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The historical shift from the ancient bios politikos to the medieval vita activa resulted in action being reckoned among earthly necessities, leaving contemplation as the sole truly free way of life.\",\"claim_type\":\"historical_context\",\"evidence_ids\":[\"ev-57b3d3a347effb59\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Action is entirely dependent upon the constant presence of others and is the exclusive prerogative of man.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0ea1339f2db2f5f8\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The translation of Aristotle's zōon politikon as animal socialis reflects a loss of the original Greek understanding of politics.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0c97f3ccde64312f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"At the root of Greek political consciousness lies a distinct separation between activities sustaining the life process and the political realm, prohibiting activities serving only to make a living from entering the political sphere.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-be60309d0a4c21c1\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The emergence of society from the household into the public sphere has blurred the borderline between private and political and transformed the meaning and significance of both terms.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-c8c0848f603a49e3\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The public realm signifies the common world of human artifacts and affairs that both relates and separates human beings.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-5e33c5625359f6a6\"],\"support_status\":\"strong\",\"qualifications\":[\"distinguished from our privately owned place\",\"not identical with the earth or with nature\"]},{\"claim\":\"Mass society becomes difficult to bear because the common world has lost its power to gather people together and to relate and separate them.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0c96c57fb4373610\"],\"support_status\":\"strong\",\"qualifications\":[\"not primarily the number of people involved\"]},{\"claim\":\"The distinction between labor and work proposed by the author is unusual and lacks substantial support in either the pre-modern tradition of political thought or modern labor theories.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9bbeb313849f0059\"],\"support_status\":\"strong\",\"qualifications\":[\"apart from a few scattered remarks that were never developed in authors' theories\"]},{\"claim\":\"Every European language, ancient and modern, contains two etymologically unrelated words for what is commonly thought of as the same activity and retains them despite synonymous usage.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-a56bf693a10c4c19\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Ancient estimates of human activities rested on the conviction that body labor necessitated by biological needs is slavish.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-eee073c1e82183fd\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Slavery in antiquity was instituted not for cheap labor or profit, but as an attempt to exclude labor from human life conditions.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-bea46b1fc84e9e65\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Both Adam Smith and Karl Marx shared the modern public contempt for unproductive labor, treating it as parasitical and noting that menial servants leave nothing behind in return for their consumption.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-c585294168591504\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The productivity of labor power lies not in durable external products but in the human power to produce a surplus beyond what is required for its own reproduction.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-3266dead854f2abb\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The distinction between labor and work becomes merely a difference in degree if the worldly character of the produced thing is ignored.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-5c174abb8305ea9f\"],\"support_status\":\"strong\",\"qualifications\":[\"Conditional on whether the worldly character of the produced thing is taken into account.\"]},{\"claim\":\"The products of work guarantee the permanence and durability necessary for a world to exist, distinguishing them from the products of labor.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-a64e42fd96f964eb\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The least durable tangible things are those required for the life process, which are consumed by use or decay rapidly and return to the natural process.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9ecc13fb8ae43372\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Laboring activities are endlessly repetitive and bound to the recurring cycles of the biological life process, unlike working, which concludes when an object is finished.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0ea1e22640abcfaa\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Marx defined labor physiologically as man's metabolism with nature, placing labor and consumption as two stages in the cyclical process of biological life.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-2891464f3e7c40d5\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Locke, Smith, and Marx held that labor was the supreme world-building capacity of man, leading them into contradictions due to equating work with labor.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-bafcd3c2be3f263f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The emergence of nineteenth-century evolution and development theories shared a common foundational concept of process across sciences like economics, history, biology, and geology, which was virtually unknown before the modern age.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-d44b854092b4c026\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"A mass society of laborers, or socialized mankind, consists of worldless specimens of the human species who are oblivious to the world due to labor's exclusive concentration on life and its maintenance.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-46ac8002bf8aa45f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Improvements in labor tools and mute robots have eased the effort of sustaining life and giving birth, but have not eliminated the underlying compulsion of labor or the human condition of subjection to need and necessity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-5bf2957dfdb8f0bb\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Tools and instruments used to ease labor are themselves products of work rather than labor, belonging to the world of use objects rather than the consumption process.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-cb14451673da2463\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The ideals of permanence, stability, and durability associated with homo faber have been sacrificed to the ideal of abundance associated with the animal laborans.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-6297c8a1a4822bf2\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"A consumers' society is equivalent to a society of laborers because labor and consumption are two stages of the same biological necessity-driven process.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-05409bcb9417e6e7\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Homo faber makes and works upon things, distinguishing this activity from animal laborans which labors and mixes with things.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-c84273aaa2994cf0\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Durability gives the things of the world relative independence and objectivity, allowing them to withstand the biological needs of their makers and stabilize human identity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-ed6df05baf76a36c\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The work of fabrication is guided by a mental image or blueprint that precedes the actual work process.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-497c08ce1a69f45a\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The process of making is entirely governed by the categories of means and end, resulting in a durable end product.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-84bd4735f96e9507\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Consistent utilitarianism suffers from an innate incapacity to distinguish between utility and meaningfulness, trapping itself in an unending chain of means and ends without a justifying principle.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-b20224cd145663b6\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"When anthropocentric utilitarianism establishes man as the ultimate end and measure of all things, it reduces nature and valuable things to mere means, thereby robbing them of their independent dignity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-462f55951449eeae\"],\"support_status\":\"strong\",\"qualifications\":[\"applies when man the user is made the highest end and measure of all things\"]},{\"claim\":\"Works of art possess outstanding permanence and durability because they are not subject to the destructive use of living creatures, achieving a higher order of durability that represents the stability of the human artifice.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-998a56bfc8ab14e2\"],\"support_status\":\"strong\",\"qualifications\":[\"their durability is almost untouched by the corroding effect of natural processes\"]},{\"claim\":\"The immediate source of the work of art is the human capacity for thought, which transforms mute and inarticulate feelings until they are reified into worldly things.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-ad8a4f3d2a3ff6ad\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Human plurality is the basic condition of both action and speech, possessing a twofold character of equality and distinction.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-7518b4b45b74445d\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Speech and action reveal unique human distinctness, serving as the modes in which human beings appear to each other qua men rather than as physical objects.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-db91c0271bcf12d8\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The revelatory quality of speech and action emerges in sheer human togetherness where people are neither for nor against each other.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-6ff3860e9ef96f6d\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Attempts to verbally express who somebody is inevitably lead to describing what he is through shared qualities, causing his unique specificity to escape.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-4f0faa5618655290\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Greek and Latin languages contain two distinct, interrelated words for the verb to act, designating beginnings and achievements respectively.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-eb271f8bde2366d4\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Because action always occurs in relation to other acting beings, the actor is simultaneously a doer and a sufferer, and the consequences of action are boundless due to endless chain reactions.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-6c3a7f7a99934581\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The Greeks did not count legislating among political activities, treating the lawmaker like a craftsman or architect whose work had to be finished before political activity could begin.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-6505459bd22c4fc7\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Plato and Aristotle turned to legislating and city-building, which were prepolitical to the Greeks, because they wished to turn against politics and action in favor of the greater reliability of making (poiēsis).\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-4fce7dd42db2f483\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The indispensable material factor in the generation of power is the living together of people, and whoever isolates himself forfeits power and becomes impotent.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-4a779dcf636a0bca\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Tyranny rests on isolation and contradicts the essential human condition of plurality, generating impotence rather than power.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-fc2cd95489e7cf4a\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The traditional escape from the frailty of human affairs into stability is characterized by the concept of rule, which assumes that political community requires some to command and others to obey.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-388cae9a2b3f34de\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Plato introduced a division between those who know and do not act and those who act and do not know, separating the initiative of beginning (archein) from the execution (prattein).\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-7cde1af72bb53ced\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Action possesses an enormous capacity for endurance and an unlimited process that can grow while consequences multiply, unlike the strength of the production process which is absorbed in its end product.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-2d2b5a519b403df4\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The traditional identification of sovereignty with freedom is erroneous because sovereignty, conceived as uncompromising self-sufficiency and mastership, contradicts the human condition of plurality.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-ba21e6f4a5687ee2\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Three major events marking the threshold of the modern age are the discovery of America and exploration of the earth, the Reformation's expropriation and accumulation of wealth, and the invention of the telescope along with modern science.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9d6324c384ad7bc0\"],\"support_status\":\"strong\",\"qualifications\":[\"cannot be called modern events as we know them since the French Revolution\",\"motives and intentions of their precursors are still securely rooted in tradition\"]},{\"claim\":\"The technological conquest of space through speed has rendered geographical distance meaningless in human life.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-b0437b696824e0ab\"],\"support_status\":\"strong\",\"qualifications\":[\"finds its limit at the unconquerable boundary of the simultaneous presence of one body at two different places\"]},{\"claim\":\"Galileo's use of the telescope delivered the secrets of the universe to human cognition with the certainty of sense-perception, doing what no one had done before.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-77b80686fef4373e\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Prior to Galileo's telescopic discoveries, the philosophical and astronomical speculations of thinkers like Bruno and Copernicus lacked factual confirmation and would have been dismissed as ungrounded imagination.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0c25b0a1335db3e3\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The modern age's development was made possible by abolishing the old dichotomy between earth and sky and unifying the universe, subjecting all earthly events to a universally valid law.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-da3dca3a9c0e6a65\"],\"support_status\":\"strong\",\"qualifications\":[\"valid beyond human sense experience, human memory, the appearance of mankind, organic life, and the earth herself\"]},{\"claim\":\"Modern science's natural development has been underpinned by an earth alienation that surpasses the world alienation produced by expropriation and wealth accumulation or the withdrawal from terrestrial proximity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-c25f79f40170e82f\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Modern philosophy began with Descartes' universal doubt, which replaced the ancient Greek wonder (thaumazein) as the central motor of all philosophical thought.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-1b0f2466e767c54d\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Cartesian doubt emerged in response to a new reality where man-made instruments like the telescope proved that neither truth nor reality are immediately given to human senses or reason without active interference.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-2baf8b7a4ffe1fed\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The most momentous spiritual consequence of modern scientific discoveries, closely following Cartesian doubt and the Archimedean point, was the reversal of the hierarchical order between the vita contemplativa and the vita activa.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-67b772eb49faae60\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Modern technology originated exclusively from a non-practical search for useless knowledge rather than a pragmatic desire to improve earthly living conditions.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-da63451fe8d79314\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The modern age shifted the object of knowledge from eternal things or motions to processes, making history and development central to both the historical and physical sciences.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-7360809a6ea88239\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Modern philosophy's turn exclusively to man-made things and history stemmed from despair over human reason when confronted with non-man-made objects.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-9080621c590738f4\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Characteristics of the modern age include the typical attitudes of homo faber such as instrumentalization, the means-end category, the principle of utility, and the identification of fabrication with action.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-a0e234f914950836\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The elevation of laboring to the highest position in the hierarchical order of the vita activa was preceded by deviations from the traditional mentality of homo faber brought on by the central position of the concept of process in modernity.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-eab76e2a63b5be18\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The victory of the Christian faith in the ancient world likely owed much to a reversal that promised immortality to those whose world was doomed.\",\"claim_type\":\"historical_context\",\"evidence_ids\":[\"ev-02bd3b4b78912cd7\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"The rise of Christian individual immortality as the central creed of Western mankind resulted in life on earth becoming man's highest good.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-0474c635dffbb477\"],\"support_status\":\"strong\",\"qualifications\":[]},{\"claim\":\"Marx's early consideration of world alienation in the 1842 article on the wood theft law played a minor role in his work, which remained rooted in the modern age's extreme subjectivism.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-f5e357b6a3c5cc12\"],\"support_status\":\"strong\",\"qualifications\":[\"referring to the writings and thought of the young Marx\"]},{\"claim\":\"World alienation is even more present in Marx's ideal society than it was before, since men will use production to objectify and actualize their true being.\",\"claim_type\":\"author_position\",\"evidence_ids\":[\"ev-de7ef70a15e65337\"],\"support_status\":\"strong\",\"qualifications\":[]}],\"unresolved_evidence_ids\":[],\"warnings\":[]}",
+  "usage_metadata": {
+    "cache_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 16030
+      }
+    ],
+    "cached_content_token_count": 16030,
+    "candidates_token_count": 5303,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 23140,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 23140
+      }
+    ],
+    "thoughts_token_count": 5604,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 34047,
+    "traffic_type": null
+  }
+}

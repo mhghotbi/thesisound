@@ -1,0 +1,84 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"Structures of inequality and domination may become axes of political conflict and struggle in the context of global climate issues.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"these structures of inequality and domination might be or become axes of political conﬂict and struggle.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 0.95\n    },\n    {\n      \"claim\": \"In eighteenth-century North America, the phrase out of doors was used to describe people acting outside official legal representative institutions.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"the term “out of doors” was frequently used to characterize the people of the British colonies, and then of the postrev-olutionary United States, acting “outside of the legal representative institu- tions” by which they were governed\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 0.98\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Structures of inequality and domination as axes of political conflict\",\n    \"Historical use of the term out of doors to describe extralegal political action\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPfdBYogxOkgTyJfKxZkf2fv1Z-u-grRDaAoTdtaGNNDk_xIwQ4R3q6Jui3qnq",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Structures of inequality and domination may become axes of political conflict and struggle in the context of global climate issues.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "these structures of inequality and domination might be or become axes of political conﬂict and struggle."
+      },
+      {
+        "claim": "In eighteenth-century North America, the phrase out of doors was used to describe people acting outside official legal representative institutions.",
+        "claim_type": "historical_context",
+        "confidence": 0.98,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "the term “out of doors” was frequently used to characterize the people of the British colonies, and then of the postrev-olutionary United States, acting “outside of the legal representative institu- tions” by which they were governed"
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Structures of inequality and domination as axes of political conflict",
+      "Historical use of the term out of doors to describe extralegal political action"
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "conclusion",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"conclusion\",\n  \"claims\": [\n    {\n      \"claim\": \"Structures of inequality and domination may become axes of political conflict and struggle in the context of global climate issues.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"these structures of inequality and domination might be or become axes of political conﬂict and struggle.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 0.95\n    },\n    {\n      \"claim\": \"In eighteenth-century North America, the phrase out of doors was used to describe people acting outside official legal representative institutions.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"the term “out of doors” was frequently used to characterize the people of the British colonies, and then of the postrev-olutionary United States, acting “outside of the legal representative institu- tions” by which they were governed\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 0.98\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Structures of inequality and domination as axes of political conflict\",\n    \"Historical use of the term out of doors to describe extralegal political action\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 340,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2119,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2119
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2459,
+    "traffic_type": null
+  }
+}

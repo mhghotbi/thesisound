@@ -1,0 +1,83 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"The calamities of action arise from human plurality, making the attempt to abolish plurality tantamount to abolishing the public realm.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The calamities of action all arise from the human condition of plurality, which is the condition sine qua non for that space of appearance which is the public realm. Hence the attempt to do away with this plurality is always tantamount to the abolition of the public realm itself.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The concept of rule, which posits that men can live together politically only when some command and others obey, stems from a suspicion of action and a desire to find a substitute for it.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The hallmark of all such escapes is the concept of rule, that is, the notion that men can lawfully and politically live together only when some are entitled to command and the others forced to obey... rests on a suspicion of action rather than on a contempt for men, and arose from the earnest desire to find a substitute for action rather than from any irresponsible or tyrannical will to power.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Plato's separation of archein and prattein replaces traditional interconnected action with ruling and execution.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPlyNZUgRWI5rgvw0ymHwgpUt-SsDKyKI1QEDGheaZwcDgfvojopRTjoWKlYeR",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The calamities of action arise from human plurality, making the attempt to abolish plurality tantamount to abolishing the public realm.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The calamities of action all arise from the human condition of plurality, which is the condition sine qua non for that space of appearance which is the public realm. Hence the attempt to do away with this plurality is always tantamount to the abolition of the public realm itself."
+      },
+      {
+        "claim": "The concept of rule, which posits that men can live together politically only when some command and others obey, stems from a suspicion of action and a desire to find a substitute for it.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The hallmark of all such escapes is the concept of rule, that is, the notion that men can lawfully and politically live together only when some are entitled to command and the others forced to obey... rests on a suspicion of action rather than on a contempt for men, and arose from the earnest desire to find a substitute for action rather than from any irresponsible or tyrannical will to power."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Plato's separation of archein and prattein replaces traditional interconnected action with ruling and execution."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"The calamities of action arise from human plurality, making the attempt to abolish plurality tantamount to abolishing the public realm.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The calamities of action all arise from the human condition of plurality, which is the condition sine qua non for that space of appearance which is the public realm. Hence the attempt to do away with this plurality is always tantamount to the abolition of the public realm itself.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    },\n    {\n      \"claim\": \"The concept of rule, which posits that men can live together politically only when some command and others obey, stems from a suspicion of action and a desire to find a substitute for it.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The hallmark of all such escapes is the concept of rule, that is, the notion that men can lawfully and politically live together only when some are entitled to command and the others forced to obey... rests on a suspicion of action rather than on a contempt for men, and arose from the earnest desire to find a substitute for action rather than from any irresponsible or tyrannical will to power.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Plato's separation of archein and prattein replaces traditional interconnected action with ruling and execution.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 401,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2513,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2513
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2914,
+    "traffic_type": null
+  }
+}

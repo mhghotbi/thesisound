@@ -1,0 +1,84 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"Providing endnotes discussing labor, work, the introduction of Platonic ideas through craftsmanship analogies, and the role of rhythm in labor and machine work.\",\n  \"claims\": [\n    {\n      \"claim\": \"Plato introduced the term idea into philosophical terminology, as noted by Aristotle, with words like eidos and idea relating to visible forms or shapes.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"Aristotle’s testimony that Plato introduced the term idea into philosophic terminology occurs in the first book of his Metaphysics... The words eidos and idea doubtlessly relate to visible forms or shapes, especially of living creatures\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 0.95\n    },\n    {\n      \"claim\": \"There are labor songs but no work songs, as the songs of craftsmen are social and sung after work, reflecting that there is no natural rhythm for work.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"one of the best of these studies (Joseph Schopp, Das deutsche Arbeitslied [1935]) stresses that there exist only labor songs, but no work songs. The songs of the craftsmen are social; they are sung after work. The fact is, of course, that there exists no “natural” rhythm for work.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 0.9\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Discussion of Platonic ideas originating from the craftsman analogy of making beds and tables.\",\n    \"Distinction between labor rhythm and work rhythm, and the repetitive nature of machine labor versus spontaneous labor.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPKfZrjKE6a8H3OVLVuAsRMlHg2FKbWMCZ5p9iMjXAkNrqSK-R3Y1uO1bO3dfC",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Plato introduced the term idea into philosophical terminology, as noted by Aristotle, with words like eidos and idea relating to visible forms or shapes.",
+        "claim_type": "historical_context",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Aristotle’s testimony that Plato introduced the term idea into philosophic terminology occurs in the first book of his Metaphysics... The words eidos and idea doubtlessly relate to visible forms or shapes, especially of living creatures"
+      },
+      {
+        "claim": "There are labor songs but no work songs, as the songs of craftsmen are social and sung after work, reflecting that there is no natural rhythm for work.",
+        "claim_type": "author_position",
+        "confidence": 0.9,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "one of the best of these studies (Joseph Schopp, Das deutsche Arbeitslied [1935]) stresses that there exist only labor songs, but no work songs. The songs of the craftsmen are social; they are sung after work. The fact is, of course, that there exists no “natural” rhythm for work."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Discussion of Platonic ideas originating from the craftsman analogy of making beds and tables.",
+      "Distinction between labor rhythm and work rhythm, and the repetitive nature of machine labor versus spontaneous labor."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Providing endnotes discussing labor, work, the introduction of Platonic ideas through craftsmanship analogies, and the role of rhythm in labor and machine work.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"Providing endnotes discussing labor, work, the introduction of Platonic ideas through craftsmanship analogies, and the role of rhythm in labor and machine work.\",\n  \"claims\": [\n    {\n      \"claim\": \"Plato introduced the term idea into philosophical terminology, as noted by Aristotle, with words like eidos and idea relating to visible forms or shapes.\",\n      \"claim_type\": \"historical_context\",\n      \"supporting_excerpt\": \"Aristotle’s testimony that Plato introduced the term idea into philosophic terminology occurs in the first book of his Metaphysics... The words eidos and idea doubtlessly relate to visible forms or shapes, especially of living creatures\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 0.95\n    },\n    {\n      \"claim\": \"There are labor songs but no work songs, as the songs of craftsmen are social and sung after work, reflecting that there is no natural rhythm for work.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"one of the best of these studies (Joseph Schopp, Das deutsche Arbeitslied [1935]) stresses that there exist only labor songs, but no work songs. The songs of the craftsmen are social; they are sung after work. The fact is, of course, that there exists no “natural” rhythm for work.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 0.9\n    }\n  ],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Discussion of Platonic ideas originating from the craftsman analogy of making beds and tables.\",\n    \"Distinction between labor rhythm and work rhythm, and the repetitive nature of machine labor versus spontaneous labor.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 450,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 3006,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 3006
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3456,
+    "traffic_type": null
+  }
+}

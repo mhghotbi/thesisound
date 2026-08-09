@@ -1,0 +1,71 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Galileo's use of the telescope delivered the secrets of the universe to human cognition with the certainty of sense-perception, doing what no one had done before.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"What Galileo did and what nobody had done before was to use the telescope in such a way that the secrets of the universe were delivered to human cognition “with the certainty of sense-perception”;\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Prior to Galileo's telescopic discoveries, the philosophical and astronomical speculations of thinkers like Bruno and Copernicus lacked factual confirmation and would have been dismissed as ungrounded imagination.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Prior to the telescopic discoveries of Galileo, Giordano Bruno’s philosophy attracted little attention even among learned men, and without the factual confirmation they bestowed upon the Copernican revolution, not only the theologians but all “sensible men . . . would have pronounced it a wild appeal . . . of an uncontrolled imagination.”\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPV8P7GnIO75NCRTn7E1RycgNFGmQ-vp_sh2C4f0Sg4ta8aXXBRG5yGkDoIdu3",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Galileo's use of the telescope delivered the secrets of the universe to human cognition with the certainty of sense-perception, doing what no one had done before.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "support_kind": "direct",
+        "supporting_excerpt": "What Galileo did and what nobody had done before was to use the telescope in such a way that the secrets of the universe were delivered to human cognition “with the certainty of sense-perception”;"
+      },
+      {
+        "claim": "Prior to Galileo's telescopic discoveries, the philosophical and astronomical speculations of thinkers like Bruno and Copernicus lacked factual confirmation and would have been dismissed as ungrounded imagination.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "support_kind": "direct",
+        "supporting_excerpt": "Prior to the telescopic discoveries of Galileo, Giordano Bruno’s philosophy attracted little attention even among learned men, and without the factual confirmation they bestowed upon the Copernican revolution, not only the theologians but all “sensible men . . . would have pronounced it a wild appeal . . . of an uncontrolled imagination.”"
+      }
+    ],
+    "segment_function": "argument"
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Galileo's use of the telescope delivered the secrets of the universe to human cognition with the certainty of sense-perception, doing what no one had done before.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"What Galileo did and what nobody had done before was to use the telescope in such a way that the secrets of the universe were delivered to human cognition “with the certainty of sense-perception”;\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Prior to Galileo's telescopic discoveries, the philosophical and astronomical speculations of thinkers like Bruno and Copernicus lacked factual confirmation and would have been dismissed as ungrounded imagination.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Prior to the telescopic discoveries of Galileo, Giordano Bruno’s philosophy attracted little attention even among learned men, and without the factual confirmation they bestowed upon the Copernican revolution, not only the theologians but all “sensible men . . . would have pronounced it a wild appeal . . . of an uncontrolled imagination.”\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 293,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2560,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2560
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2853,
+    "traffic_type": null
+  }
+}

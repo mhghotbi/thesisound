@@ -1,0 +1,99 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"The author analyzes the characteristics of labor, the life process, and the contrast between the cyclical movement of nature and the relative permanence of the human world and human bios.\",\n  \"claims\": [\n    {\n      \"claim\": \"Things needed for the life process itself possess the least durability among tangible things, as their consumption barely survives production and they decay or perish quickly.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The least durable of tangible things are those needed for the life process itself. Their consumption barely survives the act of their production; in the words of Locke, all those “good things” which are “really useful to the life of man,” to the “necessity of subsisting,” are “generally of short duration, such as—if they are not consumed by use—will decay and perish by themselves.”\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Laboring activity differs from working because labor moves endlessly in a recurring circle prescribed by the biological process of the living organism rather than terminating in a finished object.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"unlike working , whose end has come when the object is finished, ready to be added to the common world of things, laboring always moves in the same circle, which is prescribed by the biological process of the living organism and the end of its “toil and trouble” comes only with the death of this organism.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"bios\",\n      \"definition\": \"Specifically human life limited by birth and end, following a linear movement full of events that can be told as a story or establish a biography, as distinguished from mere zōē.\"\n    },\n    {\n      \"term\": \"zōē\",\n      \"definition\": \"Biological life shared with other living things that forever retains the cyclical movement of nature.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"bios\",\n      \"item_b\": \"zōē\",\n      \"distinction\": \"bios represents human life as a linear time interval between birth and death full of events and story-making, whereas zōē denotes the biological life and cyclical movement shared with other living things.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Laboring moves in an endlessly repetitive circle prescribed by the biological process of the living organism.\",\n    \"The human world's permanence depends on things more permanent than the activities producing them.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPEW91njy4wLpVvWRNCp_-kYzeieVrs2qnSjdFNFwvrFb0lOCjD2H-TW97pHX-",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Things needed for the life process itself possess the least durability among tangible things, as their consumption barely survives production and they decay or perish quickly.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The least durable of tangible things are those needed for the life process itself. Their consumption barely survives the act of their production; in the words of Locke, all those “good things” which are “really useful to the life of man,” to the “necessity of subsisting,” are “generally of short duration, such as—if they are not consumed by use—will decay and perish by themselves.”"
+      },
+      {
+        "claim": "Laboring activity differs from working because labor moves endlessly in a recurring circle prescribed by the biological process of the living organism rather than terminating in a finished object.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "unlike working , whose end has come when the object is finished, ready to be added to the common world of things, laboring always moves in the same circle, which is prescribed by the biological process of the living organism and the end of its “toil and trouble” comes only with the death of this organism."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Specifically human life limited by birth and end, following a linear movement full of events that can be told as a story or establish a biography, as distinguished from mere zōē.",
+        "term": "bios"
+      },
+      {
+        "definition": "Biological life shared with other living things that forever retains the cyclical movement of nature.",
+        "term": "zōē"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "bios represents human life as a linear time interval between birth and death full of events and story-making, whereas zōē denotes the biological life and cyclical movement shared with other living things.",
+        "item_a": "bios",
+        "item_b": "zōē"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Laboring moves in an endlessly repetitive circle prescribed by the biological process of the living organism.",
+      "The human world's permanence depends on things more permanent than the activities producing them."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The author analyzes the characteristics of labor, the life process, and the contrast between the cyclical movement of nature and the relative permanence of the human world and human bios.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"The author analyzes the characteristics of labor, the life process, and the contrast between the cyclical movement of nature and the relative permanence of the human world and human bios.\",\n  \"claims\": [\n    {\n      \"claim\": \"Things needed for the life process itself possess the least durability among tangible things, as their consumption barely survives production and they decay or perish quickly.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The least durable of tangible things are those needed for the life process itself. Their consumption barely survives the act of their production; in the words of Locke, all those “good things” which are “really useful to the life of man,” to the “necessity of subsisting,” are “generally of short duration, such as—if they are not consumed by use—will decay and perish by themselves.”\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Laboring activity differs from working because labor moves endlessly in a recurring circle prescribed by the biological process of the living organism rather than terminating in a finished object.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"unlike working , whose end has come when the object is finished, ready to be added to the common world of things, laboring always moves in the same circle, which is prescribed by the biological process of the living organism and the end of its “toil and trouble” comes only with the death of this organism.\",\n      \"support_kind\": \"direct\",\n      \"qualifications\": [],\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"bios\",\n      \"definition\": \"Specifically human life limited by birth and end, following a linear movement full of events that can be told as a story or establish a biography, as distinguished from mere zōē.\"\n    },\n    {\n      \"term\": \"zōē\",\n      \"definition\": \"Biological life shared with other living things that forever retains the cyclical movement of nature.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"bios\",\n      \"item_b\": \"zōē\",\n      \"distinction\": \"bios represents human life as a linear time interval between birth and death full of events and story-making, whereas zōē denotes the biological life and cyclical movement shared with other living things.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Laboring moves in an endlessly repetitive circle prescribed by the biological process of the living organism.\",\n    \"The human world's permanence depends on things more permanent than the activities producing them.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 658,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2806,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2806
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3464,
+    "traffic_type": null
+  }
+}

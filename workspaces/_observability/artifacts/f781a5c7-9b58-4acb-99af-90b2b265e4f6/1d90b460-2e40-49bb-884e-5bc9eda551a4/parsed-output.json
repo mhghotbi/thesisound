@@ -1,0 +1,44 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Structures of inequality and domination might be or become axes of political conflict and struggle, a possibility not fully confronted by Wallace-Wells.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Still, even Wallace-Wells never quite confronts the possibility that, beyond being vectors of unequal suffering or sources of war and disorder, these structures of inequality and domination might be or become axes of political conflict and struggle."
+      },
+      {
+        "claim": "In eighteenth-century North America, the term out of doors was frequently used to describe people acting outside of legal representative institutions through mobs, crowds, or extralegal associations.",
+        "claim_type": "historical_context",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "In eighteenth-century North America, the term “out of doors” was frequently used to characterize the people of the British colonies, and then of the postrevolutionary United States, acting “outside of the legal representative institutions” by which they were governed, sometimes in mobs and crowds and sometimes through “extralegal associations.”"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "A term used in eighteenth-century North America to characterize the people acting outside of the legal representative institutions by which they were governed, sometimes in mobs and crowds and sometimes through extralegal associations.",
+        "term": "out of doors"
+      }
+    ],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection between the literal meaning of out of doors and its figurative use for action and association outside of official channels."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "conclusion",
+    "unresolved_context": []
+  }
+}

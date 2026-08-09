@@ -1,0 +1,84 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\"central_question_status\":\"well_covered\",\"central_question_claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-cdfd1f19002d9de1\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-469d428f8dd902ee\",\"clm-177abafe0237f1e2\"],\"objective_coverage\":[{\"objective\":\"فهم روشن موضوع و ایده‌های اصلی آن\",\"status\":\"well_covered\",\"claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-cdfd1f19002d9de1\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-469d428f8dd902ee\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-f2514de064072149\"],\"rationale\":\"The claim ledger contains comprehensive interpretations of Arendt's core concepts in The Human Condition, including the distinction between labor, work (homo faber), and action, as well as public and private realms, natality, and world/earth alienation.\"}],\"material_gaps\":[],\"max_supported_minutes\":10,\"recommendation\":\"continue\",\"recommendation_reason\":\"The provided claims thoroughly cover the main themes, concepts, and structure of Arendt's The Human Condition, fully supporting the 10-minute planned overview.\"}",
+            "thought": null,
+            "thought_signature": "EtIjCs8jARFNMg_Y88CpcohJT5i9WjIZsgw6dElOj2FvhPiu76lyDikuvbvxBTUHwesZJnf1rLhnzttz3m2LwejSOChehQZADghhVy-1UbWyv8aBObmLo0DsVmfs4CUPFQmU5BmhaUobs8O3QhUD5wxSbhkvUQrkkf_9ysCXJjHdQIoH6xC6oR5NDv1z-uAbzQc5ZYo4ApK9xUj1PmuN9VqvwWWF_fj7JQgYinGSbO0Zf8t55Rg8QSVSeYof8R1r2fYIEbX_Us4v5uyWURb50CaER-eh2YCZW-lto3snEl4GYbZ5xZS5FhZKT1dhgPwjwyl5aXPVupAzAYLfMSrlm7jLVYnZ-ViGlBaZ9RdNbnJKuc_BczJcZaGVtB9sRFlZfDxM0zlmOXK3WS-i55Eh6khYWgbC1475qBvugQaIiJEY9O_ez6cxi232FzeiO_V_l7pLr42CSCDnMTyfdBwNo6FmEnz6MZgizxGV16VsWUcs9nrtgg9ZZvmw-xkedqy0AoFQfuXckQ-b2uIzGLEVKmwMbw-rR1l7MpovMu9sNgqHJv0ljE9hSPMCptgd4KygS9SZgIX-q35WH7wee0vRYqWXfn4d4Yy1N6NYT-Tf8hQHq6ZeOHEITO3D9cs7hBYCoEQNgpZjMMLd-iYoBncdDt8IUBr9dk-MrAvtnwU7hrhJIf_KQYWPpdBBzu5izwSK8z599kRVUG5uo8_ImSJq8qyysfgjHZAWvsHTWJTOL3_cAs1GKBt-52zOqQ1CEOZGddOMdMaAPduUzddH5Kbu0K-qXeP1ABZK2_2lsttonunvvRMHDt_HWqXCMFICPYe5CLs9HvIut9nHjoHKdu7rg5286RDMGOzcdkbtfH_DlYWEHgUrg87SmB2eqEgUMUM0pyMre8TR_qaZcfm5haLTXMa0eDpMvQ282ARJaTaIbd68LW1OR2UW6eBasRSiWEfK8t-KnjRgemEUo-C_IP1goErIQUV-2_yaJi_i7chpVGEjoE2IN4WheNocvuzSq5Lqf-kNSL6amJ5B6qzXq0mN8rKOVnzt43sA2ohBx9T8W0BXeUTdypviRIFTyIbL0IAAzMlD1Y_co66iig6qjJ2dV9UpjhtXLeuSHcJYtlBLiNHPh6x-pNJKLwu1HMvPJ-AiSzktFGzq8x3JCQfXmsO14dWtNZC5K8NYLAkhstxvVNWj_omsKAyGG6LVTCLMfm0JhUE3x735P69tSp9oXKZ5_y-_FdtJPGgT0v4rqAonGY6SGWOQMTmJz5UBBdxbRjIWy1paYAAi1b-7OGXTumJQF-n0-6tOeBm_KDL4qJTJha2dX24OgN6XI6MYmptksEHZacBChoDLFZ67e31X4-keWjxtZ-DYIj-wX-LQN4nsdqtICRuklR4X7pkf97M1Hkg8WBiaQyEy_fgVbLMeCbDB2J4_X-j22kVA3e2tFAPuKN0E3uXnsam6_C1JqkbYMTOro6hbkqx6DVXghaglaQtqXMneudYvn7NN9-nsp9O4CeTKqcCIqnr5T62IDOe41aMeWZjoVGeRyBkiIXTFlBBg6ug-aEIZeXUopuv53yUxSQAWbyTpISjHWEwt-EBg4DOIZZF4oPn8_ycqURWR0ubvczFwMvuBcMzmwuMjTovizTA3N4oNMt1qQWsZZ58edYd3mfKyKjDkzibXa00ra6S3F39siiVWemN3xea1POShibiC-GNz1BFhVzvPJKQH1O48Ps-Sxu4dNACMfqMvB7u2wybVD-E-pKhl8y3Fht7QqsirELuYu1NYcKAWWJ40JBaJn1vDkPR4My6LnYbw5nDLnmJN8z5WN8cb9Q2LeQjhS90ktPT3aa8RYyY6Xi3OG_vkb3T2_7AvYsWBjRH5TGNTiK16SM2gpazAg9WfZEiemVQnfLYwf6DW2bL7_N4KpCgmwqE2Drw8hM9H6Gi1A53xAxGLRD3Nbrc0atLh6mhRl9dRScQrXZ9PQjm8tRiqY5N5NSgVfCjbAOsjj7e8E6WudhwAMDiyeAQX8TzH2WuZ5nZvIlQgxH2aOxb0OTbCa24r8Fywcu4N7Pya3nDs9ssl2037U5K_uZS5I8TQ6zmFtkhpXpJBnl02lWg5x19_VryolMZdfQUXfvkv9PcTsOUE5zvO6xZOLloZEPQS0plzHJaINvHmlPybE71QNndhsjyNFP3DlbYFwXVlOOIx5qmek8UuxPvqJ5dBT-Vpho8ZlTc466MQoKWaTaSbpUb3pzFDYttSANkLdpVvfibn1S-CniL3RDyBVVN72yslMhZALdK4jXrTOZBW3jsicjQGco7tyCszMiRr4-v3IReJypDhx9jCOvADrjdoXIRBVEiRqff99MK_ZkHH9gfb6gPk1PKQPKrKexD70Nf9OwJrSQKhuchjrVMyu_WD-Ha5dcvuxnm-XR_bwROgCssOkDrytDC1fKjTniwX_4p3l-hpyOuLIeedcp8ILHn8L2QQYbSA1tK5ZG0qcR2yNpZYdEd3aaWCvVoez_DSznCEBgH38tP9z24rlINOb8578I7GX4sVFzyVCpWQlkndysz3bIrrZu3fWM3Uzh2jD2spynC2mIh4oH2G2P4baHg3a4kSH1xyZM67uQh9sTeBX3fYOb5mkCWI9jqfGi638ucZkD-srO8CHZydw4RFdmCLe2T2DvxuXF4-OdlDRFsDqQBZkSnF6yFXUZiGDexp42HOccrW8BNbXc3zWURhSLOIShQyTCrwPTFBhQ19vI6W9Dauhxe5fdRBjSCKhzkjdWRgYkXhjtzDLcW08CGEeD18BnhI21H869ntimni5t-cJQt_jJaQlmsbhr2KLPgQicUhKf3ZqlQocDZ91zdLxNyFFy3_lZkzaycMWv8W4mAX3aov6cyyuhUwS-ZGpaLg41d_1PTUPSrYm5P1D6D-KUl1ASM-n8heCs23kcFJfcEuhuk-3bwWWo3C6OMBiGPQbKwTD2s5afqppLxUpRDMG4tfw9V0IFMQFa57ulpZ1TR96SqBxoU8HY_6I4ulY39boQKsN1Pp0pK1ZqWPXRuN5h-xwLG1RDAQ70D4uanQY0MJZrJVB7r9REF1yaIyLB3vGbVXddZFvkz0d1SJ_1KdWejKugx0L_4HXjV1nm9OxSjBP9CF-m6MHmGCqbVHaYjMfv6FEGFfNCFqg2F4ATdmrLfGXJHTyUOMXpfLLChjEflHn1QpRyIEdL1xOQ1VtauxkelxwXbZCjjVlXEQc07i904m-B3TsUdmXU0ftm3kAQpx0O081JGhQx-_tEV3eLlF41iOQvsnZX8-tAm47X36naWl-5xspZZh8utW_L-QIwzTOQOafGIGdo-cLvcAlJ3qcejWgPmt4l6AXhbBvG_43u-_-MVeNGCzlyQ5909EXYwqMqQLM_eTdXIbxSGcTBgcaspoE7ysHz5ih_xp7lh56rNDvDrl4EiO_DGMWESpiGmgcD1t2NRt-MenMOumQ2ZNjByLW8mVvRKXtKF0woomtPrXZBPSzNRv-FC4e5EQ6EI-HUP_SkE1naoH6THEb47hsI3jNPusNp8rTElpkPDLVPInPC-KijMREDpxAYYo4YSdj2WkINMF2KcxNl3EZTXcG3FORzDS3n4dnRc3BYOnwj1D9ipRe9uCU7Vv6HSQoc5Du9PcR2-xMN2vd4BX58P5ECFiT_Ph50aZGQUu8sFUACbtsiK2J79vmMJwhaLrXMcTPkSk89CIsk7GMli1hrfrBaG5f2WWItUSdRhIsa3YJ6oWS6JvMEjsH8GLcA3zAJAUeBjuE0BwYaIMBYwXNyggIMPQ8TUDpxGMH5CJXfW7vQVnDT3TngnUNLMfqCAdb9P2PaAciO_myyLvTJe1cNrRbPxUEJOX-TM6fKQvJhncI_qSeLqaBymo9VubnSUAJ8ms6Goa0UbR0w2RU_Kq0kmcLGS-J2zLmpJebLeTuViqXF4U2ejU5dMiBXQq64iIixh03joxu5iVfGVbLoGO0sm62PP-Uubix6bS4HNJgqglC9q_VbOXMiVIl-8dTPhgf8_mcVkapW4_ki2FZHbWsjz2EsLgKeLHpQp1V1pwnkdABfKSpPzC3aYkz_zuTIp1o1eS4fPApZfVK2gGyEZXcNUYRY8rPexonPUkWIMTp0Q9F-dHYZ58B4otR6T66SKHQQji7hipeKi2xtsl-oY3xSV5pP-XLA-CB7wa1AoW6_MzP6lxPEpnBlQhVwUx8VMu1RJIXV5XAYIUlolTrihW_-XovqKjWZF25lQ52thU4oVcMhvehJUghFteS7oyKKjPVZqM9_KgUwKDNK6tuHzXFwFpLQVarf6UeFaQxUPB7Pk59Tp0uodRxHxpBvwkvaknhLPhAtuaw4pRCKinL40hC0nh0xY-6VnoQccxqQBUqUGqF-_uFA4KYmEgujVHAilLTY_twG7v5Y0bheVvO8TgNuZtuiy6fS8cL1FKtYv2I2FQC-JL98itm9p2Bdgt--SrWX6wjf3jzBoPFewtGkvFG_80bOO2_1IyXnYWkTVRFxx56eTAjXV8Lt0aFGPNKOOxynMJUG1jWkjiNfYon0nHB2ZRkiZ-172RQMHWEDQgLaqD_AdzNlGr_gXoDeYgJr_OX9bDzmRU79FX90HoESSe1AhmuRIEa9WgnzTWJI1cxWbEdIsTgcNCf6hQDSzHQEK2sn_ED7P4zEzjTZPsFCCry8DxQUKfO6CvWjWZq5G-D4Uh0eDXSl0MqwUe9ag5qmGatJyGqxR0j2yve6H-g2aUlo25lHMF9vjEbmNiKh-NGFehIf2t08uK7hPcfiQZGZivr8madMqIPrHwh7OJbNCtS2JHAT6yBLaE5ylkUY1-ntdQ-nsUsJONYB6ov5dtNZAVLm7spqrNgzyge4_XafQguAQdc575pQ9gj6sQ3sm-gVKOYAHM90OstM2pX2-I6Rfkg_b_knKV3032Y-EMIgUjQakdCeQz82rm3GCHdBtIpzC08jtrxhI2gsY-NatibDKcFh-AwTjrVLKsUpHvK6ocBQvqQF50s6jDaKKm8F6MgM9VEKXsTVlvbr7VEGmhxtsWmdZxhuBQXzSWUA52bCyKoXnldXffgHs28VcHnR0NouimSX2PU2DEw0oU9AeAWLfIw9ZF7lyZiwg-5APbAIYw-Pf2MvqRYK4lAZ71M8SxfsvvjyqZ3Bj1u1VvztiEVdzgw-NBYaOOVI8Y4awwhDt6y3Ui7QPOwMqxliNhUs5SGRNEyMAg2BOnFSlXcGkyw9K22qSNI6t4D_OQd2NdqJ_VZQjiDn6lGDQEQ8GqgnqLbi-tqu8rcdr3zacCQqhqxluiO98fgVSPFeVULw_gs3r7q0Pz6UfYFXPlm6uHaLf3RqS5eGLn9i0_rCJ6gp-cvGCpxWGIFh5vXzt-JmRLPGbdDms-H4LYfvhouhiWjlOF6_sHF8uvSbpM5Q0QNaqu37X9oCJOOcdjD2R10cx3x7aYeLL-0er5qz0GJ1lJej4E4RCBVD4Shx0dv64virRxjhPO0okf5u_LvpAok_ziAw3TrNGRxVosJ-jo5NRCBPUK0gXqZMawRt0rHGM4lS_yLBGrFHHIo-ysDNfBsUkiia8U5SEZ5BM9yD-xq4VJGquM3i4p7EUKG8hptaYZUcW5KBMHpEuENXJfPgxqSQhXMLoGhhCfZWwoteXb2XxUcTQqN5evjR1Ra7mHSV0rrkJiqsEYChVRKTHwuxDZCyztn65fDGp1lY9Jk6DQdZEl5rqs_Fx1vsCL5H2Khf-IPJHC3y7qchO0gCyZTP19cjfPWnAjy2RloITVW2Q5wIjzC70_O9d66SPN79Dgcvx5l5mTXXxPhCSLioH-6Q8RuLkF2eWrhoZ5qyMyVJp_1ie8p2TE_euygQZSuKilb2bsLwZRNJ48_d9F0bnfpJmdvg5-rS6HZxsesf3D8eoPpSVeRQidfVbYMNYRVScNi5mW35_fppBeix-CS1rAlqKm-EquwZWFahPBjrjyFxVKGDSIn-6kGIhDG456XPTo-TwhJPKqY90MjxH3wPja3z8SczmNPHR9eFDAsKDxW_ZbBoMay-ZDUdWm7QBUxqJyoezQqbTycdAMzybSVSGogAktM0vbzATsUSs=",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "central_question_claim_ids": [
+      "clm-27d7960629cc8d70",
+      "clm-cdfd1f19002d9de1",
+      "clm-3a561b777e44ce86",
+      "clm-43c898a10d267e4a",
+      "clm-469d428f8dd902ee",
+      "clm-177abafe0237f1e2"
+    ],
+    "central_question_status": "well_covered",
+    "material_gaps": [],
+    "max_supported_minutes": 10,
+    "objective_coverage": [
+      {
+        "claim_ids": [
+          "clm-27d7960629cc8d70",
+          "clm-cdfd1f19002d9de1",
+          "clm-3a561b777e44ce86",
+          "clm-43c898a10d267e4a",
+          "clm-469d428f8dd902ee",
+          "clm-177abafe0237f1e2",
+          "clm-42387f05124f8d6c",
+          "clm-f2514de064072149"
+        ],
+        "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+        "rationale": "The claim ledger contains comprehensive interpretations of Arendt's core concepts in The Human Condition, including the distinction between labor, work (homo faber), and action, as well as public and private realms, natality, and world/earth alienation.",
+        "status": "well_covered"
+      }
+    ],
+    "recommendation": "continue",
+    "recommendation_reason": "The provided claims thoroughly cover the main themes, concepts, and structure of Arendt's The Human Condition, fully supporting the 10-minute planned overview."
+  },
+  "prompt_feedback": null,
+  "text": "{\"central_question_status\":\"well_covered\",\"central_question_claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-cdfd1f19002d9de1\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-469d428f8dd902ee\",\"clm-177abafe0237f1e2\"],\"objective_coverage\":[{\"objective\":\"فهم روشن موضوع و ایده‌های اصلی آن\",\"status\":\"well_covered\",\"claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-cdfd1f19002d9de1\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-469d428f8dd902ee\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-f2514de064072149\"],\"rationale\":\"The claim ledger contains comprehensive interpretations of Arendt's core concepts in The Human Condition, including the distinction between labor, work (homo faber), and action, as well as public and private realms, natality, and world/earth alienation.\"}],\"material_gaps\":[],\"max_supported_minutes\":10,\"recommendation\":\"continue\",\"recommendation_reason\":\"The provided claims thoroughly cover the main themes, concepts, and structure of Arendt's The Human Condition, fully supporting the 10-minute planned overview.\"}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 421,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 8286,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 8286
+      }
+    ],
+    "thoughts_token_count": 1667,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 10374,
+    "traffic_type": null
+  }
+}

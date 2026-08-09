@@ -1,0 +1,98 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Arendt views world-alienation in modernity as alienation from the earth and the world, specifically characterized by the loss of a public sphere that allows individuals to appear and express themselves.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"آرﻧﺖ ﻫﻢ »ﺑﯿﮕﺎﻧﮕﯽ از زﻣﯿﻦ و ﺟﻬﺎن«آرﻧـﺖ . ﺑﻮد » از ﺟﻬﺎن ﺑﯿﮕﺎﻧﮕﯽ«ﺗﻌﺮﯾـﻒ ، ﮐﻪ ﻓﺮد ﺑﺘﻮاﻧﺪ در آن ﻇﻬـﻮر و ﺑـﺮوز ﯾﺎﺑـﺪ    ﻋﻤﻮﻣﯽﻪ را ﺑﺎ ﻓﻘﺪان ﻋﺮﺻ\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 0.95\n    },\n    {\n      \"claim\": \"Natality is conceptualized as a capacity for beginning and acting that is part of the human condition, serving as an inherent potential for freedom and new beginnings rather than being determined by external forces.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"»زادﮔﯽ«  ﻗﺪرﺗﯽ ﺑﺮاي آﻏﺎزﯾﺪن و ﻋﻤﻞ ﮐﺮدن اﺳﺖ ﮐﻪ ﺑﺨﺸـﯽ از وﺿـﻊ   ، ﮐﻨﺪ ﯾﺎد ﻣﯽ ﻫـﺎﯾﯽ   ﻗـﺪرت ﻪ وﺳـﯿﻠ  ﺳﺖ ﮐﻪ ﻇﺮﻓﯿﺖ ﻣﺎ ﻫﺮﮔﺰ ﺻﺮﻓﺎً ﺑﻪاﯾﻦ ﺑﺪﯾﻦ ﻣﻌﻨﺎ. ﺷﻮد ﺸﺮ ﻣﺤﺴﻮب ﻣﯽﺑ ﮕﯽ و از ﺧﻮدﺑﯿﮕـﺎﻧ ﻫﻤﭽـﻮن   ﻣﺎﻧﻨـﺪ ﻃﺒﯿﻌـﺖ و ﺗـﺎرﯾﺦ و ﯾـﺎ از ﭼﯿـﺰي درون ﻣـﺎ      ، ﺑﯿﺮون از ﻣﺎ ﺑﻠﮑﻪ ﻣﺎ ﺑﺎ ﻇﺮﻓﯿﺖ و اﺳﺘﻌﺪادي ﺑﺮاي آزادي و ﺑﺎ ﺗﻮاﻧﺎﯾﯽ آﻏﺎز ﮐﺮدن ؛ ﺷﻮد ﺗﻌﯿﯿﻦ ﻧﻤﯽ ﺎاﻣﯿﺪيﻧ\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 0.95\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"بیگانگی از جهان\",\n      \"definition\": \"Loss of the world and of stable enduring institutions and political speech and action that support human plurality and a place of residence distinct from nature.\"\n    },\n    {\n      \"term\": \"زادگی\",\n      \"definition\": \"The capacity and power to begin and act, constituting a part of the human condition and providing the potential for freedom and generating new things.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"اﻣﺮ ﺧﺼﻮﺻﯽ\",\n      \"item_b\": \"اﻣﺮ ﻋﻤﻮﻣﯽ\",\n      \"distinction\": \"Arendt refers to ancient Greek antiquity and phenomenological approaches to explain the distinction and recover the public sphere as a space of freedom.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Arendt's phenomenological and deconstructive reading of philosophical tradition derived from Heidegger and Augustine.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPZkB69UekHxlR_VgnL0VWPfyBxZxbqjTH_sTY-3iLl-nqrG4OZHu6XFl-g3hm",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Arendt views world-alienation in modernity as alienation from the earth and the world, specifically characterized by the loss of a public sphere that allows individuals to appear and express themselves.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "آرﻧﺖ ﻫﻢ »ﺑﯿﮕﺎﻧﮕﯽ از زﻣﯿﻦ و ﺟﻬﺎن«آرﻧـﺖ . ﺑﻮد » از ﺟﻬﺎن ﺑﯿﮕﺎﻧﮕﯽ«ﺗﻌﺮﯾـﻒ ، ﮐﻪ ﻓﺮد ﺑﺘﻮاﻧﺪ در آن ﻇﻬـﻮر و ﺑـﺮوز ﯾﺎﺑـﺪ    ﻋﻤﻮﻣﯽﻪ را ﺑﺎ ﻓﻘﺪان ﻋﺮﺻ"
+      },
+      {
+        "claim": "Natality is conceptualized as a capacity for beginning and acting that is part of the human condition, serving as an inherent potential for freedom and new beginnings rather than being determined by external forces.",
+        "claim_type": "author_position",
+        "confidence": 0.95,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "»زادﮔﯽ«  ﻗﺪرﺗﯽ ﺑﺮاي آﻏﺎزﯾﺪن و ﻋﻤﻞ ﮐﺮدن اﺳﺖ ﮐﻪ ﺑﺨﺸـﯽ از وﺿـﻊ   ، ﮐﻨﺪ ﯾﺎد ﻣﯽ ﻫـﺎﯾﯽ   ﻗـﺪرت ﻪ وﺳـﯿﻠ  ﺳﺖ ﮐﻪ ﻇﺮﻓﯿﺖ ﻣﺎ ﻫﺮﮔﺰ ﺻﺮﻓﺎً ﺑﻪاﯾﻦ ﺑﺪﯾﻦ ﻣﻌﻨﺎ. ﺷﻮد ﺸﺮ ﻣﺤﺴﻮب ﻣﯽﺑ ﮕﯽ و از ﺧﻮدﺑﯿﮕـﺎﻧ ﻫﻤﭽـﻮن   ﻣﺎﻧﻨـﺪ ﻃﺒﯿﻌـﺖ و ﺗـﺎرﯾﺦ و ﯾـﺎ از ﭼﯿـﺰي درون ﻣـﺎ      ، ﺑﯿﺮون از ﻣﺎ ﺑﻠﮑﻪ ﻣﺎ ﺑﺎ ﻇﺮﻓﯿﺖ و اﺳﺘﻌﺪادي ﺑﺮاي آزادي و ﺑﺎ ﺗﻮاﻧﺎﯾﯽ آﻏﺎز ﮐﺮدن ؛ ﺷﻮد ﺗﻌﯿﯿﻦ ﻧﻤﯽ ﺎاﻣﯿﺪيﻧ"
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Loss of the world and of stable enduring institutions and political speech and action that support human plurality and a place of residence distinct from nature.",
+        "term": "بیگانگی از جهان"
+      },
+      {
+        "definition": "The capacity and power to begin and act, constituting a part of the human condition and providing the potential for freedom and generating new things.",
+        "term": "زادگی"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Arendt refers to ancient Greek antiquity and phenomenological approaches to explain the distinction and recover the public sphere as a space of freedom.",
+        "item_a": "اﻣﺮ ﺧﺼﻮﺻﯽ",
+        "item_b": "اﻣﺮ ﻋﻤﻮﻣﯽ"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Arendt's phenomenological and deconstructive reading of philosophical tradition derived from Heidegger and Augustine."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"argument\",\n  \"claims\": [\n    {\n      \"claim\": \"Arendt views world-alienation in modernity as alienation from the earth and the world, specifically characterized by the loss of a public sphere that allows individuals to appear and express themselves.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"آرﻧﺖ ﻫﻢ »ﺑﯿﮕﺎﻧﮕﯽ از زﻣﯿﻦ و ﺟﻬﺎن«آرﻧـﺖ . ﺑﻮد » از ﺟﻬﺎن ﺑﯿﮕﺎﻧﮕﯽ«ﺗﻌﺮﯾـﻒ ، ﮐﻪ ﻓﺮد ﺑﺘﻮاﻧﺪ در آن ﻇﻬـﻮر و ﺑـﺮوز ﯾﺎﺑـﺪ    ﻋﻤﻮﻣﯽﻪ را ﺑﺎ ﻓﻘﺪان ﻋﺮﺻ\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 0.95\n    },\n    {\n      \"claim\": \"Natality is conceptualized as a capacity for beginning and acting that is part of the human condition, serving as an inherent potential for freedom and new beginnings rather than being determined by external forces.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"»زادﮔﯽ«  ﻗﺪرﺗﯽ ﺑﺮاي آﻏﺎزﯾﺪن و ﻋﻤﻞ ﮐﺮدن اﺳﺖ ﮐﻪ ﺑﺨﺸـﯽ از وﺿـﻊ   ، ﮐﻨﺪ ﯾﺎد ﻣﯽ ﻫـﺎﯾﯽ   ﻗـﺪرت ﻪ وﺳـﯿﻠ  ﺳﺖ ﮐﻪ ﻇﺮﻓﯿﺖ ﻣﺎ ﻫﺮﮔﺰ ﺻﺮﻓﺎً ﺑﻪاﯾﻦ ﺑﺪﯾﻦ ﻣﻌﻨﺎ. ﺷﻮد ﺸﺮ ﻣﺤﺴﻮب ﻣﯽﺑ ﮕﯽ و از ﺧﻮدﺑﯿﮕـﺎﻧ ﻫﻤﭽـﻮن   ﻣﺎﻧﻨـﺪ ﻃﺒﯿﻌـﺖ و ﺗـﺎرﯾﺦ و ﯾـﺎ از ﭼﯿـﺰي درون ﻣـﺎ      ، ﺑﯿﺮون از ﻣﺎ ﺑﻠﮑﻪ ﻣﺎ ﺑﺎ ﻇﺮﻓﯿﺖ و اﺳﺘﻌﺪادي ﺑﺮاي آزادي و ﺑﺎ ﺗﻮاﻧﺎﯾﯽ آﻏﺎز ﮐﺮدن ؛ ﺷﻮد ﺗﻌﯿﯿﻦ ﻧﻤﯽ ﺎاﻣﯿﺪيﻧ\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 0.95\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"بیگانگی از جهان\",\n      \"definition\": \"Loss of the world and of stable enduring institutions and political speech and action that support human plurality and a place of residence distinct from nature.\"\n    },\n    {\n      \"term\": \"زادگی\",\n      \"definition\": \"The capacity and power to begin and act, constituting a part of the human condition and providing the potential for freedom and generating new things.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"اﻣﺮ ﺧﺼﻮﺻﯽ\",\n      \"item_b\": \"اﻣﺮ ﻋﻤﻮﻣﯽ\",\n      \"distinction\": \"Arendt refers to ancient Greek antiquity and phenomenological approaches to explain the distinction and recover the public sphere as a space of freedom.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Arendt's phenomenological and deconstructive reading of philosophical tradition derived from Heidegger and Augustine.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 886,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 6259,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 6259
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 7145,
+    "traffic_type": null
+  }
+}

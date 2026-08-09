@@ -1,0 +1,53 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The work of fabrication is guided by a model or image that precedes the actual work process and exists outside the fabricator.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The actual work of fabrication is performed under the guidance of a model in accordance with which the object is constructed. This model can be an image beheld by the eye of the mind or a blueprint in which the image has already found a tentative materialization through work. In either case, what guides the work of fabrication is outside the fabricator and precedes the actual work process"
+      },
+      {
+        "claim": "The process of making is entirely determined by the categories of means and end, culminating in a durable end product.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The process of making is itself entirely determined by the categories of means and end. The fabricated thing is an end product in the twofold sense that the production process comes to an end in it ... and that it is only a means to produce this end."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The act of multiplying something that already possesses a relatively stable, relatively permanent existence in the world, distinct from mere repetition.",
+        "term": "Multiplication"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Multiplication multiplies something that already possesses a relatively stable and permanent existence in the world, whereas repetition is urged upon and remains subject to the biological cycle of bodily needs and wants.",
+        "item_a": "Multiplication",
+        "item_b": "Repetition"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The distinction between mental images capable of reification and private bodily sensations.",
+      "The way the permanence of the model in fabrication influenced Plato's doctrine of eternal ideas."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Explains the role of the model in fabrication, contrasts it with labor, and analyzes the means-and-end categories governing the process of making.",
+    "unresolved_context": [
+      "Discussion of Plato's doctrine of eternal ideas and its root in the experience of poiēsis or fabrication."
+    ]
+  }
+}

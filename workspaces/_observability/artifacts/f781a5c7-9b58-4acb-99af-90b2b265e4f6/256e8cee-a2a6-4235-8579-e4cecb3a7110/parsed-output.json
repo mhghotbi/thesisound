@@ -1,0 +1,54 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Aristotle distinguished three ways of life available in freedom: the life of enjoying bodily pleasures, the life devoted to the matters of the polis, and the life of the philosopher devoted to the contemplation of eternal things.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The remaining three ways of life have in common that they were concerned with the “beautiful,” that is, with things neither necessary nor merely useful: the life of enjoying bodily pleasures in which the beautiful, as it is given, is consumed; the life devoted to the matters of the polis , in which excellence produces beautiful deeds; and the life of the philosopher devoted to inquiry into, and contemplation of, things eternal, whose everlasting beauty can neither be brought about through the producing interference of man nor be changed through his consumption of them."
+      },
+      {
+        "claim": "The historical shift from the ancient bios politikos to the medieval vita activa resulted in action being reckoned among earthly necessities, leaving contemplation as the sole truly free way of life.",
+        "claim_type": "historical_context",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "It was, rather, the other way round: action was now also reckoned among the necessities of earthly life, so that contemplation (the bios theōrētikos , translated into the vita contemplativa ) was left as the only truly free way of life."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "In the Aristotelian sense, a way of life explicitly denoting the realm of human affairs and stressing the action needed to establish and sustain it.",
+        "term": "bios politikos"
+      },
+      {
+        "definition": "A term that, following the disappearance of the ancient city-state, lost its specifically political meaning and came to denote all kinds of active engagement in the things of this world.",
+        "term": "vita activa"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "Implied through the text's association of eternal things with contemplation whose everlasting beauty is independent of human production or consumption.",
+        "item_a": "Immortality",
+        "item_b": "Eternity"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The subordination of activity to contemplation is rooted in Greek philosophy (Plato and Aristotle) rather than originating exclusively with Christianity."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "To trace the historical evolution of the terms vita activa and ways of life from classical Greek philosophy through late antiquity and the Middle Ages, emphasizing the subordination of all action to the contemplative ideal.",
+    "unresolved_context": []
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"The author introduces Chapter II on the public and private realm, examining the concepts of the political versus the social animal, the human condition of living together, and the classical Greek distinction between the polis and the household.\",\n  \"claims\": [\n    {\n      \"claim\": \"Action is the exclusive prerogative of man and is entirely dependent upon the constant presence of others, whereas labor and work do not strictly require the company of others in the same way.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, 1 and only action is entirely dependent upon the constant presence of others.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"The translation of Aristotle's zōon politikon as animal socialis or homo est naturaliter politicus, id est, socialis reflects a loss of the original Greek understanding of politics.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"vita activa\",\n      \"definition\": \"Human life in so far as it is actively engaged in doing something, always rooted in a world of men and of man-made things.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"bios politikos\",\n      \"item_b\": \"private life (idion)\",\n      \"distinction\": \"A citizen's second life in the city-state belonging to the communal order, distinct from what is one's own.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Distinction between action, labor, and work regarding the presence of others.\",\n    \"Historical transition from zōon politikon to animal socialis.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPWtB1Ouzbq7xN8dXippw-D5PF4KvceJZ7Rv-Yzr83AIFy3ZMy7EbX33ZUTqve",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Action is the exclusive prerogative of man and is entirely dependent upon the constant presence of others, whereas labor and work do not strictly require the company of others in the same way.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, 1 and only action is entirely dependent upon the constant presence of others."
+      },
+      {
+        "claim": "The translation of Aristotle's zōon politikon as animal socialis or homo est naturaliter politicus, id est, socialis reflects a loss of the original Greek understanding of politics.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Human life in so far as it is actively engaged in doing something, always rooted in a world of men and of man-made things.",
+        "term": "vita activa"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "A citizen's second life in the city-state belonging to the communal order, distinct from what is one's own.",
+        "item_a": "bios politikos",
+        "item_b": "private life (idion)"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "Distinction between action, labor, and work regarding the presence of others.",
+      "Historical transition from zōon politikon to animal socialis."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The author introduces Chapter II on the public and private realm, examining the concepts of the political versus the social animal, the human condition of living together, and the classical Greek distinction between the polis and the household.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"The author introduces Chapter II on the public and private realm, examining the concepts of the political versus the social animal, the human condition of living together, and the classical Greek distinction between the polis and the household.\",\n  \"claims\": [\n    {\n      \"claim\": \"Action is the exclusive prerogative of man and is entirely dependent upon the constant presence of others, whereas labor and work do not strictly require the company of others in the same way.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Action alone is the exclusive prerogative of man; neither a beast nor a god is capable of it, 1 and only action is entirely dependent upon the constant presence of others.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"The translation of Aristotle's zōon politikon as animal socialis or homo est naturaliter politicus, id est, socialis reflects a loss of the original Greek understanding of politics.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"More than any elaborate theory, this unconscious substitution of the social for the political betrays the extent to which the original Greek understanding of politics had been lost.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"vita activa\",\n      \"definition\": \"Human life in so far as it is actively engaged in doing something, always rooted in a world of men and of man-made things.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"bios politikos\",\n      \"item_b\": \"private life (idion)\",\n      \"distinction\": \"A citizen's second life in the city-state belonging to the communal order, distinct from what is one's own.\"\n    }\n  ],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"Distinction between action, labor, and work regarding the presence of others.\",\n    \"Historical transition from zōon politikon to animal socialis.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 527,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 3178,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 3178
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3705,
+    "traffic_type": null
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"bibliographic_notes_or_references\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"The target block consists of heavily encoded or corrupted text strings containing Unicode escape sequences (such as 2uFEE2) which appear to represent bibliographic notes, citations, or references rather than readable prose.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The target block contains encoded reference data and bibliographic citation patterns.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPXANWNLSZmAZ4nW3aF6onBko0iH9vW9_bizuzcPu2chGZ4TV-iKUls38MTgVU",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "must_not_be_lost": [
+      "The target block contains encoded reference data and bibliographic citation patterns."
+    ],
+    "segment_function": "bibliographic_notes_or_references",
+    "unresolved_context": [
+      "The target block consists of heavily encoded or corrupted text strings containing Unicode escape sequences (such as 2uFEE2) which appear to represent bibliographic notes, citations, or references rather than readable prose."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"bibliographic_notes_or_references\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"The target block consists of heavily encoded or corrupted text strings containing Unicode escape sequences (such as 2uFEE2) which appear to represent bibliographic notes, citations, or references rather than readable prose.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The target block contains encoded reference data and bibliographic citation patterns.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 126,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 5900,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 5900
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 6026,
+    "traffic_type": null
+  }
+}

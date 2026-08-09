@@ -1,0 +1,91 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"Examines antiquity's view of labor, the rationale for slavery, the conceptual foundations of the animal laborans, and the modern elevation of labor.\",\n  \"claims\": [\n    {\n      \"claim\": \"Ancient estimates of human activities rested on the conviction that body labor necessitated by biological needs is slavish.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"all ancient estimates of human activities, including those which, like Hesiod, supposedly praise labor, 8 rest on the conviction that the labor of our body which is necessitated by its needs is slavish.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Slavery in antiquity was instituted not for cheap labor or profit, but as an attempt to exclude labor from human life conditions.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The institution of slavery in antiquity, though not in later times, was not a device for cheap labor or an instrument of exploitation for profit but rather the attempt to exclude labor from the conditions of man’s life.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"animal laborans\",\n      \"definition\": \"The human species in its capacity as a laboring animal, sharing characteristics with other animal species populate the earth.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"animal laborans\",\n      \"item_b\": \"animal rationale\",\n      \"distinction\": \"The use of the word animal in animal laborans is fully justified, whereas its use in animal rationale is very questionable.\"\n    }\n  ],\n  \"unresolved_context\": [\n    \"Detailed mechanics of how modern economic theorists like Adam Smith and Karl Marx formulated distinctions based on productive and unproductive labor.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Slavery in antiquity was justified by the slavish nature of life-maintaining occupations rather than being driven by a desire for cheap labor.\",\n    \"The modern age elevated the animal laborans and glorified labor as the source of all values.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPx5x5HUfowdbrqpnH4IcIrbQrnAAfdixcXI1E31OAQU6Q_JOSriBV0k6Tq_yJ",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "Ancient estimates of human activities rested on the conviction that body labor necessitated by biological needs is slavish.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "support_kind": "direct",
+        "supporting_excerpt": "all ancient estimates of human activities, including those which, like Hesiod, supposedly praise labor, 8 rest on the conviction that the labor of our body which is necessitated by its needs is slavish."
+      },
+      {
+        "claim": "Slavery in antiquity was instituted not for cheap labor or profit, but as an attempt to exclude labor from human life conditions.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "support_kind": "direct",
+        "supporting_excerpt": "The institution of slavery in antiquity, though not in later times, was not a device for cheap labor or an instrument of exploitation for profit but rather the attempt to exclude labor from the conditions of man’s life."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "The human species in its capacity as a laboring animal, sharing characteristics with other animal species populate the earth.",
+        "term": "animal laborans"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "The use of the word animal in animal laborans is fully justified, whereas its use in animal rationale is very questionable.",
+        "item_a": "animal laborans",
+        "item_b": "animal rationale"
+      }
+    ],
+    "must_not_be_lost": [
+      "Slavery in antiquity was justified by the slavish nature of life-maintaining occupations rather than being driven by a desire for cheap labor.",
+      "The modern age elevated the animal laborans and glorified labor as the source of all values."
+    ],
+    "segment_function": "Examines antiquity's view of labor, the rationale for slavery, the conceptual foundations of the animal laborans, and the modern elevation of labor.",
+    "unresolved_context": [
+      "Detailed mechanics of how modern economic theorists like Adam Smith and Karl Marx formulated distinctions based on productive and unproductive labor."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"Examines antiquity's view of labor, the rationale for slavery, the conceptual foundations of the animal laborans, and the modern elevation of labor.\",\n  \"claims\": [\n    {\n      \"claim\": \"Ancient estimates of human activities rested on the conviction that body labor necessitated by biological needs is slavish.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"all ancient estimates of human activities, including those which, like Hesiod, supposedly praise labor, 8 rest on the conviction that the labor of our body which is necessitated by its needs is slavish.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Slavery in antiquity was instituted not for cheap labor or profit, but as an attempt to exclude labor from human life conditions.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"The institution of slavery in antiquity, though not in later times, was not a device for cheap labor or an instrument of exploitation for profit but rather the attempt to exclude labor from the conditions of man’s life.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"animal laborans\",\n      \"definition\": \"The human species in its capacity as a laboring animal, sharing characteristics with other animal species populate the earth.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"animal laborans\",\n      \"item_b\": \"animal rationale\",\n      \"distinction\": \"The use of the word animal in animal laborans is fully justified, whereas its use in animal rationale is very questionable.\"\n    }\n  ],\n  \"unresolved_context\": [\n    \"Detailed mechanics of how modern economic theorists like Adam Smith and Karl Marx formulated distinctions based on productive and unproductive labor.\"\n  ],\n  \"must_not_be_lost\": [\n    \"Slavery in antiquity was justified by the slavish nature of life-maintaining occupations rather than being driven by a desire for cheap labor.\",\n    \"The modern age elevated the animal laborans and glorified labor as the source of all values.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 509,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2683,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2683
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3192,
+    "traffic_type": null
+  }
+}

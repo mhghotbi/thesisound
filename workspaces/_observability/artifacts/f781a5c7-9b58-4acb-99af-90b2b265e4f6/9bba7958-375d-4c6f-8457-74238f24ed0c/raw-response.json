@@ -1,0 +1,59 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"The target block contains unparsed text, numerical strings, and corrupted character sequences representing bibliographic notes or raw structural artifacts rather than readable prose.\",\n  \"claims\": [],\n  \"unresolved_context\": [\n    \"The target block contains unparsed or corrupted character sequences and numerical codes, making semantic extraction impossible according to the grounding rules.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPEIL33jP7CwZd_fxkceCj54JSCMJN31Jib4L306ws6OwX_6KbkB3KS1nAYHR0",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "segment_function": "The target block contains unparsed text, numerical strings, and corrupted character sequences representing bibliographic notes or raw structural artifacts rather than readable prose.",
+    "unresolved_context": [
+      "The target block contains unparsed or corrupted character sequences and numerical codes, making semantic extraction impossible according to the grounding rules."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"The target block contains unparsed text, numerical strings, and corrupted character sequences representing bibliographic notes or raw structural artifacts rather than readable prose.\",\n  \"claims\": [],\n  \"unresolved_context\": [\n    \"The target block contains unparsed or corrupted character sequences and numerical codes, making semantic extraction impossible according to the grounding rules.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 83,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 7620,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 7620
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 7703,
+    "traffic_type": null
+  }
+}

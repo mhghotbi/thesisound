@@ -1,0 +1,86 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\"central_question_status\":\"well_covered\",\"central_question_claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-cdfd1f19002d9de1\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-69fe45bd8b92b783\",\"clm-12d66b0d3864127f\",\"clm-033a1f2ba7f72f4a\"],\"objective_coverage\":[{\"objective\":\"فهم روشن موضوع و ایده‌های اصلی آن\",\"status\":\"well_covered\",\"claim_ids\":[\"clm-cdfd1f19002d9de1\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-69fe45bd8b92b783\",\"clm-12d66b0d3864127f\"],\"rationale\":\"ادعاهای مستخرج به خوبی مفاهیم اصلی کتاب مانند تقسیم‌بندی سه سطحی فعالیت‌های انسانی (زحمت، کار، عمل)، مفاهیم کثرت و زادمندی، و آسیب‌شناسی مدرنیته و بیگانگی از جهان را پوشش می‌دهند.\"}],\"material_gaps\":[],\"max_supported_minutes\":10,\"recommendation\":\"continue\",\"recommendation_reason\":\"شواهد ادعایی موجود به صورت کامل و مستند پاسخگوی پرسش مرکزی و هدف یادگیری بوده و ظرفیت تولید ۱۰ دقیقه محتوای مستند را دارند.\"}",
+            "thought": null,
+            "thought_signature": "EqwwCqkwARFNMg-_-ECp9QO4FDDjYBwXFJ4rgx1qPw_9FlFyvwONDfKdvPlRRULGfYTtwNm2Y5F0I9vAModKDv9sXZzplB5f9Nbh7F-QFMzwTiE2NuNLYBAG5iNSnhDJL5vBPXigviy-wNfbVIeNb7xWuHbtNJa5Ykk9x2_NbY1ezu00eiaGuZKkPGYY9Rb2BcW8Bq4olqf-x6zHFpLD-DRirdBwFBT6Ekg3e0TRsIn5GGhUppTd20B-yuBxGWXy32yzoo8w-dC4mB1Mi3kSXHpn5kqHtv_zwlX-HHKesPoPi0oSIlCR00IbasMtvt_krZ2kWydCEFLpiq_U-7yBX-N-9XD0kIyW60UQSk5hFKmFeqJwRCwqXqNJLqIEJhNat_JRvglVnWSUg-xmO-8U3HMiKywFHWesd0mTKqodktBAPDuQRLHB-zzv0pYGlw0wbtHooUJEPtddfP3UtX3etbG-bMMu5-dNt0RZtG5C6KRXNW__reoivQGNOqcGhizmJvyovPtV1RVpk8Pr-N3O7qLe0J1d7Dx_uXRLHT-zzsbDcOmPyfcNahZaw7WUHS4RLy5uSM7CAClVoaz72iAwqqagojfffIop0DGNVa5nZcstdmXpMoSGVlNi8uZCn4BGnKgkkkJzxs0YB738Tr1MDO0erJuHppZxMQ0DnAPzXNvYVz2_xpSK9ooaqXNCWzHpoV4cgHkA6zctxmDNeuEAevUx4zmJk-NR4NBYl836jL8Evyhgx8kzabQJ5avDGIobmok3Bp8zNAzSA0LIQYXJ1Li7knT5RE09kafId91SX1vhRfPkcRw62Z5bfJcqQgp1hrCKaYZ7wsQ_GPjGtrguDlnYeqdJGJTaXEuw3zdPs2SUeK03Sw_LnBNtS7ibdrySdHSinFps0OxToS8z3xrOLeUnZYT8W9tV4MIDNnnbVrR6Ib5-XldI9Oxwe909rFTKvjS4fu-M9FHe3HD0xLAyn9Z-o_1UuUABQvq7YmcDItPx059Zt1-mTquOVm27fTEQK5MiUamV7I81pDB41SI57X_DRdDSZ53TlwA7EFdJ4Rvo_2HEYKIyD42rCuAWrlPLMLQYVWmV7jaDNPpB5vww1IdPfgDLunWgTAiZmyo09XrjMaaIcRXK4MxE8BkVE-qbZIGc6_hfb4cKclZq8yl6DBrDzoPAN6ESkJ8J2-y7wURbQ4aVptdzcvRL1k1iS-q7JI9XpS7Hc0zX8BXOZFbFRASX6PT_O4ssEG0r2lKEokcyDFVw2YC9tms7foW15VNEedCw8yNgbww3lfvNRs8g7qb6g2fyWV4JQDXTO6gmgBiy2ZHWDIR0-gXHackf1kFV-iZd2T1kp1ecUYG9KGvgloKfj6phQT-L8vIMuc0F4VoiBzh3--f0c-3-JM8hBwF0kA6rlYAjCn0xeNDjW5AYmAkM3rIqUMjjqO6p9CWmbtypNJJ9GXfmQVohhgcz8vT5f6PlFESmoXNEKr1Vf_3UT6RkNlN24r1-BAKPB2cGufwz6QcT4Jiarh5obB14MEW6_jFx7ILrvEmPJPGAiOW7XuPzPnuBFGvH7Qf6jX2gUJhhWs7RugWIycaSzteg5Bw7xTLx2R4UW7ZkySMWOdOKfB2nVh3aPNd5Uq_JqZB_m0ZO6RhVc4qxPHLc01dh4UxU_UFbTplNCQxWdE_gOX2m_QQyZIB94t_qIoVarW-KNFwDN84sOW8CK34vtj75jG4GuOzqoZwW2gZ7jf0k8UT98wMFJcGw8o8_GwnhJ4PCqRM5jlfcc6WCpNG4FYCJBIRpO04GTa8InNVlh86uDA8lfrogbBvET5EeCVCa1xX6hdFLBo8EXTyn7oVmbTlmjAN9oW_TWQo5vTODd_Qt9roCKqCCwpLdMg7uXiSZqdfQXV49uGXP3mgLlltzZFFv9_5k7Zj6fNA-TYBrxRmRngogwAAeeUVK9wf_sDtuOpZ04tzMAMv5OWGrf74MvlQgwtohS3YvG7XA4xGTrJnhmB1CUx_5-nInTR6i4BDe89yFv0BkbcUdt3rbCTe_ZgX79vUQKcogoyrXeYl6eBq0sdVe83ZvYzatKlBzbjnuWWLDLF1XVRAwKqKbSWBmySueCNKHhxMbctuoHGqnTeMfGRMUlzHHfvJ6o8EOJ9-Jt6EVBk7KF-gjUWNmgLe1Lzykz_CREa2pJSBjnZ4eHWkcWvjxghj1SvV-H8IEnxPyNxR22SCmmaDmBfImlRmDSy5fGwHqfQbJHmLzHhPn86vxNsFPvI5y_DEQa6RVSl9J8z7z2YU8VyKnZwouCgiz7jWpot2SsTV_vwKPVdUp70T_CEw8Thi5fGQq8z1VRBsegmTPChROC8ap8JtMreOj8_M4JTtRJH4aWX6plRLO7BTObp-lXV_3siLhIKFwNtxR4hVXmz88gIdOebkulBdBea2EB2rBPWyHS3DTcKcWA_5MG-gnqxYCEV89utjREJDUpw_fmRjQzGzH7jg3A2wvM4FGhvJ63fEedz0S-nD6FZJ6QlbpomwfpyphIzcUnbpVDv97raVTYM5c4e_XBllFYiY4zrgdueR0foQBDxCgtsuTCg00tMnNU7EChO8aoGHbQpVf38McaKqh0tyf5DTxiHAquaMvWI64S3c3watZaKivaWJ6svUtP3fhRtUV7qYk1KIWEZvjLbmvJiqP-FNLsEXC9hORGD0qXQDWkSq2ih9rUJpBV15lV9ayGJy5oced6av63ZGaDhvbS4AAd-9o7XK9zB_V_SsdtFDJp_FJXdWC0XT1aX-eNlZa5gZwp75psJwE1iRBcxehmhq3TzT5eIiV8j2gtLwOcW0UmeHWHxWASjNxroNtRfFZPgc9yk_B5Mb0TOK7HY897L2KkQXBVAly8b3bqOc3gHET-RkOnIpHRt29ADMroAjQE-majUME6KJkETTVgZi3RjqC1eut1fmW-_a5uHVA8sIZdwWpcGs7P8HotIqQUG41gBwFidFRUzLDBbCgD-6TIsuznf2XbcX6BMsOJP8gvijoU2gpykoxooreUshUvqbNQf5CjWnry0jecIPKiV5sAMuYCLz7eT5UvAYLsQWQBksUs1rkLnAUXa6fffgNaPq5xNBKKXGRQny5f84WRX2X9U76tXSkFbu4EQcCipHnatOriR2gO3LzVVQKfrH9xaCKN0o4rV3dZeEsY3rqH1NtXuBC3LDImzxcKAW2curEirJAbrl4NuxpdBIixBTYB4fz5h3XccHtPpeyAIP3HwI38YPVwI9qy2HCCohOaNcqMRizGS-bSBbpMdVqeoDk3moHx_j3sKsiU3sP0v1L_ah1GA62SpyAPUO9kH4QqZ7wRrgPcosZEnnosMTbt8z5F7TmCdzZ1R8O8GM_plFDNZm0STCmdVbaWfc-jIBi3ERw4_vNFAyF3HtdN5nc5PpmEVORpgsF0wUOhQmFs_ZOd6u11_9IV-Pm1Z40h4aEHBr7_myeMxDFY44MsJcOblH9h-SqtNKmEgwAzR0n03oFMlD8nGGf5t4pxW7DASet-X5GYGKuXvvoVBaJDveZD-pFYg956mLvBTO4xhRtJIWsHg-qhLgCUzS4A_OzCjZuoOs1SYQTm6DN9khxfBeYjclAIMAIBMjqJPUOY7GixUjSoe4MPH1Fk03BubtTRMp8cgoNmbs0Y5QCBj6KvaK9Cm2CJ-E2q3m6n0cE-C1KO81RNWZXYwCAST6DFQIpjLgRwLOl1WZjRX-Uf-eYptquNHwAUEnmmVGTzD8CJ9T1EPq8TlTpzadLoTt5bGKnlMF3keppQu-MpXDBp8LU1M-HSHVrgHZBgTiaI841LTLGkOMhEwuoNkCyHIGXJUZ6IexH2buLk1vrXCito4vgfpdmfZ36AmwupxHY0m9i0foVouUGhO6eFDwljXzNL28LKwZSKXgHmsBtXuhfyyhx-BvK7OocxOPpw9YwjP7p9U-Xo9B8n3eXXXrEucDmO2v7ciC6uEF5ii9jkUxJPx7IDbk37UxSmSTRBkk6BmYMYbYj8fazq5KNGws0rnW_SJjpw8VYuJJl63xPTIudaUbVZ3DIr60FwDAKjoZpg48sy2OGxPwTBDbXpeJ5kM2HfM-aKjwufkzZ4wt94NkiNihrI-OLoeVZMSjwZXGNClhtDaG3TjMN9R-R2-d4Dl4twGMkMt-uXLykbwDMWT-Z7HkTCD7kxg6WqaqPC8yGlwGo9DYSTeC0xkB_urxbWqMqi8q-qXWDQPjbUfE-4-S46ER1MiRQ5lcHX_dFlzx7es1qEMYC-XXqhuoqtDaKetpyjP1SDZkE-iW-svEtsn0otRHKNqD83B1YVl6xmcivJch87yrkfeJlKX_gEGOedGOYD6Q0rHKKp78M1Rz3uRtAm04JRtU8wG3u-68Rk4hwbrGIcGoC2kpa7ScPLlsbCCxeQIeMkUkpot0jFKxXr3Xe7wJaAZjYpDKva0t3VFW_WITQeTQKPPmQdfw3_e8S9DToVa-MIj2ui121Q1dSwN7K3OpBbGqy_20meKkqwtplOW7JjLUz9krdDGCFbMDEIYmKQPFMxB0-mGpv7w6mLcm-yPToKwkSwNF3G17pm_rTU29GZydvMpKegiY_6lvCVmoWQACp5WY1-f9MwNnMD1xTqMZozd9yzMFv4P0O39JLH1Ff7vuPthqrpOZmHftYYAyweM3BrDquwvebylCO2lyrlrL4XcnIkkQJz_tkj89BQWl0Dr_aQlkNrki2yIaW--eCXDEfnnwegNIllw5H0RHcBfopCFoYm1gyyOvK6VaPaLUZiYpSSctnZPtEEb5e0orUq7GB7LR0ItbsGRRzwEhQCeCBOLtpu_JS0FgWy5G7X6pc7R3Yz1f_GkqhCr2IAXDGwW0OVvUVBJoU5WPCVIpAQWBGQQi7HPP7FMMAjUaKgRwqxbYsIaBmW43FmkM5-eEFYytkQvmmPfYAoOu1EFSgHXuYrtgeI5ANnrLyVoVZmOU0DbtxzOyXBXz0xXytePuh96uVnOpVh7R9wlA_QEQCHoCm-YQMJxTRXqdQmLY4RadTz1kLKHracLxA2ToIvIvtABmN9yw1z_X2PLdHw272PUf8TZ1boBIGOBvu_zBKEpaA1EfsnWbORUA4_5Rt2UTH5ZAOCZrEY6sCEZz8ge3lSNmJdAi6zKzFPrP81fcSoIOwjC9Z-J_rBng6fGCvNR48_K3eRGQmPG-kRbJixlgB7RoBuEU6lytDXdF02oghyPCGflBdVw2L2HN1fckQH2rbUFJCkTByqzZRenfHKjM3jXoX-TdE-L8GXXSVWzZEjvdGq7tuqOyyEPaLiPYnA8xpgUNyhGVL2aPkGj1oItDIjTrgostzd76tKHTohbWosTtfA_xBeIq6m4zh1o6uR49X6Z07fHe9uW9ucLOOugTUnTnaiSonDRpSn3n3z-d4nrUODZl7sEmxtOwXkBGLqBv7JmnO2lG1bgKJ5gXmxsBqw8KlBBEAkCtoTkxn4tPDpCisXp3lyh4gCncdTyCD60_aoNA8E3hW5ogb2Ox6Otg5OLONKaMDb3A0uDBUuE4jedyRQu14m_tD7lK599rcXwYkX3LTQHsMHlDC1WBUdPi-4tkQRwFceZWe8Rkq2rRjXEXQ9Q_67sEAoEiilxoBjtYhQWeQa3XJCrKekn3zfLn4tE8ubugXhScVtkngQh0y5b21F8UB740Sznxr8LiW_9YoCMdqmznx6GHap3OLRMzizXeTJiw2YKNP4Cj6OlSGJvVo8CuTekt4JP0H6La9RfJUmjVrrEPE8wjAmEihiLEoCOLl1mTGGLJH7rTNGqEWsUP4YFWUIUvSanARJCTFXLG6-4uuzAVjX1QoXvNBF8ImQO2TPgOyKkdLjOboAE6FaQpYV2g-q9vL1jeF-MggFIPnqjq52kv0MS4hfX1Oe6zPwU22rNeaURy6dLdKYrsDLde3S2lshX2BkkfAkkyRX3D5vBXiPo81hHfjELEtdntaTt7wAHz8ZhsVv-rVQhxVgoeq_yaO3PtuBhhCj7a63HHNcRNyMPCuBOID5gLAQblTe6zyfj_Dy3sIW7MvOZbMZJydizrtDOFNmP2NXJiMcHE31luoOX-Lb8hCMxPPFjtKR8Rkkacy2X3ZSUA079131YjdTXM7bFzicXjrYilfmCs0l54lfdytld3yZzZJORmflF1V2NPhan3yaW1OuNlhcMPac62k1Tmm__k7CHgsyljSm7MF6UDAfxG_6uGSKb1nw_l0In2JE81jjy1c5WIErqYU1HvUG7AjY1rHZgvOEg7aB6w0hbg1DQSFU5iVH_Qua1_VyJX06ptnoi1PSadt_m5Um574RczJpuJ1CWeN16w7EAQR_rgfuTjN5rMj7X2OQlI8UA_4W2D_zChQQRK9rSawbu6DhOdsf7ZmjBGHkAeDO1qpCDXKMeUY6WOEqX297JzpzvjYCkbd4hUtmOTbDjcBusT7Qh-wiq4rtdrvMMuLTrcCVT5iAAJhALdt-nmZ9trcfQajKZEVUHqas5Fa21Osg4nv5tLaQaXdqQVrfpiUzUGHRPUyuSBRbCC3cbFw8sqFPhHoDNMm8mDj6JomZST6gNPoe4AweTtKZgth9548kJPnX-k2uS-DiXNRhAAeiZeyTHU7agg07bV3_AuNf288pElZNwX28mCsyBFOba5KgNdcMEJXptC5CjrbMvAP0vvr2hbsU7FhLh_uYwQR9xWWt44-7pT8zNVBjH0XK53tvUznWKrowzI8KIUo9A1K0qQmo_8mdWu76AL33AS3Xm7VlfjsuHaolbJTxjswXH8YptV-R5hr6ulRFxsdte5Y3hhoaF6FxSuKHBQf1jPhj6EezzWUdwWcF9DETVEU5ChRjVIh-F5Bqb4pql_ftxD0XD0JSGIhBr-VhR95mZRd1KDzuJpHrKNE6nLv-jqioF0bKeBlH1BSdJRzMVjUE-nTIrB5V_QHeYzCZgLIyocVtyVHe6xjd4s9msTPHYBIeGwklPvxYPrXZT44Jk_OTLVtkudG738-sBx4dfif-sk_1260vsxhUek89QXYvp3dK2OMAvtzI66WpTkp4F2QbbrYEMrThgFfWtKw0utcxrlekE9Y4TYh9dpsoJS5vOzSFQPOcdT3UyU0f-Wo4__JAnlRYLTYAH_A8LLB9YcXva4KGnO_-7nUBT_X8zSbRIEo9Evx7PX4bTirGQIY0YuoDq8GDLbnqUGENgacufaoQg4pYK2CiKLn--T3mIisLewwigXrY1hehvE7uMpvv2CbXL9B9J7d6oRhhOsfiVLZtIjHcoScKoRNlnS1qXe9l0ElLHL_18M9t8bYWqF1k3i9ClTbqBifqOScgmObyYKSnpBOPF5PfgFXTsw1G0DiKj0u3SRiuXSSoZ7IdnNr9ZiSGLqf5NCucbQ9mlXIAJnnMkZYWXiEqjdLu7pFuL8W2sQkFKK63pTT4zmC_Px2RGilq-oy2e945Fgw6bm8QHR3HomrsYBwtv5HIsbZIAOqfB8_61VYw1AKHA14aOuFNddyDib8nW59Sdp7KFQMYFkZ_8iYmEmpWO3JWQUJqpU0kIpE9N3vKLV_4w7cC_ErF99AN5Oht35lFdUTCGW2qAqEDI8-LppGc2Q46aHUGeEyfkiuVELITe5wf4tXOrjc7NidB0LGba21J8FzFBqeeVMzoXHQnFfZD5GhAYtRryJ3DeGBjNeFqzSdTvoRdGa_htBFudL5Q-t3LLA4iJpiFcuYJg4SEHmQNlXRfeAaUwmOz5bEcdumlInyZmZNqqPT5q4GSgZHCAMt3V39g6lWHIYWMvuWhPVvkrOuN8wNWbvjt3SUMgqh6oXxt54UnsHghj7q6DXYzgdFVGhCBM4XsfDMjqkFcbf5IjR4LiSj_caE5fAehnPogngdgO59yo2CjSMIw3rzT9iVjBU124aYMyIau0wf04Jy-xrTzIwTBPj3RdBcf-DEkU2k3vaDhjA_uWrZUU5f8V-SZfTBWwV8ZzUiFIzF6N950iKLDnV5Gx8smiI62eAvCpIXbiFbs9FQWZS5a1vNWTrOS4L7hRw9Fle9OgUuoa-AP96pMYYv7J43E4UwSABwCzvh5yN7Mt-8iyE49_QCDdd35YIMJZpiVHLxNDcVnKclfwon9qa_FRcXVJov3C2TmCd7NR_p4y3A-_6Uz3EN7R-Zo7RauTGs6aoXtPxfPcyCkMGSX85rB-syVUypL1n0lXwaLbupECGjvU8IH8ptpzRPoVmQF-wtnwrV3mVTtxLSbLLIHrUv_owH53OoB9j--9xWtAo=",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.6-flash",
+  "parsed": {
+    "central_question_claim_ids": [
+      "clm-27d7960629cc8d70",
+      "clm-cdfd1f19002d9de1",
+      "clm-3a561b777e44ce86",
+      "clm-43c898a10d267e4a",
+      "clm-177abafe0237f1e2",
+      "clm-42387f05124f8d6c",
+      "clm-69fe45bd8b92b783",
+      "clm-12d66b0d3864127f",
+      "clm-033a1f2ba7f72f4a"
+    ],
+    "central_question_status": "well_covered",
+    "material_gaps": [],
+    "max_supported_minutes": 10,
+    "objective_coverage": [
+      {
+        "claim_ids": [
+          "clm-cdfd1f19002d9de1",
+          "clm-3a561b777e44ce86",
+          "clm-43c898a10d267e4a",
+          "clm-177abafe0237f1e2",
+          "clm-42387f05124f8d6c",
+          "clm-69fe45bd8b92b783",
+          "clm-12d66b0d3864127f"
+        ],
+        "objective": "فهم روشن موضوع و ایده‌های اصلی آن",
+        "rationale": "ادعاهای مستخرج به خوبی مفاهیم اصلی کتاب مانند تقسیم‌بندی سه سطحی فعالیت‌های انسانی (زحمت، کار، عمل)، مفاهیم کثرت و زادمندی، و آسیب‌شناسی مدرنیته و بیگانگی از جهان را پوشش می‌دهند.",
+        "status": "well_covered"
+      }
+    ],
+    "recommendation": "continue",
+    "recommendation_reason": "شواهد ادعایی موجود به صورت کامل و مستند پاسخگوی پرسش مرکزی و هدف یادگیری بوده و ظرفیت تولید ۱۰ دقیقه محتوای مستند را دارند."
+  },
+  "prompt_feedback": null,
+  "text": "{\"central_question_status\":\"well_covered\",\"central_question_claim_ids\":[\"clm-27d7960629cc8d70\",\"clm-cdfd1f19002d9de1\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-69fe45bd8b92b783\",\"clm-12d66b0d3864127f\",\"clm-033a1f2ba7f72f4a\"],\"objective_coverage\":[{\"objective\":\"فهم روشن موضوع و ایده‌های اصلی آن\",\"status\":\"well_covered\",\"claim_ids\":[\"clm-cdfd1f19002d9de1\",\"clm-3a561b777e44ce86\",\"clm-43c898a10d267e4a\",\"clm-177abafe0237f1e2\",\"clm-42387f05124f8d6c\",\"clm-69fe45bd8b92b783\",\"clm-12d66b0d3864127f\"],\"rationale\":\"ادعاهای مستخرج به خوبی مفاهیم اصلی کتاب مانند تقسیم‌بندی سه سطحی فعالیت‌های انسانی (زحمت، کار، عمل)، مفاهیم کثرت و زادمندی، و آسیب‌شناسی مدرنیته و بیگانگی از جهان را پوشش می‌دهند.\"}],\"material_gaps\":[],\"max_supported_minutes\":10,\"recommendation\":\"continue\",\"recommendation_reason\":\"شواهد ادعایی موجود به صورت کامل و مستند پاسخگوی پرسش مرکزی و هدف یادگیری بوده و ظرفیت تولید ۱۰ دقیقه محتوای مستند را دارند.\"}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 478,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 8286,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 8286
+      }
+    ],
+    "thoughts_token_count": 2073,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 10837,
+    "traffic_type": null
+  }
+}

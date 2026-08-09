@@ -1,0 +1,56 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "The animal laborans is ejected from the world because of being imprisoned in the privacy of the body and caught in the fulfillment of unshareable and uncommunicable needs.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The animal laborans does not flee the world but is ejected from it in so far as he is imprisoned in the privacy of his own body, caught in the fulfilment of needs in which nobody can share and which nobody can fully communicate."
+      },
+      {
+        "claim": "Pain and effort are the modes in which life and necessity make themselves felt, such that their complete elimination would deprive human life of its liveliness and vitality.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "The human condition is such that pain and effort are not just symptoms which can be removed without changing life itself; they are rather the modes in which life itself, together with the necessity to which it is bound, makes itself felt."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "A condition characterized by worldlessness, imprisonment in bodily privacy, and the fulfillment of unshareable biological needs.",
+        "term": "animal laborans"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "The animal laborans does not flee the world voluntarily but is ejected from it by being imprisoned in bodily privacy and necessity.",
+        "item_a": "worldlessness of the animal laborans",
+        "item_b": "active flight from publicity inherent in good works"
+      },
+      {
+        "distinction": "Trust in world reality derives from the permanence and durability of the world, whereas trust in life reality depends on the intensity and impact with which life is felt.",
+        "item_a": "trust in the reality of the world",
+        "item_b": "trust in the reality of life"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection between ancient slavery, biological life burdens, and the ancient city-state as a consumption center.",
+      "The idea that pain and effort are constitutive of human vitality rather than mere removable symptoms."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "To analyze the biological burden of life, the role of ancient slavery, and the relationship between the necessity of pain and effort and human vitality versus worldliness.",
+    "unresolved_context": []
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"Examines the historical emergence of the modern concept of process across sciences, its intimate link to the biological life process and labor, and the consequent privatization and worldlessness of a mass society of laborers.\",\n  \"claims\": [\n    {\n      \"claim\": \"The concept of process, common to nineteenth-century sciences like economics, history, biology, and geology, was virtually unknown prior to the modern age and became modeled after the biological life process known through introspection, which corresponds to labor.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"What all these theories in the various sciences—economics, history, biology, geology—have in common is the concept of process, which was virtually unknown prior to the modern age. Since the discovery of processes by the natural sciences had coincided with the discovery of introspection in philosophy, it is only natural that the biological process within ourselves should eventually become the very model of the new concept; within the framework of experiences given to introspection, we know of no other process but the life process within our bodies, and the only activity into which we can translate it and which corresponds to it is labor.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Neither abundance of goods nor shortened labor time can establish a common world, and an expropriated animal laborans remains private even when deprived of a protective private place, leading to worldless activities like hobbies under socialized conditions.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Neither abundance of goods nor the shortening of the time actually spent in laboring are likely to result in the establishment of a common world, and the expropriated animal laborans becomes no less private because he has been deprived of a private place of his own to hide and be protected from the common realm.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"animal laborans\",\n      \"definition\": \"Man conceptualized through labor, driven by bodily needs and maintenance, whose activity is oblivious to the world to the point of worldlessness.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"animal laborans\",\n      \"item_b\": \"homo faber\",\n      \"distinction\": \"The animal laborans is driven by bodily needs and does not use its body freely, whereas homo faber uses his hands and primordial tools freely.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The connection between the modern concept of process, biological life, and labor.\",\n    \"Marx's prediction of the withering away of the public realm and the rise of worldless hobbies for socialized men.\",\n    \"The inherent worldlessness of the animal laborans and mass society of laborers.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIP3m4MRoXvV33uWJSh8Rf4-OezSrEdZsJkzZ-13EOlhN831zcMZfIjrFSVLaCl",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [
+      {
+        "claim": "The concept of process, common to nineteenth-century sciences like economics, history, biology, and geology, was virtually unknown prior to the modern age and became modeled after the biological life process known through introspection, which corresponds to labor.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "What all these theories in the various sciences—economics, history, biology, geology—have in common is the concept of process, which was virtually unknown prior to the modern age. Since the discovery of processes by the natural sciences had coincided with the discovery of introspection in philosophy, it is only natural that the biological process within ourselves should eventually become the very model of the new concept; within the framework of experiences given to introspection, we know of no other process but the life process within our bodies, and the only activity into which we can translate it and which corresponds to it is labor."
+      },
+      {
+        "claim": "Neither abundance of goods nor shortened labor time can establish a common world, and an expropriated animal laborans remains private even when deprived of a protective private place, leading to worldless activities like hobbies under socialized conditions.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "Neither abundance of goods nor the shortening of the time actually spent in laboring are likely to result in the establishment of a common world, and the expropriated animal laborans becomes no less private because he has been deprived of a private place of his own to hide and be protected from the common realm."
+      }
+    ],
+    "definitions": [
+      {
+        "definition": "Man conceptualized through labor, driven by bodily needs and maintenance, whose activity is oblivious to the world to the point of worldlessness.",
+        "term": "animal laborans"
+      }
+    ],
+    "distinctions": [
+      {
+        "distinction": "The animal laborans is driven by bodily needs and does not use its body freely, whereas homo faber uses his hands and primordial tools freely.",
+        "item_a": "animal laborans",
+        "item_b": "homo faber"
+      }
+    ],
+    "examples": [],
+    "must_not_be_lost": [
+      "The connection between the modern concept of process, biological life, and labor.",
+      "Marx's prediction of the withering away of the public realm and the rise of worldless hobbies for socialized men.",
+      "The inherent worldlessness of the animal laborans and mass society of laborers."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "Examines the historical emergence of the modern concept of process across sciences, its intimate link to the biological life process and labor, and the consequent privatization and worldlessness of a mass society of laborers.",
+    "unresolved_context": []
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"Examines the historical emergence of the modern concept of process across sciences, its intimate link to the biological life process and labor, and the consequent privatization and worldlessness of a mass society of laborers.\",\n  \"claims\": [\n    {\n      \"claim\": \"The concept of process, common to nineteenth-century sciences like economics, history, biology, and geology, was virtually unknown prior to the modern age and became modeled after the biological life process known through introspection, which corresponds to labor.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"What all these theories in the various sciences—economics, history, biology, geology—have in common is the concept of process, which was virtually unknown prior to the modern age. Since the discovery of processes by the natural sciences had coincided with the discovery of introspection in philosophy, it is only natural that the biological process within ourselves should eventually become the very model of the new concept; within the framework of experiences given to introspection, we know of no other process but the life process within our bodies, and the only activity into which we can translate it and which corresponds to it is labor.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    },\n    {\n      \"claim\": \"Neither abundance of goods nor shortened labor time can establish a common world, and an expropriated animal laborans remains private even when deprived of a protective private place, leading to worldless activities like hobbies under socialized conditions.\",\n      \"claim_type\": \"author_position\",\n      \"supporting_excerpt\": \"Neither abundance of goods nor the shortening of the time actually spent in laboring are likely to result in the establishment of a common world, and the expropriated animal laborans becomes no less private because he has been deprived of a private place of his own to hide and be protected from the common realm.\",\n      \"support_kind\": \"direct\",\n      \"confidence\": 1.0\n    }\n  ],\n  \"definitions\": [\n    {\n      \"term\": \"animal laborans\",\n      \"definition\": \"Man conceptualized through labor, driven by bodily needs and maintenance, whose activity is oblivious to the world to the point of worldlessness.\"\n    }\n  ],\n  \"distinctions\": [\n    {\n      \"item_a\": \"animal laborans\",\n      \"item_b\": \"homo faber\",\n      \"distinction\": \"The animal laborans is driven by bodily needs and does not use its body freely, whereas homo faber uses his hands and primordial tools freely.\"\n    }\n  ],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [],\n  \"must_not_be_lost\": [\n    \"The connection between the modern concept of process, biological life, and labor.\",\n    \"Marx's prediction of the withering away of the public realm and the rise of worldless hobbies for socialized men.\",\n    \"The inherent worldlessness of the animal laborans and mass society of laborers.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 664,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2275,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2275
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 2939,
+    "traffic_type": null
+  }
+}

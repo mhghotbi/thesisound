@@ -1,0 +1,43 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [
+      {
+        "claim": "Arendt's tendency to abstract from inequality and hierarchy in The Human Condition stemmed from a premise that postwar emancipation, the welfare state, and capitalist abundance meant contemporary unfreedom was no longer about the unjust rule of some over others, but rather a relation of society as a whole to each member.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [
+          "referring specifically to Arendt's premise regarding the postwar world or her corner of it"
+        ],
+        "support_kind": "direct",
+        "supporting_excerpt": "Rather, her tendency to abstract in this way was the upshot of a speci ﬁc and hugely problematic premise about the shape of the postwar world, or at least of Arendt ’s corner of it: that the political emancipa-\ntion of the working class, the development of the welfare state, and the sheer\nabundance of the postwar capitalist economy meant that the forms of unfree-\ndom characteristic of the contemporary world no longer involved the unjust\nrule of some over others, but, as it were, a relation of society as a whole to each\nand all of its members."
+      },
+      {
+        "claim": "Arendt used an undifferentiated first-person plural ('we') when writing about worrisome midcentury American societal tendencies, driven partly by a motivation to counteract the smugness of ascendant Cold War liberalism.",
+        "claim_type": "author_position",
+        "confidence": 1.0,
+        "qualifications": [],
+        "support_kind": "direct",
+        "supporting_excerpt": "this emphasis on what “we” are unthinkingly doing to\n“ourselves” had some understandable, even admirable motivations: among\nother things, it was meant to work against the smugness and self-congratula-\ntion that too often characterized expressions of ascendant Cold War liberal-\nism."
+      }
+    ],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "Complications to the sketch involving asymmetrical climate impacts, differing valences of indoor and outdoor spaces, and the limits of The Human Condition regarding global inequality and climate migration."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "argument",
+    "unresolved_context": [
+      "Whether Hannah Arendt's framework in The Human Condition can adequately address the conflictual politics of climate change adaptations, global inequalities, and climate migration."
+    ]
+  }
+}

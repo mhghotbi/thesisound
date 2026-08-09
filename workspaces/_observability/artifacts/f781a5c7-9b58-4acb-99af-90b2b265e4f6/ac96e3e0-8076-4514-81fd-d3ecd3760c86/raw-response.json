@@ -1,0 +1,193 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"working_thesis\": null,\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-98863830-00143-e7291095b2a2\",\n        \"blk-98863830-00144-16b12e01b035\",\n        \"blk-98863830-00145-4f7835c33d22\",\n        \"blk-98863830-00146-74fbdf17f664\",\n        \"blk-98863830-00147-79079d9f5094\",\n        \"blk-98863830-00148-25bac839ecd7\",\n        \"blk-98863830-00149-790d889bff76\",\n        \"blk-98863830-00150-0f3a9e3aed23\",\n        \"blk-98863830-00151-bff03997ac60\",\n        \"blk-98863830-00152-ff55653b5ce9\",\n        \"blk-98863830-00153-ca797199e59c\"\n      ],\n      \"title\": \"Notes on Introduction and Chapter 1: The Human Condition, Classical Status of Labor, and Political Life\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"vita activa\",\n        \"labor and necessity\",\n        \"slavery and freedom\",\n        \"the public realm vs. household\",\n        \"property and citizenship\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-98863830-00154-4fd131b4a47a\",\n        \"blk-98863830-00155-47b20935e369\",\n        \"blk-98863830-00156-84a20d6ee86e\",\n        \"blk-98863830-00157-73415661ecff\",\n        \"blk-98863830-00158-a8532d6f1ba0\",\n        \"blk-98863830-00159-a6ffadfaa395\",\n        \"blk-98863830-00160-3e88b3f9f6ab\",\n        \"blk-98863830-00161-f638ca54ad73\",\n        \"blk-98863830-00162-5059c635c53f\",\n        \"blk-98863830-00163-3ad84664951c\"\n      ],\n      \"title\": \"Notes on Chapter 2 and Chapter 3: Labor, Animal Laborans, and Historical Conceptions of Work\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"animal laborans\",\n        \"Marx's labor theory\",\n        \"pain and effort\",\n        \"metabolism with nature\",\n        \"automation and modern labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-98863830-00164-9d5a0fb35bbc\",\n        \"blk-98863830-00165-f6afc86861ff\",\n        \"blk-98863830-00166-15d4c346c292\",\n        \"blk-98863830-00167-845be5bd0ef9\",\n        \"blk-98863830-00168-7e391cc73ec7\",\n        \"blk-98863830-00169-79f4f85f24c7\",\n        \"blk-98863830-00170-8ba96b71ca2a\",\n        \"blk-98863830-00171-8f6adf2a2c73\",\n        \"blk-98863830-00172-161c9ebe9d12\",\n        \"blk-98863830-00173-420456daf1ef\",\n        \"blk-98863830-00174-d49b5a3edc1f\"\n      ],\n      \"title\": \"Notes on Chapter 4 and Chapter 5: Homo Faber, Action, Speech, and Forgiveness\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"homo faber\",\n        \"action and speech\",\n        \"plurality\",\n        \"forgiveness and promising\",\n        \"worldliness\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-98863830-00175-9b33a8ef7563\",\n        \"blk-98863830-00176-0e7147ab86d4\",\n        \"blk-98863830-00177-1a7906a1baf0\",\n        \"blk-98863830-00178-78c823a488ac\",\n        \"blk-98863830-00179-a35ffb89a0ad\",\n        \"blk-98863830-00180-0f692c0c3a73\",\n        \"blk-98863830-00181-03aa99c96d90\"\n      ],\n      \"title\": \"Notes on Chapter 6: The Modern Age, Cartesian Doubt, and the Loss of World\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"modern science\",\n        \"Cartesian doubt\",\n        \"world alienation\",\n        \"Archimedean point\",\n        \"vita contemplativa vs. activa\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Concept of Labor and Animal Laborans\",\n      \"section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-003\"\n      ],\n      \"description\": \"Tracing the evolution of the concept of labor from classical disdain for necessity to Marx's definition of man as animal laborans and modern industrial conditions.\"\n    },\n    {\n      \"label\": \"World Alienation and Modernity\",\n      \"section_ids\": [\n        \"sec-003\",\n        \"sec-004\"\n      ],\n      \"description\": \"The progression from traditional worldliness and action to modern scientific abstraction and world alienation.\"\n    }\n  ],\n  \"warnings\": []\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPdwL9rWdd4RQPB_v8J9tWJrhAOSkGKz2LMWDbTbiK5C5Jw3Egh-kU6CNMTs9z",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "cross_section_threads": [
+      {
+        "description": "Tracing the evolution of the concept of labor from classical disdain for necessity to Marx's definition of man as animal laborans and modern industrial conditions.",
+        "label": "Concept of Labor and Animal Laborans",
+        "section_ids": [
+          "sec-001",
+          "sec-002",
+          "sec-003"
+        ]
+      },
+      {
+        "description": "The progression from traditional worldliness and action to modern scientific abstraction and world alienation.",
+        "label": "World Alienation and Modernity",
+        "section_ids": [
+          "sec-003",
+          "sec-004"
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "depends_on_section_ids": [],
+        "function": "argument",
+        "key_concepts": [
+          "vita activa",
+          "labor and necessity",
+          "slavery and freedom",
+          "the public realm vs. household",
+          "property and citizenship"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-001",
+        "source_block_ids": [
+          "blk-98863830-00143-e7291095b2a2",
+          "blk-98863830-00144-16b12e01b035",
+          "blk-98863830-00145-4f7835c33d22",
+          "blk-98863830-00146-74fbdf17f664",
+          "blk-98863830-00147-79079d9f5094",
+          "blk-98863830-00148-25bac839ecd7",
+          "blk-98863830-00149-790d889bff76",
+          "blk-98863830-00150-0f3a9e3aed23",
+          "blk-98863830-00151-bff03997ac60",
+          "blk-98863830-00152-ff55653b5ce9",
+          "blk-98863830-00153-ca797199e59c"
+        ],
+        "title": "Notes on Introduction and Chapter 1: The Human Condition, Classical Status of Labor, and Political Life",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "animal laborans",
+          "Marx's labor theory",
+          "pain and effort",
+          "metabolism with nature",
+          "automation and modern labor"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-002",
+        "source_block_ids": [
+          "blk-98863830-00154-4fd131b4a47a",
+          "blk-98863830-00155-47b20935e369",
+          "blk-98863830-00156-84a20d6ee86e",
+          "blk-98863830-00157-73415661ecff",
+          "blk-98863830-00158-a8532d6f1ba0",
+          "blk-98863830-00159-a6ffadfaa395",
+          "blk-98863830-00160-3e88b3f9f6ab",
+          "blk-98863830-00161-f638ca54ad73",
+          "blk-98863830-00162-5059c635c53f",
+          "blk-98863830-00163-3ad84664951c"
+        ],
+        "title": "Notes on Chapter 2 and Chapter 3: Labor, Animal Laborans, and Historical Conceptions of Work",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-002"
+        ],
+        "function": "argument",
+        "key_concepts": [
+          "homo faber",
+          "action and speech",
+          "plurality",
+          "forgiveness and promising",
+          "worldliness"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-003",
+        "source_block_ids": [
+          "blk-98863830-00164-9d5a0fb35bbc",
+          "blk-98863830-00165-f6afc86861ff",
+          "blk-98863830-00166-15d4c346c292",
+          "blk-98863830-00167-845be5bd0ef9",
+          "blk-98863830-00168-7e391cc73ec7",
+          "blk-98863830-00169-79f4f85f24c7",
+          "blk-98863830-00170-8ba96b71ca2a",
+          "blk-98863830-00171-8f6adf2a2c73",
+          "blk-98863830-00172-161c9ebe9d12",
+          "blk-98863830-00173-420456daf1ef",
+          "blk-98863830-00174-d49b5a3edc1f"
+        ],
+        "title": "Notes on Chapter 4 and Chapter 5: Homo Faber, Action, Speech, and Forgiveness",
+        "unresolved_context": []
+      },
+      {
+        "depends_on_section_ids": [
+          "sec-001",
+          "sec-002",
+          "sec-003"
+        ],
+        "function": "conclusion",
+        "key_concepts": [
+          "modern science",
+          "Cartesian doubt",
+          "world alienation",
+          "Archimedean point",
+          "vita contemplativa vs. activa"
+        ],
+        "required_for_global_understanding": true,
+        "section_id": "sec-004",
+        "source_block_ids": [
+          "blk-98863830-00175-9b33a8ef7563",
+          "blk-98863830-00176-0e7147ab86d4",
+          "blk-98863830-00177-1a7906a1baf0",
+          "blk-98863830-00178-78c823a488ac",
+          "blk-98863830-00179-a35ffb89a0ad",
+          "blk-98863830-00180-0f692c0c3a73",
+          "blk-98863830-00181-03aa99c96d90"
+        ],
+        "title": "Notes on Chapter 6: The Modern Age, Cartesian Doubt, and the Loss of World",
+        "unresolved_context": []
+      }
+    ],
+    "warnings": [],
+    "working_thesis": null
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"working_thesis\": null,\n  \"sections\": [\n    {\n      \"section_id\": \"sec-001\",\n      \"source_block_ids\": [\n        \"blk-98863830-00143-e7291095b2a2\",\n        \"blk-98863830-00144-16b12e01b035\",\n        \"blk-98863830-00145-4f7835c33d22\",\n        \"blk-98863830-00146-74fbdf17f664\",\n        \"blk-98863830-00147-79079d9f5094\",\n        \"blk-98863830-00148-25bac839ecd7\",\n        \"blk-98863830-00149-790d889bff76\",\n        \"blk-98863830-00150-0f3a9e3aed23\",\n        \"blk-98863830-00151-bff03997ac60\",\n        \"blk-98863830-00152-ff55653b5ce9\",\n        \"blk-98863830-00153-ca797199e59c\"\n      ],\n      \"title\": \"Notes on Introduction and Chapter 1: The Human Condition, Classical Status of Labor, and Political Life\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"vita activa\",\n        \"labor and necessity\",\n        \"slavery and freedom\",\n        \"the public realm vs. household\",\n        \"property and citizenship\"\n      ],\n      \"depends_on_section_ids\": [],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-002\",\n      \"source_block_ids\": [\n        \"blk-98863830-00154-4fd131b4a47a\",\n        \"blk-98863830-00155-47b20935e369\",\n        \"blk-98863830-00156-84a20d6ee86e\",\n        \"blk-98863830-00157-73415661ecff\",\n        \"blk-98863830-00158-a8532d6f1ba0\",\n        \"blk-98863830-00159-a6ffadfaa395\",\n        \"blk-98863830-00160-3e88b3f9f6ab\",\n        \"blk-98863830-00161-f638ca54ad73\",\n        \"blk-98863830-00162-5059c635c53f\",\n        \"blk-98863830-00163-3ad84664951c\"\n      ],\n      \"title\": \"Notes on Chapter 2 and Chapter 3: Labor, Animal Laborans, and Historical Conceptions of Work\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"animal laborans\",\n        \"Marx's labor theory\",\n        \"pain and effort\",\n        \"metabolism with nature\",\n        \"automation and modern labor\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-003\",\n      \"source_block_ids\": [\n        \"blk-98863830-00164-9d5a0fb35bbc\",\n        \"blk-98863830-00165-f6afc86861ff\",\n        \"blk-98863830-00166-15d4c346c292\",\n        \"blk-98863830-00167-845be5bd0ef9\",\n        \"blk-98863830-00168-7e391cc73ec7\",\n        \"blk-98863830-00169-79f4f85f24c7\",\n        \"blk-98863830-00170-8ba96b71ca2a\",\n        \"blk-98863830-00171-8f6adf2a2c73\",\n        \"blk-98863830-00172-161c9ebe9d12\",\n        \"blk-98863830-00173-420456daf1ef\",\n        \"blk-98863830-00174-d49b5a3edc1f\"\n      ],\n      \"title\": \"Notes on Chapter 4 and Chapter 5: Homo Faber, Action, Speech, and Forgiveness\",\n      \"function\": \"argument\",\n      \"key_concepts\": [\n        \"homo faber\",\n        \"action and speech\",\n        \"plurality\",\n        \"forgiveness and promising\",\n        \"worldliness\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    },\n    {\n      \"section_id\": \"sec-004\",\n      \"source_block_ids\": [\n        \"blk-98863830-00175-9b33a8ef7563\",\n        \"blk-98863830-00176-0e7147ab86d4\",\n        \"blk-98863830-00177-1a7906a1baf0\",\n        \"blk-98863830-00178-78c823a488ac\",\n        \"blk-98863830-00179-a35ffb89a0ad\",\n        \"blk-98863830-00180-0f692c0c3a73\",\n        \"blk-98863830-00181-03aa99c96d90\"\n      ],\n      \"title\": \"Notes on Chapter 6: The Modern Age, Cartesian Doubt, and the Loss of World\",\n      \"function\": \"conclusion\",\n      \"key_concepts\": [\n        \"modern science\",\n        \"Cartesian doubt\",\n        \"world alienation\",\n        \"Archimedean point\",\n        \"vita contemplativa vs. activa\"\n      ],\n      \"depends_on_section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-003\"\n      ],\n      \"required_for_global_understanding\": true,\n      \"unresolved_context\": []\n    }\n  ],\n  \"cross_section_threads\": [\n    {\n      \"label\": \"Concept of Labor and Animal Laborans\",\n      \"section_ids\": [\n        \"sec-001\",\n        \"sec-002\",\n        \"sec-003\"\n      ],\n      \"description\": \"Tracing the evolution of the concept of labor from classical disdain for necessity to Marx's definition of man as animal laborans and modern industrial conditions.\"\n    },\n    {\n      \"label\": \"World Alienation and Modernity\",\n      \"section_ids\": [\n        \"sec-003\",\n        \"sec-004\"\n      ],\n      \"description\": \"The progression from traditional worldliness and action to modern scientific abstraction and world alienation.\"\n    }\n  ],\n  \"warnings\": []\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 2100,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 82901,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 82901
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 85001,
+    "traffic_type": null
+  }
+}

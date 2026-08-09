@@ -1,0 +1,22 @@
+{
+  "grounding": {
+    "mode": "none",
+    "sources": [],
+    "url_retrievals": [],
+    "web_search_queries": []
+  },
+  "output": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "The target block contains encoded text strings that cannot be reliably interpreted as substantive prose, claims, definitions, or distinctions due to the formatting of character tokens.",
+    "unresolved_context": [
+      "The block consists entirely of encoded or tokenized character representations (e.g., 2u9609, 2uFEAE) which lack clear linguistic or semantic meaning under the current analysis profile."
+    ]
+  }
+}

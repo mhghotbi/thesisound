@@ -1,0 +1,68 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"notes and bibliographic references\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The target block contains bibliographic notes and references rather than continuous prose, so claims lists are omitted per instructions.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The block consists of numbered notes containing bibliographic citations and secondary commentary on Weber, Marx, Aristotle, Whitehead, Koyré, Schuhl, and Burtt.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPwvOj_Ncj89FfJbcI4eOhl45cDz2TBOXG_rrGxuohiir7ARxyirA_L2o_lFAM",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "examples": [],
+    "must_not_be_lost": [
+      "The block consists of numbered notes containing bibliographic citations and secondary commentary on Weber, Marx, Aristotle, Whitehead, Koyré, Schuhl, and Burtt."
+    ],
+    "objections": [],
+    "references_to_other_sections": [],
+    "responses": [],
+    "segment_function": "notes and bibliographic references",
+    "unresolved_context": [
+      "The target block contains bibliographic notes and references rather than continuous prose, so claims lists are omitted per instructions."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"notes and bibliographic references\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"examples\": [],\n  \"objections\": [],\n  \"responses\": [],\n  \"references_to_other_sections\": [],\n  \"unresolved_context\": [\n    \"The target block contains bibliographic notes and references rather than continuous prose, so claims lists are omitted per instructions.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The block consists of numbered notes containing bibliographic citations and secondary commentary on Weber, Marx, Aristotle, Whitehead, Koyré, Schuhl, and Burtt.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 152,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 2979,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 2979
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 3131,
+    "traffic_type": null
+  }
+}

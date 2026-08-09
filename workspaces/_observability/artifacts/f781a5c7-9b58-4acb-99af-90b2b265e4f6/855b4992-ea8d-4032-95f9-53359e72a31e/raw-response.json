@@ -1,0 +1,64 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "code_execution_result": null,
+            "executable_code": null,
+            "file_data": null,
+            "function_call": null,
+            "function_response": null,
+            "inline_data": null,
+            "media_resolution": null,
+            "part_metadata": null,
+            "text": "{\n  \"segment_function\": \"index\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"The target block consists solely of a bibliographic index containing index entries, page references, and subentries related to concepts such as action, animal laborans, alienations, Aristotle, and other thematic topics from The Human Condition.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The block is an index section containing bibliographic page references for key terms rather than analytical prose.\"\n  ]\n}",
+            "thought": null,
+            "thought_signature": "EjQKMgERTTIPH7Zy1CyCWNHBNKlDSzLU2G6vCK3kULms3hfBwCDz1Tn4y5Np9tNlT7SePR7r",
+            "tool_call": null,
+            "tool_response": null,
+            "video_metadata": null
+          }
+        ],
+        "role": "model"
+      },
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": "gemini-3.5-flash-lite",
+  "parsed": {
+    "claims": [],
+    "definitions": [],
+    "distinctions": [],
+    "must_not_be_lost": [
+      "The block is an index section containing bibliographic page references for key terms rather than analytical prose."
+    ],
+    "segment_function": "index",
+    "unresolved_context": [
+      "The target block consists solely of a bibliographic index containing index entries, page references, and subentries related to concepts such as action, animal laborans, alienations, Aristotle, and other thematic topics from The Human Condition."
+    ]
+  },
+  "prompt_feedback": null,
+  "text": "{\n  \"segment_function\": \"index\",\n  \"claims\": [],\n  \"definitions\": [],\n  \"distinctions\": [],\n  \"unresolved_context\": [\n    \"The target block consists solely of a bibliographic index containing index entries, page references, and subentries related to concepts such as action, animal laborans, alienations, Aristotle, and other thematic topics from The Human Condition.\"\n  ],\n  \"must_not_be_lost\": [\n    \"The block is an index section containing bibliographic page references for key terms rather than analytical prose.\"\n  ]\n}",
+  "usage_metadata": {
+    "cache_tokens_details": null,
+    "cached_content_token_count": null,
+    "candidates_token_count": 128,
+    "candidates_tokens_details": null,
+    "prompt_token_count": 6146,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 6146
+      }
+    ],
+    "thoughts_token_count": null,
+    "tool_use_prompt_token_count": null,
+    "tool_use_prompt_tokens_details": null,
+    "total_token_count": 6274,
+    "traffic_type": null
+  }
+}
