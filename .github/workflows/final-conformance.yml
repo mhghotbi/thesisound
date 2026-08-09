@@ -43,7 +43,6 @@ jobs:
           git add src/thesisound/observability.py \
             src/thesisound/services/url_probe.py \
             tests/test_pipeline_runs.py \
-            tests/test_url_probe.py \
-            .github/workflows/ci.yml
+            tests/test_url_probe.py
           git commit -m "fix: close final observability and probe edge cases"
           git push
