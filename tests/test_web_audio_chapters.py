@@ -64,6 +64,9 @@ def _login(client: TestClient) -> None:
     )
     page = client.get("/login/verify")
     client.post("/login/verify", data={"code": "999999", "csrf_token": _csrf(page.text)})
+    account = client.app.state.accounts.get_or_create_phone_user("09120000000")
+    for project in client.app.state.workspace.list_projects():
+        client.app.state.accounts.add_project_member(project.project_id, account.user_id)
 
 
 def _segment(segment_id: str, title: str) -> EpisodeSegment:

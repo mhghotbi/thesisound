@@ -27,6 +27,7 @@ from thesisound.web.error_messages import user_facing_error
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
+ProjectRedirect = Callable[[Request, UUID], RedirectResponse | None]
 ValidateCsrf = Callable[[Request, str], None]
 
 
@@ -38,6 +39,7 @@ def register_audio_routes(
     execute: Callable[[UUID], None],
     render: Render,
     login_redirect: LoginRedirect,
+    project_redirect: ProjectRedirect,
     validate_csrf: ValidateCsrf,
     settings: Settings,
 ) -> None:
@@ -47,6 +49,8 @@ def register_audio_routes(
     @app.get("/projects/{project_id}/audio", response_class=HTMLResponse)
     def audio_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         return _render_audio_page(
             request,
@@ -62,6 +66,8 @@ def register_audio_routes(
     @app.get("/projects/{project_id}/audio/live", response_class=HTMLResponse)
     def audio_live(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         response = _render_audio_page(
             request,
@@ -94,6 +100,8 @@ def register_audio_routes(
         speaker_b_notes: Annotated[str, Form()],
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         submitted = {
             "voice_a": voice_a,
@@ -134,6 +142,8 @@ def register_audio_routes(
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         try:
             validate_csrf(request, csrf_token)
             builder.retry(project_id)
@@ -157,6 +167,8 @@ def register_audio_routes(
     def final_audio(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         project = workspace.load_project(project_id)
         if project.state != ProjectState.COMPLETE:
             return Response(status_code=404)
@@ -179,6 +191,8 @@ def register_audio_routes(
     @app.get("/projects/{project_id}/audio/final.mp3")
     def final_audio_mp3(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         project = workspace.load_project(project_id)
         if project.state != ProjectState.COMPLETE:
@@ -208,6 +222,8 @@ def register_audio_routes(
     @app.get("/projects/{project_id}/audio/segments/{chunk_id}.wav")
     def segment_audio(request: Request, project_id: UUID, chunk_id: str) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         if not chunk_id.startswith("audio-") or not chunk_id[6:].isdigit():
             return Response(status_code=404)

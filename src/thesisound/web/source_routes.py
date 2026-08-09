@@ -46,6 +46,7 @@ from thesisound.web.source_manifest import (
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
+ProjectRedirect = Callable[[Request, UUID], RedirectResponse | None]
 ValidateCsrf = Callable[[Request, str], None]
 
 _SUPPORTED_UPLOAD_SUFFIXES = {".pdf", ".epub", ".docx", ".txt", ".md"}
@@ -65,6 +66,7 @@ def register_source_routes(
     execute_corpus: Callable[[UUID], None],
     render: Render,
     login_redirect: LoginRedirect,
+    project_redirect: ProjectRedirect,
     validate_csrf: ValidateCsrf,
 ) -> None:
     discovery = WebSourceDiscoveryService(settings, workspace)
@@ -94,6 +96,8 @@ def register_source_routes(
     def sources_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         project = workspace.load_project(project_id)
         if project.state == ProjectState.BRIEF_READY:
             return RedirectResponse(
@@ -115,6 +119,8 @@ def register_source_routes(
         source_file: Annotated[UploadFile, File()],
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         project = workspace.load_project(project_id)
         validate_csrf(request, csrf_token)
@@ -196,6 +202,8 @@ def register_source_routes(
         """Browser bookmarks / refreshes hit GET; search itself is POST-only."""
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         return _source_redirect(project_id)
 
     @app.post("/projects/{project_id}/sources/search", response_class=HTMLResponse)
@@ -207,6 +215,8 @@ def register_source_routes(
         mode: Annotated[str, Form()] = "preview",
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         validate_csrf(request, csrf_token)
         project = workspace.load_project(project_id)
@@ -275,6 +285,8 @@ def register_source_routes(
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         validate_csrf(request, csrf_token)
         project = workspace.load_project(project_id)
         if project.state not in _EDITABLE_SOURCE_STATES:
@@ -339,6 +351,8 @@ def register_source_routes(
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         try:
             validate_csrf(request, csrf_token)
             project = workspace.load_project(project_id)
@@ -401,6 +415,8 @@ def register_source_routes(
     def confirm_delete_source(request: Request, project_id: UUID, source_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         project = workspace.load_project(project_id)
         sources = UiSourceManifestStore(workspace.project_dir(project_id)).load()
         source = next((item for item in sources if item.source_id == source_id), None)
@@ -443,6 +459,8 @@ def register_source_routes(
         confirm: Annotated[str, Form()] = "",
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         try:
             validate_csrf(request, csrf_token)
@@ -510,6 +528,8 @@ def register_source_routes(
     ) -> RedirectResponse:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         validate_csrf(request, csrf_token)
         project = workspace.load_project(project_id)
         if project.state not in _EDITABLE_SOURCE_STATES:
@@ -527,12 +547,14 @@ def register_source_routes(
     ) -> RedirectResponse:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         validate_csrf(request, csrf_token)
         destination = "brief" if target == "brief" else "sources"
         try:
             if target not in {"brief", "sources"}:
                 raise ValueError("مرحله مقصد معتبر نیست.")
-            actor = str(request.session.get("user_phone") or "unknown")
+            actor = request.state.account.label
             revision.rewind(
                 project_id,
                 target=target,
@@ -558,6 +580,8 @@ def register_source_routes(
         csrf_token: Annotated[str, Form()],
     ) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         original_project = workspace.load_project(project_id)
         project = original_project.model_copy(deep=True)
@@ -612,6 +636,8 @@ def register_source_routes(
     ) -> RedirectResponse:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         try:
             validate_csrf(request, csrf_token)
             corpus_builder.retry(project_id)
@@ -636,6 +662,8 @@ def register_source_routes(
         csrf_token: Annotated[str, Form()],
     ) -> RedirectResponse:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         try:
             validate_csrf(request, csrf_token)
@@ -670,11 +698,15 @@ def register_source_routes(
     def processing_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
         return render(request, "projects/processing.html", processing_context(project_id))
 
     @app.get("/projects/{project_id}/processing/live", response_class=HTMLResponse)
     def processing_live(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
             return redirect
         context = processing_context(project_id)
         response = render(request, "projects/_processing_live.html", context)

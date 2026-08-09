@@ -17,6 +17,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound import logging_setup, tracing
+from thesisound.accounts import AccountError, accounts_store_from_settings
 from thesisound.adapters.sms import KavenegarOtpSender
 from thesisound.audio_runtime import create_audio_builder
 from thesisound.config import Settings
@@ -100,15 +101,8 @@ def _validate_csrf(request: Request, submitted: str) -> None:
         raise ValueError("درخواست نامعتبر است. صفحه را تازه کنید.")
 
 
-def _is_authenticated(request: Request) -> bool:
-    return bool(request.session.get("user_phone"))
-
-
-def _login_redirect(request: Request) -> RedirectResponse | None:
-    if _is_authenticated(request):
-        return None
-    next_path = request.url.path
-    return RedirectResponse(f"/login?next={next_path}", status_code=HTTP_303_SEE_OTHER)
+def _safe_next_path(value: str) -> str:
+    return value if value.startswith("/") and not value.startswith("//") else "/projects"
 
 
 def _topic_type(raw_input: str) -> TopicType:
@@ -273,6 +267,7 @@ def create_app(
     observability = ObservabilityReporter(observability_ledger)
     tracing.install_tracer(tracer_from_settings(runtime))
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
+    accounts = accounts_store_from_settings(runtime)
     preflight = RuntimePreflight(runtime)
     corpus_builder = create_corpus_builder(runtime, workspace)
     episode_planner = create_episode_planner(runtime, workspace)
@@ -378,6 +373,7 @@ def create_app(
 
     app.state.settings = runtime
     app.state.workspace = workspace
+    app.state.accounts = accounts
     app.state.otp = otp
     app.state.preflight = preflight
     app.state.observability_ledger = observability_ledger
@@ -386,6 +382,44 @@ def create_app(
     app.state.episode_planner = episode_planner
     app.state.script_builder = script_builder
     app.state.audio_builder = audio_builder
+
+    def _current_account(request: Request):
+        cached = getattr(request.state, "account", None)
+        if cached is not None:
+            return cached
+        user_id = request.session.get("user_id")
+        if not isinstance(user_id, int):
+            return None
+        account = accounts.get_active_user(user_id)
+        if account is None:
+            request.session.pop("user_id", None)
+            return None
+        request.state.account = account
+        return account
+
+    def _is_authenticated(request: Request) -> bool:
+        return _current_account(request) is not None
+
+    def _login_redirect(request: Request) -> RedirectResponse | None:
+        if _is_authenticated(request):
+            return None
+        next_path = request.url.path
+        return RedirectResponse(
+            f"/login?next={next_path}",
+            status_code=HTTP_303_SEE_OTHER,
+        )
+
+    def _project_redirect(
+        request: Request,
+        project_id: UUID,
+    ) -> RedirectResponse | None:
+        account = _current_account(request)
+        if account is not None and (
+            account.role == "operator"
+            or accounts.is_project_member(project_id, account.user_id)
+        ):
+            return None
+        return RedirectResponse("/projects", status_code=HTTP_303_SEE_OTHER)
 
     def render(
         request: Request,
@@ -403,7 +437,7 @@ def create_app(
         payload: dict[str, object] = {
             "request": request,
             "csrf_token": _ensure_csrf(request),
-            "current_user": request.session.get("user_phone"),
+            "current_user": (account.label if (account := _current_account(request)) else None),
             "environment": runtime.environment,
             "test_otp_enabled": runtime.allow_test_otp,
             "ui_theme": theme,
@@ -450,8 +484,47 @@ def create_app(
     def login_page(request: Request, next: str = "/projects") -> Response:
         if _is_authenticated(request):
             return RedirectResponse("/projects", status_code=HTTP_303_SEE_OTHER)
-        safe_next = next if next.startswith("/") and not next.startswith("//") else "/projects"
+        safe_next = _safe_next_path(next)
         return render(request, "auth/login.html", {"next_path": safe_next})
+
+    @app.get("/login/password", response_class=HTMLResponse)
+    def password_login_page(request: Request, next: str = "/projects") -> Response:
+        if _is_authenticated(request):
+            return RedirectResponse("/projects", status_code=HTTP_303_SEE_OTHER)
+        return render(
+            request,
+            "auth/password.html",
+            {"next_path": _safe_next_path(next)},
+        )
+
+    @app.post("/login/password", response_class=HTMLResponse)
+    def password_login(
+        request: Request,
+        username: Annotated[str, Form()],
+        password: Annotated[str, Form()],
+        csrf_token: Annotated[str, Form()],
+        next_path: Annotated[str, Form()] = "/projects",
+    ) -> Response:
+        safe_next = _safe_next_path(next_path)
+        try:
+            _validate_csrf(request, csrf_token)
+            account = accounts.verify_password(username, password)
+        except (AccountError, ValueError) as error:
+            return render(
+                request,
+                "auth/password.html",
+                {
+                    "error": str(error),
+                    "username": username,
+                    "next_path": safe_next,
+                },
+                status_code=422,
+            )
+        request.session.pop("pending_phone", None)
+        request.session.pop("login_next", None)
+        request.session["user_id"] = account.user_id
+        request.state.account = account
+        return RedirectResponse(safe_next, status_code=HTTP_303_SEE_OTHER)
 
     @app.post("/login/request-code", response_class=HTMLResponse)
     def request_code(
@@ -471,8 +544,7 @@ def create_app(
                 status_code=422,
             )
         request.session["pending_phone"] = normalized
-        safe_next = next_path.startswith("/") and not next_path.startswith("//")
-        request.session["login_next"] = next_path if safe_next else "/projects"
+        request.session["login_next"] = _safe_next_path(next_path)
         return RedirectResponse("/login/verify", status_code=HTTP_303_SEE_OTHER)
 
     @app.get("/login/verify", response_class=HTMLResponse)
@@ -502,7 +574,7 @@ def create_app(
                 status_code=422,
             )
         request.session.pop("pending_phone", None)
-        request.session["user_phone"] = phone
+        request.session["user_id"] = accounts.get_or_create_phone_user(phone).user_id
         destination = request.session.pop("login_next", "/projects")
         return RedirectResponse(destination, status_code=HTTP_303_SEE_OTHER)
 
@@ -550,12 +622,21 @@ def create_app(
     def projects_page(request: Request) -> Response:
         if redirect := _login_redirect(request):
             return redirect
+        account = request.state.account
+        projects = workspace.list_projects()
+        if account.role != "operator":
+            visible_project_ids = accounts.project_ids_for_user(account.user_id)
+            projects = [
+                project
+                for project in projects
+                if str(project.project_id) in visible_project_ids
+            ]
         models = [
             build_project_read_model(
                 project,
                 failure_action_url=failure_action_url(project),
             )
-            for project in workspace.list_projects()
+            for project in projects
         ]
         group_order = {"attention": 0, "running": 1, "complete": 2}
         models.sort(
@@ -602,6 +683,11 @@ def create_app(
             project = Project(raw_input=topic, brief=brief)
             transition(project, ProjectState.BRIEF_READY)
             workspace.save_project(project)
+            accounts.add_project_member(
+                project.project_id,
+                request.state.account.user_id,
+                role="owner",
+            )
         except ValueError as error:
             return render(
                 request,
@@ -627,6 +713,8 @@ def create_app(
     def project_overview(request: Request, project_id: UUID) -> Response:
         if redirect := _login_redirect(request):
             return redirect
+        if redirect := _project_redirect(request, project_id):
+            return redirect
         project = workspace.load_project(project_id)
         model = build_project_read_model(
             project,
@@ -641,6 +729,8 @@ def create_app(
     @app.get("/projects/{project_id}/brief", response_class=HTMLResponse)
     def brief_page(request: Request, project_id: UUID) -> Response:
         if redirect := _login_redirect(request):
+            return redirect
+        if redirect := _project_redirect(request, project_id):
             return redirect
         project = workspace.load_project(project_id)
         return render(
@@ -664,6 +754,8 @@ def create_app(
         action: Annotated[str, Form()] = "save",
     ) -> Response:
         if redirect := _login_redirect(request):
+            return redirect
+        if redirect := _project_redirect(request, project_id):
             return redirect
         project = workspace.load_project(project_id)
         values = {
@@ -726,6 +818,7 @@ def create_app(
         execute_corpus=execute_corpus,
         render=render,
         login_redirect=_login_redirect,
+        project_redirect=_project_redirect,
         validate_csrf=_validate_csrf,
     )
     register_episode_routes(
@@ -735,6 +828,7 @@ def create_app(
         execute=execute_episode,
         render=render,
         login_redirect=_login_redirect,
+        project_redirect=_project_redirect,
         validate_csrf=_validate_csrf,
     )
     register_script_routes(
@@ -744,6 +838,7 @@ def create_app(
         execute=execute_script,
         render=render,
         login_redirect=_login_redirect,
+        project_redirect=_project_redirect,
         validate_csrf=_validate_csrf,
     )
     register_audio_routes(
@@ -753,6 +848,7 @@ def create_app(
         execute=execute_audio,
         render=render,
         login_redirect=_login_redirect,
+        project_redirect=_project_redirect,
         validate_csrf=_validate_csrf,
         settings=runtime,
     )
