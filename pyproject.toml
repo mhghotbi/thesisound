@@ -38,6 +38,14 @@ web-ui = [
 ]
 parsers = [
   "docling>=2.0,<4",
+  "mineru[pipeline]>=2.0,<4",
+  # NumPy 2.2+ wheels require x86-64-v2; keep parsers usable on older CPUs/VMs.
+  "numpy>=2.0,<2.2",
+]
+
+[tool.uv]
+constraint-dependencies = [
+  "numpy>=2.0,<2.2",
 ]
 
 [project.scripts]

@@ -47,12 +47,11 @@ jobs:
       - name: Install Thesisound and Docling
         run: uv sync --extra dev --extra parsers
 
-      - name: Install CPU PyTorch and MinerU pipeline
+      - name: Prefer CPU PyTorch wheels for CI hosts
         run: |
           uv pip install --python .venv/bin/python \
             --index-url https://download.pytorch.org/whl/cpu \
             torch torchvision
-          uv pip install --python .venv/bin/python "mineru[pipeline]"
 
       - name: Download benchmark article
         run: |

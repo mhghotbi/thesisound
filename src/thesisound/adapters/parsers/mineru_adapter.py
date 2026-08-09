@@ -112,7 +112,7 @@ class MineruParser:
             completed = runner(command, self.timeout_seconds, environment)
         except FileNotFoundError as exc:
             raise MineruUnavailableError(
-                "MinerU CLI was not found. Install it separately and ensure 'mineru' is on PATH."
+                "MinerU CLI was not found. Install with `uv sync --extra parsers` and ensure 'mineru' is on PATH."
             ) from exc
         except subprocess.TimeoutExpired as exc:
             raise MineruParseError(
