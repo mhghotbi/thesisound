@@ -4,15 +4,36 @@ import ipaddress
 import socket
 import ssl
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
-from urllib.request import OpenerDirector, ProxyHandler, Request, build_opener
+from urllib.request import (
+    HTTPRedirectHandler,
+    OpenerDirector,
+    ProxyHandler,
+    Request,
+    build_opener,
+)
 
 from thesisound.config import Settings
 from thesisound.http_proxy import normalize_proxy_url
 
 _DEAD_STATUSES = {404, 410, 451}
+
+
+class _NoRedirectHandler(HTTPRedirectHandler):
+    """Expose the original 3xx instead of following an unvalidated host."""
+
+    def redirect_request(
+        self,
+        req: Request,
+        fp: Any,
+        code: int,
+        msg: str,
+        headers: Any,
+        newurl: str,
+    ) -> None:
+        return None
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,7 +108,7 @@ def probe_url(
 def _build_opener(settings: Settings) -> OpenerDirector:
     proxy = normalize_proxy_url(settings.http_proxy)
     proxies = {"http": proxy, "https": proxy} if proxy is not None else {}
-    return build_opener(ProxyHandler(proxies))
+    return build_opener(ProxyHandler(proxies), _NoRedirectHandler())
 
 
 def _request_status(

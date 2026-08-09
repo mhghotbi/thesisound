@@ -741,8 +741,7 @@ class ObservabilityLedger:
 
         with self._lock, closing(self._connect()) as connection, connection:
             existing = connection.execute(
-                "SELECT started_at, finished_at FROM pipeline_runs "
-                "WHERE workflow_run_id = ?",
+                "SELECT started_at FROM pipeline_runs WHERE workflow_run_id = ?",
                 (str(workflow_run_id),),
             ).fetchone()
             if existing is None:
@@ -778,9 +777,10 @@ class ObservabilityLedger:
                     (str(workflow_run_id),),
                 ).fetchall()
             ]
-            finished_at = (
-                _from_db_timestamp(existing[1]) if existing[1] else _now()
-            )
+            # A workflow may have multiple root spans sharing this run id.
+            # Each terminal root refreshes the rollup so the final span contributes
+            # both its model calls and the actual run finish time.
+            finished_at = _now()
             started_at = _from_db_timestamp(existing[0])
             connection.execute(
                 """

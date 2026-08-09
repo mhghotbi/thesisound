@@ -143,8 +143,10 @@ def test_zero_call_run_and_finish_are_idempotent(ledger: ObservabilityLedger) ->
     ledger.finish_run(run_id, status="succeeded")
     second = ledger.run_summary(run_id)
 
-    assert first == second
-    assert second.call_count == 0
+    assert second.finished_at is not None
+    assert first.finished_at is not None
+    assert second.finished_at >= first.finished_at
+    assert second.call_count == first.call_count == 0
     assert second.failed_call_count == 0
     assert second.total_tokens == 0
     assert second.models == []

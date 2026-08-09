@@ -173,8 +173,15 @@ def test_opener_uses_only_the_configured_proxy(
     captured: list[ProxyHandler] = []
     fake = FakeOpener([200])
 
-    def build(handler: ProxyHandler):
-        captured.append(handler)
+    def build(*handlers: object):
+        proxy_handler = next(
+            handler for handler in handlers if isinstance(handler, ProxyHandler)
+        )
+        captured.append(proxy_handler)
+        assert any(
+            isinstance(handler, url_probe._NoRedirectHandler)
+            for handler in handlers
+        )
         return fake
 
     monkeypatch.setattr(url_probe, "build_opener", build)
