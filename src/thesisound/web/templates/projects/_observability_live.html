@@ -19,7 +19,7 @@
   {% elif latest_trace %}
   <p class="lede">آخرین اجرا <bdi dir="ltr">{{ latest_trace.name }}</bdi> با وضعیت {{ latest_trace.status }} پایان یافته است.</p>
   {% else %}
-  <p class="lede">هنوز اجرای ردیابی‌شده‌ای برای این پروژه وجود ندارد.</p>
+  <p class="lede">هنوز اجرای ردیابی‌شده‌ای برای این گفتار وجود ندارد.</p>
   {% endif %}
   {% if latest_error %}
   <p class="notice notice--danger">آخرین خطا: <bdi dir="ltr">{{ latest_error.name }}</bdi> در {{ latest_error.occurred_at }}</p>
