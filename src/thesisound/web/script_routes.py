@@ -10,6 +10,7 @@ from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound.domain import Locator, Project, ProjectState, Script
 from thesisound.pipeline import WorkspaceStore
+from thesisound.web.error_messages import user_facing_error
 from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
     episode_plan_hash,
@@ -78,7 +79,7 @@ def register_script_routes(
                 approval_store=approval_store,
                 source_store=source_store,
                 render=render,
-                error=str(error),
+                error=user_facing_error(error, action="script"),
                 status_code=422,
             )
         return _script_redirect(project_id)
@@ -106,7 +107,7 @@ def register_script_routes(
                 approval_store=approval_store,
                 source_store=source_store,
                 render=render,
-                error=str(error),
+                error=user_facing_error(error, action="script"),
                 status_code=422,
             )
         return _script_redirect(project_id)

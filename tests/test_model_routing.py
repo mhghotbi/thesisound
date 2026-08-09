@@ -6,7 +6,7 @@ from thesisound.config import Settings
 from thesisound.model_routing import load_model_router
 
 
-def test_default_routing_keeps_every_stage_on_gemini() -> None:
+def test_checked_in_routing_file_resolves_script_and_map_prompt_ids() -> None:
     settings = Settings(
         _env_file=None,
         model_routing_file=Path("config/model-routing.toml"),
@@ -21,15 +21,23 @@ def test_default_routing_keeps_every_stage_on_gemini() -> None:
         ).provider
         == "gemini"
     )
+    script_route = router.resolve(
+        stage="persian_script_segment",
+        requested_model=settings.model_strong,
+        model_tier="strong",
+    )
+    assert script_route.provider == "okian"
+    assert script_route.profile == "okian_gemma"
+    # Observability stages like script_segment:{id} are not route keys; ModelRunner
+    # must resolve via the prompt contract id instead.
     assert (
         router.resolve(
-            stage="persian_script_segment",
+            stage="script_segment:seg-001",
             requested_model=settings.model_strong,
             model_tier="strong",
         ).provider
         == "gemini"
     )
-    assert router.uses_provider("okian") is False
 
 
 def test_okian_profile_can_be_routed_without_changing_prompt_contracts(

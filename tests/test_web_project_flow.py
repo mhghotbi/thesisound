@@ -24,6 +24,7 @@ def _settings(tmp_path: Path) -> Settings:
         test_otp_code="999999",
         otp_resend_cooldown_seconds=5,
         ui_demo_mode=False,
+        web_secure_cookies=False,
     )
 
 

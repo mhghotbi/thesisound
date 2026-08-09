@@ -12,6 +12,7 @@ from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.episode_planning_run import EpisodePlanningRunService
+from thesisound.web.error_messages import user_facing_error
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
@@ -75,7 +76,7 @@ def register_episode_routes(
             return _episode_error(
                 request,
                 project_id,
-                str(error),
+                user_facing_error(error, action="planning"),
                 workspace=workspace,
                 planner=planner,
                 episode_store=episode_store,
@@ -100,7 +101,7 @@ def register_episode_routes(
             return _episode_error(
                 request,
                 project_id,
-                str(error),
+                user_facing_error(error, action="planning"),
                 workspace=workspace,
                 planner=planner,
                 episode_store=episode_store,
@@ -126,7 +127,7 @@ def register_episode_routes(
             return _episode_error(
                 request,
                 project_id,
-                str(error),
+                user_facing_error(error, action="planning"),
                 workspace=workspace,
                 planner=planner,
                 episode_store=episode_store,
@@ -158,7 +159,7 @@ def register_episode_routes(
             return _episode_error(
                 request,
                 project_id,
-                str(error),
+                user_facing_error(error, action="planning"),
                 workspace=workspace,
                 planner=planner,
                 episode_store=episode_store,

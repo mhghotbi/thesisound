@@ -57,6 +57,7 @@
     </section>
 
     {% if model.technical_detail %}
+      <div class="notice notice--danger" role="alert">{{ model.technical_detail | user_error('generic') }}</div>
       {% call technical_details('جزئیات خطای آخر') %}
         <p><bdi dir="ltr">{{ model.technical_detail }}</bdi></p>
       {% endcall %}

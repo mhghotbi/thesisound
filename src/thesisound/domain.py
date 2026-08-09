@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Literal
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, HttpUrl, model_validator
+from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
 
 
 class ProjectState(StrEnum):
@@ -328,13 +328,35 @@ class EpisodeSegment(BaseModel):
     ]
 
 
+class DeliberatelyOmittedClaim(BaseModel):
+    """Gemini-safe omitted-claim record (no free-form object maps)."""
+
+    claim_id: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+
+
+def coerce_deliberately_omitted_claims(value: object) -> object:
+    """Accept legacy `{claim_id: reason}` maps as well as list records."""
+    if isinstance(value, dict):
+        return [
+            {"claim_id": str(claim_id), "reason": str(reason)}
+            for claim_id, reason in value.items()
+        ]
+    return value
+
+
 class EpisodePlan(BaseModel):
     title: str
     listener_outcome: str
     estimated_duration_minutes: float = Field(gt=0)
     segments: list[EpisodeSegment]
-    deliberately_omitted_claims: dict[str, str] = Field(default_factory=dict)
+    deliberately_omitted_claims: list[DeliberatelyOmittedClaim] = Field(default_factory=list)
     follow_up_topics: list[str] = Field(default_factory=list)
+
+    @field_validator("deliberately_omitted_claims", mode="before")
+    @classmethod
+    def _coerce_omitted_claims(cls, value: object) -> object:
+        return coerce_deliberately_omitted_claims(value)
 
 
 class GlossaryTerm(BaseModel):

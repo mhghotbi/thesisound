@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from thesisound.domain import Project, ProjectState
+from thesisound.web.error_messages import user_facing_error
 
 
 @dataclass(frozen=True, slots=True)
@@ -271,10 +272,7 @@ def build_project_read_model(
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
-            overview_summary=(
-                "آخرین خروجی‌های سالم باقی مانده‌اند و فقط مرحلهٔ ناموفق "
-                "نیازمند اقدام است."
-            ),
+            overview_summary=user_facing_error(project.last_error, action="generic"),
             technical_detail=project.last_error,
         )
 

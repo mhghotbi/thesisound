@@ -195,3 +195,40 @@ def test_prompt_store_can_explicitly_keep_rendered_prompts(tmp_path: Path) -> No
         execution.record.run_id
     )
     assert (run_dir / "rendered-prompts.json").exists()
+
+
+def test_model_runner_routes_by_prompt_contract_id_not_observability_stage(
+    tmp_path: Path,
+) -> None:
+    from thesisound.model_routing import ResolvedModelRoute
+
+    class RoutingFakeModel(FakeModel):
+        def __init__(self) -> None:
+            super().__init__([ExampleOutput(value="ok")])
+            self.route_stages: list[str] = []
+
+        def resolve_route(
+            self,
+            *,
+            stage: str,
+            requested_model: str,
+            model_tier: str,
+        ) -> ResolvedModelRoute:
+            _ = requested_model, model_tier
+            self.route_stages.append(stage)
+            return ResolvedModelRoute(provider="okian", model="gemma-routed", profile="okian_gemma")
+
+    model = RoutingFakeModel()
+    execution = _runner(tmp_path, model).run(
+        project_id=uuid4(),
+        stage="script_segment:seg-001",
+        prompt_name="example",
+        variables={"context": "safe", "topic": "Arendt"},
+        output_type=ExampleOutput,
+        model="fake-model",
+    )
+
+    assert model.route_stages == ["example"]
+    assert execution.record.provider == "okian"
+    assert execution.record.model == "gemma-routed"
+    assert execution.record.stage == "script_segment:seg-001"

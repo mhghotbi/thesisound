@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import math
 from collections.abc import Sequence
+from copy import deepcopy
 from time import perf_counter
 from typing import Any, Literal, cast
 
@@ -114,10 +116,14 @@ class GeminiStructuredModel:
 
         started = perf_counter()
         timeout_ms = metadata.timeout_ms or self._default_timeout_ms
+        response_schema = gemini_response_json_schema(output_type)
         config: dict[str, Any] = {
             "system_instruction": system_prompt,
             "response_mime_type": "application/json",
-            "response_schema": output_type,
+            # Prefer response_json_schema over response_schema: the latter validates
+            # against a narrower OpenAPI Schema subset and rejects Pydantic/JSON Schema
+            # keywords such as exclusiveMinimum.
+            "response_json_schema": response_schema,
             "http_options": {
                 "timeout": timeout_ms,
                 "retry_options": {"attempts": 1},
@@ -155,7 +161,7 @@ class GeminiStructuredModel:
             "system_prompt": system_prompt,
             "user_prompt": user_prompt,
             "model": model,
-            "output_schema": output_type.model_json_schema(),
+            "output_schema": response_schema,
             "grounding_mode": metadata.grounding_mode,
             "grounding_urls": metadata.grounding_urls,
             "tools": tools,
@@ -255,6 +261,70 @@ class GeminiStructuredModel:
         if wants_urls and metadata.grounding_urls:
             tools.append({"url_context": {}})
         return tools
+
+
+def gemini_response_json_schema(output_type: type[BaseModel]) -> dict[str, Any]:
+    """Build a Gemini-safe JSON Schema from a Pydantic model.
+
+    Uses ``response_json_schema`` (JSON Schema) instead of the OpenAPI ``Schema``
+    subset. Converts exclusive numeric bounds that Gemini rejects into inclusive
+    ``minimum`` / ``maximum`` values.
+    """
+    schema = deepcopy(output_type.model_json_schema())
+    _sanitize_gemini_json_schema(schema)
+    return schema
+
+
+def _sanitize_gemini_json_schema(node: Any) -> None:
+    if isinstance(node, list):
+        for item in node:
+            _sanitize_gemini_json_schema(item)
+        return
+    if not isinstance(node, dict):
+        return
+
+    schema_type = node.get("type")
+    if "exclusiveMinimum" in node:
+        exclusive = node.pop("exclusiveMinimum")
+        node["minimum"] = _inclusive_lower_bound(exclusive, schema_type, node.get("minimum"))
+    if "exclusiveMaximum" in node:
+        exclusive = node.pop("exclusiveMaximum")
+        node["maximum"] = _inclusive_upper_bound(exclusive, schema_type, node.get("maximum"))
+
+    for value in node.values():
+        _sanitize_gemini_json_schema(value)
+
+
+def _inclusive_lower_bound(exclusive: Any, schema_type: Any, current: Any) -> Any:
+    candidate: Any
+    if schema_type == "integer" and isinstance(exclusive, int | float):
+        candidate = int(exclusive) + 1
+    elif isinstance(exclusive, int | float):
+        candidate = math.nextafter(float(exclusive), math.inf)
+    else:
+        candidate = exclusive
+    if current is None:
+        return candidate
+    try:
+        return max(current, candidate)
+    except TypeError:
+        return candidate
+
+
+def _inclusive_upper_bound(exclusive: Any, schema_type: Any, current: Any) -> Any:
+    candidate: Any
+    if schema_type == "integer" and isinstance(exclusive, int | float):
+        candidate = int(exclusive) - 1
+    elif isinstance(exclusive, int | float):
+        candidate = math.nextafter(float(exclusive), -math.inf)
+    else:
+        candidate = exclusive
+    if current is None:
+        return candidate
+    try:
+        return min(current, candidate)
+    except TypeError:
+        return candidate
 
 
 def _settings() -> Settings:

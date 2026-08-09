@@ -34,7 +34,8 @@ _GROUNDING_POLICY_BY_STAGE: dict[str, GroundingMode] = {
     "query_planner": "google_search",
     "source_discovery": "google_search_and_url_context",
     "source_triage": "url_context",
-    "glossary": "google_search",
+    # Glossary is source-bound terminology from supplied packs; keep ungrounded
+    # so it can run on Okian during script drafting.
 }
 _URL_PATTERN = re.compile(r"https?://[^\s<>\"']+")
 
@@ -81,9 +82,12 @@ class ModelRunner:
                 f"Prompt expects {bundle.contract.output_model}, not {output_type.__name__}."
             )
 
+        # Route keys in model-routing.toml match prompt contracts (e.g.
+        # persian_script_segment), not always the observability stage string
+        # (e.g. script_segment:{id} or document_map_part).
         route = _resolve_model_route(
             self.model_port,
-            stage=stage,
+            stage=bundle.contract.id,
             requested_model=model,
             model_tier=bundle.contract.model_tier,
         )

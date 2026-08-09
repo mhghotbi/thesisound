@@ -24,6 +24,7 @@ from thesisound.web.auth import NullOtpSender, OtpError, OtpService
 from thesisound.web.corpus_runtime import create_corpus_builder
 from thesisound.web.episode_routes import register_episode_routes
 from thesisound.web.episode_runtime import create_episode_planner
+from thesisound.web.error_messages import user_facing_error
 from thesisound.web.read_models import build_project_read_model
 from thesisound.web.script_routes import register_script_routes
 from thesisound.web.script_runtime import create_script_builder
@@ -155,6 +156,12 @@ def _jalali_date(value: date | datetime | None) -> str:
     return f"{_fa_digits(jd)} {_JALALI_MONTHS[jm - 1]} {_fa_digits(jy)}"
 
 
+def _user_error_filter(value: object, action: str = "generic") -> str:
+    if value is None or value == "":
+        return ""
+    return user_facing_error(value if isinstance(value, BaseException) else str(value), action=action)
+
+
 def _preflight_scope(request: Request) -> PreflightScope | None:
     if request.method != "POST":
         return None
@@ -216,6 +223,7 @@ def create_app(
     templates.env.globals["corpus_stage_label"] = _corpus_stage_label
     templates.env.filters["fa_num"] = _fa_digits
     templates.env.filters["jalali_date"] = _jalali_date
+    templates.env.filters["user_error"] = _user_error_filter
 
     otp = OtpService(
         secret=runtime.web_session_secret,

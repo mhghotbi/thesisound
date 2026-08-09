@@ -4,9 +4,9 @@ from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from thesisound.domain import EvidenceItem
+from thesisound.domain import DeliberatelyOmittedClaim, EvidenceItem, coerce_deliberately_omitted_claims
 from thesisound.source_analysis import SourceDocumentBlock
 
 CoverageStatus = Literal["well_covered", "partially_covered", "not_covered"]
@@ -91,8 +91,13 @@ class EpisodePlanDraft(BaseModel):
     title: str = Field(min_length=1)
     listener_outcome: str = Field(min_length=1)
     segments: list[EpisodeSegmentDraft] = Field(min_length=1)
-    deliberately_omitted_claims: dict[str, str] = Field(default_factory=dict)
+    deliberately_omitted_claims: list[DeliberatelyOmittedClaim] = Field(default_factory=list)
     follow_up_topics: list[str] = Field(default_factory=list)
+
+    @field_validator("deliberately_omitted_claims", mode="before")
+    @classmethod
+    def _coerce_omitted_claims(cls, value: object) -> object:
+        return coerce_deliberately_omitted_claims(value)
 
 
 class RetrievalHit(BaseModel):

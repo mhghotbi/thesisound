@@ -28,7 +28,7 @@
     </div>
   </header>
 
-  {% if error %}<div class="notice notice--danger" role="alert">اطلاعات گفتار کامل نیست. مورد مشخص‌شده را اصلاح کنید.</div>{% endif %}
+  {% if error %}<div class="notice notice--danger" role="alert">{{ error }}</div>{% endif %}
 
   <form class="form-sheet" method="post" action="/projects" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

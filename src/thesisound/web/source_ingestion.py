@@ -16,6 +16,7 @@ from thesisound.ports import DocumentParserPort
 from thesisound.quality import ParseIssue, ParseReport
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_ingestion import ingest_document
+from thesisound.web.error_messages import user_facing_error
 from thesisound.web.source_manifest import UiSourceManifest, UiSourceStatus
 
 _ISSUE_LABELS = {
@@ -184,8 +185,4 @@ def _locator_summary(issue: ParseIssue) -> str | None:
 
 
 def _ingestion_error_message(error: Exception) -> str:
-    if isinstance(error, FileNotFoundError):
-        return "فایل بارگذاری‌شده پیدا نشد."
-    if isinstance(error, ValueError):
-        return f"فایل قابل وارسی نیست: {str(error)[:240]}"
-    return f"وارسی فایل با خطای {type(error).__name__} متوقف شد."
+    return user_facing_error(error, action="ingest")

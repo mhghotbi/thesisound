@@ -156,7 +156,12 @@ def _validate_draft(
             "Episode plan omitted must-include claims: " + ", ".join(missing_must)
         )
 
-    omitted = set(draft.deliberately_omitted_claims)
+    omitted_ids = [item.claim_id for item in draft.deliberately_omitted_claims]
+    if len(omitted_ids) != len(set(omitted_ids)):
+        raise DeterministicValidationError(
+            "Episode plan lists duplicate deliberately omitted claim IDs."
+        )
+    omitted = set(omitted_ids)
     unknown_omitted = sorted(omitted - known_claim_ids)
     if unknown_omitted:
         raise DeterministicValidationError(

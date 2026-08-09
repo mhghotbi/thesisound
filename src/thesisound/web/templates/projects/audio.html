@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components.html" import status_label, technical_details %}
+{% from "components.html" import status_label, technical_details, error_notice %}
 {% block title %}شنیدن | مقال{% endblock %}
 {% block content %}
 {% set speaker_labels = {'A': 'اول', 'B': 'دوم'} %}
@@ -21,7 +21,7 @@
 </header>
 
 {% if error %}
-<div class="notice notice--danger" role="alert">ساخت یا بازیابی نسخهٔ شنیداری کامل نشد. متن گفتار و قطعه‌های سالم باقی مانده‌اند.<p class="operator-only"><bdi dir="ltr">{{ error }}</bdi></p></div>
+{{ error_notice(error) }}
 {% endif %}
 
 {% if can_generate and not audio_active %}
@@ -67,7 +67,7 @@
   <div class="error-recovery__grid">
     <div>
       <span class="attention-panel__label">چه شد</span>
-      <h2>ساخت یا وارسی شنیداری متوقف شد</h2>
+      <h2>{{ audio_run.last_error | user_error('audio') if audio_run.last_error else 'ساخت یا وارسی شنیداری متوقف شد' }}</h2>
       <p class="error-recovery__impact"><strong>اثر:</strong> متن گفتار و قطعه‌های سالم باقی مانده‌اند؛ نسخهٔ شنیداری ناقص منتشر نشده است.</p>
     </div>
     {% if can_retry %}

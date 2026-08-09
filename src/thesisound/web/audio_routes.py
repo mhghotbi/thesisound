@@ -15,6 +15,7 @@ from thesisound.pipeline import WorkspaceStore
 from thesisound.services.audio_artifact_store import AudioArtifactStore
 from thesisound.services.audio_run import AudioBuildRunService
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.web.error_messages import user_facing_error
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
@@ -70,7 +71,7 @@ def register_audio_routes(
                 audio_store=audio_store,
                 script_store=script_store,
                 render=render,
-                error=str(error),
+                error=user_facing_error(error, action="audio"),
                 status_code=422,
             )
         return _audio_redirect(project_id)
@@ -97,7 +98,7 @@ def register_audio_routes(
                 audio_store=audio_store,
                 script_store=script_store,
                 render=render,
-                error=str(error),
+                error=user_facing_error(error, action="audio"),
                 status_code=422,
             )
         return _audio_redirect(project_id)
