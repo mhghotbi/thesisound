@@ -20,6 +20,7 @@ class ProjectState(StrEnum):
     SCRIPT_DRAFTING = "script_drafting"
     SCRIPT_READY = "script_ready"
     SCRIPT_VERIFYING = "script_verifying"
+    SCRIPT_REVIEW_REQUIRED = "script_review_required"
     SCRIPT_VERIFIED = "script_verified"
     AUDIO_GENERATING = "audio_generating"
     AUDIO_READY = "audio_ready"
@@ -139,9 +140,7 @@ class SourceAssessment(BaseModel):
     cannot_support: list[str] = Field(default_factory=list)
     limitations: list[str] = Field(default_factory=list)
     distinct_value: str | None = None
-    inclusion_recommendation: Literal[
-        "strong_include", "optional", "background_only", "reject"
-    ]
+    inclusion_recommendation: Literal["strong_include", "optional", "background_only", "reject"]
     recommendation_reason: str
     requires_full_text_before_use: bool
 
@@ -168,8 +167,7 @@ class SourceCandidate(BaseModel):
     @property
     def usable_as_evidence(self) -> bool:
         return (
-            self.access == SourceAccess.FULL_TEXT
-            and self.user_decision == SourceDecision.INCLUDE
+            self.access == SourceAccess.FULL_TEXT and self.user_decision == SourceDecision.INCLUDE
         )
 
 
@@ -339,8 +337,7 @@ def coerce_deliberately_omitted_claims(value: object) -> object:
     """Accept legacy `{claim_id: reason}` maps as well as list records."""
     if isinstance(value, dict):
         return [
-            {"claim_id": str(claim_id), "reason": str(reason)}
-            for claim_id, reason in value.items()
+            {"claim_id": str(claim_id), "reason": str(reason)} for claim_id, reason in value.items()
         ]
     return value
 

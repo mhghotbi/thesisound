@@ -1,0 +1,6 @@
+min_verified_case_rate = 0.8
+max_unsupported_claim_ratio = 0.0
+min_quality_overall = 0.70
+max_failed_call_ratio = 0.05
+# Optional. When enabled, unknown pricing skips this gate rather than passing it.
+# max_cost_micros_per_output_minute = 0

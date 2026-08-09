@@ -53,6 +53,8 @@ def create_script_builder(
             script_checker=ScriptChecker(),
             verifier=ScriptVerifierService(runner),
             reviser=TargetedScriptReviserService(runner),
+            quality_gate_enabled=settings.script_quality_gate_enabled,
+            min_quality_overall=settings.script_quality_min_overall,
         )
 
     builder = ScriptBuildRunService(

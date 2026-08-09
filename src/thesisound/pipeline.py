@@ -50,6 +50,12 @@ ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
     },
     ProjectState.SCRIPT_VERIFYING: {
         ProjectState.SCRIPT_VERIFIED,
+        ProjectState.SCRIPT_REVIEW_REQUIRED,
+        ProjectState.SCRIPT_DRAFTING,
+        ProjectState.FAILED_RETRYABLE,
+    },
+    ProjectState.SCRIPT_REVIEW_REQUIRED: {
+        ProjectState.SCRIPT_VERIFIED,
         ProjectState.SCRIPT_DRAFTING,
         ProjectState.FAILED_RETRYABLE,
     },

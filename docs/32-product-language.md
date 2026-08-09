@@ -814,3 +814,21 @@ Synced transcript         → متن همگام
 این سند مرجع مصوب زبان محصول است و واژگان آن در لایهٔ نمایش (templateها، read modelها و پیام‌های خطای کاربرپسند) اعمال شده است.
 
 نام مدل‌ها، routeها، artifactها و قراردادهای داخلی بدون تغییر باقی مانده‌اند. هر واژهٔ تازه یا تغییر بعدی باید پیش از ورود به UI در همین سند ثبت و تأیید شود.
+
+
+### Script review state
+
+| Internal state | Approved Persian operator wording |
+|---|---|
+| `SCRIPT_REVIEW_REQUIRED` | «متن گفتار نیازمند بازبینی است» |
+| accept reviewed script | «پذیرش با ثبت دلیل» |
+| send reviewed script back | «بازگرداندن برای اصلاح» |
+
+
+### Readiness view
+
+| Internal concept | Approved Persian wording |
+|---|---|
+| project readiness | «آمادگی گفتار» |
+| gate | «کنترل» |
+| system actor | «سامانه» |

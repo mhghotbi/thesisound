@@ -151,9 +151,7 @@ class FakeScriptRunner:
                     terminology_consistency=0.90,
                     listenability=0.90,
                     actionable_feedback=(
-                        ""
-                        if self.revision_verdict == "pass"
-                        else "The revision still needs work."
+                        "" if self.revision_verdict == "pass" else "The revision still needs work."
                     ),
                 )
                 output = VerificationDraft(
@@ -574,15 +572,18 @@ def test_worse_revision_is_kept_on_disk_but_the_original_is_used(
         revision_quality=_quality_score(0.20, "The revision is worse."),
     )
 
-    with pytest.raises(ValueError, match="kept the original"):
-        _service(root, runner).run(
-            project_id,
-            glossary_model="fake",
-            writer_model="fake",
-            verifier_model="fake",
-            reviser_model="fake",
-        )
+    result = _service(root, runner).run(
+        project_id,
+        glossary_model="fake",
+        writer_model="fake",
+        verifier_model="fake",
+        reviser_model="fake",
+    )
 
+    assert result.verification.verdict != "pass"
+    assert (
+        WorkspaceStore(root).load_project(project_id).state == ProjectState.SCRIPT_REVIEW_REQUIRED
+    )
     store = ScriptArtifactStore(root)
     decision = store.load_revision_decision_optional(project_id)
     assert decision is not None and decision.accepted is False
@@ -606,15 +607,18 @@ def test_tied_revision_keeps_the_original(tmp_path: Path) -> None:
         ),
     )
 
-    with pytest.raises(ValueError, match="kept the original"):
-        _service(root, runner).run(
-            project_id,
-            glossary_model="fake",
-            writer_model="fake",
-            verifier_model="fake",
-            reviser_model="fake",
-        )
+    result = _service(root, runner).run(
+        project_id,
+        glossary_model="fake",
+        writer_model="fake",
+        verifier_model="fake",
+        reviser_model="fake",
+    )
 
+    assert result.verification.verdict != "pass"
+    assert (
+        WorkspaceStore(root).load_project(project_id).state == ProjectState.SCRIPT_REVIEW_REQUIRED
+    )
     decision = ScriptArtifactStore(root).load_revision_decision_optional(project_id)
     assert decision is not None and decision.accepted is False
     assert decision.delta == 0

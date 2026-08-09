@@ -124,12 +124,13 @@ def test_get_has_no_side_effect_and_post_approval_queues_exact_plan(
         page = client.get(f"/projects/{project.project_id}/script")
         assert page.status_code == 200
         assert "تأیید همین طرح و نوشتن متن گفتار" in page.text
-        assert EpisodePlanApprovalStore(settings.workspace_root).load_optional(
-            project.project_id
-        ) is None
-        assert ScriptBuildRunStore(settings.workspace_root).load_optional(
-            project.project_id
-        ) is None
+        assert (
+            EpisodePlanApprovalStore(settings.workspace_root).load_optional(project.project_id)
+            is None
+        )
+        assert (
+            ScriptBuildRunStore(settings.workspace_root).load_optional(project.project_id) is None
+        )
         assert not (workspace.project_dir(project.project_id) / "script").exists()
 
         response = client.post(
@@ -277,3 +278,203 @@ def test_verified_script_page_shows_quality_and_source_trace(tmp_path: Path) -> 
     assert "صفحه 12" in page.text
     assert "عبارت دقیق منبع" in page.text
     assert "SCRIPT_VERIFIED" in page.text
+
+
+def _seed_review_required(settings: Settings) -> Project:
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.SCRIPT_REVIEW_REQUIRED)
+    project.script = Script(
+        title="متن آزمون",
+        turns=[
+            ScriptTurn(
+                turn_id="seg-1-turn-001",
+                segment_id="seg-1",
+                speaker="A",
+                spoken_text_fa="این گفته نیازمند تصمیم انسانی است.",
+                claim_ids=["claim-1"],
+                evidence_ids=["evidence-1"],
+            )
+        ],
+    )
+    workspace.save_project(project)
+    approval = EpisodePlanApprovalStore(settings.workspace_root).approve(
+        _project(ProjectState.EPISODE_PLANNED).model_copy(
+            update={
+                "project_id": project.project_id,
+                "episode_plan": project.episode_plan,
+            }
+        ),
+        approved_by="09120000000",
+    )
+    ScriptBuildRunStore(settings.workspace_root).save(
+        ScriptBuildRun(
+            project_id=project.project_id,
+            approved_plan_hash=approval.plan_hash,
+            approved_by=approval.approved_by,
+            status="succeeded",
+            stage="complete",
+        )
+    )
+    store = ScriptArtifactStore(settings.workspace_root)
+    store.save_script(project.project_id, project.script)
+    store.save_checks(
+        ScriptCheckReport(
+            project_id=project.project_id,
+            verdict="pass",
+            word_count=6,
+            estimated_minutes=0.1,
+            substantive_turn_count=1,
+        )
+    )
+    store.save_verification(
+        project.project_id,
+        VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),
+    )
+    store.save_manifest(
+        ScriptPipelineManifest(
+            project_id=project.project_id,
+            status="review_required",
+            last_error="Independent verification left a non-blocking issue.",
+        )
+    )
+    return project
+
+
+def test_accepting_review_records_reviewer_reason_and_verifies(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    project = _seed_review_required(settings)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/script")
+        assert "متن گفتار نیازمند بازبینی است" in page.text
+        response = client.post(
+            f"/projects/{project.project_id}/script/review",
+            data={
+                "csrf_token": _csrf(page.text),
+                "decision": "accept",
+                "reason": "Residual qualification risk is acceptable.",
+            },
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 303
+    workspace = WorkspaceStore(settings.workspace_root)
+    assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_VERIFIED
+    store = ScriptArtifactStore(settings.workspace_root)
+    decision = store.load_review_decision_optional(project.project_id)
+    assert decision is not None
+    assert decision.decision == "accepted"
+    assert decision.reviewer == "09120000000"
+    assert decision.reason == "Residual qualification risk is acceptable."
+    assert store.has_verified_artifacts(
+        project.project_id,
+        plan_hash=episode_plan_hash(project.episode_plan),
+    )
+
+
+def test_review_decision_bound_to_stale_plan_hash_is_not_verified(
+    tmp_path: Path,
+) -> None:
+    settings = _settings(tmp_path)
+    project = _seed_review_required(settings)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/script")
+        response = client.post(
+            f"/projects/{project.project_id}/script/review",
+            data={
+                "csrf_token": _csrf(page.text),
+                "decision": "accept",
+                "reason": "Accept this exact plan-bound script.",
+            },
+            follow_redirects=False,
+        )
+    assert response.status_code == 303
+
+    workspace = WorkspaceStore(settings.workspace_root)
+    changed = workspace.load_project(project.project_id)
+    assert changed.episode_plan is not None
+    changed.episode_plan.title = "Changed after review"
+    workspace.save_project(changed)
+
+    assert not ScriptArtifactStore(settings.workspace_root).has_verified_artifacts(
+        project.project_id,
+        plan_hash=episode_plan_hash(changed.episode_plan),
+    )
+
+
+def test_accepting_review_without_reason_is_rejected(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    project = _seed_review_required(settings)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/script")
+        response = client.post(
+            f"/projects/{project.project_id}/script/review",
+            data={"csrf_token": _csrf(page.text), "decision": "accept", "reason": ""},
+        )
+
+    assert response.status_code == 422
+    assert (
+        WorkspaceStore(settings.workspace_root).load_project(project.project_id).state
+        == ProjectState.SCRIPT_REVIEW_REQUIRED
+    )
+
+
+def test_send_back_returns_to_drafting_and_queues_retry(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    project = _seed_review_required(settings)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/script")
+        response = client.post(
+            f"/projects/{project.project_id}/script/review",
+            data={
+                "csrf_token": _csrf(page.text),
+                "decision": "send_back",
+                "reason": "Restore the missing qualification.",
+            },
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 303
+    assert (
+        WorkspaceStore(settings.workspace_root).load_project(project.project_id).state
+        == ProjectState.SCRIPT_DRAFTING
+    )
+    assert ScriptBuildRunStore(settings.workspace_root).load(project.project_id).status == "queued"
+
+
+def test_state_labels_and_steps_cover_every_project_state() -> None:
+    from thesisound.web.read_models import _STATE_LABELS, _STEP_BY_STATE
+
+    assert set(_STATE_LABELS) == set(ProjectState)
+    assert set(_STEP_BY_STATE) == set(ProjectState)

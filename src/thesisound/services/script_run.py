@@ -81,9 +81,7 @@ class ScriptBuildRunStore:
         runs: list[ScriptBuildRun] = []
         for path in directory.glob("*.json"):
             try:
-                runs.append(
-                    ScriptBuildRun.model_validate_json(path.read_text(encoding="utf-8"))
-                )
+                runs.append(ScriptBuildRun.model_validate_json(path.read_text(encoding="utf-8")))
             except (OSError, ValueError):
                 continue
         return sorted(runs, key=lambda run: run.updated_at)
@@ -92,9 +90,7 @@ class ScriptBuildRunStore:
         runs: list[ScriptBuildRun] = []
         for path in self.workspace_root.glob("*/script-build-run.json"):
             try:
-                runs.append(
-                    ScriptBuildRun.model_validate_json(path.read_text(encoding="utf-8"))
-                )
+                runs.append(ScriptBuildRun.model_validate_json(path.read_text(encoding="utf-8")))
             except (OSError, ValueError):
                 continue
         return runs
@@ -179,6 +175,19 @@ class ScriptBuildRunService:
             self.run_store.save(run)
             return run
 
+    def send_back(self, project_id: UUID) -> ScriptBuildRun:
+        """Queue a fresh attempt after a named reviewer sends a script back."""
+
+        with self._mutation_lock:
+            project = self.workspace_store.load_project(project_id)
+            if project.state != ProjectState.SCRIPT_DRAFTING:
+                raise ValueError("A reviewed script must return to SCRIPT_DRAFTING first.")
+            previous = self.run_store.load(project_id)
+            approval = self.approval_store.require_current(project)
+            run = self._new_run(project_id, approval, previous)
+            self.run_store.save(run)
+            return run
+
     def run(self, project_id: UUID) -> ScriptBuildRun:
         run = self.run_store.load(project_id)
         if run.status == "succeeded":
@@ -200,9 +209,7 @@ class ScriptBuildRunService:
                 project = self.workspace_store.load_project(project_id)
                 approval = self.approval_store.require_current(project)
                 if approval.plan_hash != run.approved_plan_hash:
-                    raise ValueError(
-                        "Queued script run does not match the approved Episode Plan."
-                    )
+                    raise ValueError("Queued script run does not match the approved Episode Plan.")
                 if project.state in {
                     ProjectState.EPISODE_PLANNED,
                     ProjectState.FAILED_RETRYABLE,
@@ -213,6 +220,7 @@ class ScriptBuildRunService:
                     ProjectState.SCRIPT_DRAFTING,
                     ProjectState.SCRIPT_READY,
                     ProjectState.SCRIPT_VERIFYING,
+                    ProjectState.SCRIPT_REVIEW_REQUIRED,
                 }:
                     raise ValueError(
                         f"Cannot build script from project state {project.state.value}."
@@ -234,8 +242,13 @@ class ScriptBuildRunService:
                     on_stage=lambda value: self._set_stage(run, value),
                 )
                 project = self.workspace_store.load_project(project_id)
-                if project.state != ProjectState.SCRIPT_VERIFIED:
-                    raise ValueError("Script pipeline ended without reaching SCRIPT_VERIFIED.")
+                if project.state not in {
+                    ProjectState.SCRIPT_VERIFIED,
+                    ProjectState.SCRIPT_REVIEW_REQUIRED,
+                }:
+                    raise ValueError(
+                        "Script pipeline ended without a verified or review-required outcome."
+                    )
                 self._mark_succeeded(run)
                 return run
             except Exception as exc:
@@ -250,6 +263,12 @@ class ScriptBuildRunService:
                         project_id,
                         plan_hash=run.approved_plan_hash,
                     )
+                ) or (
+                    project.state == ProjectState.SCRIPT_REVIEW_REQUIRED
+                    and self.script_store.has_reviewable_artifacts(
+                        project_id,
+                        plan_hash=run.approved_plan_hash,
+                    )
                 ):
                     root.mark("ok")
                     self._mark_succeeded(run)
@@ -258,6 +277,7 @@ class ScriptBuildRunService:
                     ProjectState.SCRIPT_DRAFTING,
                     ProjectState.SCRIPT_READY,
                     ProjectState.SCRIPT_VERIFYING,
+                    ProjectState.SCRIPT_REVIEW_REQUIRED,
                     ProjectState.SCRIPT_VERIFIED,
                 }:
                     mark_failed(project, message)
@@ -287,11 +307,24 @@ class ScriptBuildRunService:
                 project = self.workspace_store.load_project(run.project_id)
             except FileNotFoundError:
                 project = None
-            if project is not None and project.state == ProjectState.SCRIPT_VERIFIED:
-                if self.script_store.has_verified_artifacts(
-                    run.project_id,
-                    plan_hash=run.approved_plan_hash,
-                ):
+            if project is not None and project.state in {
+                ProjectState.SCRIPT_VERIFIED,
+                ProjectState.SCRIPT_REVIEW_REQUIRED,
+            }:
+                artifacts_valid = (
+                    project.state == ProjectState.SCRIPT_VERIFIED
+                    and self.script_store.has_verified_artifacts(
+                        run.project_id,
+                        plan_hash=run.approved_plan_hash,
+                    )
+                ) or (
+                    project.state == ProjectState.SCRIPT_REVIEW_REQUIRED
+                    and self.script_store.has_reviewable_artifacts(
+                        run.project_id,
+                        plan_hash=run.approved_plan_hash,
+                    )
+                )
+                if artifacts_valid:
                     self._mark_succeeded(run)
                     recovered.append(run.project_id)
                     continue

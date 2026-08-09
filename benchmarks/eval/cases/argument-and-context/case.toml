@@ -1,0 +1,16 @@
+sources = ["primary.md", "context.md"]
+
+[brief]
+normalized_topic = "A political concept and the argument built around it"
+topic_type = "concept"
+central_question = "How does the primary argument distinguish action from adjacent activities, and why does the historical context matter?"
+audience = "educated general listener"
+prior_knowledge = "introductory"
+target_duration_minutes = 5
+output_language = "fa"
+modes = ["explanatory", "critical"]
+learning_objectives = ["Explain the core distinction", "Connect the distinction to historical context"]
+subquestions = ["What is the central claim?", "Which qualification prevents overstatement?"]
+scope_inclusions = ["argument", "context", "qualification"]
+scope_exclusions = ["biography"]
+ambiguities = []

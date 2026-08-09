@@ -250,6 +250,9 @@ workspaces/<project-id>/
 - [`docs/25-audio-vertical-slice.md`](docs/25-audio-vertical-slice.md)
 - [`docs/26-local-live-e2e-runbook.md`](docs/26-local-live-e2e-runbook.md)
 - [`docs/27-source-discovery-large-docs-and-revision.md`](docs/27-source-discovery-large-docs-and-revision.md)
+- [`docs/33-server-mono-process-adoption.md`](docs/33-server-mono-process-adoption.md)
+- [`docs/34-production-sop.md`](docs/34-production-sop.md) — production gates and human-only decisions
+- [`benchmarks/eval/README.md`](benchmarks/eval/README.md) — frozen machine-checkable golden evaluation
 
 ## Model routing and Okian provider
 

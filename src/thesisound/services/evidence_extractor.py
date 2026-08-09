@@ -18,7 +18,9 @@ from thesisound.domain import (
 )
 from thesisound.modeling import (
     DeterministicValidationError,
+    ModelProviderError,
     ModelRunRecord,
+    ModelSafetyError,
     StructuredOutputError,
 )
 from thesisound.services.evidence_validator import validate_evidence_extraction
@@ -36,6 +38,10 @@ from thesisound.source_analysis import (
 _WHITESPACE = re.compile(r"\s+")
 ExtractionCallback = Callable[[BlockEvidenceExtraction], None]
 _DEFAULT_MAX_ATTEMPTS = 3
+# A global provider failure looks like a per-block failure. Before any block has
+# succeeded, probe at most this many blocks so a revoked key or dead endpoint
+# aborts without paying for one call per remaining block.
+_BREAKER_CONSECUTIVE_FAILURES = 3
 
 
 class EvidenceExtractorService:
@@ -92,8 +98,12 @@ class EvidenceExtractorService:
         # Callers persist from `on_extraction`, so serialize the callback here rather than
         # asking every caller to be thread-safe. The model call itself stays outside it.
         handover = Lock()
+        consecutive_skipped = 0
+        succeeded = 0
 
-        def work(block: SourceDocumentBlock) -> None:
+        def work(
+            block: SourceDocumentBlock,
+        ) -> tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]:
             with tracing.span(
                 "corpus.extract_evidence",
                 component="corpus",
@@ -114,31 +124,75 @@ class EvidenceExtractorService:
                     prompt_version=prompt_version,
                     max_attempts=max_attempts,
                 )
+            return block.block_id, outcome
+
+        def hand_over(
+            block_id: str,
+            outcome: tuple[BlockEvidenceExtraction, ModelRunRecord | None],
+        ) -> str | None:
+            nonlocal consecutive_skipped, succeeded
             with handover:
-                results[block.block_id] = outcome
+                record = outcome[0]
+                results[block_id] = outcome
                 if on_extraction is not None:
-                    on_extraction(outcome[0])
+                    on_extraction(record)
+                if record.status == "skipped":
+                    consecutive_skipped += 1
+                else:
+                    succeeded += 1
+                    consecutive_skipped = 0
+                if succeeded == 0 and consecutive_skipped >= _BREAKER_CONSECUTIVE_FAILURES:
+                    return record.rejection_reason or "provider failure"
+            return None
 
         workers = min(self.max_workers, len(pending))
         if workers == 1:
             for block in pending:
-                work(block)
+                block_id, outcome = work(block)
+                breaker_reason = hand_over(block_id, outcome)
+                if breaker_reason is not None:
+                    raise ModelProviderError(
+                        "Evidence extraction circuit breaker opened after "
+                        f"{_BREAKER_CONSECUTIVE_FAILURES} consecutive provider failures "
+                        f"before any block succeeded: {breaker_reason}"
+                    )
         else:
-            # concurrent.futures.ThreadPoolExecutor does NOT copy contextvars
-            # into the worker thread (unlike anyio's run_in_threadpool), so
-            # every span opened inside work() would otherwise be orphaned at
-            # the trace root instead of nesting under whatever span is open
-            # on the submitting thread (e.g. corpus.source). bind_context
-            # re-attaches that context inside each worker.
+            # Preserve one-wave concurrency for small batches. Larger batches probe
+            # only the breaker limit until the first usable answer releases full fan-out.
             bound_work = tracing.bind_context(work)
+            next_index = 0
+            futures = {}
             with ThreadPoolExecutor(max_workers=workers) as pool:
-                futures = [pool.submit(bound_work, block) for block in pending]
+                initial = (
+                    len(pending)
+                    if len(pending) <= workers
+                    else min(len(pending), _BREAKER_CONSECUTIVE_FAILURES)
+                )
+                for _ in range(initial):
+                    block = pending[next_index]
+                    next_index += 1
+                    futures[pool.submit(bound_work, block)] = block.block_id
                 try:
-                    for future in as_completed(futures):
-                        future.result()
+                    while futures:
+                        future = next(as_completed(futures))
+                        futures.pop(future)
+                        block_id, outcome = future.result()
+                        breaker_reason = hand_over(block_id, outcome)
+                        if breaker_reason is not None:
+                            for remaining in futures:
+                                remaining.cancel()
+                            pool.shutdown(wait=True, cancel_futures=True)
+                            raise ModelProviderError(
+                                "Evidence extraction circuit breaker opened after "
+                                f"{_BREAKER_CONSECUTIVE_FAILURES} consecutive provider "
+                                f"failures before any block succeeded: {breaker_reason}"
+                            )
+                        if succeeded > 0:
+                            while len(futures) < workers and next_index < len(pending):
+                                block = pending[next_index]
+                                next_index += 1
+                                futures[pool.submit(bound_work, block)] = block.block_id
                 except BaseException:
-                    # Drop work that has not started but let in-flight blocks land: each
-                    # finished block is already saved and is skipped by the next attempt.
                     pool.shutdown(wait=True, cancel_futures=True)
                     raise
 
@@ -173,9 +227,7 @@ class EvidenceExtractorService:
         variables = {
             "source_id": str(source_id),
             "block": block.model_dump(mode="json"),
-            "section_context": (
-                section.model_dump(mode="json") if section is not None else None
-            ),
+            "section_context": (section.model_dump(mode="json") if section is not None else None),
             "working_thesis": document_map.working_thesis,
             "analysis_profile": profile.model_dump(mode="json"),
             "neighbor_context": _neighbor_context(
@@ -218,9 +270,7 @@ class EvidenceExtractorService:
                     block_id=block.block_id,
                     extraction=extraction,
                     status="rejected",
-                    rejection_reason=(
-                        "No auditable evidence survived validation after retries."
-                    ),
+                    rejection_reason=("No auditable evidence survived validation after retries."),
                 )
             else:
                 record = BlockEvidenceExtraction(
@@ -236,6 +286,16 @@ class EvidenceExtractorService:
                 extraction=EvidenceExtraction(segment_function="rejected"),
                 status="rejected",
                 rejection_reason=str(exc)[:1_000] or type(exc).__name__,
+                failure_kind="contract",
+            )
+        except (ModelProviderError, ModelSafetyError) as exc:
+            record = BlockEvidenceExtraction(
+                source_id=source_id,
+                block_id=block.block_id,
+                extraction=EvidenceExtraction(segment_function="rejected"),
+                status="skipped",
+                rejection_reason=str(exc)[:1_000] or type(exc).__name__,
+                failure_kind="provider",
             )
         return record, run
 
@@ -288,9 +348,7 @@ def _validate_profile_budget(
         raise DeterministicValidationError(
             "This analysis profile does not allocate budget for examples."
         )
-    if not profile.include_objections_and_responses and (
-        draft.objections or draft.responses
-    ):
+    if not profile.include_objections_and_responses and (draft.objections or draft.responses):
         raise DeterministicValidationError(
             "This analysis profile does not allocate budget for objections or responses."
         )
@@ -419,8 +477,7 @@ def _neighbor_context(
             "text": neighbor.text[:2_000],
         }
         for neighbor in blocks[start:end]
-        if neighbor.block_id != block.block_id
-        and neighbor.block_type != "front_matter"
+        if neighbor.block_id != block.block_id and neighbor.block_type != "front_matter"
     ]
 
 

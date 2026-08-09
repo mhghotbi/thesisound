@@ -1,10 +1,12 @@
-
 from thesisound.accounts_cli import register_accounts_commands
 from thesisound.audio_cli import register_audio_commands
 from thesisound.cli import app
+from thesisound.cli_safety import apply_command_safety, register_safety_commands
 from thesisound.doctor_cli import register_doctor_command
+from thesisound.eval_cli import register_eval_command
 from thesisound.model_cli import register_model_commands
 from thesisound.observability_cli import register_observability_commands
+from thesisound.readiness_cli import register_readiness_command
 from thesisound.search_cli import register_search_commands
 
 register_audio_commands(app)
@@ -13,3 +15,9 @@ register_doctor_command(app)
 register_model_commands(app)
 register_search_commands(app)
 register_observability_commands(app)
+
+register_readiness_command(app)
+register_eval_command(app)
+
+register_safety_commands(app)
+apply_command_safety(app)

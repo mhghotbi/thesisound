@@ -34,6 +34,7 @@ from thesisound.web.episode_runtime import create_episode_planner
 from thesisound.web.error_messages import user_facing_error
 from thesisound.web.observability_routes import register_observability_routes
 from thesisound.web.read_models import build_project_read_model
+from thesisound.web.readiness_routes import register_readiness_routes
 from thesisound.web.script_routes import register_script_routes
 from thesisound.web.script_runtime import create_script_builder
 from thesisound.web.source_routes import register_source_routes
@@ -415,8 +416,7 @@ def create_app(
     ) -> RedirectResponse | None:
         account = _current_account(request)
         if account is not None and (
-            account.role == "operator"
-            or accounts.is_project_member(project_id, account.user_id)
+            account.role == "operator" or accounts.is_project_member(project_id, account.user_id)
         ):
             return None
         return RedirectResponse("/projects", status_code=HTTP_303_SEE_OTHER)
@@ -627,9 +627,7 @@ def create_app(
         if account.role != "operator":
             visible_project_ids = accounts.project_ids_for_user(account.user_id)
             projects = [
-                project
-                for project in projects
-                if str(project.project_id) in visible_project_ids
+                project for project in projects if str(project.project_id) in visible_project_ids
             ]
         models = [
             build_project_read_model(
@@ -851,6 +849,14 @@ def create_app(
         project_redirect=_project_redirect,
         validate_csrf=_validate_csrf,
         settings=runtime,
+    )
+
+    register_readiness_routes(
+        app,
+        workspace=workspace,
+        render=render,
+        login_redirect=_login_redirect,
+        project_redirect=_project_redirect,
     )
 
     register_observability_routes(

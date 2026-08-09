@@ -1,0 +1,16 @@
+sources = ["distinctions.md"]
+
+[brief]
+normalized_topic = "A difficult conceptual distinction"
+topic_type = "comparison"
+central_question = "How can two closely related concepts be distinguished without treating them as opposites?"
+audience = "educated general listener"
+prior_knowledge = "introductory"
+target_duration_minutes = 5
+output_language = "fa"
+modes = ["explanatory", "comparative"]
+learning_objectives = ["State the distinction", "Preserve overlap and boundary cases"]
+subquestions = ["What is the practical consequence of confusing the concepts?"]
+scope_inclusions = ["definition", "overlap", "boundary case"]
+scope_exclusions = ["unrelated terminology"]
+ambiguities = []
