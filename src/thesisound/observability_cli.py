@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import UUID
 
 import typer
@@ -17,6 +18,7 @@ from thesisound.observability import (
     TraceNode,
     ledger_from_settings,
 )
+from thesisound.services.observability_reporting import ObservabilityReporter
 
 
 def _format_cost(micros: int | None) -> str:
@@ -92,14 +94,63 @@ def register_observability_commands(app: typer.Typer) -> None:
                 console.rule(label)
                 console.print_json(ledger.read_artifact(path))
 
+    @app.command("observability-export")
+    def observability_export(
+        project_id: UUID,
+        out: Path = typer.Option(  # noqa: B008
+            ...,
+            "--out",
+            help="Directory for spans/events/model-calls JSONL and manifest.json.",
+        ),
+    ) -> None:
+        """Export one project's fully redacted observability records."""
+
+        reporter = ObservabilityReporter(ledger_from_settings(Settings()))
+        result = reporter.export_project(project_id, out)
+        console = Console()
+        table = Table(title=f"Observability export for {project_id}")
+        table.add_column("File")
+        table.add_column("Rows", justify="right")
+        for filename, count in result.row_counts.items():
+            table.add_row(filename, str(count))
+        console.print(table)
+        console.print(f"Manifest: [bold]{result.manifest_path}[/bold]")
+
     @app.command("trace")
-    def trace(project_id: UUID) -> None:
-        """Show the most recent trace for a project as a span tree, model
-        calls inline as leaves."""
+    def trace(
+        target: str = typer.Argument(
+            ...,
+            help="Project UUID, or the literal 'compare'.",
+        ),
+        run_a: UUID | None = typer.Argument(  # noqa: B008
+            None,
+            help="First run/trace UUID when target is 'compare'.",
+        ),
+        run_b: UUID | None = typer.Argument(  # noqa: B008
+            None,
+            help="Second run/trace UUID when target is 'compare'.",
+        ),
+    ) -> None:
+        """Show the latest project trace, or compare two runs/traces."""
 
         settings = Settings()
         ledger = ledger_from_settings(settings)
         console = Console()
+        if target == "compare":
+            if run_a is None or run_b is None:
+                raise typer.BadParameter("trace compare requires <run-a> and <run-b> UUIDs.")
+            try:
+                comparison = ObservabilityReporter(ledger).compare_runs(run_a, run_b)
+            except FileNotFoundError as exc:
+                raise typer.BadParameter(str(exc)) from exc
+            _render_comparison(console, comparison)
+            return
+        if run_a is not None or run_b is not None:
+            raise typer.BadParameter("Extra arguments are only valid for 'trace compare'.")
+        try:
+            project_id = UUID(target)
+        except ValueError as exc:
+            raise typer.BadParameter("Expected a project UUID or 'compare'.") from exc
         recent = ledger.list_recent_traces(project_id, limit=1)
         if not recent:
             console.print(f"[yellow]No recorded trace for project {project_id}.[/yellow]")
@@ -137,8 +188,8 @@ def register_observability_commands(app: typer.Typer) -> None:
         table.add_column("Component")
         table.add_column("Attributes")
         for event in events:
-            level_style = "red" if event.level == "error" else (
-                "yellow" if event.level == "warn" else ""
+            level_style = (
+                "red" if event.level == "error" else ("yellow" if event.level == "warn" else "")
             )
             table.add_row(
                 event.occurred_at.isoformat(timespec="seconds"),
@@ -221,9 +272,7 @@ def register_observability_commands(app: typer.Typer) -> None:
         # priced_count == 0 means every succeeded call is unpriced, so the sum is
         # vacuously 0 -- show "unknown" rather than a number that looks like a real $0.
         total_display = _format_cost(summary.total_cost_micros if priced_count else None)
-        console.print(
-            f"[bold]Project {project_id}[/bold] · total cost={total_display}{caveat}"
-        )
+        console.print(f"[bold]Project {project_id}[/bold] · total cost={total_display}{caveat}")
         rows = ledger.cost_breakdown(project_id)
         if not rows:
             return
@@ -268,6 +317,116 @@ def register_observability_commands(app: typer.Typer) -> None:
         parsed_since = _parse_since(since) if since is not None else None
         updated = ledger.reprice(ledger.cost_pricer, since=parsed_since)
         console.print(f"Repriced {updated} call(s).")
+
+
+def _display_metric(name: str, value: object) -> str:
+    if value is None:
+        return "unknown"
+    if name == "cost_micros":
+        return _format_cost(int(value))
+    if name == "duration_ms":
+        return f"{int(value)} ms"
+    if name == "hit_rate" or name.endswith("similarity"):
+        return f"{float(value):.2%}"
+    return str(value)
+
+
+def _render_delta_table(
+    console: Console,
+    title: str,
+    rows: list[dict[str, object]],
+    *,
+    metric_name: str,
+) -> None:
+    if not rows:
+        return
+    table = Table(title=title)
+    table.add_column("Name")
+    table.add_column("A", justify="right")
+    table.add_column("B", justify="right")
+    table.add_column("Delta", justify="right")
+    table.add_column("Delta %", justify="right")
+    for row in rows:
+        percent = row.get("percent")
+        table.add_row(
+            str(row["name"]),
+            _display_metric(metric_name, row.get("before")),
+            _display_metric(metric_name, row.get("after")),
+            _display_metric(metric_name, row.get("absolute")),
+            "unknown" if percent is None else f"{float(percent):+.1%}",
+        )
+    console.print(table)
+
+
+def _render_comparison(console: Console, comparison: dict[str, object]) -> None:
+    run_a = comparison["run_a"]
+    run_b = comparison["run_b"]
+    assert isinstance(run_a, dict)
+    assert isinstance(run_b, dict)
+    console.print(
+        f"[bold]A[/bold] {run_a['trace_id']} · code="
+        f"{run_a.get('pipeline_code_version') or 'unknown'}"
+    )
+    console.print(
+        f"[bold]B[/bold] {run_b['trace_id']} · code="
+        f"{run_b.get('pipeline_code_version') or 'unknown'}"
+    )
+    console.print(
+        "Prompt versions A: " + json.dumps(run_a.get("prompt_versions", []), ensure_ascii=False)
+    )
+    console.print(
+        "Prompt versions B: " + json.dumps(run_b.get("prompt_versions", []), ensure_ascii=False)
+    )
+
+    summary = comparison["summary"]
+    assert isinstance(summary, dict)
+    summary_rows = [
+        {"name": name, **delta} for name, delta in summary.items() if isinstance(delta, dict)
+    ]
+    _render_delta_table(
+        console,
+        "Run summary",
+        summary_rows,
+        metric_name="summary",
+    )
+    _render_delta_table(
+        console,
+        "Stage durations",
+        comparison["stages"],
+        metric_name="duration_ms",
+    )
+    _render_delta_table(
+        console,
+        "Cache hit rates",
+        comparison["cache_hit_rates"],
+        metric_name="hit_rate",
+    )
+
+    audio = comparison["audio_qa"]
+    assert isinstance(audio, dict)
+    audio_table = Table(title="Audio QA score distribution")
+    audio_table.add_column("Metric")
+    audio_table.add_column("A", justify="right")
+    audio_table.add_column("B", justify="right")
+    for metric in (
+        "count",
+        "mean_similarity",
+        "median_similarity",
+        "p95_similarity",
+        "verdicts",
+    ):
+        audio_table.add_row(
+            metric,
+            _display_metric(metric, audio["a"].get(metric)),
+            _display_metric(metric, audio["b"].get(metric)),
+        )
+    console.print(audio_table)
+    _render_delta_table(
+        console,
+        "Evidence yield per source",
+        comparison["evidence_yield"],
+        metric_name="claim_count",
+    )
 
 
 def _parse_since(value: str) -> datetime:

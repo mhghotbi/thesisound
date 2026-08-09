@@ -23,22 +23,56 @@ from __future__ import annotations
 
 import contextvars
 import os
+import subprocess
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from functools import wraps
+from importlib import metadata
+from pathlib import Path
 from time import perf_counter
 from typing import Any, Literal, Protocol
 from uuid import UUID, uuid4
 
-SpanKind = Literal[
-    "internal", "stage", "subprocess", "fs", "http", "db", "gate", "model"
-]
+SpanKind = Literal["internal", "stage", "subprocess", "fs", "http", "db", "gate", "model"]
 SpanStatus = Literal["running", "ok", "error", "blocked", "skipped", "interrupted"]
 DetailLevel = Literal["stage", "operation", "verbose"]
 
 _DETAIL_RANK: dict[DetailLevel, int] = {"stage": 0, "operation": 1, "verbose": 2}
+
+
+def _detect_code_version() -> str:
+    """Return the deployed source revision, with deterministic fallbacks.
+
+    Deployments should set ``THESISOUND_CODE_VERSION``. A source checkout can
+    resolve Git directly, while an installed wheel falls back to its package
+    version. Detection happens once per tracer, never once per span.
+    """
+
+    for variable in ("THESISOUND_CODE_VERSION", "GITHUB_SHA", "SOURCE_VERSION"):
+        value = os.getenv(variable, "").strip()
+        if value:
+            return value
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).resolve().parents[2],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        pass
+    else:
+        revision = completed.stdout.strip()
+        if revision:
+            return revision
+    try:
+        return metadata.version("thesisound")
+    except metadata.PackageNotFoundError:
+        return "unknown"
 
 
 @dataclass(frozen=True, slots=True)
@@ -243,6 +277,7 @@ class Tracer:
         enabled: bool = True,
         process: str = "app",
         detail: DetailLevel = "operation",
+        code_version: str | None = None,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
         monotonic: Callable[[], float] = perf_counter,
     ) -> None:
@@ -250,6 +285,7 @@ class Tracer:
         self.enabled = enabled
         self.process = process
         self.detail = detail
+        self.code_version = code_version or _detect_code_version()
         self.clock = clock
         self.monotonic = monotonic
 
@@ -292,6 +328,8 @@ class Tracer:
             workflow_run_id=workflow_run_id or (parent.workflow_run_id if parent else None),
         )
         initial_attributes = dict(attributes)
+        if detached:
+            initial_attributes.setdefault("pipeline_code_version", self.code_version)
         if new_root and parent is not None:
             initial_attributes["caused_by_span_id"] = str(parent.span_id)
             initial_attributes["caused_by_trace_id"] = str(parent.trace_id)
@@ -357,8 +395,7 @@ class Tracer:
                 trace_id=parent.trace_id if parent else None,
                 span_id=parent.span_id if parent else None,
                 project_id=project_id or (parent.project_id if parent else None),
-                workflow_run_id=workflow_run_id
-                or (parent.workflow_run_id if parent else None),
+                workflow_run_id=workflow_run_id or (parent.workflow_run_id if parent else None),
                 occurred_at=self.clock(),
                 name=name,
                 component=component or name.split(".", 1)[0],

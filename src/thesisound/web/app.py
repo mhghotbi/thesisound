@@ -17,20 +17,21 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound import logging_setup, tracing
+from thesisound.adapters.sms import KavenegarOtpSender
 from thesisound.audio_runtime import create_audio_builder
 from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState, ResearchBrief, TopicType
 from thesisound.observability import ledger_from_settings, tracer_from_settings
 from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.services.observability_reporting import ObservabilityReporter
 from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
 from thesisound.web.audio_routes import register_audio_routes
-from thesisound.adapters.sms import KavenegarOtpSender
-from thesisound.adapters.sms import KavenegarOtpSender
-from thesisound.web.auth import NullOtpSender, OtpError, OtpSenderPort, OtpService, OtpSenderPort
+from thesisound.web.auth import NullOtpSender, OtpError, OtpSenderPort, OtpService
 from thesisound.web.corpus_runtime import create_corpus_builder
 from thesisound.web.episode_routes import register_episode_routes
 from thesisound.web.episode_runtime import create_episode_planner
 from thesisound.web.error_messages import user_facing_error
+from thesisound.web.observability_routes import register_observability_routes
 from thesisound.web.read_models import build_project_read_model
 from thesisound.web.script_routes import register_script_routes
 from thesisound.web.script_runtime import create_script_builder
@@ -175,7 +176,10 @@ def _jalali_date(value: date | datetime | None) -> str:
 def _user_error_filter(value: object, action: str = "generic") -> str:
     if value is None or value == "":
         return ""
-    return user_facing_error(value if isinstance(value, BaseException) else str(value), action=action)
+    return user_facing_error(
+        value if isinstance(value, BaseException) else str(value),
+        action=action,
+    )
 
 
 def _unhandled_error_page(message: str, request_id: str | None) -> str:
@@ -264,7 +268,9 @@ def create_app(
     # over -- the same crash-recovery moment as the four recover_interrupted_runs()
     # calls below, just for spans rather than run records. One call here (not one
     # per create_*() factory) since it scans the whole ledger, not one run store.
-    ledger_from_settings(runtime).reap_orphaned_spans()
+    observability_ledger = ledger_from_settings(runtime)
+    observability_ledger.reap_orphaned_spans()
+    observability = ObservabilityReporter(observability_ledger)
     tracing.install_tracer(tracer_from_settings(runtime))
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
     preflight = RuntimePreflight(runtime)
@@ -291,11 +297,7 @@ def create_app(
     @app.middleware("http")
     async def guard_live_runs(request: Request, call_next: Callable) -> Response:
         scope = _preflight_scope(request)
-        if (
-            runtime.environment != "test"
-            and scope is not None
-            and not preflight.ready(scope)
-        ):
+        if runtime.environment != "test" and scope is not None and not preflight.ready(scope):
             return RedirectResponse(
                 f"/system-check?blocked=1&scope={scope}",
                 status_code=HTTP_303_SEE_OTHER,
@@ -358,6 +360,7 @@ def create_app(
     templates = Jinja2Templates(directory=_TEMPLATES_ROOT)
     templates.env.globals["project_title"] = _project_title
     templates.env.globals["corpus_stage_label"] = _corpus_stage_label
+    templates.env.globals["observability_current_span"] = observability.current_open_span
     templates.env.filters["fa_num"] = _fa_digits
     templates.env.filters["jalali_date"] = _jalali_date
     templates.env.filters["user_error"] = _user_error_filter
@@ -377,6 +380,8 @@ def create_app(
     app.state.workspace = workspace
     app.state.otp = otp
     app.state.preflight = preflight
+    app.state.observability_ledger = observability_ledger
+    app.state.observability = observability
     app.state.corpus_builder = corpus_builder
     app.state.episode_planner = episode_planner
     app.state.script_builder = script_builder
@@ -528,9 +533,7 @@ def create_app(
     def system_check(request: Request, scope: str = "full") -> Response:
         if redirect := _login_redirect(request):
             return redirect
-        selected_scope: PreflightScope = (
-            scope if scope in {"model", "audio", "full"} else "full"
-        )
+        selected_scope: PreflightScope = scope if scope in {"model", "audio", "full"} else "full"
         checks = preflight.run(selected_scope)
         return render(
             request,
@@ -752,6 +755,16 @@ def create_app(
         login_redirect=_login_redirect,
         validate_csrf=_validate_csrf,
         settings=runtime,
+    )
+
+    register_observability_routes(
+        app,
+        workspace=workspace,
+        reporter=observability,
+        ledger=observability_ledger,
+        render=render,
+        login_redirect=_login_redirect,
+        validate_csrf=_validate_csrf,
     )
 
     return app

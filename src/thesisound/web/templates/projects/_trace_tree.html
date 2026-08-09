@@ -1,0 +1,29 @@
+{% macro trace_nodes(nodes) %}
+<ul class="obs-tree">
+  {% for node in nodes %}
+  <li>
+    <div class="obs-tree__node obs-tree__node--{{ node.status }}">
+      <span class="obs-tree__kind">{{ 'مدل' if node.node_source == 'model_call' else node.kind }}</span>
+      {% if node.node_source == 'model_call' %}
+      <a href="?trace_id={{ selected_trace_id }}&depth={{ trace_depth }}&call_id={{ node.node_id }}#model-call-detail"><bdi dir="ltr">{{ node.name }}</bdi></a>
+      {% else %}
+      <strong><bdi dir="ltr">{{ node.name }}</bdi></strong>
+      {% endif %}
+      <span>{{ node.status }}</span>
+      <span>{{ (node.duration_ms if node.duration_ms is not none else 0) | fa_num }} ms</span>
+      {% if node.subject_id %}<small><bdi dir="ltr">{{ node.subject_type }}:{{ node.subject_id }}</bdi></small>{% endif %}
+    </div>
+    {% if node.children %}{{ trace_nodes(node.children) }}{% endif %}
+    {% if node.truncated_children %}
+    <p class="obs-tree__truncated">{{ node.truncated_children | fa_num }} فرزند در عمق فعلی پنهان است.</p>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endmacro %}
+
+{% if trace_tree %}
+{{ trace_nodes(trace_tree) }}
+{% else %}
+<p class="lede">برای این اجرا گره‌ای ثبت نشده است.</p>
+{% endif %}

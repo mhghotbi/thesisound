@@ -1,0 +1,27 @@
+<section class="data-panel section-block" aria-labelledby="obs-live-title">
+  <div class="section-heading">
+    <div>
+      <p class="kicker">وضعیت زنده</p>
+      <h2 id="obs-live-title">
+        {% if current_span %}عملیات جاری: <bdi dir="ltr">{{ current_span.name }}</bdi>
+        {% else %}عملیات بازی وجود ندارد{% endif %}
+      </h2>
+    </div>
+    {% if current_span %}<span class="status-chip status-chip--running">running</span>
+    {% elif latest_trace %}<span class="status-chip">{{ latest_trace.status }}</span>{% endif %}
+  </div>
+  {% if current_span %}
+  <p class="lede">
+    {{ current_span.elapsed_ms | fa_num }} میلی‌ثانیه از شروع
+    {% if current_span.subject_id %} · <bdi dir="ltr">{{ current_span.subject_type }}:{{ current_span.subject_id }}</bdi>{% endif %}
+    · trace <bdi dir="ltr">{{ current_span.trace_id }}</bdi>
+  </p>
+  {% elif latest_trace %}
+  <p class="lede">آخرین اجرا <bdi dir="ltr">{{ latest_trace.name }}</bdi> با وضعیت {{ latest_trace.status }} پایان یافته است.</p>
+  {% else %}
+  <p class="lede">هنوز اجرای ردیابی‌شده‌ای برای این گفتار وجود ندارد.</p>
+  {% endif %}
+  {% if latest_error %}
+  <p class="notice notice--danger">آخرین خطا: <bdi dir="ltr">{{ latest_error.name }}</bdi> در {{ latest_error.occurred_at }}</p>
+  {% endif %}
+</section>

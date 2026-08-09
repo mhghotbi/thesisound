@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}رصد اجرا — مقال{% endblock %}
+{% block content_class %}page-content page-content--wide{% endblock %}
+{% block content %}
+<style>
+  .obs-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(10rem,1fr)); gap:.75rem; }
+  .obs-metric { border:1px solid var(--line, #d9d7cf); border-radius:.65rem; padding:1rem; background:var(--surface, #fff); }
+  .obs-metric strong { display:block; font-size:1.35rem; direction:ltr; text-align:right; }
+  .obs-table { width:100%; border-collapse:collapse; font-size:.88rem; }
+  .obs-table th,.obs-table td { padding:.6rem; border-bottom:1px solid var(--line, #ddd); text-align:right; vertical-align:top; }
+  .obs-waterfall { display:grid; gap:.55rem; }
+  .obs-waterfall__row { display:grid; grid-template-columns:minmax(11rem,1fr) minmax(16rem,3fr) 6rem; gap:.75rem; align-items:center; }
+  .obs-waterfall__track { position:relative; height:1.1rem; border-radius:999px; background:color-mix(in srgb, currentColor 8%, transparent); overflow:hidden; direction:ltr; }
+  .obs-waterfall__bar { position:absolute; inset-block:0; border-radius:999px; background:currentColor; min-width:2px; opacity:.7; }
+  .obs-tree,.obs-tree ul { list-style:none; margin:.45rem 0; padding-inline-start:1.1rem; }
+  .obs-tree li { border-inline-start:1px solid var(--line, #ddd); padding-inline-start:.7rem; }
+  .obs-tree__node { display:flex; flex-wrap:wrap; gap:.55rem; align-items:center; padding:.42rem .55rem; border-radius:.4rem; }
+  .obs-tree__node--error,.obs-tree__node--failed,.obs-tree__node--rejected { background:rgba(145,32,32,.08); }
+  .obs-tree__node--running { background:rgba(45,91,145,.08); }
+  .obs-tree__kind { font-size:.72rem; border:1px solid currentColor; border-radius:999px; padding:.05rem .4rem; opacity:.7; }
+  .obs-tree__truncated { margin:.25rem 0 .5rem; font-size:.8rem; opacity:.7; }
+  .obs-pager { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; margin-block:1rem; }
+  .obs-pager a { border:1px solid var(--line, #ddd); border-radius:.4rem; padding:.35rem .65rem; text-decoration:none; }
+  .obs-code { direction:ltr; text-align:left; overflow-wrap:anywhere; }
+  @media (max-width:720px) {
+    .obs-waterfall__row { grid-template-columns:1fr; }
+    .obs-table { display:block; overflow-x:auto; }
+  }
+</style>
+
+<header class="page-hero">
+  <p class="kicker">حالت پیشرفته · فقط خواندنی</p>
+  <h1>رصد اجرای «{{ project_title(project) }}»</h1>
+  <p class="lede">زمان، هزینه، کش، تلاش دوباره و تاریخچهٔ خطاها مستقیماً از ledger خوانده می‌شود.</p>
+</header>
+
+<div id="observability-live"
+     hx-get="/projects/{{ project.project_id }}/observability/live"
+     hx-trigger="every 2s"
+     hx-swap="innerHTML">
+  {% include "projects/_observability_live.html" %}
+</div>
+
+<section class="section-block" aria-labelledby="obs-summary-title">
+  <div class="section-heading"><h2 id="obs-summary-title">نمای کلی</h2><span>{{ trace_count | fa_num }} اجرا</span></div>
+  <div class="obs-grid">
+    <div class="obs-metric"><span>فراخوان مدل</span><strong>{{ summary.call_count | fa_num }}</strong></div>
+    <div class="obs-metric"><span>توکن</span><strong>{{ summary.total_tokens | fa_num }}</strong></div>
+    <div class="obs-metric"><span>نرخ تلاش دوباره</span><strong>{{ "%.1f%%" | format(retry_rate * 100) }}</strong><small>{{ retry_count | fa_num }} فراخوان</small></div>
+    <div class="obs-metric"><span>هزینهٔ قیمت‌گذاری‌شده</span>
+      <strong>{% if summary.succeeded_count > summary.unpriced_succeeded_count %}${{ "%.4f" | format(summary.total_cost_micros / 1000000) }}{% else %}نامشخص{% endif %}</strong>
+      {% if summary.unpriced_succeeded_count %}<small>{{ summary.unpriced_succeeded_count | fa_num }} فراخوان بدون قیمت</small>{% endif %}
+    </div>
+    <div class="obs-metric"><span>خطا / رد خروجی</span><strong>{{ (summary.failed_count + summary.rejected_count) | fa_num }}</strong></div>
+  </div>
+</section>
+
+<section class="section-block" aria-labelledby="obs-runs-title">
+  <div class="section-heading"><h2 id="obs-runs-title">اجراها</h2><span>صفحه {{ trace_page | fa_num }} از {{ trace_pages | fa_num }}</span></div>
+  {% if traces %}
+  <table class="obs-table">
+    <thead><tr><th>شروع</th><th>ریشه</th><th>وضعیت</th><th>مدت</th><th>نسخهٔ کد</th></tr></thead>
+    <tbody>
+    {% for trace in traces %}
+    <tr>
+      <td><a href="?trace_id={{ trace.trace_id }}&trace_page={{ trace_page }}&event_page={{ event_page }}&depth={{ trace_depth }}"><bdi dir="ltr">{{ trace.started_at }}</bdi></a></td>
+      <td><bdi dir="ltr">{{ trace.name }}</bdi><br><small class="obs-code">{{ trace.trace_id }}</small></td>
+      <td>{{ trace.status }}</td>
+      <td>{{ (trace.duration_ms if trace.duration_ms is not none else 0) | fa_num }} ms</td>
+      <td><bdi dir="ltr">{{ trace.attributes.pipeline_code_version or 'unknown' }}</bdi></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="lede">هنوز اجرای ردیابی‌شده‌ای ثبت نشده است.</p>{% endif %}
+  <nav class="obs-pager" aria-label="صفحه‌بندی اجراها">
+    {% if trace_page > 1 %}<a href="?trace_page={{ trace_page - 1 }}&event_page={{ event_page }}&depth={{ trace_depth }}">جدیدتر</a>{% endif %}
+    {% if trace_page < trace_pages %}<a href="?trace_page={{ trace_page + 1 }}&event_page={{ event_page }}&depth={{ trace_depth }}">قدیمی‌تر</a>{% endif %}
+  </nav>
+</section>
+
+{% if selected_trace_id %}
+<section class="section-block" aria-labelledby="obs-waterfall-title">
+  <div class="section-heading"><h2 id="obs-waterfall-title">آبشار مرحله‌ها</h2><span><bdi dir="ltr">{{ selected_trace_id }}</bdi></span></div>
+  <div class="obs-waterfall">
+  {% for row in waterfall %}
+    <div class="obs-waterfall__row">
+      <span><bdi dir="ltr">{{ row.name }}</bdi>{% if row.subject_id %}<small> · <bdi dir="ltr">{{ row.subject_id }}</bdi></small>{% endif %}</span>
+      <span class="obs-waterfall__track" aria-label="{{ row.name }}">
+        <span class="obs-waterfall__bar" style="left:{{ '%.3f' | format(row.left_percent) }}%;width:{{ '%.3f' | format(row.width_percent) }}%"></span>
+      </span>
+      <span>{{ (row.duration_ms if row.duration_ms is not none else 0) | fa_num }} ms</span>
+    </div>
+  {% else %}<p class="lede">مرحلهٔ زمان‌دار ثبت نشده است.</p>{% endfor %}
+  </div>
+</section>
+
+<section class="section-block" aria-labelledby="obs-tree-title">
+  <div class="section-heading"><h2 id="obs-tree-title">درخت trace</h2><span>حداکثر عمق {{ trace_depth | fa_num }}</span></div>
+  <nav class="obs-pager" aria-label="عمق درخت">
+    {% for value in [3, 6, 9, 12] %}
+    <a href="?trace_id={{ selected_trace_id }}&trace_page={{ trace_page }}&event_page={{ event_page }}&depth={{ value }}" {% if value == trace_depth %}aria-current="page"{% endif %}>عمق {{ value | fa_num }}</a>
+    {% endfor %}
+  </nav>
+  {% include "projects/_trace_tree.html" %}
+</section>
+{% endif %}
+
+<section class="section-block" aria-labelledby="obs-cache-title">
+  <div class="section-heading"><h2 id="obs-cache-title">کش و زمان تجمعی</h2><span>کل گفتار</span></div>
+  <div class="obs-grid">
+    {% for cache in cache_rates %}
+    <div class="obs-metric"><span><bdi dir="ltr">{{ cache.cache }}</bdi></span><strong>{{ "%.1f%%" | format(cache.hit_rate * 100) }}</strong><small>{{ cache.hits | fa_num }} hit · {{ cache.misses | fa_num }} miss</small></div>
+    {% else %}<p class="lede">رویداد cache.lookup ثبت نشده است.</p>{% endfor %}
+  </div>
+  {% if cost_breakdown %}
+  <table class="obs-table">
+    <thead><tr><th>مرحله</th><th>مدل</th><th>فراخوان</th><th>توکن</th><th>هزینه</th></tr></thead>
+    <tbody>
+    {% for row in cost_breakdown %}
+    <tr>
+      <td><bdi dir="ltr">{{ row.stage }}</bdi></td>
+      <td><bdi dir="ltr">{{ row.provider }}/{{ row.model }}</bdi></td>
+      <td>{{ row.call_count | fa_num }}</td>
+      <td>{{ row.total_tokens | fa_num }}</td>
+      <td>{% if row.call_count > row.unpriced_count %}${{ "%.4f" | format(row.total_cost_micros / 1000000) }}{% else %}نامشخص{% endif %}{% if row.unpriced_count %} <small>+{{ row.unpriced_count | fa_num }} بدون قیمت</small>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  {% if stage_summary %}
+  <table class="obs-table">
+    <thead><tr><th>عملیات</th><th>تعداد</th><th>self time</th><th>total time</th><th>خطا</th></tr></thead>
+    <tbody>{% for row in stage_summary %}<tr><td><bdi dir="ltr">{{ row.name }}</bdi></td><td>{{ row.call_count | fa_num }}</td><td>{{ row.self_total_ms | fa_num }} ms</td><td>{{ row.total_ms | fa_num }} ms</td><td>{{ row.error_count | fa_num }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% endif %}
+</section>
+
+<section class="section-block" aria-labelledby="obs-errors-title">
+  <div class="section-heading"><h2 id="obs-errors-title">۲۰ خطای آخر مدل</h2><span>{{ errors | length | fa_num }} مورد</span></div>
+  {% if errors %}
+  <table class="obs-table"><thead><tr><th>زمان</th><th>مرحله / عملیات</th><th>مدل</th><th>خطا</th></tr></thead><tbody>
+  {% for error in errors %}<tr>
+    <td><a href="?call_id={{ error.call_id }}{% if selected_trace_id %}&trace_id={{ selected_trace_id }}{% endif %}&depth={{ trace_depth }}#model-call-detail"><bdi dir="ltr">{{ error.started_at }}</bdi></a></td>
+    <td><bdi dir="ltr">{{ error.stage }}/{{ error.operation }}</bdi></td>
+    <td><bdi dir="ltr">{{ error.provider }}/{{ error.model }}</bdi></td>
+    <td>{{ error.error_type or error.status }}{% if error.error_message %}<br><small>{{ error.error_message }}</small>{% endif %}</td>
+  </tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="lede">خطای مدل ثبت نشده است.</p>{% endif %}
+</section>
+
+{% if selected_call %}
+<section id="model-call-detail" class="section-block" aria-labelledby="obs-call-title">
+  <div class="section-heading"><h2 id="obs-call-title">جزئیات فراخوان مدل</h2><span><bdi dir="ltr">{{ selected_call.call.call_id }}</bdi></span></div>
+  <table class="obs-table"><tbody>
+    <tr><th>مرحله / عملیات</th><td><bdi dir="ltr">{{ selected_call.call.stage }}/{{ selected_call.call.operation }}</bdi></td></tr>
+    <tr><th>مدل</th><td><bdi dir="ltr">{{ selected_call.call.provider }}/{{ selected_call.call.resolved_model or selected_call.call.requested_model }}</bdi></td></tr>
+    <tr><th>وضعیت</th><td>{{ selected_call.call.status }}</td></tr>
+    <tr><th>توکن</th><td>{{ (selected_call.call.total_tokens or 0) | fa_num }}</td></tr>
+    <tr><th>هزینه</th><td>{% if selected_call.call.cost_micros is not none %}${{ "%.4f" | format(selected_call.call.cost_micros / 1000000) }}{% else %}نامشخص{% endif %}</td></tr>
+    <tr><th>prompt</th><td><bdi dir="ltr">{{ selected_call.prompt_id or '—' }} / {{ selected_call.prompt_version or '—' }}</bdi></td></tr>
+    <tr><th>خطا</th><td>{{ selected_call.call.error_type or '—' }}{% if selected_call.call.error_message %}<br>{{ selected_call.call.error_message }}{% endif %}</td></tr>
+  </tbody></table>
+</section>
+{% endif %}
+
+<section class="section-block" aria-labelledby="obs-events-title">
+  <div class="section-heading"><h2 id="obs-events-title">خط زمانی رویدادها</h2><span>صفحه {{ event_page | fa_num }} از {{ event_pages | fa_num }}</span></div>
+  {% if events %}
+  <table class="obs-table"><thead><tr><th>زمان</th><th>سطح</th><th>رویداد</th><th>ویژگی‌ها</th></tr></thead><tbody>
+  {% for event in events %}<tr>
+    <td><bdi dir="ltr">{{ event.occurred_at }}</bdi></td><td>{{ event.level }}</td>
+    <td><bdi dir="ltr">{{ event.name }}</bdi></td>
+    <td>{% for key, value in event.attributes.items() %}<bdi dir="ltr">{{ key }}={{ value }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</td>
+  </tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="lede">رویدادی ثبت نشده است.</p>{% endif %}
+  <nav class="obs-pager" aria-label="صفحه‌بندی رویدادها">
+    {% if event_page > 1 %}<a href="?event_page={{ event_page - 1 }}&trace_page={{ trace_page }}&depth={{ trace_depth }}">جدیدتر</a>{% endif %}
+    {% if event_page < event_pages %}<a href="?event_page={{ event_page + 1 }}&trace_page={{ trace_page }}&depth={{ trace_depth }}">قدیمی‌تر</a>{% endif %}
+  </nav>
+</section>
+{% endblock %}
