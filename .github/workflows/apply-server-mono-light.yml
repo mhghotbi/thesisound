@@ -7,7 +7,6 @@ on:
     paths:
       - .github/scripts/apply_server_mono_light.py
       - .github/scripts/fix_recent_baseline_lint.py
-      - .github/scripts/fix_item5_lint.py
       - .github/workflows/apply-server-mono-light.yml
 
 permissions:
@@ -35,8 +34,6 @@ jobs:
         run: uv run python .github/scripts/fix_recent_baseline_lint.py
       - name: Apply current item
         run: uv run python .github/scripts/apply_server_mono_light.py
-      - name: Correct generated item 5 output
-        run: uv run python .github/scripts/fix_item5_lint.py
       - name: Lint
         run: uv run ruff check src tests
       - name: Test
@@ -50,5 +47,5 @@ jobs:
             echo "No implementation changes to commit."
             exit 0
           fi
-          git commit -m "feat: add per-run observability rollups"
+          git commit -m "feat: persist graded script quality scores"
           git push
