@@ -50,13 +50,13 @@ uv sync --extra dev --extra web-ui --extra gemini
 cp .env.example .env
 ```
 
-برای PDFهای پیچیده‌تر، Docling را هم نصب کنید:
+برای PDFهای پیچیده‌تر، Docling و MinerU را هم نصب کنید:
 
 ```bash
 uv sync --extra dev --extra web-ui --extra gemini --extra parsers
 ```
 
-MinerU runtime مستقلی است؛ اگر استفاده می‌شود، فرمان `mineru` باید روی `PATH` باشد.
+با `--extra parsers` فرمان `mineru` داخل `.venv` قرار می‌گیرد و به‌عنوان fallback برای PDFهای scan/complex در دسترس است.
 
 در `.env` حداقل این مقدار را تنظیم کنید:
 

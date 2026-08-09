@@ -260,7 +260,7 @@ class RuntimePreflight:
                     code="parser-mineru",
                     label="MinerU",
                     status="warning",
-                    detail="Not on PATH; local MinerU fallback is disabled.",
+                    detail="Not on PATH; add `--extra parsers` for scanned/complex PDF fallback.",
                 )
             )
         return checks

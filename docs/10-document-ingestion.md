@@ -146,7 +146,7 @@ Docling:
 uv sync --extra dev --extra parsers
 ```
 
-MinerU یک runtime مستقل و سنگین است. آن را طبق مستندات رسمی MinerU نصب کنید و مطمئن شوید فرمان `mineru` روی `PATH` قرار دارد. Thesisound عمداً MinerU را dependency اجباری محیط اصلی نکرده است.
+`--extra parsers` هر دو adapter را نصب می‌کند: Docling به‌عنوان پکیج پایتون و MinerU به‌عنوان CLI داخل `.venv` (`mineru` روی PATH محیط پروژه). این extras اختیاری‌اند؛ محیط اصلی بدون آن‌ها برای text PDF / TXT / Markdown / DOCX کافی است.
 
 ## CLI
 
