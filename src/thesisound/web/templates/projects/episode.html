@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components.html" import status_label, technical_details, error_notice %}
+{% from "components.html" import status_label, technical_details, error_notice, error_recovery %}
 {% block title %}طرح گفتار | مقال{% endblock %}
 {% block content %}
 <header class="page-heading page-heading--compact">
@@ -30,39 +30,29 @@
 </form>
 {% endif %}
 
-{% if planning_run and planning_active %}
-<section class="data-panel section-block" aria-labelledby="planning-status-title">
-  <div class="section-heading">
-    <div><p class="kicker">اجرای جاری</p><h2 id="planning-status-title">
-      {% if planning_run.stage == 'queued' %}در صف اجرا
-      {% elif planning_run.stage == 'auditing_coverage' %}سنجش کفایت منابع
-      {% elif planning_run.stage == 'prioritizing_claims' %}اولویت‌بندی مدعاها
-      {% elif planning_run.stage == 'estimating_budget' %}محاسبهٔ مدت قابل‌پشتیبانی
-      {% elif planning_run.stage == 'building_disagreements' %}بررسی اختلاف دیدگاه‌ها
-      {% elif planning_run.stage == 'planning_episode' %}ساخت طرح گفتار
-      {% elif planning_run.stage == 'building_evidence_packs' %}آماده‌سازی شاهدهای هر بخش
-      {% else %}در حال تحلیل{% endif %}
-    </h2></div>
-    {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', planning_run.stage) }}
-  </div>
-  <p class="lede">درصد یا زمان باقی‌ماندهٔ حدسی نمایش داده نمی‌شود؛ فقط مرحله‌ای که واقعاً ذخیره‌شده است.</p>
-  <p class="operator-only">No synthetic ETA; persisted stage only.</p>
-</section>
-{% endif %}
+{# Polled live region; see projects/processing.html for how the swap works. #}
+<div id="episode-live" data-live-region aria-live="polite"
+  {%- if planning_active %} hx-get="/projects/{{ project.project_id }}/episode/live" hx-trigger="every 2s" hx-target="this" hx-swap="innerHTML"{% endif %}>
+  {% include "projects/_episode_live.html" %}
+</div>
 
 {% if planning_run and planning_run.status == 'failed' %}
-<section class="error-recovery" role="alert">
-  <div class="error-recovery__grid">
-    <div><span class="attention-panel__label">چه شد</span><h2>{{ planning_run.last_error | user_error('planning') if planning_run.last_error else 'سنجش کفایت منابع یا ساخت طرح گفتار متوقف شد' }}</h2><p class="error-recovery__impact"><strong>اثر:</strong> مجموعه منابع و شاهدهای معتبر باقی مانده‌اند و هیچ طرح ناقصی برای تأیید نمایش داده نمی‌شود.</p></div>
-    {% if can_retry %}
-    <form method="post" action="/projects/{{ project.project_id }}/episode/retry"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button--primary" type="submit">تلاش دوباره در اجرای جدید</button></form>
-    {% elif can_start %}
-    <form method="post" action="/projects/{{ project.project_id }}/episode/prepare"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button--primary" type="submit">شروع اجرای جدید</button></form>
-    {% endif %}
-  </div>
-  <div class="error-recovery__options"><a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/sources">اصلاح منابع</a><a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a></div>
-  {% if planning_run.last_error %}{% call technical_details('کد و متن خطا') %}<p><bdi dir="ltr">{{ planning_run.last_error }}</bdi></p>{% endcall %}{% endif %}
-</section>
+{% call error_recovery(
+  planning_run.last_error | user_error('planning') if planning_run.last_error else 'سنجش کفایت منابع یا ساخت طرح گفتار متوقف شد',
+  'این مرحله نیمه‌کاره ماند. تحلیل منابع دوباره اجرا نمی‌شود.',
+  'مجموعه منابع، مدعاها و شاهدهای معتبر برگرفته از آن‌ها.',
+  'سنجش کفایت و طرح گفتار. هیچ طرح ناقصی برای تأیید نمایش داده نمی‌شود.',
+  attempt=planning_attempt,
+  technical=planning_run.last_error or ''
+) %}
+  {% if can_retry %}
+  <form method="post" action="/projects/{{ project.project_id }}/episode/retry"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button--danger-solid" type="submit">تلاش دوباره در اجرای جدید</button></form>
+  {% elif can_start %}
+  <form method="post" action="/projects/{{ project.project_id }}/episode/prepare"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button--danger-solid" type="submit">شروع اجرای جدید</button></form>
+  {% endif %}
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/sources">اصلاح منابع</a>
+  <a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a>
+{% endcall %}
 {% endif %}
 
 {% if planning_run and planning_run.status == 'blocked' %}
@@ -88,7 +78,7 @@
 
 <section class="form-sheet section-block" aria-label="راه‌های اصلاح کفایت منابع">
   {% if planning_run.supported_duration_minutes is not none and planning_run.supported_duration_minutes >= 5 %}
-  <form method="post" action="/projects/{{ project.project_id }}/episode/reduce-duration" class="field-grid">
+  <form method="post" action="/projects/{{ project.project_id }}/episode/duration" class="field-grid">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label class="field"><span>مدت کوتاه‌تر</span><input type="number" name="duration_minutes" min="5" max="{{ planning_run.supported_duration_minutes | int }}" value="{{ planning_run.supported_duration_minutes | int }}" required></label>
     <div class="form-actions"><button class="button button--primary" type="submit">کاهش مدت و سنجش دوباره</button></div>
@@ -111,6 +101,28 @@
   <p>طرح «{{ episode_plan.title }}» حدود {{ episode_plan.estimated_duration_minutes | round(1) | fa_num }} دقیقه است و از سقف قابل‌پشتیبانی عبور نمی‌کند.</p>
 </section>
 
+{# Duration is the one brief field whose right answer only becomes knowable here, once the
+   sources have been measured. Offered until the script starts, because the episode plan is
+   the only output it has reached by then, and this rebuilds it. #}
+{% if planning_run and planning_run.status == 'succeeded' and project.state.value == 'episode_planned'
+      and planning_run.supported_duration_minutes is not none and planning_run.supported_duration_minutes >= 5 %}
+<section class="section-block" aria-labelledby="episode-duration-title">
+  <div class="section-heading"><h2 id="episode-duration-title">مدت گفتار</h2></div>
+  <div class="form-sheet">
+    <p>هدف فعلی {{ project.brief.target_duration_minutes | fa_num }} دقیقه است و منابع تا حدود {{ planning_run.supported_duration_minutes | round(1) | fa_num }} دقیقه شاهد کافی دارند.</p>
+    <form method="post" action="/projects/{{ project.project_id }}/episode/duration" class="field-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="field">
+        <span>مدت تازه <small>(حداکثر {{ planning_run.supported_duration_minutes | int | fa_num }} دقیقه)</small></span>
+        <input type="number" name="duration_minutes" min="5" max="{{ planning_run.supported_duration_minutes | int }}" value="{{ project.brief.target_duration_minutes }}" required>
+      </label>
+      <div class="form-actions"><button class="button button--secondary" type="submit">تغییر مدت و ساخت دوبارهٔ طرح</button></div>
+    </form>
+    <small class="field-hint">طرح فعلی دوباره ساخته می‌شود. تحلیل منابع دست‌نخورده می‌ماند و ممیزی کفایت هم دوباره هزینه نمی‌شود.</small>
+  </div>
+</section>
+{% endif %}
+
 <section class="section-block" aria-labelledby="episode-outcome-title">
   <div class="section-heading"><h2 id="episode-outcome-title">در پایان چه چیزی روشن می‌شود</h2></div>
   <div class="data-panel"><p>{{ episode_plan.listener_outcome }}</p></div>
@@ -124,13 +136,17 @@
 {% endif %}
 
 <section class="section-block" aria-labelledby="episode-segments-title">
-  <div class="section-heading"><h2 id="episode-segments-title">بخش‌های پیشنهادی</h2><span>{{ episode_plan.segments | length | fa_num }} بخش</span></div>
+  <div class="section-heading section-heading--rule"><h2 id="episode-segments-title">گفتار {{ episode_plan.estimated_duration_minutes | round(1) | fa_num }} دقیقه‌ای این‌طور پیش می‌رود</h2><span>{{ episode_plan.segments | length | fa_num }} بخش</span></div>
   <div class="segment-list">
     {% for segment in episode_plan.segments %}
     <article class="segment-row">
-      <span class="segment-row__number">{{ loop.index | fa_num }}</span>
-      <div><h3>{{ segment.title }}</h3><p>{{ segment.purpose }}</p><p><span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span>: {{ segment.key_question }}</p><p class="operator-only">مدعاها: <code><bdi dir="ltr">{{ segment.claim_ids | join(', ') }}</bdi></code></p></div>
-      <span>{{ segment.estimated_minutes | round(1) | fa_num }} دقیقه</span>
+      <div>
+        <h3>{{ segment.title }}</h3>
+        <p>{{ segment.purpose }}</p>
+        <p class="operator-only"><span class="operator-only">پرسش مرکزی</span>: {{ segment.key_question }}</p>
+        <p class="operator-only">مدعاها: <code><bdi dir="ltr">{{ segment.claim_ids | join(', ') }}</bdi></code></p>
+      </div>
+      <span class="segment-row__minutes">{{ segment.estimated_minutes | round(1) | fa_num }} دقیقه</span>
     </article>
     {% endfor %}
   </div>
@@ -156,5 +172,4 @@
 {% endif %}
 
 <div class="form-actions section-block"><a class="button button--secondary" href="/projects/{{ project.project_id }}/processing">وضعیت کامل تحلیل منابع</a><a class="button button--quiet" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a></div>
-{% if planning_active %}<div data-auto-refresh="3000" aria-hidden="true"></div>{% endif %}
 {% endblock %}

@@ -107,13 +107,69 @@
     });
   }
 
-  document.querySelectorAll("input[type=file]").forEach((input) => {
-    input.addEventListener("change", () => {
-      const label = input.closest(".drop-field");
-      const title = label?.querySelector(".drop-field__title");
-      if (title && input.files?.[0]) title.textContent = input.files[0].name;
+  // "Drop files here" has to be true, so the zone accepts a drop as well as a pick,
+  // and either one uploads immediately rather than waiting for a second click.
+  const upload = document.querySelector("[data-upload-field]");
+  const dropZone = upload?.closest(".drop-zone");
+  if (upload && dropZone) {
+    const title = dropZone.querySelector(".drop-zone__title");
+    const send = () => {
+      if (!upload.files?.length) return;
+      if (title) title.textContent = `در حال افزودن ${upload.files[0].name}…`;
+      dropZone.requestSubmit();
+    };
+
+    upload.addEventListener("change", send);
+
+    ["dragenter", "dragover"].forEach((name) => {
+      dropZone.addEventListener(name, (event) => {
+        event.preventDefault();
+        dropZone.classList.add("is-dragging");
+      });
+    });
+    ["dragleave", "dragend"].forEach((name) => {
+      dropZone.addEventListener(name, () => dropZone.classList.remove("is-dragging"));
+    });
+    dropZone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      dropZone.classList.remove("is-dragging");
+      const [file] = event.dataTransfer?.files || [];
+      if (!file) return;
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      upload.files = transfer.files;
+      send();
+    });
+  }
+
+  // Picking a source is a tick, not a trip through a button: the surrounding form
+  // posts the toggle straight away. Without JS the noscript button does the same.
+  document.querySelectorAll("[data-toggle-source]").forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      checkbox.disabled = true;
+      checkbox.form?.requestSubmit();
     });
   });
+
+  // Chapter rows seek the one player on the page; without JS they stay plain labels
+  // next to their timestamps, which still tells you where each part begins.
+  const episodeAudio = document.querySelector("[data-episode-audio]");
+  if (episodeAudio) {
+    document.querySelectorAll("[data-seek-to]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const start = Number(button.dataset.seekTo);
+        if (!Number.isFinite(start)) return;
+        const seek = () => {
+          episodeAudio.currentTime = start;
+          episodeAudio.play().catch(() => {
+            // Autoplay can be refused; the position is set either way.
+          });
+        };
+        if (episodeAudio.readyState) seek();
+        else episodeAudio.addEventListener("loadedmetadata", seek, { once: true });
+      });
+    });
+  }
 
   const search = document.querySelector("[data-project-search]");
   if (search) {
@@ -128,25 +184,13 @@
     });
   }
 
-  const refresh = document.querySelector("[data-auto-refresh]");
-  if (refresh) {
-    const interval = Number(refresh.dataset.autoRefresh || 3000);
-    let timer = null;
-    const schedule = () => {
-      if (document.hidden || timer) return;
-      timer = window.setTimeout(() => window.location.reload(), interval);
-    };
-    const cancel = () => {
-      if (!timer) return;
-      window.clearTimeout(timer);
-      timer = null;
-    };
-    document.addEventListener("visibilitychange", () => {
-      cancel();
-      schedule();
-    });
-    schedule();
-  }
+  // Live regions poll themselves through HTMX. A hidden tab has nobody watching, so
+  // its polls are dropped and pick up again on the next visible tick.
+  document.body.addEventListener("htmx:beforeRequest", (event) => {
+    if (document.hidden && event.detail.elt?.hasAttribute?.("data-live-region")) {
+      event.preventDefault();
+    }
+  });
 
   document.addEventListener("click", (event) => {
     document.querySelectorAll(".theme-switcher[open]").forEach((details) => {

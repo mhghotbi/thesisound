@@ -38,13 +38,16 @@ _EDITABLE_BRIEF_STATES = {
     ProjectState.SOURCES_COLLECTING,
     ProjectState.SOURCE_SELECTION_REQUIRED,
 }
+# Mode biases evidence extraction, so it stays editable only while extraction has not
+# run yet — exactly the states above. An empty submission leaves the stored mode alone.
+_BRIEF_MODES = ("explanatory", "critical", "comparative", "debate")
 _PREFLIGHT_POST_SCOPES: tuple[tuple[str, PreflightScope], ...] = (
     ("/corpus/confirm", "model"),
     ("/corpus/retry", "model"),
     ("/skip", "model"),
     ("/episode/prepare", "model"),
     ("/episode/retry", "model"),
-    ("/episode/reduce-duration", "model"),
+    ("/episode/duration", "model"),
     ("/script/approve", "model"),
     ("/script/retry", "model"),
     ("/audio/generate", "audio"),
@@ -520,6 +523,7 @@ def create_app(
         central_question: Annotated[str, Form()] = "",
         must_include: Annotated[str, Form()] = "",
         exclusions: Annotated[str, Form()] = "",
+        mode: Annotated[str, Form()] = "",
         action: Annotated[str, Form()] = "save",
     ) -> Response:
         if redirect := _login_redirect(request):
@@ -529,6 +533,7 @@ def create_app(
             "central_question": central_question,
             "must_include": must_include,
             "exclusions": exclusions,
+            "mode": mode,
         }
         try:
             _validate_csrf(request, csrf_token)
@@ -546,6 +551,10 @@ def create_app(
             project.brief.scope_exclusions = [
                 item.strip() for item in exclusions.splitlines() if item.strip()
             ]
+            if mode:
+                if mode not in _BRIEF_MODES:
+                    raise ValueError("رویکرد گفتار معتبر نیست.")
+                project.brief.modes = [mode]
             if not project.brief.central_question:
                 raise ValueError("پرسش اصلی نمی‌تواند خالی باشد.")
             if action == "confirm" and project.state == ProjectState.BRIEF_READY:

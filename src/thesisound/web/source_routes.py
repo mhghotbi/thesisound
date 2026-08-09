@@ -86,6 +86,7 @@ def register_source_routes(
             ),
             "selected_count": sum(source.selected for source in sources),
             "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
+            "upload_limit_mb": settings.web_upload_limit_bytes // (1024 * 1024),
             "error": error,
         }
 
@@ -396,17 +397,68 @@ def register_source_routes(
             )
         return _source_redirect(project_id)
 
+    @app.get("/projects/{project_id}/sources/{source_id}/delete", response_class=HTMLResponse)
+    def confirm_delete_source(request: Request, project_id: UUID, source_id: UUID) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        project = workspace.load_project(project_id)
+        sources = UiSourceManifestStore(workspace.project_dir(project_id)).load()
+        source = next((item for item in sources if item.source_id == source_id), None)
+        if source is None:
+            return _source_redirect(project_id)
+        if project.state not in _EDITABLE_SOURCE_STATES:
+            return _source_redirect(project_id, error="selection-locked")
+
+        corpus_run = corpus_builder.run_store.load_optional(project_id)
+        analysed = None
+        if corpus_run is not None:
+            analysed = next(
+                (item for item in corpus_run.sources if item.source_id == source_id),
+                None,
+            )
+        rebuild_targets: list[str] = []
+        if analysed is not None and analysed.claim_count:
+            rebuild_targets.append("تحلیل منابع و شاهدهای برگرفته از آن")
+        if episode_planner.run_store.load_optional(project_id) is not None:
+            rebuild_targets.append("طرح گفتار و هر خروجی‌ای که پس از آن ساخته‌شده است")
+
+        return render(
+            request,
+            "projects/source_delete.html",
+            {
+                "project": project,
+                "source": source,
+                "claim_count": analysed.claim_count if analysed else 0,
+                "remaining_count": len(sources) - 1,
+                "rebuild_targets": rebuild_targets,
+            },
+        )
+
     @app.post("/projects/{project_id}/sources/{source_id}/delete")
     def delete_source(
         request: Request,
         project_id: UUID,
         source_id: UUID,
         csrf_token: Annotated[str, Form()],
+        confirm: Annotated[str, Form()] = "",
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
         try:
             validate_csrf(request, csrf_token)
+            # Deleting the uploaded file is irreversible, so it only proceeds from the
+            # impact summary page, which is what mints this token.
+            if confirm != str(source_id):
+                return render(
+                    request,
+                    "projects/sources.html",
+                    source_context(
+                        workspace.load_project(project_id),
+                        UiSourceManifestStore(workspace.project_dir(project_id)).load(),
+                        error="حذف فایل بدون گذر از صفحهٔ تأیید انجام نمی‌شود.",
+                    ),
+                    status_code=400,
+                )
             project = workspace.load_project(project_id)
             if project.state not in _EDITABLE_SOURCE_STATES:
                 raise ValueError("Source selection is locked")
@@ -600,28 +652,37 @@ def register_source_routes(
             status_code=HTTP_303_SEE_OTHER,
         )
 
+    def processing_context(project_id: UUID) -> dict[str, object]:
+        project = workspace.load_project(project_id)
+        corpus_run = corpus_builder.run_store.load_optional(project_id)
+        planning_run = episode_planner.run_store.load_optional(project_id)
+        return {
+            "project": project,
+            "stages": _project_stages(project.state, corpus_run, planning_run),
+            "corpus_run": corpus_run,
+            "corpus_active": bool(corpus_run and corpus_run.status in {"queued", "running"}),
+            "corpus_attempt": len(corpus_builder.run_store.load_history(project_id)),
+            "planning_run": planning_run,
+            "planning_active": bool(planning_run and planning_run.status in {"queued", "running"}),
+        }
+
     @app.get("/projects/{project_id}/processing", response_class=HTMLResponse)
     def processing_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
-        project = workspace.load_project(project_id)
-        corpus_run = corpus_builder.run_store.load_optional(project_id)
-        planning_run = episode_planner.run_store.load_optional(project_id)
-        stages = _project_stages(project.state, corpus_run, planning_run)
-        return render(
-            request,
-            "projects/processing.html",
-            {
-                "project": project,
-                "stages": stages,
-                "corpus_run": corpus_run,
-                "corpus_active": bool(corpus_run and corpus_run.status in {"queued", "running"}),
-                "planning_run": planning_run,
-                "planning_active": bool(
-                    planning_run and planning_run.status in {"queued", "running"}
-                ),
-            },
-        )
+        return render(request, "projects/processing.html", processing_context(project_id))
+
+    @app.get("/projects/{project_id}/processing/live", response_class=HTMLResponse)
+    def processing_live(request: Request, project_id: UUID) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        context = processing_context(project_id)
+        response = render(request, "projects/_processing_live.html", context)
+        if not (context["corpus_active"] or context["planning_active"]):
+            # The run just settled: the rest of the page now has different actions, so
+            # let the browser reload once instead of polling a finished run.
+            response.headers["HX-Refresh"] = "true"
+        return response
 
 
 async def _auto_import_candidates(

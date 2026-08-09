@@ -9,9 +9,9 @@ from fastapi import BackgroundTasks, FastAPI, Form, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from starlette.status import HTTP_303_SEE_OTHER
 
-from thesisound.audio import script_hash
+from thesisound.audio import AudioPipelineManifest, script_hash
 from thesisound.config import Settings
-from thesisound.domain import ProjectState
+from thesisound.domain import Project, ProjectState
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.audio_artifact_store import AudioArtifactStore
 from thesisound.services.audio_direction import (
@@ -58,6 +58,26 @@ def register_audio_routes(
             render=render,
             settings=settings,
         )
+
+    @app.get("/projects/{project_id}/audio/live", response_class=HTMLResponse)
+    def audio_live(request: Request, project_id: UUID) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        response = _render_audio_page(
+            request,
+            project_id,
+            workspace=workspace,
+            builder=builder,
+            audio_store=audio_store,
+            script_store=script_store,
+            render=render,
+            settings=settings,
+            template_name="projects/_audio_live.html",
+        )
+        run = builder.run_store.load_optional(project_id)
+        if not (run and run.status in {"queued", "running"}):
+            response.headers["HX-Refresh"] = "true"
+        return response
 
     @app.post("/projects/{project_id}/audio/generate")
     def generate_audio(
@@ -227,6 +247,7 @@ def _render_audio_page(
     values: dict[str, str] | None = None,
     error: str | None = None,
     status_code: int = 200,
+    template_name: str = "projects/audio.html",
 ) -> HTMLResponse:
     project = workspace.load_project(project_id)
     stored_run = builder.run_store.load_optional(project_id)
@@ -285,15 +306,23 @@ def _render_audio_page(
         "speaker_a_notes": "",
         "speaker_b_notes": "",
     }
+    chapters = _chapters(
+        project,
+        segment_views,
+        manifest if current else None,
+        silence_seconds=settings.audio_silence_milliseconds / 1000,
+    )
     return render(
         request,
-        "projects/audio.html",
+        template_name,
         {
             "project": project,
             "audio_run": run,
             "audio_active": bool(run and run.status in {"queued", "running"}),
+            "audio_attempt": len(builder.run_store.load_history(project_id)),
             "manifest": manifest if current else None,
             "segment_views": segment_views,
+            "chapters": chapters,
             "can_generate": project.state == ProjectState.SCRIPT_VERIFIED,
             "can_retry": bool(
                 run
@@ -313,3 +342,69 @@ def _audio_redirect(project_id: UUID) -> RedirectResponse:
         f"/projects/{project_id}/audio",
         status_code=HTTP_303_SEE_OTHER,
     )
+
+
+# The final file is the chunks concatenated in order with a fixed silence between each,
+# so a chapter starts where its segment's first chunk starts. Every duration below is
+# measured from a rendered WAV; nothing here is estimated.
+def _chapters(
+    project: Project,
+    segment_views: list[dict[str, object]],
+    manifest: AudioPipelineManifest | None,
+    *,
+    silence_seconds: float,
+) -> list[dict[str, object]]:
+    if project.episode_plan is None or not segment_views:
+        return []
+
+    starts: dict[str, float] = {}
+    elapsed = 0.0
+    for index, view in enumerate(segment_views):
+        chunk = view["chunk"]
+        record = view["record"]
+        if record is None:
+            # One unrendered chunk and every later offset is guesswork.
+            return _chapters_without_times(project)
+        if index:
+            elapsed += silence_seconds
+        starts.setdefault(chunk.segment_id, elapsed)
+        elapsed += record.validation.duration_seconds
+
+    measured = manifest.final_duration_seconds if manifest else None
+    if not measured or elapsed <= 0:
+        return _chapters_without_times(project)
+    # Normalisation re-encodes the concatenated file, so allow it to shift the total by
+    # a hair and stretch the offsets onto the real timeline. A wider gap means these
+    # chunks did not produce this file, and guessed timestamps are worse than none.
+    drift = abs(measured - elapsed) / elapsed
+    if drift > 0.02:
+        return _chapters_without_times(project)
+    scale = measured / elapsed
+
+    chapters: list[dict[str, object]] = []
+    for segment in project.episode_plan.segments:
+        if segment.segment_id not in starts:
+            continue
+        start = starts[segment.segment_id] * scale
+        chapters.append(
+            {
+                "title": segment.title,
+                "start_seconds": round(start, 2),
+                "start_label": _timestamp(start),
+            }
+        )
+    return chapters
+
+
+def _chapters_without_times(project: Project) -> list[dict[str, object]]:
+    if project.episode_plan is None:
+        return []
+    return [
+        {"title": segment.title, "start_seconds": None, "start_label": ""}
+        for segment in project.episode_plan.segments
+    ]
+
+
+def _timestamp(seconds: float) -> str:
+    total = int(seconds)
+    return f"{total // 60}:{total % 60:02d}"

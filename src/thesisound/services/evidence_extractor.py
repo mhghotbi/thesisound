@@ -3,10 +3,13 @@ from __future__ import annotations
 import hashlib
 import re
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Lock
 from uuid import UUID
 
 from thesisound.domain import (
     DocumentMap,
+    DocumentMapSection,
     EvidenceExtraction,
     EvidenceItem,
     ExtractedDefinition,
@@ -35,8 +38,11 @@ _DEFAULT_MAX_ATTEMPTS = 3
 
 
 class EvidenceExtractorService:
-    def __init__(self, model_runner: ModelRunner) -> None:
+    def __init__(self, model_runner: ModelRunner, *, max_workers: int = 1) -> None:
+        if max_workers < 1:
+            raise ValueError("max_workers must be at least 1.")
         self.model_runner = model_runner
+        self.max_workers = max_workers
 
     def extract_source(
         self,
@@ -69,96 +75,154 @@ class EvidenceExtractorService:
             for block_id in section.source_block_ids
         }
         index_by_id = {block.block_id: index for index, block in enumerate(blocks)}
-        records: list[BlockEvidenceExtraction] = []
-        runs: list[ModelRunRecord] = []
         max_attempts = _evidence_max_attempts(self.model_runner, prompt_version)
 
-        for block in blocks:
-            if block.block_type == "front_matter" or block.block_id not in selected_ids:
-                continue
-            if block.block_id in skip_ids:
-                continue
-            section = section_by_block.get(block.block_id)
-            variables = {
-                "source_id": str(source_id),
-                "block": block.model_dump(mode="json"),
-                "section_context": (
-                    section.model_dump(mode="json") if section is not None else None
-                ),
-                "working_thesis": document_map.working_thesis,
-                "analysis_profile": profile.model_dump(mode="json"),
-                "neighbor_context": _neighbor_context(
-                    block,
-                    blocks,
-                    index_by_id,
-                    profile.neighbor_context_blocks,
-                ),
-            }
-            attempt = {"n": 0}
+        pending = [
+            block
+            for block in blocks
+            if block.block_type != "front_matter"
+            and block.block_id in selected_ids
+            and block.block_id not in skip_ids
+        ]
+        if not pending:
+            return [], []
 
-            def validator(
-                draft: EvidenceExtractionDraft,
-                *,
-                _block: SourceDocumentBlock = block,
-                _profile: AnalysisProfile = profile,
-                _attempt: dict[str, int] = attempt,
-                _max_attempts: int = max_attempts,
-            ) -> None:
-                _attempt["n"] += 1
+        results: dict[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]] = {}
+        # Callers persist from `on_extraction`, so serialize the callback here rather than
+        # asking every caller to be thread-safe. The model call itself stays outside it.
+        handover = Lock()
+
+        def work(block: SourceDocumentBlock) -> None:
+            outcome = self._extract_block(
+                project_id=project_id,
+                source_id=source_id,
+                block=block,
+                section=section_by_block.get(block.block_id),
+                blocks=blocks,
+                index_by_id=index_by_id,
+                document_map=document_map,
+                profile=profile,
+                model=model,
+                prompt_version=prompt_version,
+                max_attempts=max_attempts,
+            )
+            with handover:
+                results[block.block_id] = outcome
+                if on_extraction is not None:
+                    on_extraction(outcome[0])
+
+        workers = min(self.max_workers, len(pending))
+        if workers == 1:
+            for block in pending:
+                work(block)
+        else:
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = [pool.submit(work, block) for block in pending]
                 try:
-                    _validate_draft(draft, block=_block, profile=_profile)
-                except DeterministicValidationError:
-                    if _attempt["n"] < _max_attempts:
-                        raise
-                    _salvage_draft_inplace(draft, block=_block, profile=_profile)
+                    for future in as_completed(futures):
+                        future.result()
+                except BaseException:
+                    # Drop work that has not started but let in-flight blocks land: each
+                    # finished block is already saved and is skipped by the next attempt.
+                    pool.shutdown(wait=True, cancel_futures=True)
+                    raise
 
-            record: BlockEvidenceExtraction
-            run: ModelRunRecord | None = None
+        records: list[BlockEvidenceExtraction] = []
+        runs: list[ModelRunRecord] = []
+        for block in blocks:
+            outcome = results.get(block.block_id)
+            if outcome is None:
+                continue
+            records.append(outcome[0])
+            if outcome[1] is not None:
+                runs.append(outcome[1])
+        return records, runs
+
+    def _extract_block(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        block: SourceDocumentBlock,
+        section: DocumentMapSection | None,
+        blocks: list[SourceDocumentBlock],
+        index_by_id: dict[str, int],
+        document_map: DocumentMap,
+        profile: AnalysisProfile,
+        model: str,
+        prompt_version: str | None,
+        max_attempts: int,
+    ) -> tuple[BlockEvidenceExtraction, ModelRunRecord | None]:
+        """Extract one block. Independent of every other block, so it runs concurrently."""
+
+        variables = {
+            "source_id": str(source_id),
+            "block": block.model_dump(mode="json"),
+            "section_context": (
+                section.model_dump(mode="json") if section is not None else None
+            ),
+            "working_thesis": document_map.working_thesis,
+            "analysis_profile": profile.model_dump(mode="json"),
+            "neighbor_context": _neighbor_context(
+                block,
+                blocks,
+                index_by_id,
+                profile.neighbor_context_blocks,
+            ),
+        }
+        attempt = {"n": 0}
+
+        def validator(draft: EvidenceExtractionDraft) -> None:
+            attempt["n"] += 1
             try:
-                execution = self.model_runner.run(
-                    project_id=project_id,
-                    stage="evidence_extraction",
-                    prompt_name="evidence_extraction",
-                    variables=variables,
-                    output_type=EvidenceExtractionDraft,
-                    model=model,
-                    prompt_version=prompt_version,
-                    validator=validator,
-                )
-                run = execution.record
-                extraction = _materialize_extraction(execution.output, block)
-                validate_evidence_extraction(extraction, block)
-                if not extraction.claims and not _has_auxiliary_content(extraction):
-                    record = BlockEvidenceExtraction(
-                        source_id=source_id,
-                        block_id=block.block_id,
-                        extraction=extraction,
-                        status="rejected",
-                        rejection_reason=(
-                            "No auditable evidence survived validation after retries."
-                        ),
-                    )
-                else:
-                    record = BlockEvidenceExtraction(
-                        source_id=source_id,
-                        block_id=block.block_id,
-                        extraction=extraction,
-                        status="extracted",
-                    )
-            except StructuredOutputError as exc:
+                _validate_draft(draft, block=block, profile=profile)
+            except DeterministicValidationError:
+                if attempt["n"] < max_attempts:
+                    raise
+                _salvage_draft_inplace(draft, block=block, profile=profile)
+
+        record: BlockEvidenceExtraction
+        run: ModelRunRecord | None = None
+        try:
+            execution = self.model_runner.run(
+                project_id=project_id,
+                stage="evidence_extraction",
+                prompt_name="evidence_extraction",
+                variables=variables,
+                output_type=EvidenceExtractionDraft,
+                model=model,
+                prompt_version=prompt_version,
+                validator=validator,
+            )
+            run = execution.record
+            extraction = _materialize_extraction(execution.output, block)
+            validate_evidence_extraction(extraction, block)
+            if not extraction.claims and not _has_auxiliary_content(extraction):
                 record = BlockEvidenceExtraction(
                     source_id=source_id,
                     block_id=block.block_id,
-                    extraction=EvidenceExtraction(segment_function="rejected"),
+                    extraction=extraction,
                     status="rejected",
-                    rejection_reason=str(exc)[:1_000] or type(exc).__name__,
+                    rejection_reason=(
+                        "No auditable evidence survived validation after retries."
+                    ),
                 )
-            if on_extraction is not None:
-                on_extraction(record)
-            records.append(record)
-            if run is not None:
-                runs.append(run)
-        return records, runs
+            else:
+                record = BlockEvidenceExtraction(
+                    source_id=source_id,
+                    block_id=block.block_id,
+                    extraction=extraction,
+                    status="extracted",
+                )
+        except StructuredOutputError as exc:
+            record = BlockEvidenceExtraction(
+                source_id=source_id,
+                block_id=block.block_id,
+                extraction=EvidenceExtraction(segment_function="rejected"),
+                status="rejected",
+                rejection_reason=str(exc)[:1_000] or type(exc).__name__,
+            )
+        return record, run
 
 
 def _evidence_max_attempts(

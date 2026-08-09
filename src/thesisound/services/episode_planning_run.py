@@ -208,8 +208,17 @@ class EpisodePlanningRunService:
     ) -> EpisodePlanningRun:
         project = self.workspace_store.load_project(project_id)
         previous = self.run_store.load(project_id)
-        if project.state != ProjectState.EPISODE_PLANNING or previous.status != "blocked":
-            raise ValueError("Duration can only change after a blocked coverage review.")
+        # Both ceilings are recorded before the run can block, so a finished plan knows
+        # its supported duration just as well as a blocked one does. The episode plan is
+        # the only artifact duration has reached by either point, and it is rebuilt here.
+        if (project.state, previous.status) not in {
+            (ProjectState.EPISODE_PLANNING, "blocked"),
+            (ProjectState.EPISODE_PLANNED, "succeeded"),
+        }:
+            raise ValueError(
+                "Duration can only change from a blocked coverage review or a finished "
+                f"episode plan; this project is in an invalid state ({project.state.value})."
+            )
         if project.brief is None:
             raise ValueError("ResearchBrief is required before episode planning.")
         if not 5 <= duration_minutes <= 120:
@@ -219,6 +228,8 @@ class EpisodePlanningRunService:
             raise ValueError("The selected duration is still longer than the supported corpus.")
         project.brief.target_duration_minutes = duration_minutes
         project.episode_plan = None
+        if project.state == ProjectState.EPISODE_PLANNED:
+            transition(project, ProjectState.EPISODE_PLANNING)
         self.workspace_store.save_project(project)
         run = EpisodePlanningRun(
             project_id=project_id,

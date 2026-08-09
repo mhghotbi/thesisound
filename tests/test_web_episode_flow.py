@@ -122,7 +122,7 @@ def test_blocked_web_flow_has_no_continue_anyway_and_can_reduce_duration(
         assert "ادامه‌دادن با corpus ناکافی مجاز نیست" in page.text
         assert "ادامه به هر حال" not in page.text
         response = client.post(
-            f"/projects/{project.project_id}/episode/reduce-duration",
+            f"/projects/{project.project_id}/episode/duration",
             data={
                 "csrf_token": _csrf(page.text),
                 "duration_minutes": "10",
@@ -175,3 +175,106 @@ def test_blocked_web_flow_can_reopen_sources_and_marks_episode_stale(
     assert response.headers["location"].endswith(f"/{project.project_id}/sources")
     assert workspace.load_project(project.project_id).state == ProjectState.SOURCES_COLLECTING
     assert (workspace.project_dir(project.project_id) / "episode" / "stale.json").exists()
+
+
+def _succeeded_run(project: Project, *, supported: int) -> EpisodePlanningRun:
+    return EpisodePlanningRun(
+        run_id=uuid4(),
+        project_id=project.project_id,
+        status="succeeded",
+        stage="complete",
+        target_duration_minutes=project.brief.target_duration_minutes,
+        max_supported_minutes=supported,
+        effective_supported_minutes=float(supported),
+    )
+
+
+def test_duration_can_change_on_a_finished_plan(tmp_path: Path) -> None:
+    """The corpus ceiling is only knowable here, so the choice belongs here too."""
+
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.EPISODE_PLANNED, duration=20)
+    workspace.save_project(project)
+    run_store = EpisodePlanningRunStore(settings.workspace_root)
+    succeeded = _succeeded_run(project, supported=35)
+    run_store.save(succeeded)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        projects = client.get("/projects")
+        response = client.post(
+            f"/projects/{project.project_id}/episode/duration",
+            data={"csrf_token": _csrf(projects.text), "duration_minutes": "30"},
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 303
+    saved = workspace.load_project(project.project_id)
+    assert saved.brief.target_duration_minutes == 30
+    assert saved.state == ProjectState.EPISODE_PLANNING
+    assert saved.episode_plan is None
+    next_run = run_store.load(project.project_id)
+    assert next_run.status == "queued"
+    assert next_run.previous_run_id == succeeded.run_id
+    assert next_run.target_duration_minutes == 30
+
+
+def test_duration_cannot_exceed_the_supported_ceiling(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.EPISODE_PLANNED, duration=20)
+    workspace.save_project(project)
+    run_store = EpisodePlanningRunStore(settings.workspace_root)
+    run_store.save(_succeeded_run(project, supported=25))
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        projects = client.get("/projects")
+        response = client.post(
+            f"/projects/{project.project_id}/episode/duration",
+            data={"csrf_token": _csrf(projects.text), "duration_minutes": "45"},
+            follow_redirects=False,
+        )
+
+    assert response.status_code != 303
+    saved = workspace.load_project(project.project_id)
+    assert saved.brief.target_duration_minutes == 20
+    assert saved.state == ProjectState.EPISODE_PLANNED
+
+
+def test_duration_is_locked_once_the_script_has_started(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.SCRIPT_DRAFTING, duration=20)
+    workspace.save_project(project)
+    run_store = EpisodePlanningRunStore(settings.workspace_root)
+    run_store.save(_succeeded_run(project, supported=35))
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        projects = client.get("/projects")
+        response = client.post(
+            f"/projects/{project.project_id}/episode/duration",
+            data={"csrf_token": _csrf(projects.text), "duration_minutes": "30"},
+            follow_redirects=False,
+        )
+
+    assert response.status_code != 303
+    saved = workspace.load_project(project.project_id)
+    assert saved.brief.target_duration_minutes == 20

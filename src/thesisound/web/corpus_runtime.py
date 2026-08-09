@@ -47,7 +47,10 @@ def create_corpus_builder(
             artifact_store=source_store,
             block_builder=BlockBuilder(),
             document_mapper=DocumentMapperService(runner),
-            evidence_extractor=EvidenceExtractorService(runner),
+            evidence_extractor=EvidenceExtractorService(
+                runner,
+                max_workers=settings.evidence_extraction_workers,
+            ),
             claim_reconciler=ClaimReconcilerService(runner),
         )
 

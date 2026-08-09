@@ -192,7 +192,10 @@ def _model_service(settings: Settings, root: Path) -> SourceAnalysisService:
         artifact_store=SourceArtifactStore(root),
         block_builder=BlockBuilder(),
         document_mapper=DocumentMapperService(runner),
-        evidence_extractor=EvidenceExtractorService(runner),
+        evidence_extractor=EvidenceExtractorService(
+            runner,
+            max_workers=settings.evidence_extraction_workers,
+        ),
         claim_reconciler=ClaimReconcilerService(runner),
     )
 

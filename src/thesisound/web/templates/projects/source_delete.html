@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}حذف فایل | مقال{% endblock %}
+{# A destructive confirmation keeps one question on screen, so the step rail steps aside. #}
+{% block workflow_nav %}{% endblock %}
+{% block content %}
+<section class="impact-summary" aria-labelledby="delete-title">
+  <div class="impact-summary__head">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+    <div>
+      <h1 id="delete-title">فایل «<bdi dir="auto">{{ source.title }}</bdi>» حذف شود؟</h1>
+      <p>این کار خودِ فایل بارگذاری‌شده را از سرور پاک می‌کند. اگر نسخهٔ دیگری ندارید، بازگشتی در کار نیست.</p>
+    </div>
+  </div>
+
+  <div class="impact-summary__grid">
+    <div class="impact-summary__column impact-summary__column--loss">
+      <h2>از بین می‌رود</h2>
+      <ul>
+        <li>فایل اصلی <bdi dir="ltr" translate="no">{{ source.filename }}</bdi></li>
+        <li>متن استخراج‌شده و {{ source.block_count | fa_num }} پاره‌متن آن</li>
+        {% if claim_count %}<li>{{ claim_count | fa_num }} مدعای ثبت‌شده از این منبع</li>{% endif %}
+      </ul>
+    </div>
+    <div class="impact-summary__column impact-summary__column--keep">
+      <h2>باقی می‌ماند</h2>
+      <ul>
+        <li>پرسش و برداشت اولیهٔ تأییدشدهٔ این گفتار</li>
+        {% if remaining_count %}
+        <li>{{ remaining_count | fa_num }} منبع دیگر و مدعاهای آن‌ها</li>
+        {% else %}
+        <li>خودِ گفتار؛ می‌توانید منبع تازه‌ای بگذارید</li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  {% if rebuild_targets %}
+  <div class="impact-summary__rebuild">
+    <p><strong>پس از حذف، این خروجی‌ها باید دوباره ساخته شوند</strong></p>
+    <p>{{ rebuild_targets | join(' · ') }} — چون بخشی از پشتوانهٔ آن‌ها همین فایل بود.</p>
+  </div>
+  {% endif %}
+
+  <div class="impact-summary__actions">
+    <form method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/delete">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="confirm" value="{{ source.source_id }}">
+      <button class="button button--danger-solid" type="submit">بله، این فایل را حذف کن</button>
+    </form>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/sources">انصراف</a>
+    {% if source.selected %}
+    <p class="impact-summary__alternative">فقط می‌خواهید از این گفتار کنار برود؟ <a href="/projects/{{ project.project_id }}/sources">تیکش را بردارید</a>.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

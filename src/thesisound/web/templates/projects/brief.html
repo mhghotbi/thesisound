@@ -3,6 +3,9 @@
 {% block title %}موضوع و هدف | مقال{% endblock %}
 {% block content %}
 {% set knowledge_labels = {'none': 'بدون آشنایی', 'introductory': 'مقدماتی', 'intermediate': 'متوسط', 'advanced': 'پیشرفته'} %}
+{% set mode_labels = {'explanatory': 'توضیحی', 'critical': 'انتقادی', 'comparative': 'مقایسه‌ای', 'debate': 'مناظره‌ای'} %}
+{% set current_mode = project.brief.modes[0] if project.brief.modes else 'explanatory' %}
+{% set selected_mode = values.mode if values and values.mode else current_mode %}
 <div class="page-content--narrow">
   <header class="page-heading page-heading--compact">
     <div>
@@ -12,16 +15,14 @@
     </div>
   </header>
 
-  {% if error %}
-    <div class="notice notice--danger" role="alert">{{ error }}</div>
-  {% elif request.query_params.get('saved') %}
+  {% if request.query_params.get('saved') %}
     <div class="notice notice--success" role="status">ویرایش‌ها ذخیره شد؛ برداشت اولیه هنوز تأیید نشده است.</div>
   {% endif %}
 
   {% if brief_locked %}
   <div class="notice notice--info">
     <strong>این برداشت اولیه فعلاً فقط خواندنی است.</strong>
-    <p>برای اصلاح، کنترل «بازگشت و اصلاح مراحل قبلی» را در نوار مراحل باز کنید. خروجی‌های وابسته بایگانی می‌شوند و فایل‌های خام باقی می‌مانند.</p>
+    <p>برای اصلاح، از «بازگشت و اصلاح» در نوار مراحل استفاده کنید. خروجی‌های وابسته بایگانی می‌شوند و فایل‌های خام باقی می‌مانند.</p>
   </div>
   {% endif %}
 
@@ -36,6 +37,7 @@
       <div class="summary-row"><dt><span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span></dt><dd>{{ project.brief.central_question }}</dd></div>
       {% if project.brief.scope_inclusions %}<div class="summary-row"><dt>حتماً پوشش داده شود</dt><dd><ul>{% for item in project.brief.scope_inclusions %}<li>{{ item }}</li>{% endfor %}</ul></dd></div>{% endif %}
       {% if project.brief.scope_exclusions %}<div class="summary-row"><dt>خارج از این گفتار</dt><dd><ul>{% for item in project.brief.scope_exclusions %}<li>{{ item }}</li>{% endfor %}</ul></dd></div>{% endif %}
+      <div class="summary-row"><dt>رویکرد گفتار</dt><dd>{{ mode_labels.get(current_mode, current_mode) }}</dd></div>
     </dl>
     <div class="form-actions form-actions--end">
       {% if project.state.value in ['corpus_ready', 'episode_planning', 'episode_planned'] %}
@@ -52,8 +54,14 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label class="field field--large">
       <span><span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span></span>
-      <textarea name="central_question" rows="3" required {% if error %}aria-invalid="true" aria-describedby="brief-error"{% endif %}>{{ values.central_question if values else project.brief.central_question }}</textarea>
-      {% if error %}<small class="field-error" id="brief-error">{{ error }}</small>{% else %}<small class="field-hint">این پرسش معیار انتخاب منبع، سنجش کفایت و ساختار گفتار خواهد بود.</small>{% endif %}
+      <textarea name="central_question" rows="3" required {% if error %}autofocus aria-invalid="true" aria-describedby="brief-error brief-hint"{% else %}aria-describedby="brief-hint"{% endif %}>{{ values.central_question if values else project.brief.central_question }}</textarea>
+      {% if error %}
+      <p class="field-error" id="brief-error">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+        {{ error }}
+      </p>
+      {% endif %}
+      <small class="field-hint" id="brief-hint">این پرسش معیار انتخاب منبع، سنجش کفایت و ساختار گفتار خواهد بود.</small>
     </label>
     <label class="field">
       <span>حتماً پوشش داده شود <small>(هر مورد در یک خط)</small></span>
@@ -63,6 +71,15 @@
       <span>خارج از این گفتار <small>(هر مورد در یک خط)</small></span>
       <textarea name="exclusions" rows="3" placeholder="مثلاً: جزئیات فنی کم‌اهمیت">{{ values.exclusions if values else project.brief.scope_exclusions | join('\n') }}</textarea>
     </label>
+
+    {# Mode steers which evidence each source is mined for, so it is editable only while
+       this form is open — that is, before the corpus build that consumes it. #}
+    <fieldset class="choice-group">
+      <legend>رویکرد گفتار</legend>
+      {% for value, label in mode_labels.items() %}
+      <label><input type="radio" name="mode" value="{{ value }}" {% if selected_mode == value %}checked{% endif %}><span>{{ label }}</span></label>
+      {% endfor %}
+    </fieldset>
 
     {% call technical_details('صورت‌بندی گفتار', always_visible=false) %}
       <p>نوع موضوع: <code><bdi dir="ltr">{{ project.brief.topic_type.value }}</bdi></code> · زبان خروجی: <code><bdi dir="ltr">{{ project.brief.output_language }}</bdi></code> · رویکردها: <code><bdi dir="ltr">{{ project.brief.modes | join(', ') }}</bdi></code></p>

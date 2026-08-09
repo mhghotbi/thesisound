@@ -8,15 +8,29 @@
 {% set selected_mode = values.mode if values else 'explanatory' %}
 
 <nav class="workflow-rail" aria-label="مراحل ساخت گفتار">
-  <div class="workflow-rail__topline"><span class="workflow-rail__project">گفتار تازه</span></div>
+  <p class="workflow-rail__compact">
+    <strong>مرحلهٔ ۱ از ۶ — موضوع و هدف</strong>
+    <span>هنوز مرحله‌ای تمام نشده</span>
+  </p>
+  <div class="workflow-rail__progress" aria-hidden="true">
+    {% for label in ['موضوع و هدف', 'منابع', 'تحلیل منابع', 'طرح گفتار', 'متن گفتار', 'شنیدن'] %}
+    <span class="{% if loop.first %}is-current{% endif %}"></span>
+    {% endfor %}
+  </div>
   <ol class="workflow-rail__steps">
     {% for label in ['موضوع و هدف', 'منابع', 'تحلیل منابع', 'طرح گفتار', 'متن گفتار', 'شنیدن'] %}
-    <li class="workflow-step {% if loop.first %}is-current{% else %}is-locked{% endif %}" {% if loop.first %}aria-current="step"{% endif %}>
+    <li class="workflow-step {% if loop.first %}is-current is-linked{% else %}is-locked{% endif %}" {% if loop.first %}aria-current="step"{% endif %}>
+      {% if loop.first %}
       <span class="workflow-step__mark" aria-hidden="true">{{ loop.index | fa_num }}</span>
-      <span><strong>{{ label }}</strong><small>{% if loop.first %}مرحلهٔ جاری{% else %}پس از ساخت گفتار{% endif %}</small></span>
+      <span>{{ label }}</span>
+      {% else %}
+      {% if loop.index == 2 %}<svg class="workflow-step__lock" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="8" width="10" height="7" rx="1"/><path d="M6.5 8V6a2.5 2.5 0 015 0v2"/></svg>{% endif %}
+      <span aria-disabled="true" aria-describedby="workflow-lock-reason">{{ label }}</span>
+      {% endif %}
     </li>
     {% endfor %}
   </ol>
+  <p class="workflow-rail__lock" id="workflow-lock-reason">پس از ساخت برداشت اولیه باز می‌شوند.</p>
 </nav>
 
 <div class="page-content page-content--narrow">
@@ -28,14 +42,19 @@
     </div>
   </header>
 
-  {% if error %}<div class="notice notice--danger" role="alert">{{ error }}</div>{% endif %}
-
   <form class="form-sheet" method="post" action="/projects" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    {# The error belongs beside the field it is about, and focus lands there on reload. #}
     <label class="field field--large">
       <span>موضوع یا پرسش اصلی</span>
-      <textarea name="topic" rows="4" required autofocus placeholder="مثلاً: چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟" {% if error %}aria-invalid="true" aria-describedby="topic-error"{% endif %}>{{ values.topic if values else '' }}</textarea>
-      {% if error %}<small class="field-error" id="topic-error">{{ error }}</small>{% else %}<small class="field-hint">هرچه پرسش مشخص‌تر باشد، جست‌وجو و سنجش کفایت منابع دقیق‌تر می‌شود.</small>{% endif %}
+      <textarea name="topic" rows="4" required autofocus placeholder="مثلاً: چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟" {% if error %}aria-invalid="true" aria-describedby="topic-error topic-hint"{% else %}aria-describedby="topic-hint"{% endif %}>{{ values.topic if values else '' }}</textarea>
+      {% if error %}
+      <p class="field-error" id="topic-error">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+        {{ error }}
+      </p>
+      {% endif %}
+      <small class="field-hint" id="topic-hint">هرچه پرسش مشخص‌تر باشد، جست‌وجو و سنجش کفایت منابع دقیق‌تر می‌شود.</small>
     </label>
 
     <div class="field-grid">

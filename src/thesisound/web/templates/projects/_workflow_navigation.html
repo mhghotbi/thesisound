@@ -29,61 +29,76 @@
   ('متن گفتار', 'script'),
   ('شنیدن', 'audio')
 ] %}
+{% set lock_reasons = {
+  1: 'پس از تأیید برداشت اولیه باز می‌شوند.',
+  2: 'پس از تأیید منابع باز می‌شوند.',
+  3: 'مرحله‌های بعد پس از پایان تحلیل منابع باز می‌شوند.',
+  4: 'پس از تأیید همین طرح باز می‌شوند.',
+  5: 'پس از آماده‌شدن متن گفتار باز می‌شود.'
+} %}
+{% set completed_count = current_step - 1 %}
 <nav class="workflow-rail" aria-label="مراحل ساخت گفتار">
-  <div class="workflow-rail__topline">
-    <a class="workflow-rail__project" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
-    <span aria-hidden="true">·</span>
-    <span class="workflow-rail__project">{{ project_title(project) }}</span>
+  <p class="workflow-rail__compact">
+    <strong>مرحلهٔ {{ current_step | fa_num }} از ۶ — {{ steps[current_step - 1][0] }}</strong>
+    <span>{% if completed_count %}{{ completed_count | fa_num }} مرحله انجام شد{% else %}هنوز مرحله‌ای تمام نشده{% endif %}</span>
+  </p>
+  <div class="workflow-rail__progress" aria-hidden="true">
+    {% for label, suffix in steps %}
+      {% set number = loop.index %}
+      <span class="{% if number < current_step %}is-complete{% elif number == current_step %}is-current{% endif %}"></span>
+    {% endfor %}
   </div>
+
   <ol class="workflow-rail__steps">
+    {% set ns = namespace(lock_marked=false) %}
     {% for label, suffix in steps %}
       {% set number = loop.index %}
       {% if number < current_step %}{% set step_class = 'is-complete' %}
       {% elif number == current_step %}{% set step_class = 'is-current' %}
       {% elif number <= available_step %}{% set step_class = 'is-available' %}
       {% else %}{% set step_class = 'is-locked' %}{% endif %}
-      <li class="workflow-step {{ step_class }}" {% if number == current_step %}aria-current="step"{% endif %}>
-        <span class="workflow-step__mark" aria-hidden="true">{% if number < current_step %}✓{% else %}{{ number | fa_num }}{% endif %}</span>
-        <span>
-          {% if number <= available_step %}
-            <a href="/projects/{{ project.project_id }}/{{ suffix }}"><strong>{{ label }}</strong></a>
-          {% else %}
-            <strong aria-disabled="true">{{ label }}</strong>
-          {% endif %}
-          {% if number < current_step %}<small>انجام‌شده؛ قابل بازبینی</small>
-          {% elif number == current_step %}<small>مرحلهٔ جاری</small>
-          {% elif number <= available_step %}<small>در دسترس</small>
-          {% else %}<small>پس از تکمیل مرحلهٔ قبل</small>{% endif %}
-        </span>
+      <li class="workflow-step {{ step_class }}{% if number <= current_step %} is-linked{% endif %}"
+          {% if number == current_step %}aria-current="step"{% endif %}>
+        {% if step_class == 'is-complete' %}
+          <span class="workflow-step__mark" aria-hidden="true">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg>
+          </span>
+        {% elif step_class == 'is-locked' and not ns.lock_marked %}
+          {% set ns.lock_marked = true %}
+          <svg class="workflow-step__lock" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="8" width="10" height="7" rx="1"/><path d="M6.5 8V6a2.5 2.5 0 015 0v2"/></svg>
+        {% elif step_class != 'is-locked' %}
+          <span class="workflow-step__mark" aria-hidden="true">{{ number | fa_num }}</span>
+        {% endif %}
+        {% if number <= available_step %}
+          <a href="/projects/{{ project.project_id }}/{{ suffix }}">{{ label }}</a>
+        {% else %}
+          <span aria-disabled="true" aria-describedby="workflow-lock-reason">{{ label }}</span>
+        {% endif %}
       </li>
     {% endfor %}
   </ol>
 
-  {% if available_step > 2 %}
-  <details class="revision-control">
-    <summary>بازگشت و اصلاح مراحل قبلی</summary>
-    <div class="revision-control__body">
-      <p>با بازکردن مرحلهٔ قبلی، خروجی‌های وابسته بایگانی و پس از اصلاح دوباره ساخته می‌شوند. فایل‌های خام حذف نمی‌شوند.</p>
-      <div class="form-actions">
-        <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <input type="hidden" name="target" value="sources">
-          <button class="button button--secondary button--small" type="submit">اصلاح منابع</button>
-        </form>
-        <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <input type="hidden" name="target" value="brief">
-          <button class="button button--quiet button--small" type="submit">اصلاح موضوع و هدف</button>
-        </form>
-      </div>
-    </div>
-  </details>
-  {% elif available_step == 2 %}
-  <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind" class="revision-control">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <input type="hidden" name="target" value="brief">
-    <button class="button button--quiet button--small" type="submit">اصلاح موضوع و هدف</button>
-  </form>
+  {% if available_step < 6 and lock_reasons.get(current_step) %}
+  <p class="workflow-rail__lock" id="workflow-lock-reason">{{ lock_reasons.get(current_step) }}</p>
+  {% endif %}
+
+  {% if available_step >= 2 %}
+  <div class="workflow-rail__rewind">
+    <span>بازگشت و اصلاح:</span>
+    {% if available_step > 2 %}
+    <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="target" value="sources">
+      <button type="submit">منابع</button>
+    </form>
+    {% endif %}
+    <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="target" value="brief">
+      <button type="submit">موضوع و هدف</button>
+    </form>
+    <small>خروجی‌های وابسته بایگانی و پس از اصلاح دوباره ساخته می‌شوند. فایل‌های خام حذف نمی‌شوند.</small>
+  </div>
   {% endif %}
 </nav>
 {% if request.query_params.get('workflow_error') %}

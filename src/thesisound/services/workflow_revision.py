@@ -26,13 +26,18 @@ _DOWNSTREAM_PATHS = (
     "script",
     "audio",
     "runs",
-    "model-runs",
     *_RUN_POINTERS,
 )
-# Per-source analysis survives a sources-scope rewind so a corpus rebuild can reuse the
-# sources the user keeps. Every reuse is re-validated against the file and the current
-# brief in `corpus_reuse.reusable_claim_ledger`, so nothing stale can slip through.
-_SOURCE_SCOPE_KEPT_PATHS = ("sources",)
+# `model-runs` is deliberately absent: it is an append-only record of what each model call
+# sent and received, and `WorkspaceModelRunStore` only ever writes to it. Moving it could
+# not prevent stale reuse because nothing reuses it, and it would strand the run IDs that
+# surviving analysis manifests point at — the trail from a claim back to its prompt.
+# Per-source analysis survives every rewind so a corpus rebuild can reuse the sources the
+# user keeps. Surviving is not reuse: `corpus_reuse.reusable_claim_ledger` re-validates
+# each source against its file hash and against the current brief's extraction plan before
+# anything is carried forward, and rebuilds from scratch on any mismatch. That check is
+# strictly better informed than this one, which has to decide before the edit even happens.
+_REUSABLE_ANALYSIS_PATHS = ("sources",)
 
 
 class WorkflowRevisionReceipt(BaseModel):
@@ -77,7 +82,7 @@ class WorkflowRevisionService:
         archived_paths = _archive_downstream(
             project_dir,
             archive_dir,
-            keep=() if target == "brief" else _SOURCE_SCOPE_KEPT_PATHS,
+            keep=_REUSABLE_ANALYSIS_PATHS,
         )
         if target == "brief":
             candidate_path = project_dir / "web-search-candidates.json"

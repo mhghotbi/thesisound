@@ -53,6 +53,26 @@ def register_script_routes(
             render=render,
         )
 
+    @app.get("/projects/{project_id}/script/live", response_class=HTMLResponse)
+    def script_live(request: Request, project_id: UUID) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        response = _render_script_page(
+            request,
+            project_id,
+            workspace=workspace,
+            builder=builder,
+            script_store=script_store,
+            approval_store=approval_store,
+            source_store=source_store,
+            render=render,
+            template_name="projects/_script_live.html",
+        )
+        run = builder.run_store.load_optional(project_id)
+        if not (run and run.status in {"queued", "running"}):
+            response.headers["HX-Refresh"] = "true"
+        return response
+
     @app.post("/projects/{project_id}/script/approve")
     def approve_script(
         request: Request,
@@ -125,6 +145,7 @@ def _render_script_page(
     render: Render,
     error: str | None = None,
     status_code: int = 200,
+    template_name: str = "projects/script.html",
 ) -> HTMLResponse:
     project = workspace.load_project(project_id)
     current_plan_hash = (
@@ -165,11 +186,12 @@ def _render_script_page(
     manifest = script_store.load_manifest_optional(project_id) if artifacts_current else None
     return render(
         request,
-        "projects/script.html",
+        template_name,
         {
             "project": project,
             "script_run": run,
             "script_active": bool(run and run.status in {"queued", "running"}),
+            "script_attempt": len(builder.run_store.load_history(project_id)),
             "approval": approval,
             "script": script,
             "checks": checks,

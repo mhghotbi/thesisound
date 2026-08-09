@@ -1,20 +1,45 @@
-{% macro status_label(primary, secondary='', tone='neutral', technical='') -%}
-<span class="status-label status-label--{{ tone }}">
+{#
+  Two-part status: the stage on the left, what it asks of the reader on the right.
+  Colour never carries the state alone — every tone has its own shape: tick for done,
+  triangle for warning, square for stopped, filled dot for running, ring for waiting.
+#}
+{% macro status_label(primary, secondary='', tone='neutral', technical='', pill=false) -%}
+<span class="status-label status-label--{{ tone }}{% if pill %} status-label--pill{% endif %}">
+  {%- if tone == 'success' -%}
+  <svg class="status-label__mark" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>
+  {%- elif tone == 'attention' -%}
+  <svg class="status-label__mark" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 2l5.5 10h-11z"/><path d="M7 6v3M7 10.6v.1"/></svg>
+  {%- elif tone == 'danger' -%}
+  <svg class="status-label__mark" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" fill="currentColor"/></svg>
+  {%- else -%}
   <span class="status-label__mark" aria-hidden="true"></span>
+  {%- endif %}
   <span>{{ primary }}</span>
   {% if secondary %}<small>{{ secondary }}</small>{% endif %}
   {% if technical %}<code class="operator-only"><bdi dir="ltr">{{ technical }}</bdi></code>{% endif %}
 </span>
 {%- endmacro %}
 
-{% macro attention_panel(label, title, body, action_url='', action_label='', tone='attention') -%}
-<section class="attention-panel{% if tone != 'attention' %} attention-panel--{{ tone }}{% endif %}" aria-label="{{ label }}">
-  <div>
-    <span class="attention-panel__label">{{ label }}</span>
-    <h2>{{ title }}</h2>
-    {% if body %}<p>{{ body }}</p>{% endif %}
+{#
+  At most one of these per page. A rule and a heading rather than a coloured frame:
+  the state and what it asks of the reader sit on one line, the reason underneath,
+  and the single suggested action last.
+#}
+{% macro attention_panel(label, state, attention, body, tone='attention', primary_url='', primary_label='', secondary_url='', secondary_label='') -%}
+<section class="attention-panel" aria-labelledby="attention-heading">
+  <div class="attention-panel__line">
+    <h2 class="attention-panel__label" id="attention-heading">{{ label }}</h2>
+    {{ status_label(state, '', tone) }}
+    <span aria-hidden="true" class="attention-panel__dot">·</span>
+    <span class="attention-panel__ask">{{ attention }}</span>
   </div>
-  {% if action_url and action_label %}<a class="button button--primary" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+  {% if body %}<p>{{ body }}</p>{% endif %}
+  {% if primary_url and primary_label %}
+  <div class="attention-panel__actions">
+    <a class="button button--primary" href="{{ primary_url }}">{{ primary_label }}</a>
+    {% if secondary_url and secondary_label %}<a class="button button--secondary" href="{{ secondary_url }}">{{ secondary_label }}</a>{% endif %}
+  </div>
+  {% endif %}
 </section>
 {%- endmacro %}
 
@@ -29,16 +54,42 @@
 <div class="notice notice--danger" role="alert">{{ message }}</div>
 {%- endmacro %}
 
-{% macro error_recovery(title, impact, action_label='', action_url='') -%}
+{#
+  One recovery panel, always in the same order: what happened, what survived, what did
+  not, the suggested actions, which attempt this was, and the raw provider text last.
+  The actions come from the calling block; `technical` carries the raw error string.
+#}
+{% macro error_recovery(title, explanation, intact, unfinished, attempt=0, technical='', hint='') -%}
 <section class="error-recovery" role="alert">
-  <div class="error-recovery__grid">
-    <div>
-      <span class="attention-panel__label">چه شد</span>
-      <h2>{{ title }}</h2>
-      <p class="error-recovery__impact"><strong>اثر:</strong> {{ impact }}</p>
+  <div class="error-recovery__body">
+    <div class="error-recovery__head">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+      <div>
+        <h2>{{ title }}</h2>
+        {% if explanation %}<p>{{ explanation }}</p>{% endif %}
+      </div>
     </div>
-    {% if action_label and action_url %}<a class="button button--primary" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+    <div class="error-recovery__outcome">
+      <div class="error-recovery__intact">
+        <h3>سالم مانده</h3>
+        <p>{{ intact }}</p>
+      </div>
+      <div class="error-recovery__unfinished">
+        <h3>ناتمام</h3>
+        <p>{{ unfinished }}</p>
+      </div>
+    </div>
+    <div class="error-recovery__actions">
+      {{ caller() }}
+      {% if attempt %}<span class="error-recovery__attempt">تلاش {{ attempt | fa_num }}</span>{% endif %}
+    </div>
   </div>
-  {% if caller is defined %}<div class="error-recovery__options">{{ caller() }}</div>{% endif %}
+  {% if technical %}
+  <details class="error-recovery__technical">
+    <summary>جزئیات فنی</summary>
+    <p><bdi dir="ltr">{{ technical }}</bdi></p>
+  </details>
+  {% endif %}
 </section>
+{% if hint %}<p class="error-recovery__hint">{{ hint }}</p>{% endif %}
 {%- endmacro %}

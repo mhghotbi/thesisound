@@ -31,33 +31,39 @@ def register_episode_routes(
 ) -> None:
     episode_store = EpisodeArtifactStore(workspace.root)
 
+    def episode_context(project_id: UUID) -> dict[str, object]:
+        project = workspace.load_project(project_id)
+        run = planner.run_store.load_optional(project_id)
+        return {
+            "project": project,
+            "planning_run": run,
+            "planning_active": bool(run and run.status in {"queued", "running"}),
+            "planning_attempt": len(planner.run_store.load_history(project_id)),
+            "coverage": _load_optional(episode_store.load_coverage, project_id),
+            "budget": _load_optional(episode_store.load_budget, project_id),
+            "episode_plan": _load_optional(episode_store.load_plan, project_id)
+            or project.episode_plan,
+            "can_start": project.state == ProjectState.CORPUS_READY,
+            "can_retry": bool(
+                run and run.status == "failed" and project.state == ProjectState.FAILED_RETRYABLE
+            ),
+        }
+
     @app.get("/projects/{project_id}/episode", response_class=HTMLResponse)
     def episode_page(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
-        project = workspace.load_project(project_id)
-        run = planner.run_store.load_optional(project_id)
-        coverage = _load_optional(episode_store.load_coverage, project_id)
-        budget = _load_optional(episode_store.load_budget, project_id)
-        plan = _load_optional(episode_store.load_plan, project_id) or project.episode_plan
-        return render(
-            request,
-            "projects/episode.html",
-            {
-                "project": project,
-                "planning_run": run,
-                "planning_active": bool(run and run.status in {"queued", "running"}),
-                "coverage": coverage,
-                "budget": budget,
-                "episode_plan": plan,
-                "can_start": project.state == ProjectState.CORPUS_READY,
-                "can_retry": bool(
-                    run
-                    and run.status == "failed"
-                    and project.state == ProjectState.FAILED_RETRYABLE
-                ),
-            },
-        )
+        return render(request, "projects/episode.html", episode_context(project_id))
+
+    @app.get("/projects/{project_id}/episode/live", response_class=HTMLResponse)
+    def episode_live(request: Request, project_id: UUID) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        context = episode_context(project_id)
+        response = render(request, "projects/_episode_live.html", context)
+        if not context["planning_active"]:
+            response.headers["HX-Refresh"] = "true"
+        return response
 
     @app.post("/projects/{project_id}/episode/prepare")
     def prepare_episode(
@@ -109,8 +115,8 @@ def register_episode_routes(
             )
         return _episode_redirect(project_id)
 
-    @app.post("/projects/{project_id}/episode/reduce-duration")
-    def reduce_duration(
+    @app.post("/projects/{project_id}/episode/duration")
+    def set_duration(
         request: Request,
         background_tasks: BackgroundTasks,
         project_id: UUID,
@@ -188,6 +194,7 @@ def _episode_error(
             "project": project,
             "planning_run": run,
             "planning_active": bool(run and run.status in {"queued", "running"}),
+            "planning_attempt": len(planner.run_store.load_history(project_id)),
             "coverage": _load_optional(episode_store.load_coverage, project_id),
             "budget": _load_optional(episode_store.load_budget, project_id),
             "episode_plan": plan,

@@ -17,6 +17,7 @@ from thesisound.domain import (
     TopicType,
 )
 from thesisound.pipeline import WorkspaceStore
+from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.workflow_revision import WorkflowRevisionService
 
 
@@ -128,6 +129,59 @@ def test_rewind_to_brief_resets_selection_and_invalidates_search_results(
     manifest = json.loads((project_dir / "ui-source-manifest.json").read_text())
     assert manifest[0]["selected"] is False
     assert not (project_dir / "web-search-candidates.json").exists()
+
+
+def test_rewind_to_brief_keeps_analysis_for_the_reuse_check_to_judge(
+    tmp_path: Path,
+) -> None:
+    """Whether an edited brief invalidates the analysis is not knowable yet.
+
+    Deciding here would have to assume the worst; `reusable_claim_ledger` decides later
+    with the edited brief actually in hand.
+    """
+
+    workspace, project = _seed_workspace(tmp_path)
+    project_dir = workspace.project_dir(project.project_id)
+
+    receipt = WorkflowRevisionService(workspace).rewind(
+        project.project_id,
+        target="brief",
+        actor="09120000000",
+    )
+
+    assert (project_dir / "sources" / "artifact.json").exists()
+    assert "sources" not in receipt.archived_paths
+    # Everything downstream of the analysis still goes, on both rewind targets.
+    assert not (project_dir / "episode").exists()
+    assert not (project_dir / "script").exists()
+    assert not (project_dir / "audio").exists()
+    archive = next((project_dir / "archive" / "revisions").iterdir())
+    assert (archive / "episode" / "artifact.json").exists()
+
+
+def test_rewind_keeps_the_model_run_trail_that_manifests_point_at(
+    tmp_path: Path,
+) -> None:
+    """A surviving claim must stay traceable back to the prompt that produced it."""
+
+    workspace, project = _seed_workspace(tmp_path)
+    store = WorkspaceModelRunStore(workspace.root)
+    run_id = uuid4()
+    run_dir = store.run_dir(project.project_id, run_id)
+    run_dir.mkdir(parents=True)
+    (run_dir / "record.json").write_text(
+        json.dumps({"stage": "evidence_extraction"}),
+        encoding="utf-8",
+    )
+
+    receipt = WorkflowRevisionService(workspace).rewind(
+        project.project_id,
+        target="brief",
+        actor="09120000000",
+    )
+
+    assert "model-runs" not in receipt.archived_paths
+    assert (store.run_dir(project.project_id, run_id) / "record.json").exists()
 
 
 def test_rewind_rejects_an_active_run(tmp_path: Path) -> None:

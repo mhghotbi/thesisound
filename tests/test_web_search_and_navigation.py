@@ -236,7 +236,9 @@ def test_failed_project_can_rewind_to_sources_and_edit_again(
         )
 
         page = client.get(f"/projects/{project_id}/sources")
-        assert "بازگشت و اصلاح مراحل قبلی" in page.text
+        # The rewind control lives inside the step rail itself, not in a separate box.
+        assert 'class="workflow-rail__rewind"' in page.text
+        assert 'name="target" value="sources"' in page.text
         response = client.post(
             f"/projects/{project_id}/workflow/rewind",
             data={

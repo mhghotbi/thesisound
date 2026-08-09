@@ -1,0 +1,27 @@
+{% from "components.html" import status_label %}
+{# Contents of the polled live region on the audio page; see projects/processing.html. #}
+{% if audio_run and audio_active %}
+<section class="data-panel section-block" aria-labelledby="audio-progress-title">
+  <div class="section-heading">
+    <div>
+      <p class="kicker">اجرای جاری</p>
+      <h2 id="audio-progress-title">
+        {% if audio_run.stage == 'queued' %}در صف اجرا
+        {% elif audio_run.stage == 'segmenting' %}تقسیم متن گفتار به قطعه‌های گفتاری
+        {% elif audio_run.stage == 'synthesizing' %}ساخت قطعه‌های صوتی
+        {% elif audio_run.stage == 'transcribing' %}رونویسی و مقایسه با متن گفتار
+        {% elif audio_run.stage == 'regenerating' %}بازتولید قطعهٔ معیوب
+        {% elif audio_run.stage == 'assembling' %}نرمال‌سازی و اتصال قطعه‌ها
+        {% else %}در حال ساخت{% endif %}
+      </h2>
+    </div>
+    {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', audio_run.status) }}
+  </div>
+  <p class="lede">درصد و زمان باقی‌مانده حدس زده نمی‌شود. قطعه‌های سالم در تلاش دوباره ساخته نمی‌شوند.</p>
+  <p class="operator-only">No synthetic ETA; healthy chunks are reused.</p>
+  <p class="live-note">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 5.5v4l2.5 1.5"/></svg>
+    این صفحه خودش تازه می‌شود؛ جای شما در متن حفظ می‌ماند.
+  </p>
+</section>
+{% endif %}

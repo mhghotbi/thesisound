@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components.html" import status_label, technical_details, error_notice %}
+{% from "components.html" import status_label, technical_details, error_notice, error_recovery %}
 {% block title %}متن گفتار | مقال{% endblock %}
 {% block content %}
 {% set speaker_labels = {'A': 'اول', 'B': 'دوم'} %}
@@ -26,18 +26,22 @@
 
 {% if can_approve and not script_active %}
 <section class="attention-panel" aria-labelledby="script-approval-title">
-  <div>
-    <span class="attention-panel__label">تأیید انسانی لازم است</span>
-    <h2 id="script-approval-title">نگارش متن گفتار هنوز شروع نشده است</h2>
-    <p class="simple-only">با تأیید، نگارش و راستی‌آزمایی بر اساس همین ساختار شروع می‌شود.</p>
-    <p class="operator-only">Approval به hash همین Episode Plan متصل می‌شود و با تغییر plan باطل خواهد شد.</p>
+  <div class="attention-panel__line">
+    <h2 class="attention-panel__label" id="script-approval-title">اقدام لازم</h2>
+    {{ status_label('نگارش متن گفتار هنوز شروع نشده است', '', 'attention') }}
+    <span aria-hidden="true" class="attention-panel__dot">·</span>
+    <span class="attention-panel__ask">تأیید شما لازم است</span>
   </div>
-  <form method="post" action="/projects/{{ project.project_id }}/script/approve">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <button class="button button--primary" type="submit">تأیید همین طرح و نوشتن متن گفتار</button>
-  </form>
+  <p class="simple-only">با تأیید، نگارش و راستی‌آزمایی بر اساس همین طرح شروع می‌شود.</p>
+  <p class="operator-only">Approval به hash همین Episode Plan متصل می‌شود و با تغییر plan باطل خواهد شد.</p>
+  <div class="attention-panel__actions">
+    <form method="post" action="/projects/{{ project.project_id }}/script/approve">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="button button--primary" type="submit">تأیید همین طرح و نوشتن متن گفتار</button>
+    </form>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">بازگشت به طرح گفتار</a>
+  </div>
 </section>
-<div class="form-actions"><a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">بازگشت به طرح گفتار</a></div>
 {% endif %}
 
 {% if approval %}
@@ -47,60 +51,50 @@
 </div>
 {% endif %}
 
-{% if script_run and script_active %}
-<section class="data-panel section-block" aria-labelledby="script-progress-title">
-  <div class="section-heading">
-    <div>
-      <p class="kicker">اجرای جاری</p>
-      <h2 id="script-progress-title" aria-live="polite">
-        {% if script_run.stage == 'queued' %}در صف اجرا
-        {% elif script_run.stage == 'building_glossary' %}ساخت واژه‌نامهٔ دوزبانه
-        {% elif script_run.stage == 'writing_segments' %}نوشتن بخش‌های متن گفتار
-        {% elif script_run.stage == 'checking_draft' %}وارسی ساختاری پیش‌نویس
-        {% elif script_run.stage == 'verifying_draft' %}راستی‌آزمایی مستقل پیش‌نویس
-        {% elif script_run.stage == 'revising' %}اصلاح هدفمند گفته‌های معیوب
-        {% elif script_run.stage == 'checking_revision' %}وارسی ساختاری نسخهٔ اصلاح‌شده
-        {% elif script_run.stage == 'verifying_revision' %}راستی‌آزمایی مستقل نسخهٔ اصلاح‌شده
-        {% else %}در حال نگارش{% endif %}
-      </h2>
-    </div>
-    {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', script_run.status) }}
-  </div>
-  <p class="lede">در تلاش دوباره، بخش‌ها و خروجی‌های سالم دوباره ساخته نمی‌شوند. درصد یا زمان باقی‌ماندهٔ حدسی نمایش داده نمی‌شود.</p>
-  <p class="operator-only">Healthy artifacts are reused; no synthetic ETA.</p>
-</section>
-{% endif %}
+{# Polled live region; see projects/processing.html for how the swap works. #}
+<div id="script-live" data-live-region aria-live="polite"
+  {%- if script_active %} hx-get="/projects/{{ project.project_id }}/script/live" hx-trigger="every 2s" hx-target="this" hx-swap="innerHTML"{% endif %}>
+  {% include "projects/_script_live.html" %}
+</div>
 
 {% if script_run and script_run.status == 'failed' %}
-<section class="error-recovery" role="alert">
-  <div class="error-recovery__grid">
-    <div>
-      <span class="attention-panel__label">چه شد</span>
-      <h2>{{ script_run.last_error | user_error('script') if script_run.last_error else 'نگارش یا راستی‌آزمایی متن گفتار متوقف شد' }}</h2>
-      <p class="error-recovery__impact"><strong>اثر:</strong> طرح تأییدشده و بخش‌های سالم باقی مانده‌اند؛ متن ناقص وارد ساخت نسخهٔ شنیداری نمی‌شود.</p>
-    </div>
-    {% if can_retry %}
-    <form method="post" action="/projects/{{ project.project_id }}/script/retry">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <button class="button button--primary" type="submit">ادامه از خروجی‌های سالم</button>
-    </form>
-    {% endif %}
-  </div>
-  <div class="error-recovery__options">
-    <a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/episode">بررسی طرح گفتار</a>
-    <a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a>
-  </div>
-  {% if script_run.last_error %}{% call technical_details('کد و متن خطا') %}<p><bdi dir="ltr">{{ script_run.last_error }}</bdi></p>{% endcall %}{% endif %}
-</section>
+{% call error_recovery(
+  script_run.last_error | user_error('script') if script_run.last_error else 'نگارش متن گفتار نیمه‌کاره ماند',
+  'این یک توقف در همین اجراست، نه ایرادی در منابع شما.',
+  'منابع، مدعاهای مستند، طرح تأییدشده و بخش‌هایی که تا اینجا نوشته شده‌اند.',
+  'بخش‌های باقی‌مانده و راستی‌آزمایی. هیچ متن ناقصی به‌عنوان نتیجه ثبت نشده است.',
+  attempt=script_attempt,
+  technical=script_run.last_error or '',
+  hint='اگر دوباره همین اتفاق افتاد، به‌جای تلاش بعدی سراغ تنظیمات سرویس بروید؛ تکرار همان درخواست معمولاً نتیجهٔ متفاوتی ندارد.'
+) %}
+  {% if can_retry %}
+  <form method="post" action="/projects/{{ project.project_id }}/script/retry">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--danger-solid" type="submit">ادامه از خروجی‌های سالم</button>
+  </form>
+  {% endif %}
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">بررسی طرح گفتار</a>
+  <a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a>
+{% endcall %}
 {% endif %}
 
 {% if script_run and script_run.status == 'succeeded' and script and checks and verification %}
 <section class="coverage-verdict">
-  <p class="kicker">نتیجهٔ این مرحله</p>
-  <h2>{{ script.title }}</h2>
-  <p>{{ checks.word_count | fa_num }} واژه · حدود {{ checks.estimated_minutes | round(1) | fa_num }} دقیقه · {{ script.turns | length | fa_num }} گفته{% if used_revision %} · یک اصلاح هدفمند انجام شده{% endif %}</p>
-  <code class="operator-only"><bdi dir="ltr">{{ project.state.name }}</bdi></code>
+  <h2>متن گفتار آماده است</h2>
+  <p>هر گفته‌ای که مدعایی دربارهٔ منابع می‌کند به نشانی‌اش در منبع وصل است. <code class="operator-only"><bdi dir="ltr">{{ project.state.name }}</bdi></code></p>
 </section>
+
+<div class="script-summary">
+  <span>حدود {{ checks.estimated_minutes | round(1) | fa_num }} دقیقه</span>
+  <span>{{ segment_views | length | fa_num }} بخش</span>
+  <span>{{ checks.substantive_turn_count | fa_num }} گفتهٔ مستند</span>
+  <span>{{ checks.word_count | fa_num }} واژه</span>
+  {% if not checks.issues and not verification.issues %}
+  {{ status_label('همهٔ گفته‌ها پشتوانه دارند', '', 'success') }}
+  {% else %}
+  {{ status_label('چند نکته برای بازبینی ماند', '', 'attention') }}
+  {% endif %}
+</div>
 
 <section class="section-block" aria-labelledby="quality-title">
   <div class="section-heading"><h2 id="quality-title">گزارش کیفیت</h2></div>
@@ -124,6 +118,7 @@
 </section>
 
 <div class="reading-column">
+  <h2 class="reading-column__title">{{ script.title }}</h2>
   {% for view in segment_views %}
   <section class="transcript-section" aria-labelledby="segment-{{ view.segment.segment_id }}">
     <div class="section-heading">
@@ -133,31 +128,26 @@
     <div class="transcript-list">
       {% for item in view.turns %}
       <article class="transcript-turn">
-        <div class="transcript-turn__meta">
-          <span class="transcript-turn__speaker">گویندهٔ {{ speaker_labels.get(item.turn.speaker, item.turn.speaker) }}</span>
-          <span class="transcript-turn__number">{{ loop.index | fa_num }}</span>
-          <code class="operator-only">speaker <bdi dir="ltr">{{ item.turn.speaker }}</bdi> · نوبت سخن <bdi dir="ltr">{{ item.turn.turn_id }}</bdi></code>
-        </div>
+        <span class="transcript-turn__speaker">{{ speaker_labels.get(item.turn.speaker, item.turn.speaker) }}</span>
         <p class="transcript-turn__text">{{ item.turn.spoken_text_fa }}</p>
 
         {% if item.turn.editorial_only %}
-        <p class="source-row__issue">این گفته نقش انتقالی دارد و مدعای محتوایی تازه‌ای مطرح نمی‌کند.</p>
+        <p class="transcript-turn__aside">گفتهٔ گذار — مدعایی دربارهٔ منابع ندارد.</p>
         {% elif item.references %}
         <details class="evidence-drawer">
-          <summary>نمایش شاهدهای این گفته</summary>
+          <summary>این گفته از کجا آمد؟</summary>
           {% for reference in item.references %}
-          <article class="evidence-card">
-            <strong><bdi dir="auto">{{ reference.source_title }}</bdi></strong>
-            <blockquote>{{ reference.excerpt }}</blockquote>
-            <p>نشانی در منبع: {{ reference.locator }}</p>
-            <p class="operator-only">Evidence ID: <code><bdi dir="ltr">{{ reference.evidence_id }}</bdi></code></p>
-          </article>
+          <blockquote class="evidence-card">
+            {{ reference.excerpt }}
+            <cite><bdi dir="auto">{{ reference.source_title }}</bdi> — {{ reference.locator }}</cite>
+            <span class="operator-only"><bdi dir="ltr">{{ reference.evidence_id }}</bdi></span>
+          </blockquote>
           {% endfor %}
         </details>
         {% endif %}
 
         {% if not item.turn.editorial_only %}
-        <p class="source-row__issue operator-only">مدعاها: <code><bdi dir="ltr">{{ item.turn.claim_ids | join(', ') }}</bdi></code> · شاهدها: <code><bdi dir="ltr">{{ item.turn.evidence_ids | join(', ') }}</bdi></code></p>
+        <p class="transcript-turn__aside operator-only">مدعاها: <code><bdi dir="ltr">{{ item.turn.claim_ids | join(', ') }}</bdi></code> · شاهدها: <code><bdi dir="ltr">{{ item.turn.evidence_ids | join(', ') }}</bdi></code> · <bdi dir="ltr">{{ item.turn.turn_id }}</bdi></p>
         {% endif %}
       </article>
       {% endfor %}
@@ -180,5 +170,4 @@
   <a class="button button--secondary" href="/projects/{{ project.project_id }}/episode">طرح گفتار</a>
   <a class="button button--quiet" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
 </div>
-{% if script_active %}<div data-auto-refresh="3000" aria-hidden="true"></div>{% endif %}
 {% endblock %}

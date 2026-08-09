@@ -107,6 +107,111 @@ def test_workflow_navigation_is_single_six_step_contract() -> None:
         assert 'class="step-rail' not in template_path.read_text(encoding="utf-8")
 
 
+def _project_with_sources(client: TestClient) -> str:
+    new_page = client.get("/projects/new")
+    created = client.post(
+        "/projects",
+        data={
+            "csrf_token": _csrf(new_page.text),
+            "topic": "چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟",
+            "audience": "دانشجوی علوم انسانی",
+            "prior_knowledge": "introductory",
+            "duration": "20",
+            "mode": "explanatory",
+        },
+        follow_redirects=False,
+    )
+    project_id = created.headers["location"].split("/")[2]
+    brief_page = client.get(f"/projects/{project_id}/brief")
+    client.post(
+        f"/projects/{project_id}/brief",
+        data={
+            "csrf_token": _csrf(brief_page.text),
+            "central_question": "چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟",
+            "action": "confirm",
+        },
+    )
+    return project_id
+
+
+def test_step_rail_marks_one_current_step_and_explains_the_locked_ones(
+    tmp_path: Path,
+) -> None:
+    with TestClient(create_app(_settings(tmp_path))) as client:
+        _login(client)
+        project_id = _project_with_sources(client)
+        page = client.get(f"/projects/{project_id}/sources").text
+
+    assert page.count("workflow-step is-current") == 1
+    assert page.count('aria-current="step"') == 1
+    # Every locked step points at the one sentence that says why it is locked.
+    assert 'id="workflow-lock-reason"' in page
+    assert page.count('aria-describedby="workflow-lock-reason"') >= 1
+    assert "workflow-step__lock" in page
+
+
+def test_source_delete_needs_the_impact_summary_confirmation(tmp_path: Path) -> None:
+    with TestClient(create_app(_settings(tmp_path))) as client:
+        _login(client)
+        project_id = _project_with_sources(client)
+        sources_page = client.get(f"/projects/{project_id}/sources")
+        upload = client.post(
+            f"/projects/{project_id}/sources/upload",
+            data={"csrf_token": _csrf(sources_page.text)},
+            files={"source_file": ("note.txt", b"a" * 400, "text/plain")},
+            follow_redirects=True,
+        )
+        source_id = upload.text.split('data-source-id="')[1].split('"')[0]
+
+        confirm_page = client.get(f"/projects/{project_id}/sources/{source_id}/delete")
+        unconfirmed = client.post(
+            f"/projects/{project_id}/sources/{source_id}/delete",
+            data={"csrf_token": _csrf(sources_page.text)},
+        )
+        still_there = client.get(f"/projects/{project_id}/sources")
+        confirmed = client.post(
+            f"/projects/{project_id}/sources/{source_id}/delete",
+            data={"csrf_token": _csrf(sources_page.text), "confirm": source_id},
+            follow_redirects=False,
+        )
+        after = client.get(f"/projects/{project_id}/sources")
+
+    assert confirm_page.status_code == 200
+    assert "از بین می‌رود" in confirm_page.text
+    assert "باقی می‌ماند" in confirm_page.text
+    assert 400 <= unconfirmed.status_code < 500
+    assert source_id in still_there.text
+    assert confirmed.status_code == 303
+    assert source_id not in after.text
+
+
+def test_running_pages_poll_a_fragment_instead_of_reloading(tmp_path: Path) -> None:
+    with TestClient(create_app(_settings(tmp_path))) as client:
+        _login(client)
+        project_id = _project_with_sources(client)
+        processing = client.get(f"/projects/{project_id}/processing")
+        fragment = client.get(f"/projects/{project_id}/processing/live")
+
+    assert processing.status_code == 200
+    assert fragment.status_code == 200
+    assert 'id="processing-live"' in processing.text
+    assert 'data-live-region' in processing.text
+    # The live region owns the poll; nothing on the page reloads the whole document.
+    for template_path in (TEMPLATES_ROOT / "projects").glob("*.html"):
+        assert "data-auto-refresh" not in template_path.read_text(encoding="utf-8")
+    assert "location.reload" not in (STATIC_ROOT / "app.js").read_text(encoding="utf-8")
+
+
+def test_disabled_confirmation_states_the_reason(tmp_path: Path) -> None:
+    with TestClient(create_app(_settings(tmp_path))) as client:
+        _login(client)
+        project_id = _project_with_sources(client)
+        page = client.get(f"/projects/{project_id}/sources").text
+
+    assert 'disabled aria-describedby="corpus-confirm-hint"' in page
+    assert 'id="corpus-confirm-hint"' in page
+
+
 def test_default_theme_mode_preferences_and_overview_route(tmp_path: Path) -> None:
     app = create_app(
         _settings(tmp_path),
@@ -181,3 +286,79 @@ def test_invalid_preferences_keep_safe_defaults(tmp_path: Path) -> None:
     assert response.status_code == 204
     assert 'data-theme="olive"' in projects.text
     assert 'data-mode="simple"' in projects.text
+
+
+def _new_project(client: TestClient, *, mode: str = "explanatory") -> str:
+    new_page = client.get("/projects/new")
+    created = client.post(
+        "/projects",
+        data={
+            "csrf_token": _csrf(new_page.text),
+            "topic": "چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟",
+            "audience": "دانشجوی علوم انسانی",
+            "prior_knowledge": "introductory",
+            "duration": "20",
+            "mode": mode,
+        },
+        follow_redirects=False,
+    )
+    return created.headers["location"].split("/")[2]
+
+
+def test_brief_form_edits_the_speech_mode(tmp_path: Path) -> None:
+    with TestClient(create_app(_settings(tmp_path))) as client:
+        _login(client)
+        project_id = _new_project(client)
+        brief_page = client.get(f"/projects/{project_id}/brief")
+        client.post(
+            f"/projects/{project_id}/brief",
+            data={
+                "csrf_token": _csrf(brief_page.text),
+                "central_question": "چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟",
+                "mode": "critical",
+                "action": "save",
+            },
+        )
+        reloaded = client.get(f"/projects/{project_id}/brief").text
+
+    assert 'value="critical" checked' in reloaded
+    assert 'value="explanatory" checked' not in reloaded
+
+
+def test_brief_form_keeps_the_stored_mode_when_none_is_submitted(tmp_path: Path) -> None:
+    """An omitted radio must not silently reset a mode the user chose at creation."""
+
+    with TestClient(create_app(_settings(tmp_path))) as client:
+        _login(client)
+        project_id = _new_project(client, mode="debate")
+        brief_page = client.get(f"/projects/{project_id}/brief")
+        client.post(
+            f"/projects/{project_id}/brief",
+            data={
+                "csrf_token": _csrf(brief_page.text),
+                "central_question": "چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟",
+                "action": "save",
+            },
+        )
+        reloaded = client.get(f"/projects/{project_id}/brief").text
+
+    assert 'value="debate" checked' in reloaded
+
+
+def test_brief_form_rejects_an_unknown_mode(tmp_path: Path) -> None:
+    with TestClient(create_app(_settings(tmp_path))) as client:
+        _login(client)
+        project_id = _new_project(client)
+        brief_page = client.get(f"/projects/{project_id}/brief")
+        response = client.post(
+            f"/projects/{project_id}/brief",
+            data={
+                "csrf_token": _csrf(brief_page.text),
+                "central_question": "چرا مفهوم دولت نزد ابن‌خلدون هنوز مهم است؟",
+                "mode": "polemical",
+                "action": "save",
+            },
+        )
+
+    assert response.status_code == 422
+    assert "رویکرد گفتار معتبر نیست." in response.text

@@ -45,10 +45,15 @@ def test_source_file_input_uses_an_accessible_custom_control() -> None:
     source = (TEMPLATES_ROOT / "projects" / "sources.html").read_text(
         encoding="utf-8"
     )
+    css = (STATIC_ROOT / "app.css").read_text(encoding="utf-8")
     assert 'aria-label="انتخاب فایل منبع"' in source
-    assert "position:absolute" in source
-    assert "clip:rect(0,0,0,0)" in source
-    assert "display:none" not in source
+    assert "drop-zone__picker" in source
+    # The input still covers its label and stays in the accessibility tree; hiding it
+    # with display:none would take it out of the tab order.
+    picker = css[css.index(".drop-zone__picker input") :].split("}")[0]
+    assert "position: absolute" in picker
+    assert "opacity: 0" in picker
+    assert "display: none" not in picker
 
 
 def test_prior_knowledge_has_persian_simple_labels() -> None:

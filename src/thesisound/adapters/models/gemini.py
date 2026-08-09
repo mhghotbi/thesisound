@@ -4,6 +4,7 @@ import json
 import math
 from collections.abc import Sequence
 from copy import deepcopy
+from threading import Lock
 from time import perf_counter
 from typing import Any, Literal, cast
 
@@ -58,6 +59,7 @@ class GeminiStructuredModel:
         self._settings = runtime
         self._router: ModelRouter = load_model_router(runtime)
         self._okian_port: Any | None = None
+        self._okian_lock = Lock()
         configured_search = runtime.gemini_google_search_enabled
         configured_urls = runtime.gemini_url_context_enabled
         self.enable_google_search = (
@@ -228,13 +230,18 @@ class GeminiStructuredModel:
         )
 
     def _okian(self) -> Any:
-        if self._okian_port is None:
-            from thesisound.adapters.models.okian import OkianStructuredModel
+        if self._okian_port is not None:
+            return self._okian_port
+        from thesisound.adapters.models.okian import OkianStructuredModel
 
-            self._okian_port = OkianStructuredModel(
-                settings=self._settings,
-                observability=self.observability,
-            )
+        with self._okian_lock:
+            # Re-check under the lock: concurrent callers must share one port instead of
+            # each building their own and racing to publish it.
+            if self._okian_port is None:
+                self._okian_port = OkianStructuredModel(
+                    settings=self._settings,
+                    observability=self.observability,
+                )
         return self._okian_port
 
     def _tools(self, metadata: RunMetadata) -> list[dict[str, dict[str, object]]]:

@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     asr_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
     provider_max_attempts: int = Field(default=2, ge=1, le=5)
     provider_retry_base_seconds: float = Field(default=1, ge=0, le=60)
+    # Evidence extraction is one independent model call per selected block and dominates
+    # corpus-build wall clock. Kept modest so a build does not spend its time in the key
+    # pool's quota cooldown; set to 1 to restore the fully sequential behaviour.
+    evidence_extraction_workers: int = Field(default=4, ge=1, le=16)
     keep_rendered_prompts: bool = False
     gemini_google_search_enabled: bool = True
     gemini_url_context_enabled: bool = True

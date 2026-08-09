@@ -1,0 +1,29 @@
+{% from "components.html" import status_label %}
+{# Contents of the polled live region on the script page; see projects/processing.html. #}
+{% if script_run and script_active %}
+<section class="data-panel section-block" aria-labelledby="script-progress-title">
+  <div class="section-heading">
+    <div>
+      <p class="kicker">اجرای جاری</p>
+      <h2 id="script-progress-title">
+        {% if script_run.stage == 'queued' %}در صف اجرا
+        {% elif script_run.stage == 'building_glossary' %}ساخت واژه‌نامهٔ دوزبانه
+        {% elif script_run.stage == 'writing_segments' %}نوشتن بخش‌های متن گفتار
+        {% elif script_run.stage == 'checking_draft' %}وارسی ساختاری پیش‌نویس
+        {% elif script_run.stage == 'verifying_draft' %}راستی‌آزمایی مستقل پیش‌نویس
+        {% elif script_run.stage == 'revising' %}اصلاح هدفمند گفته‌های معیوب
+        {% elif script_run.stage == 'checking_revision' %}وارسی ساختاری نسخهٔ اصلاح‌شده
+        {% elif script_run.stage == 'verifying_revision' %}راستی‌آزمایی مستقل نسخهٔ اصلاح‌شده
+        {% else %}در حال نگارش{% endif %}
+      </h2>
+    </div>
+    {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', script_run.status) }}
+  </div>
+  <p class="lede">در تلاش دوباره، بخش‌ها و خروجی‌های سالم دوباره ساخته نمی‌شوند. درصد یا زمان باقی‌ماندهٔ حدسی نمایش داده نمی‌شود.</p>
+  <p class="operator-only">Healthy artifacts are reused; no synthetic ETA.</p>
+  <p class="live-note">
+    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 5.5v4l2.5 1.5"/></svg>
+    این صفحه خودش تازه می‌شود؛ جای شما در متن حفظ می‌ماند.
+  </p>
+</section>
+{% endif %}

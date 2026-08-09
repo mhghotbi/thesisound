@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from threading import Barrier, Lock, Thread
+from time import sleep
 from types import SimpleNamespace
 
 import pytest
@@ -134,3 +136,44 @@ def test_gemini_adapter_maps_rate_limit_errors() -> None:
             model="gemini-test",
             metadata=_metadata(),
         )
+
+
+def test_okian_port_is_built_once_under_concurrency(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Parallel evidence extraction reaches one adapter from several threads at once.
+
+    The barrier lines every caller up on `_okian`, and the slow constructor holds the
+    check-then-assign window open long enough that all of them would pass the `is None`
+    check. Without the lock this builds four ports instead of one.
+    """
+
+    built: list[object] = []
+    guard = Lock()
+    start = Barrier(4, timeout=10)
+
+    class FakeOkian:
+        def __init__(self, **_: object) -> None:
+            sleep(0.05)
+            with guard:
+                built.append(self)
+
+    monkeypatch.setattr(
+        "thesisound.adapters.models.okian.OkianStructuredModel",
+        FakeOkian,
+    )
+    adapter = GeminiStructuredModel(client=FakeClient(FakeModels()))
+    ports: list[object] = []
+
+    def call() -> None:
+        start.wait()
+        port = adapter._okian()
+        with guard:
+            ports.append(port)
+
+    threads = [Thread(target=call) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10)
+
+    assert len(built) == 1
+    assert ports and all(port is built[0] for port in ports)

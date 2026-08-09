@@ -28,6 +28,7 @@ from thesisound.services.corpus_building import (
     CorpusSourceInput,
 )
 from thesisound.services.source_artifact_store import SourceArtifactStore
+from thesisound.services.workflow_revision import WorkflowRevisionService
 from thesisound.source_analysis import (
     BlockBuildReport,
     ClaimLedger,
@@ -626,3 +627,80 @@ def test_confirmation_rolls_project_back_when_run_persistence_fails(
 
     assert workspace.load_project(original.project_id) == original
     assert service.run_store.load_optional(original.project_id) is None
+
+
+def _reopen_for_rebuild(workspace: WorkspaceStore, project_id: UUID) -> Project:
+    """Walk a rewound project back to CORPUS_BUILDING the way the web flow does."""
+
+    project = workspace.load_project(project_id)
+    transition(project, ProjectState.SOURCES_COLLECTING)
+    transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
+    transition(project, ProjectState.CORPUS_BUILDING)
+    return project
+
+
+def test_a_brief_rewind_leaves_an_unchanged_brief_reusing_its_analysis(
+    tmp_path: Path,
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _brief_project()
+    fake = FakeAnalysisService(workspace)
+    service = _service(tmp_path, project, fake)
+    finished = uuid4()
+    _seed_claim_ready_artifacts(service.source_store, project, finished)
+
+    WorkflowRevisionService(workspace).rewind(
+        project.project_id,
+        target="brief",
+        actor="09120000000",
+    )
+    reopened = _reopen_for_rebuild(workspace, project.project_id)
+    workspace.save_project(reopened)
+
+    run = service.queue(
+        project.project_id,
+        [_source_input(tmp_path, finished, "finished")],
+    )
+
+    assert run.sources[0].carried_forward
+    assert run.sources[0].status == "succeeded"
+
+    completed = service.run(project.project_id)
+
+    assert completed.status == "succeeded"
+    assert fake.built == []
+
+
+def test_a_brief_rewind_rebuilds_when_the_edit_changes_the_analysis_profile(
+    tmp_path: Path,
+) -> None:
+    """Surviving the rewind is not reuse — the edited brief still has to agree."""
+
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _brief_project()
+    fake = FakeAnalysisService(workspace)
+    service = _service(tmp_path, project, fake)
+    finished = uuid4()
+    _seed_claim_ready_artifacts(service.source_store, project, finished)
+
+    WorkflowRevisionService(workspace).rewind(
+        project.project_id,
+        target="brief",
+        actor="09120000000",
+    )
+    reopened = _reopen_for_rebuild(workspace, project.project_id)
+    assert reopened.brief is not None
+    reopened.brief.modes = ["critical"]
+    workspace.save_project(reopened)
+
+    run = service.queue(
+        project.project_id,
+        [_source_input(tmp_path, finished, "finished")],
+    )
+
+    assert not run.sources[0].carried_forward
+    assert run.sources[0].status == "queued"
+
+    service.run(project.project_id)
+
+    assert fake.built == [finished]

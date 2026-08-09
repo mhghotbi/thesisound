@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
+from threading import Barrier, Lock
 from uuid import UUID, uuid4
 
 import pytest
@@ -962,3 +963,124 @@ def test_planner_keeps_all_blocks_when_every_block_looks_like_notes() -> None:
     )
     plan = plan_evidence_extraction(_brief(10), document_map, blocks)
     assert plan.selected_block_ids
+
+
+def _multi_section_document(sections: int = 4) -> ParsedDocument:
+    blocks: list[ParsedBlock] = []
+    for index in range(sections):
+        title = f"Section {index}"
+        blocks.append(
+            ParsedBlock(
+                source_block_key=f"h-{index}",
+                text=title,
+                page_start=index + 1,
+                page_end=index + 1,
+                heading_path=[title],
+                kind="heading",
+            )
+        )
+        blocks.append(
+            ParsedBlock(
+                source_block_key=f"p-{index}",
+                text=(
+                    f"Section {index} argues that action occurs directly between persons. "
+                    f"It cannot be reduced to the fabrication of an object in case {index}."
+                ),
+                page_start=index + 1,
+                page_end=index + 1,
+                heading_path=[title],
+                kind="text",
+            )
+        )
+    return ParsedDocument(parser_name="fixture", parser_version="1", blocks=blocks)
+
+
+class _BarrierRunner(FakeRunner):
+    """Make every evidence call meet at a barrier, so overlap is proven, not timed.
+
+    If extraction were sequential the first call would wait alone and the barrier would
+    break, which is a deterministic failure rather than a flaky timing assertion.
+    """
+
+    def __init__(self, parties: int) -> None:
+        super().__init__()
+        self.barrier = Barrier(parties, timeout=10)
+
+    def run(self, *, output_type, **kwargs):
+        if output_type is EvidenceExtractionDraft:
+            self.barrier.wait()
+        return super().run(output_type=output_type, **kwargs)
+
+
+def _map_for(blocks: list[SourceDocumentBlock], source_id: UUID) -> DocumentMap:
+    document_map, _ = DocumentMapperService(FakeRunner()).map_document(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        model="fake",
+    )
+    return document_map
+
+
+def test_evidence_extraction_runs_blocks_concurrently() -> None:
+    source_id = uuid4()
+    blocks, _ = BlockBuilder().build(_multi_section_document(), source_id=source_id)
+    assert len(blocks) == 4
+    document_map = _map_for(blocks, source_id)
+    runner = _BarrierRunner(parties=len(blocks))
+
+    records, _ = EvidenceExtractorService(runner, max_workers=4).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+    )
+
+    # Order follows the document, not whichever call happened to finish first.
+    assert [record.block_id for record in records] == [block.block_id for block in blocks]
+
+
+def test_concurrent_extraction_saves_every_block_exactly_once() -> None:
+    source_id = uuid4()
+    blocks, _ = BlockBuilder().build(_multi_section_document(), source_id=source_id)
+    document_map = _map_for(blocks, source_id)
+    runner = _BarrierRunner(parties=len(blocks))
+    saved: list[str] = []
+    guard = Lock()
+
+    def collect(record: BlockEvidenceExtraction) -> None:
+        with guard:
+            saved.append(record.block_id)
+
+    EvidenceExtractorService(runner, max_workers=4).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+        on_extraction=collect,
+    )
+
+    assert sorted(saved) == sorted(block.block_id for block in blocks)
+
+
+def test_concurrent_extraction_propagates_a_model_failure() -> None:
+    class ExplodingRunner(FakeRunner):
+        def run(self, *, output_type, **kwargs):
+            if output_type is EvidenceExtractionDraft:
+                raise RuntimeError("model exploded")
+            return super().run(output_type=output_type, **kwargs)
+
+    source_id = uuid4()
+    blocks, _ = BlockBuilder().build(_multi_section_document(), source_id=source_id)
+    document_map = _map_for(blocks, source_id)
+
+    with pytest.raises(RuntimeError, match="model exploded"):
+        EvidenceExtractorService(ExplodingRunner(), max_workers=4).extract_source(
+            project_id=uuid4(),
+            source_id=source_id,
+            blocks=blocks,
+            document_map=document_map,
+            model="fake",
+        )

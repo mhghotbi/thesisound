@@ -5,86 +5,87 @@
 {% set knowledge_labels = {'none': 'بدون آشنایی', 'introductory': 'مقدماتی', 'intermediate': 'متوسط', 'advanced': 'پیشرفته'} %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">خانهٔ گفتار</p>
-    <h1>{{ project_title(project) }}</h1>
+    <h1>{% if project.brief %}{{ project.brief.central_question }}{% else %}{{ project_title(project) }}{% endif %}</h1>
     <div class="page-heading__meta">
-      {% if project.brief %}<span>{{ project.brief.target_duration_minutes | fa_num }} دقیقه</span><span>{{ project.brief.audience }}</span>{% endif %}
-      <time datetime="{{ project.updated_at.isoformat() }}">آخرین تغییر {{ project.updated_at | jalali_date }}</time>
+      {% if project.brief %}<span>{{ project.brief.target_duration_minutes | fa_num }} دقیقه</span>{% endif %}
+      <span>{{ project.sources | length | fa_num }} منبع</span>
+      <time datetime="{{ project.created_at.isoformat() }}">ساخته‌شده در {{ project.created_at | jalali_date }}</time>
     </div>
   </div>
-  {{ status_label(model.state_label, 'مرحلهٔ ' ~ (model.current_step | fa_num) ~ ' از ۶', model.tone, model.operator_state_label) }}
 </header>
 
 {{ attention_panel(
-  'اقدام لازم' if model.requires_action else 'وضعیت فعلی',
+  'اقدام لازم' if model.requires_action else 'وضعیت',
+  model.state_label,
   model.attention_label,
   model.overview_summary,
+  model.tone,
   model.primary_action_url,
   model.primary_action_label,
-  'danger' if model.tone == 'danger' else ('success' if model.tone == 'success' else 'attention')
+  '/projects/' ~ project.project_id ~ '/sources' if model.current_step >= 2 else '',
+  'منابع' if model.current_step >= 2 else ''
 ) }}
 
-<div class="overview-grid">
-  <div class="overview-main">
-    <section class="section-block" aria-labelledby="overview-question">
-      <div class="section-heading"><h2 id="overview-question">پرسش و محدوده</h2></div>
-      {% if project.brief %}
-      <dl class="summary-list">
-        <div class="summary-row"><dt><span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span></dt><dd>{{ project.brief.central_question }}</dd></div>
-        <div class="summary-row"><dt>مخاطب</dt><dd>{{ project.brief.audience }}</dd></div>
-        <div class="summary-row"><dt>آشنایی پیشین</dt><dd>{{ knowledge_labels.get(project.brief.prior_knowledge, 'نامشخص') }} <code class="operator-only"><bdi dir="ltr">{{ project.brief.prior_knowledge }}</bdi></code></dd></div>
-        <div class="summary-row"><dt>مدت تقریبی</dt><dd>{{ project.brief.target_duration_minutes | fa_num }} دقیقه</dd></div>
-        {% if project.brief.scope_inclusions %}<div class="summary-row"><dt>حتماً پوشش داده شود</dt><dd>{{ project.brief.scope_inclusions | join('، ') }}</dd></div>{% endif %}
-        {% if project.brief.scope_exclusions %}<div class="summary-row"><dt>خارج از این گفتار</dt><dd>{{ project.brief.scope_exclusions | join('، ') }}</dd></div>{% endif %}
-      </dl>
-      {% else %}
-      <div class="empty-inline"><strong>برداشت اولیه هنوز ساخته نشده است.</strong><span>برای تعریف <span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span> وارد مرحلهٔ موضوع و هدف شوید.</span></div>
-      {% endif %}
-    </section>
+<section class="section-block" aria-labelledby="overview-history">
+  <div class="section-heading"><h2 id="overview-history">تا اینجا چه شد</h2></div>
+  <ol class="timeline">
+    <li>
+      <span class="timeline__mark timeline__mark--done" aria-hidden="true">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>
+      </span>
+      <span>گفتار با موضوع «{{ project.raw_input }}» ساخته شد</span>
+      <time datetime="{{ project.created_at.isoformat() }}">{{ project.created_at | jalali_date }}</time>
+    </li>
+    {% if project.brief %}
+    <li>
+      <span class="timeline__mark timeline__mark--done" aria-hidden="true">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>
+      </span>
+      <span>برداشت اولیه تأیید شد — {{ project.brief.audience }}، {{ project.brief.target_duration_minutes | fa_num }} دقیقه</span>
+      <time datetime="{{ project.updated_at.isoformat() }}">{{ project.updated_at | jalali_date }}</time>
+    </li>
+    {% endif %}
+    <li>
+      <span class="timeline__mark{% if model.tone == 'running' %} timeline__mark--running{% endif %}" aria-hidden="true"></span>
+      <span class="timeline__current">{{ model.overview_summary }}</span>
+      <time datetime="{{ project.updated_at.isoformat() }}">{{ project.updated_at | jalali_date }}</time>
+    </li>
+  </ol>
+</section>
 
-    <section class="section-block" aria-labelledby="overview-history">
-      <div class="section-heading"><h2 id="overview-history">آخرین اتفاق‌ها</h2></div>
-      <ol class="timeline">
-        <li>
-          <time datetime="{{ project.updated_at.isoformat() }}">{{ project.updated_at | jalali_date }}</time>
-          <p>{{ model.overview_summary }}</p>
-        </li>
-        <li>
-          <time datetime="{{ project.created_at.isoformat() }}">{{ project.created_at | jalali_date }}</time>
-          <p>گفتار با موضوع «{{ project.raw_input }}» ساخته شد.</p>
-        </li>
-      </ol>
-    </section>
+{% if model.technical_detail %}
+<div class="notice notice--danger" role="alert">{{ model.technical_detail | user_error('generic') }}</div>
+{% endif %}
 
-    {% if model.technical_detail %}
-      <div class="notice notice--danger" role="alert">{{ model.technical_detail | user_error('generic') }}</div>
-      {% call technical_details('جزئیات خطای آخر') %}
-        <p><bdi dir="ltr">{{ model.technical_detail }}</bdi></p>
-      {% endcall %}
+<details class="technical-details technical-details--wide">
+  <summary>پرسش و محدودهٔ این گفتار</summary>
+  <div class="technical-details__body">
+    {% if project.brief %}
+    <dl class="summary-list">
+      <div class="summary-row"><dt><span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span></dt><dd>{{ project.brief.central_question }}</dd></div>
+      <div class="summary-row"><dt>مخاطب</dt><dd>{{ project.brief.audience }}</dd></div>
+      <div class="summary-row"><dt>آشنایی پیشین</dt><dd>{{ knowledge_labels.get(project.brief.prior_knowledge, 'نامشخص') }} <code class="operator-only"><bdi dir="ltr">{{ project.brief.prior_knowledge }}</bdi></code></dd></div>
+      <div class="summary-row"><dt>مدت تقریبی</dt><dd>{{ project.brief.target_duration_minutes | fa_num }} دقیقه</dd></div>
+      {% if project.brief.scope_inclusions %}<div class="summary-row"><dt>حتماً پوشش داده شود</dt><dd>{{ project.brief.scope_inclusions | join('، ') }}</dd></div>{% endif %}
+      {% if project.brief.scope_exclusions %}<div class="summary-row"><dt>خارج از این گفتار</dt><dd>{{ project.brief.scope_exclusions | join('، ') }}</dd></div>{% endif %}
+    </dl>
+    {% else %}
+    <p><strong>برداشت اولیه هنوز ساخته نشده است.</strong> برای تعریف <span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span> وارد مرحلهٔ موضوع و هدف شوید.</p>
     {% endif %}
   </div>
+</details>
 
-  <aside class="overview-side" aria-label="خلاصهٔ گفتار">
-    <section class="data-panel">
-      <div class="section-heading"><h2>دسترسی سریع</h2></div>
-      <div class="form-actions">
-        <a class="button button--primary button--full" href="{{ model.primary_action_url }}">{{ model.primary_action_label }}</a>
-        <a class="button button--secondary button--full" href="/projects/{{ project.project_id }}/brief">موضوع و هدف</a>
-        {% if model.current_step >= 2 %}<a class="button button--secondary button--full" href="/projects/{{ project.project_id }}/sources">منابع</a>{% endif %}
-        {% if model.current_step >= 3 %}<a class="button button--secondary button--full" href="/projects/{{ project.project_id }}/processing">تحلیل منابع</a>{% endif %}
-      </div>
-    </section>
-
-    <section class="data-panel operator-only">
-      <div class="section-heading"><h2>اطلاعات عملیاتی</h2></div>
-      <dl class="summary-list">
-        <div class="summary-row"><dt>Project ID</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.project_id }}</code></dd></div>
-        <div class="summary-row"><dt>State</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.state.value }}</code></dd></div>
-        <div class="summary-row"><dt>Created</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.created_at.isoformat() }}</code></dd></div>
-        <div class="summary-row"><dt>Updated</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.updated_at.isoformat() }}</code></dd></div>
-        <div class="summary-row"><dt>Sources in domain</dt><dd>{{ project.sources | length | fa_num }}</dd></div>
-      </dl>
-    </section>
-  </aside>
-</div>
+<details class="technical-details technical-details--wide">
+  <summary>جزئیات فنی این گفتار</summary>
+  <div class="technical-details__body">
+    <dl class="summary-list">
+      <div class="summary-row"><dt>شناسهٔ گفتار</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.project_id }}</code></dd></div>
+      <div class="summary-row"><dt>وضعیت داخلی</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.state.value }}</code></dd></div>
+      <div class="summary-row"><dt>ساخته‌شده</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.created_at.isoformat() }}</code></dd></div>
+      <div class="summary-row"><dt>آخرین تغییر</dt><dd><code class="code-value" dir="ltr" translate="no">{{ project.updated_at.isoformat() }}</code></dd></div>
+      <div class="summary-row"><dt>منابع ثبت‌شده</dt><dd>{{ project.sources | length | fa_num }}</dd></div>
+      {% if model.technical_detail %}<div class="summary-row"><dt>آخرین خطا</dt><dd><code class="code-value" dir="ltr">{{ model.technical_detail }}</code></dd></div>{% endif %}
+    </dl>
+  </div>
+</details>
 {% endblock %}
