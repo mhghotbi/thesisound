@@ -68,9 +68,11 @@ jobs:
       - name: Run complete test suite
         run: uv run pytest -q
 
-      - name: Remove one-shot automation files
+      - name: Prepare code-only commit
         if: success()
-        run: rm -f .automation/medium-items.patch.gz.b64.* .automation/post_format_fix.py .github/workflows/apply-final-medium-items.yml
+        run: |
+          git restore --source=HEAD -- .github/workflows .automation workspaces
+          git clean -fd -- workspaces
 
       - name: Commit validated implementation
         if: success()
