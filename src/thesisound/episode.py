@@ -6,7 +6,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from thesisound.domain import DeliberatelyOmittedClaim, EvidenceItem, coerce_deliberately_omitted_claims
+from thesisound.domain import (
+    DeliberatelyOmittedClaim,
+    EvidenceItem,
+    coerce_deliberately_omitted_claims,
+)
 from thesisound.source_analysis import SourceDocumentBlock
 
 CoverageStatus = Literal["well_covered", "partially_covered", "not_covered"]

@@ -47,7 +47,7 @@ def test_kavenegar_sender_calls_verify_lookup() -> None:
 
 def test_kavenegar_sender_maps_api_exception() -> None:
     client = FakeKavenegarClient(
-        error=APIException("APIException[424] الگو یافت نشد".encode("utf-8"))
+        error=APIException("APIException[424] الگو یافت نشد".encode())
     )
     sender = KavenegarOtpSender(api_key="test-key", template="aist", client=client)
 

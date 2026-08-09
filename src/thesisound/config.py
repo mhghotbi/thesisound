@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     model_fast: str = "gemini-3.5-flash-lite"
     model_strong: str = "gemini-3.6-flash"
+    # Independent reviewer model. Unset falls back to model_strong, which makes
+    # the writer grade its own work -- `doctor` warns when that happens.
+    model_reviewer: str = ""
     model_tts: str = "gemini-3.1-flash-tts-preview"
     model_asr: str = "gemini-3.6-flash"
     model_routing_file: Path = Path("./config/model-routing.toml")
@@ -195,6 +198,8 @@ class Settings(BaseSettings):
                 raise ValueError("KAVENEGAR_API_KEY is required in production")
             if not (self.kavenegar_otp_template and self.kavenegar_otp_template.strip()):
                 raise ValueError("KAVENEGAR_TEMPLATE_NAME is required in production")
+        if not self.model_reviewer.strip():
+            self.model_reviewer = self.model_strong
         configure_gemini_http_proxy(self.http_proxy)
         return self
 

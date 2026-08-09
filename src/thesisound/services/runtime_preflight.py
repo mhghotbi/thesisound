@@ -48,6 +48,7 @@ class RuntimePreflight:
             ),
             self._gemini_key(),
             self._model_routing(),
+            self._reviewer_independence(),
             self._okian_provider(),
             self._python_module(
                 "google-genai",
@@ -143,6 +144,42 @@ class RuntimePreflight:
                 f"Loaded `{self.settings.model_routing_file}`; "
                 f"Okian active: {router.uses_provider('okian')}."
             ),
+        )
+
+    def _reviewer_independence(self) -> RuntimeCheck:
+        try:
+            router = load_model_router(self.settings)
+        except ModelConfigurationError:
+            return RuntimeCheck(
+                code="reviewer-independence",
+                label="Reviewer independence",
+                status="pass",
+                detail="Skipped: model routing did not load.",
+            )
+        collisions = router.self_grading_pairs()
+        if not collisions:
+            route = router.resolve(
+                stage="script_verifier",
+                requested_model=self.settings.model_strong,
+                model_tier="strong",
+            )
+            return RuntimeCheck(
+                code="reviewer-independence",
+                label="Reviewer independence",
+                status="pass",
+                detail=(
+                    f"script_verifier runs on `{route.model}`, distinct from the writer."
+                ),
+            )
+        detail = " ".join(
+            f"{reviewer} and {reviewed} both resolve to `{resolved}`."
+            for reviewer, reviewed, resolved in collisions
+        )
+        return RuntimeCheck(
+            code="reviewer-independence",
+            label="Reviewer independence",
+            status="warning",
+            detail=detail + " Set THESISOUND_MODEL_REVIEWER.",
         )
 
     def _okian_provider(self) -> RuntimeCheck:

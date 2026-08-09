@@ -11,6 +11,12 @@ model_setting = "model_fast"
 provider = "gemini"
 model_setting = "model_strong"
 
+# Independent reviewer. Reads THESISOUND_MODEL_REVIEWER; when that is unset it
+# falls back to THESISOUND_MODEL_STRONG and `doctor` warns about self-grading.
+[profiles.gemini_reviewer]
+provider = "gemini"
+model_setting = "model_reviewer"
+
 # Okian is available as an OpenAI-compatible provider. Grounded stages must stay
 # on Gemini (Google Search / URL Context). Requires OKIAN_BASE_URL and
 # OKIAN_API_KEY.
@@ -37,5 +43,5 @@ claim_reconciliation = "gemini_strong"
 coverage_audit = "gemini_strong"
 episode_plan = "gemini_strong"
 persian_script_segment = "gemini_strong"
-script_verifier = "gemini_strong"
+script_verifier = "gemini_reviewer"
 script_reviser = "gemini_strong"
