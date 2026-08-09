@@ -37,3 +37,8 @@ replace(
     '''        ("http://127.0.0.1:10809", {"http": "http://127.0.0.1:10809", "https": "http://127.0.0.1:10809"}),\n''',
     '''        (\n            "http://127.0.0.1:10809",\n            {\n                "http": "http://127.0.0.1:10809",\n                "https": "http://127.0.0.1:10809",\n            },\n        ),\n''',
 )
+replace(
+    "tests/test_web_source_discovery.py",
+    '''    assert first == second\n    assert CountingSearchPort.calls == 1\n''',
+    '''    assert [(item.title, str(item.url)) for item in first] == [\n        (item.title, str(item.url)) for item in second\n    ]\n    assert CountingSearchPort.calls == 1\n''',
+)
