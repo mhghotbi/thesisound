@@ -32,6 +32,7 @@ class GeminiAuthenticationError(RuntimeError):
 class _KeyState:
     api_key: str
     client: Any | None = None
+    client_proxy: str | None = None
     blocked_until: float = 0.0
     authentication_failed: bool = False
 
@@ -147,10 +148,12 @@ class GeminiKeyPool:
                 self._current_index = index
             return result
 
-        if last_auth_error is not None or self._has_authentication_failures():
-            return self._call_with_adc(operation, last_auth_error, on_attempt=on_attempt)
+        # Prefer quota errors from working keys over ADC fallback. A single bad
+        # AQ/auth key must not hide RESOURCE_EXHAUSTED from the remaining pool.
         if last_quota_error is not None:
             raise last_quota_error
+        if last_auth_error is not None or self._has_authentication_failures():
+            return self._call_with_adc(operation, last_auth_error, on_attempt=on_attempt)
         if not attempted:
             wait_seconds = max(
                 0,
@@ -168,9 +171,13 @@ class GeminiKeyPool:
             return [(self._current_index + offset) % count for offset in range(count)]
 
     def _client(self, index: int) -> Any:
+        from thesisound.http_proxy import current_http_proxy
+
         state = self._states[index]
-        if state.client is None:
+        proxy = current_http_proxy()
+        if state.client is None or state.client_proxy != proxy:
             state.client = self._client_factory(state.api_key)
+            state.client_proxy = proxy
         return state.client
 
     def _has_authentication_failures(self) -> bool:
@@ -364,13 +371,17 @@ def _default_client_factory(api_key: str) -> Any:
         raise ModelConfigurationError(
             "Install the Gemini extra with: uv sync --extra gemini"
         ) from exc
-    from thesisound.http_proxy import gemini_http_options
+    from thesisound.http_proxy import require_gemini_http_options
 
-    kwargs: dict[str, Any] = {"api_key": api_key, "vertexai": False}
-    options = gemini_http_options()
-    if options is not None:
-        kwargs["http_options"] = types.HttpOptions(**options)
-    return genai.Client(**kwargs)
+    try:
+        options = require_gemini_http_options()
+    except RuntimeError as exc:
+        raise ModelConfigurationError(str(exc)) from exc
+    return genai.Client(
+        api_key=api_key,
+        vertexai=False,
+        http_options=types.HttpOptions(**options),
+    )
 
 
 def _default_adc_client_factory() -> Any:
@@ -394,6 +405,8 @@ def _default_adc_client_factory() -> Any:
     from thesisound.http_proxy import gemini_http_options
 
     kwargs: dict[str, Any] = {"credentials": credentials, "vertexai": False}
+    # Prefer the Gemini proxy when configured; ADC still works without it in
+    # environments that can reach Google directly.
     options = gemini_http_options()
     if options is not None:
         kwargs["http_options"] = types.HttpOptions(**options)

@@ -31,6 +31,7 @@ def _settings(tmp_path: Path) -> Settings:
         test_otp_code="999999",
         otp_resend_cooldown_seconds=5,
         ui_demo_mode=False,
+        web_secure_cookies=False,
     )
 
 
@@ -137,6 +138,13 @@ def test_project_can_start_with_only_a_title_and_auto_add_web_sources(
         assert "پیدا کردن منبع در وب" in page.text
         assert "داشتن فایل از قبل الزامی نیست" in page.text
 
+        get_search = client.get(
+            f"/projects/{project_id}/sources/search",
+            follow_redirects=False,
+        )
+        assert get_search.status_code == 303
+        assert get_search.headers["location"] == f"/projects/{project_id}/sources"
+
         response = client.post(
             f"/projects/{project_id}/sources/search",
             data={
@@ -159,6 +167,43 @@ def test_project_can_start_with_only_a_title_and_auto_add_web_sources(
     assert project.state == ProjectState.SOURCE_SELECTION_REQUIRED
     assert len(sources) == 1
     assert sources[0].selected
+
+
+def test_search_auth_failure_shows_actionable_message(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    settings = _settings(tmp_path)
+
+    def fake_search(self, project, query):
+        raise RuntimeError(
+            "Gemini rejected the configured API key with ACCESS_TOKEN_TYPE_UNSUPPORTED. "
+            "401 UNAUTHENTICATED."
+        )
+
+    monkeypatch.setattr(WebSourceDiscoveryService, "search", fake_search)
+    monkeypatch.setattr(RuntimePreflight, "require", lambda *_: None)
+
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+    )
+    with TestClient(app) as client:
+        _login(client)
+        project_id = _create_and_confirm(client)
+        page = client.get(f"/projects/{project_id}/sources")
+        response = client.post(
+            f"/projects/{project_id}/sources/search",
+            data={
+                "csrf_token": _csrf(page.text),
+                "query": "آرنت",
+                "mode": "preview",
+            },
+        )
+        assert response.status_code == 422
+        assert "احراز هویت Gemini رد شد" in response.text
+        assert "ACCESS_TOKEN_TYPE_UNSUPPORTED" in response.text
 
 
 def test_failed_project_can_rewind_to_sources_and_edit_again(

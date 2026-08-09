@@ -18,6 +18,7 @@ from thesisound.modeling import (
     StructuredOutputError,
 )
 from thesisound.services.evidence_validator import validate_evidence_extraction
+from thesisound.services.excerpt_matching import locate_excerpt
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
     AnalysisProfile,
@@ -181,7 +182,6 @@ def _validate_draft(
     profile: AnalysisProfile,
 ) -> None:
     _validate_profile_budget(draft, profile)
-    normalized_source = _normalize(block.text)
     seen_claims: set[str] = set()
     for claim in draft.claims:
         normalized_claim = _normalize(claim.claim).casefold()
@@ -190,7 +190,7 @@ def _validate_draft(
                 f"Duplicate claim extracted from block {block.block_id}."
             )
         seen_claims.add(normalized_claim)
-        _validate_claim_excerpt(claim, normalized_source)
+        _validate_claim_excerpt(claim, block.text)
         if claim.claim_type.value == "editorial_explanation":
             raise DeterministicValidationError(
                 "Evidence extraction may not create editorial claims."
@@ -217,14 +217,18 @@ def _validate_profile_budget(
         )
 
 
-def _validate_claim_excerpt(claim: EvidenceClaimDraft, normalized_source: str) -> None:
+def _validate_claim_excerpt(claim: EvidenceClaimDraft, block_text: str) -> None:
     excerpt = _normalize(claim.supporting_excerpt)
     if len(excerpt) < 12:
         raise DeterministicValidationError("supporting_excerpt is too short to audit.")
-    if excerpt not in normalized_source:
+    verbatim = locate_excerpt(claim.supporting_excerpt, block_text)
+    if verbatim is None:
         raise DeterministicValidationError(
             "supporting_excerpt must be copied from the supplied source block."
         )
+    if _normalize(verbatim) != excerpt:
+        # Repair typographic drift so downstream auditing stays byte-exact.
+        claim.supporting_excerpt = verbatim
 
 
 def _salvage_draft_inplace(
@@ -235,7 +239,6 @@ def _salvage_draft_inplace(
 ) -> None:
     """Drop invalid claims/fields on the final attempt; keep the rest."""
 
-    normalized_source = _normalize(block.text)
     kept: list[EvidenceClaimDraft] = []
     seen_claims: set[str] = set()
     for claim in draft.claims:
@@ -245,7 +248,7 @@ def _salvage_draft_inplace(
         if normalized_claim in seen_claims:
             continue
         try:
-            _validate_claim_excerpt(claim, normalized_source)
+            _validate_claim_excerpt(claim, block.text)
         except DeterministicValidationError:
             continue
         seen_claims.add(normalized_claim)

@@ -11,6 +11,31 @@ from thesisound.source_analysis import (
 )
 
 _WORD = re.compile(r"\w+", re.UNICODE)
+_SELECTION_HEADROOM = 0.10
+_NOTE_HEADINGS = frozenset(
+    {
+        "notes",
+        "endnotes",
+        "footnotes",
+        "references",
+        "bibliography",
+        "works cited",
+        "further reading",
+        "index",
+        "acknowledgements",
+        "acknowledgments",
+        "یادداشت",
+        "یادداشت‌ها",
+        "پانویس",
+        "پی‌نوشت",
+        "منابع",
+        "فهرست منابع",
+        "کتابنامه",
+        "کتاب‌نامه",
+        "نمایه",
+    }
+)
+_NOTE_LINE = re.compile(r"^\s*\[?\d{1,3}[\].)]\s", re.MULTILINE)
 _FUNCTION_WEIGHT = {
     "definition": 80,
     "argument": 75,
@@ -97,16 +122,22 @@ def plan_evidence_extraction(
             achieved_token_coverage=1.0,
         )
 
-    block_by_id = {block.block_id: block for block in content_blocks}
-    index_by_id = {block.block_id: index for index, block in enumerate(content_blocks)}
+    eligible = [block for block in content_blocks if not _is_note_like(block)]
+    if not eligible:
+        eligible = content_blocks  # never filter a source down to nothing
+
+    block_by_id = {block.block_id: block for block in eligible}
+    index_by_id = {block.block_id: index for index, block in enumerate(eligible)}
     section_by_block = {
         block_id: section
         for section in document_map.sections
         for block_id in section.source_block_ids
         if block_id in block_by_id
     }
-    total_tokens = sum(block.estimated_token_count for block in content_blocks)
-    coverage_tokens = math.ceil(total_tokens * profile.block_coverage_target)
+    total_tokens = sum(block.estimated_token_count for block in eligible)
+    coverage_tokens = math.ceil(
+        total_tokens * profile.block_coverage_target * (1 + _SELECTION_HEADROOM)
+    )
     target_tokens = min(total_tokens, coverage_tokens, profile.evidence_input_token_budget)
 
     selected: set[str] = set()
@@ -124,7 +155,7 @@ def plan_evidence_extraction(
             selected.add(first)
 
     ranked = sorted(
-        content_blocks,
+        eligible,
         key=lambda block: (
             -_block_score(block.block_id, section_by_block, brief),
             index_by_id[block.block_id],
@@ -140,7 +171,9 @@ def plan_evidence_extraction(
         selected_tokens += block.estimated_token_count
 
     selected_ids = [block.block_id for block in content_blocks if block.block_id in selected]
-    deferred_ids = [block.block_id for block in content_blocks if block.block_id not in selected]
+    deferred_ids = [
+        block.block_id for block in content_blocks if block.block_id not in selected
+    ]
     achieved = selected_tokens / total_tokens if total_tokens else 1.0
     return EvidenceExtractionPlan(
         source_id=document_map.source_id,
@@ -151,6 +184,17 @@ def plan_evidence_extraction(
         total_source_tokens=total_tokens,
         achieved_token_coverage=min(1.0, achieved),
     )
+
+
+def _is_note_like(block: SourceDocumentBlock) -> bool:
+    for heading in block.heading_path:
+        folded = heading.casefold().strip()
+        if any(
+            folded == token or folded.startswith(f"{token} ")
+            for token in _NOTE_HEADINGS
+        ):
+            return True
+    return len(_NOTE_LINE.findall(block.text)) >= 8
 
 
 def _block_score(block_id: str, section_by_block: dict, brief: ResearchBrief) -> int:

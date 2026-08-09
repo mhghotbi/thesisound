@@ -29,7 +29,11 @@ def current_http_proxy() -> str | None:
 
 
 def gemini_http_options(proxy: str | None = None) -> dict[str, object] | None:
-    """Build google-genai HttpOptions kwargs that force the Gemini proxy."""
+    """Build google-genai HttpOptions kwargs that force the Gemini proxy.
+
+    Returns None only when proxying is explicitly disabled. Callers that send
+    GEMINI_API_KEYS traffic must treat a missing proxy as a configuration error.
+    """
     resolved = normalize_proxy_url(proxy)
     if resolved is None:
         resolved = current_http_proxy()
@@ -46,3 +50,15 @@ def gemini_http_options(proxy: str | None = None) -> dict[str, object] | None:
             "trust_env": False,
         },
     }
+
+
+def require_gemini_http_options(proxy: str | None = None) -> dict[str, object]:
+    """HttpOptions for Gemini API-key clients; proxy is mandatory."""
+    options = gemini_http_options(proxy)
+    if options is None:
+        raise RuntimeError(
+            "Gemini API key requests require THESISOUND_HTTP_PROXY "
+            f"(default {DEFAULT_HTTP_PROXY}). Unproxied GEMINI_API_KEYS traffic "
+            "is not allowed; set the proxy or use 'none' only for non-key clients."
+        )
+    return options

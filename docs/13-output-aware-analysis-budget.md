@@ -55,7 +55,7 @@ book map
 
 پس از Document Map، از `ResearchBrief` یک `AnalysisProfile` ساخته می‌شود. این profile تعیین می‌کند:
 
-- چه درصدی از tokenهای منبع وارد evidence extraction شود؛
+- چه درصدی از tokenهای محتوای قابل‌تحلیل منبع (بدون یادداشت‌ها، پانویس‌ها و بخش‌های note-like) وارد evidence extraction شود؛
 - سقف token ورودی extraction چقدر باشد؛
 - حداکثر چند claim از هر block استخراج شود؛
 - چند block همسایه برای فهم context فرستاده شود؛
@@ -79,7 +79,7 @@ book map
 
 این اعداد default مهندسی‌اند، نه حقیقت نهایی محصول. پس از benchmark روی منابع واقعی باید تنظیم شوند.
 
-| مدت | tier | هدف پوشش tokenهای منبع | سقف claim در block | context همسایه |
+| مدت | tier | هدف پوشش tokenهای محتوای قابل‌تحلیل | سقف claim در block | context همسایه |
 |---|---|---:|---:|---:|
 | ۵ تا ۱۰ دقیقه | `brief` | ۳۵٪ | ۲ | ۰ |
 | ۱۱ تا ۲۵ دقیقه | `standard` | ۶۰٪ | ۳ | ۰ |
@@ -173,7 +173,7 @@ sources/<source-id>/evidence-extraction-plan.json
 - token budget؛
 - blockهای منتخب؛
 - blockهای deferred؛
-- tokenهای انتخاب‌شده و کل؛
+- tokenهای انتخاب‌شده و کل tokenهای محتوای قابل‌تحلیل (`total_source_tokens`؛ یادداشت‌ها و endnoteها از مخرج پوشش خارج‌اند)؛
 - coverage واقعی.
 
 Source manifest نیز این مقادیر خلاصه را ثبت می‌کند:
@@ -197,6 +197,7 @@ src/thesisound/services/source_artifact_store.py
 src/thesisound/source_analysis.py
 prompts/evidence_extraction/1.1.0/
 prompts/evidence_extraction/1.2.0/
+prompts/evidence_extraction/1.3.0/
 ```
 
 `extract-evidence` و `analyze-source` profile را خودکار از Research Brief پروژه می‌سازند. CLI پارامتر duration جداگانه ندارد؛ منبع حقیقت همان `target_duration_minutes` در brief است تا دو تنظیم متناقض ایجاد نشود.

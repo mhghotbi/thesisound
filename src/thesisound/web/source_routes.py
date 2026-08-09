@@ -175,6 +175,13 @@ def register_source_routes(
         workspace.save_project(project)
         return _source_redirect(project_id)
 
+    @app.get("/projects/{project_id}/sources/search", response_class=HTMLResponse)
+    def search_sources_get(request: Request, project_id: UUID) -> Response:
+        """Browser bookmarks / refreshes hit GET; search itself is POST-only."""
+        if redirect := login_redirect(request):
+            return redirect
+        return _source_redirect(project_id)
+
     @app.post("/projects/{project_id}/sources/search", response_class=HTMLResponse)
     async def search_sources(
         request: Request,
@@ -224,10 +231,7 @@ def register_source_routes(
                 source_context(
                     project,
                     sources,
-                    error=(
-                        "جست‌وجوی وب یا بازیابی منبع انجام نشد. تنظیمات Gemini و "
-                        f"اتصال را بررسی کنید. جزئیات: {str(error)[:300]}"
-                    ),
+                    error=_search_failure_message(error),
                 ),
                 status_code=422,
             )
@@ -679,6 +683,27 @@ def _safe_filename(value: str) -> str:
     if not name or name in {".", ".."}:
         raise ValueError("نام فایل معتبر نیست.")
     return name[:180]
+
+
+def _search_failure_message(error: Exception) -> str:
+    detail = str(error).strip()
+    lowered = detail.casefold()
+    if "resource_exhausted" in lowered or "429" in detail or "rate limit" in lowered:
+        return (
+            "جست‌وجوی وب انجام نشد: سهمیه Google Search مدل Gemini تمام شده است. "
+            "چند دقیقه بعد دوباره تلاش کنید. "
+            f"جزئیات: {detail[:220]}"
+        )
+    if "ACCESS_TOKEN_TYPE_UNSUPPORTED" in detail or "UNAUTHENTICATED" in detail:
+        return (
+            "جست‌وجوی وب انجام نشد: احراز هویت Gemini رد شد. "
+            "کلید معیوب را از مجموعه کلیدها حذف یا جایگزین کنید. "
+            f"جزئیات: {detail[:220]}"
+        )
+    return (
+        "جست‌وجوی وب یا بازیابی منبع انجام نشد. تنظیمات Gemini و "
+        f"اتصال را بررسی کنید. جزئیات: {detail[:300]}"
+    )
 
 
 def _source_redirect(project_id: UUID, *, error: str | None = None) -> RedirectResponse:

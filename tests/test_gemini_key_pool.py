@@ -93,6 +93,29 @@ def test_pool_falls_back_to_adc_for_unsupported_auth_keys() -> None:
     assert attempted == ["AQ.key-a", "AQ.key-b", "adc", "adc"]
 
 
+def test_pool_prefers_quota_error_over_adc_when_keys_mixed() -> None:
+    attempted: list[str] = []
+    pool = GeminiKeyPool(
+        ["AQ.bad", "key-ok"],
+        client_factory=lambda key: FakeClient(key_name=key),
+        adc_client_factory=lambda: FakeClient(key_name="adc"),
+    )
+
+    def operation(client: FakeClient) -> str:
+        attempted.append(client.key_name)
+        if client.key_name.startswith("AQ."):
+            raise UnsupportedAuthError(
+                "401 UNAUTHENTICATED: ACCESS_TOKEN_TYPE_UNSUPPORTED; "
+                "Expected OAuth 2 access token"
+            )
+        raise QuotaError("429 RESOURCE_EXHAUSTED")
+
+    with pytest.raises(QuotaError, match="RESOURCE_EXHAUSTED"):
+        pool.call(operation)
+    assert attempted == ["AQ.bad", "key-ok"]
+    assert "adc" not in attempted
+
+
 def test_pool_reports_actionable_error_when_adc_is_unavailable() -> None:
     def missing_adc() -> FakeClient:
         raise RuntimeError("ADC missing")

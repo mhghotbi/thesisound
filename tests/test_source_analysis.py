@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -38,6 +39,7 @@ from thesisound.services.evidence_validator import validate_evidence_extraction
 from thesisound.services.source_analysis_service import SourceAnalysisService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
+    BlockBuildReport,
     BlockEvidenceExtraction,
     ClaimDraft,
     ClaimReconciliationDraft,
@@ -46,11 +48,15 @@ from thesisound.source_analysis import (
     DocumentMapDraftSection,
     EvidenceClaimDraft,
     EvidenceExtractionDraft,
+    SourceAnalysisManifest,
     SourceDocumentBlock,
 )
 
 
 class FakeRunner:
+    def __init__(self, reject_block_ids: set[str] | frozenset[str] = frozenset()) -> None:
+        self.reject_block_ids = set(reject_block_ids)
+
     def run(
         self,
         *,
@@ -88,20 +94,36 @@ class FakeRunner:
         elif output_type is EvidenceExtractionDraft:
             block = variables["block"]
             assert isinstance(block, dict)
-            excerpt = str(block["text"]).split(".")[0].strip()
-            output = EvidenceExtractionDraft(
-                segment_function="argument",
-                claims=[
-                    EvidenceClaimDraft(
-                        claim="Action occurs directly between persons.",
-                        claim_type=ClaimType.AUTHOR_POSITION,
-                        supporting_excerpt=excerpt,
-                        support_kind="direct",
-                        confidence=0.95,
-                    )
-                ],
-                must_not_be_lost=["The distinction from fabrication."],
-            )
+            block_id = str(block["block_id"])
+            if block_id in self.reject_block_ids:
+                output = EvidenceExtractionDraft(
+                    segment_function="argument",
+                    claims=[
+                        EvidenceClaimDraft(
+                            claim="Invented claim.",
+                            claim_type=ClaimType.AUTHOR_POSITION,
+                            supporting_excerpt="This sentence is invented.",
+                            support_kind="direct",
+                            confidence=0.5,
+                        )
+                    ],
+                    must_not_be_lost=[],
+                )
+            else:
+                excerpt = str(block["text"]).split(".")[0].strip()
+                output = EvidenceExtractionDraft(
+                    segment_function="argument",
+                    claims=[
+                        EvidenceClaimDraft(
+                            claim="Action occurs directly between persons.",
+                            claim_type=ClaimType.AUTHOR_POSITION,
+                            supporting_excerpt=excerpt,
+                            support_kind="direct",
+                            confidence=0.95,
+                        )
+                    ],
+                    must_not_be_lost=["The distinction from fabrication."],
+                )
         elif output_type is ClaimReconciliationDraft:
             evidence = variables["evidence_items"]
             assert isinstance(evidence, list)
@@ -627,3 +649,235 @@ def test_extract_evidence_fails_when_all_blocks_rejected(tmp_path: Path) -> None
     saved = store.load_block_extractions(project.project_id, source_id)
     assert saved
     assert all(item.status == "rejected" for item in saved)
+
+
+def _prepare_equal_blocks_source(
+    tmp_path: Path,
+    *,
+    duration: int,
+    block_count: int,
+    tokens_per_block: int,
+    reject_block_ids: set[str] | frozenset[str] = frozenset(),
+) -> tuple[SourceAnalysisService, UUID, UUID, list[SourceDocumentBlock]]:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(
+        raw_input="Arendt and action",
+        state=ProjectState.BRIEF_READY,
+        brief=_brief(duration),
+    )
+    workspace.save_project(project)
+    store = SourceArtifactStore(tmp_path / "workspaces")
+    source_id = uuid4()
+    blocks = [
+        SourceDocumentBlock(
+            block_id=f"block-{index:02d}",
+            source_id=source_id,
+            locator=Locator(page_start=index, page_end=index),
+            heading_path=["Body"],
+            block_type="other",
+            text=(
+                f"Action occurs directly between persons in block {index}. "
+                "It cannot be reduced to the fabrication of an object."
+            ),
+            estimated_token_count=tokens_per_block,
+            source_block_keys=[f"source-{index}"],
+        )
+        for index in range(1, block_count + 1)
+    ]
+    store.save_blocks(
+        project.project_id,
+        source_id,
+        blocks,
+        BlockBuildReport(
+            source_id=source_id,
+            input_block_count=block_count,
+            output_block_count=block_count,
+        ),
+    )
+    store.save_manifest(
+        SourceAnalysisManifest(
+            project_id=project.project_id,
+            source_id=source_id,
+            source_sha256="b" * 64,
+            status="blocks_ready",
+            block_count=block_count,
+        )
+    )
+    map_runner = FakeRunner()
+    evidence_runner = FakeRunner(reject_block_ids=reject_block_ids)
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=store,
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(map_runner),
+        evidence_extractor=EvidenceExtractorService(evidence_runner),
+        claim_reconciler=ClaimReconcilerService(map_runner),
+    )
+    service.map_document(project.project_id, source_id, model="fake")
+    return service, project.project_id, source_id, blocks
+
+
+def test_evidence_gate_tolerates_single_block_rejection(tmp_path: Path) -> None:
+    # 18×100 tokens, 10-minute brief → ~7 selected; one rejection drops coverage
+    # below the 35% profile target but keeps retention above 85%.
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=18,
+        tokens_per_block=100,
+        reject_block_ids={"block-01"},
+    )
+    _manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
+    assert any("coverage" in warning.casefold() for warning in warnings)
+
+
+def test_evidence_gate_fails_when_most_blocks_rejected(tmp_path: Path) -> None:
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=18,
+        tokens_per_block=100,
+        reject_block_ids={
+            "block-01",
+            "block-02",
+            "block-03",
+            "block-04",
+        },
+    )
+    with pytest.raises(ValueError, match="planned source tokens"):
+        service.extract_evidence(project_id, source_id, model="fake")
+
+
+def test_evidence_gate_passes_when_budget_caps_planned_coverage(tmp_path: Path) -> None:
+    # 20×3000 = 60k tokens; 10-minute budget is 18k → planned coverage ~30% < 35%.
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=20,
+        tokens_per_block=3_000,
+    )
+    manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
+    assert manifest.status == "evidence_ready"
+    assert any("coverage" in warning.casefold() for warning in warnings)
+
+
+def test_extraction_plan_adds_headroom_above_coverage_target() -> None:
+    source_id = uuid4()
+    blocks = [
+        SourceDocumentBlock(
+            block_id=f"block-{index}",
+            source_id=source_id,
+            locator=Locator(page_start=index, page_end=index),
+            heading_path=["Body"],
+            block_type="other",
+            text=f"Semantic content for block {index}." * 2,
+            estimated_token_count=10,
+            source_block_keys=[f"source-{index}"],
+        )
+        for index in range(1, 101)
+    ]
+    document_map = DocumentMap(
+        source_id=source_id,
+        scope_locator=Locator(page_start=1, page_end=100),
+        working_thesis="Action differs from fabrication.",
+        sections=[
+            DocumentMapSection(
+                section_id="sec-1",
+                source_block_ids=[block.block_id for block in blocks],
+                title="Body",
+                function="argument",
+                key_concepts=["action"],
+                required_for_global_understanding=True,
+            )
+        ],
+    )
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+    total_tokens = 1_000
+    headroom_target = math.ceil(total_tokens * plan.profile.block_coverage_target * 1.10)
+    assert plan.achieved_token_coverage > plan.profile.block_coverage_target
+    assert plan.selected_source_tokens >= headroom_target
+
+
+def test_planner_defers_endnote_blocks() -> None:
+    source_id = uuid4()
+    body = SourceDocumentBlock(
+        block_id="block-body",
+        source_id=source_id,
+        locator=Locator(page_start=1, page_end=1),
+        heading_path=["Chapter"],
+        block_type="other",
+        text="Action occurs directly between persons." * 20,
+        estimated_token_count=200,
+        source_block_keys=["body"],
+    )
+    notes = SourceDocumentBlock(
+        block_id="block-notes",
+        source_id=source_id,
+        locator=Locator(page_start=2, page_end=2),
+        heading_path=["Notes"],
+        block_type="other",
+        text="1. See Arendt, The Human Condition." * 20,
+        estimated_token_count=200,
+        source_block_keys=["notes"],
+    )
+    document_map = DocumentMap(
+        source_id=source_id,
+        scope_locator=Locator(page_start=1, page_end=2),
+        working_thesis="Action differs from fabrication.",
+        sections=[
+            DocumentMapSection(
+                section_id="sec-body",
+                source_block_ids=["block-body"],
+                title="Chapter",
+                function="argument",
+                key_concepts=["action"],
+                required_for_global_understanding=True,
+            ),
+            DocumentMapSection(
+                section_id="sec-notes",
+                source_block_ids=["block-notes"],
+                title="Notes",
+                function="other",
+                key_concepts=[],
+                required_for_global_understanding=False,
+            ),
+        ],
+    )
+    plan = plan_evidence_extraction(_brief(60), document_map, [body, notes])
+    assert "block-notes" in plan.deferred_block_ids
+    assert "block-notes" not in plan.selected_block_ids
+    assert "block-body" in plan.selected_block_ids
+
+
+def test_planner_keeps_all_blocks_when_every_block_looks_like_notes() -> None:
+    source_id = uuid4()
+    blocks = [
+        SourceDocumentBlock(
+            block_id=f"block-{index}",
+            source_id=source_id,
+            locator=Locator(page_start=index, page_end=index),
+            heading_path=["Notes"],
+            block_type="other",
+            text=f"{index}. Bibliographic note about action and plurality." * 10,
+            estimated_token_count=100,
+            source_block_keys=[f"source-{index}"],
+        )
+        for index in range(1, 6)
+    ]
+    document_map = DocumentMap(
+        source_id=source_id,
+        scope_locator=Locator(page_start=1, page_end=5),
+        working_thesis="Notes-only source.",
+        sections=[
+            DocumentMapSection(
+                section_id="sec-notes",
+                source_block_ids=[block.block_id for block in blocks],
+                title="Notes",
+                function="other",
+                key_concepts=["notes"],
+                required_for_global_understanding=True,
+            )
+        ],
+    )
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+    assert plan.selected_block_ids

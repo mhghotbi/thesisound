@@ -9,6 +9,7 @@ from thesisound.http_proxy import (
     gemini_http_options,
     normalize_proxy_url,
 )
+import pytest
 
 
 def test_normalize_proxy_url_disables_sentinels() -> None:
@@ -47,3 +48,14 @@ def test_settings_configures_gemini_proxy_only(tmp_path) -> None:
     )
     assert current_http_proxy() == "http://127.0.0.1:10809"
     assert gemini_http_options()["client_args"]["proxy"] == "http://127.0.0.1:10809"
+
+
+def test_require_gemini_http_options_rejects_unproxied_api_key_traffic(tmp_path) -> None:
+    from thesisound.http_proxy import require_gemini_http_options
+
+    configure_gemini_http_proxy("none")
+    with pytest.raises(RuntimeError, match="THESISOUND_HTTP_PROXY"):
+        require_gemini_http_options()
+    configure_gemini_http_proxy("http://127.0.0.1:10809")
+    options = require_gemini_http_options()
+    assert options["client_args"]["proxy"] == "http://127.0.0.1:10809"

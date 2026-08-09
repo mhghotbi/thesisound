@@ -31,6 +31,8 @@ from thesisound.source_analysis import (
     SourceDocumentBlock,
 )
 
+_MIN_PLANNED_TOKEN_RETENTION = 0.85
+
 
 class SourceAnalysisService:
     def __init__(
@@ -182,16 +184,19 @@ class SourceAnalysisService:
         )
         self.artifact_store.save_evidence(project_id, source_id, records)
 
+        selected_ids = set(plan.selected_block_ids)
         kept_ids = {
             record.block_id for record in records if record.status == "extracted"
         }
         kept_tokens = sum(
             block.estimated_token_count
             for block in blocks
-            if block.block_id in kept_ids and block.block_id in set(plan.selected_block_ids)
+            if block.block_id in kept_ids and block.block_id in selected_ids
         )
+        planned_tokens = plan.selected_source_tokens
         total_tokens = plan.total_source_tokens
         kept_coverage = kept_tokens / total_tokens if total_tokens else 1.0
+        retention = kept_tokens / planned_tokens if planned_tokens else 1.0
         claim_count = sum(
             len(record.extraction.claims)
             for record in records
@@ -219,11 +224,19 @@ class SourceAnalysisService:
             raise ValueError(
                 "Evidence extraction produced no claim-bearing evidence after retries."
             )
-        if kept_coverage + 1e-9 < plan.profile.block_coverage_target:
+        if retention + 1e-9 < _MIN_PLANNED_TOKEN_RETENTION:
             raise ValueError(
-                "Evidence coverage collapsed to "
-                f"{kept_coverage:.0%} after block rejections; "
-                f"required coverage is {plan.profile.block_coverage_target:.0%}."
+                f"Evidence extraction lost {1 - retention:.0%} of the planned source tokens "
+                f"across {len(rejected)} rejected block(s); at least "
+                f"{_MIN_PLANNED_TOKEN_RETENTION:.0%} must survive. "
+                f"Kept coverage is {kept_coverage:.0%} of the source."
+            )
+        if kept_coverage + 1e-9 < plan.profile.block_coverage_target:
+            warnings.append(
+                f"Evidence coverage {kept_coverage:.0%} is below the "
+                f"{plan.profile.block_coverage_target:.0%} target for the "
+                f"{plan.profile.depth} profile "
+                f"(the plan itself could only reach {plan.achieved_token_coverage:.0%})."
             )
         return manifest, warnings
 
