@@ -353,9 +353,10 @@ def evaluate_gates(
             "<=",
         ),
         "min_quality_overall": (
-            min(
-                (case.quality_overall for case in cases if case.quality_overall is not None),
-                default=None,
+            (
+                None
+                if any(case.quality_overall is None for case in cases)
+                else min(case.quality_overall for case in cases if case.quality_overall is not None)
             ),
             ">=",
         ),

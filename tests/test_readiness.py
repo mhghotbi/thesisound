@@ -170,6 +170,8 @@ def test_cli_exits_one_when_any_gate_is_blocked(tmp_path: Path) -> None:
 def _save_reviewed_script_artifacts(root: Path, project: Project, *, stale: bool = False) -> None:
     assert project.episode_plan is not None
     store = ScriptArtifactStore(root)
+    current_hash = episode_plan_hash(project.episode_plan)
+    store.prepare_for_plan(project.project_id, current_hash)
     store.save_checks(
         ScriptCheckReport(
             project_id=project.project_id,
@@ -183,7 +185,7 @@ def _save_reviewed_script_artifacts(root: Path, project: Project, *, stale: bool
         project.project_id,
         VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),
     )
-    plan_hash = episode_plan_hash(project.episode_plan)
+    plan_hash = current_hash
     if stale:
         plan_hash = "0" * 64 if plan_hash != "0" * 64 else "1" * 64
     store.save_review_decision(
@@ -223,3 +225,35 @@ def test_stale_review_acceptance_does_not_unblock_verification(tmp_path: Path) -
 
     assert _result(results, "independent-verification").status == "blocked"
     assert _result(results, "script-review-decision").status == "blocked"
+
+
+def test_plan_change_blocks_stale_script_artifacts(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project = _project(ProjectState.SCRIPT_VERIFIED)
+    workspace = WorkspaceStore(root)
+    workspace.save_project(project)
+    _save_reviewed_script_artifacts(root, project)
+
+    assert project.episode_plan is not None
+    project.episode_plan.title = "Changed but not regenerated"
+    workspace.save_project(project)
+
+    results = project_readiness(project_id=project.project_id, workspace_root=root)
+
+    assert _result(results, "script-checks").status == "blocked"
+    assert _result(results, "independent-verification").status == "blocked"
+    assert _result(results, "script-review-decision").status == "blocked"
+
+
+def test_corrupt_review_decision_yields_unknown_not_a_crash(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project = _project(ProjectState.SCRIPT_VERIFIED)
+    WorkspaceStore(root).save_project(project)
+    _save_reviewed_script_artifacts(root, project)
+    decision_path = root / str(project.project_id) / "script" / "review-decision.json"
+    decision_path.write_text('{"decision":', encoding="utf-8")
+
+    results = project_readiness(project_id=project.project_id, workspace_root=root)
+
+    assert _result(results, "independent-verification").status == "unknown"
+    assert _result(results, "script-review-decision").status == "unknown"

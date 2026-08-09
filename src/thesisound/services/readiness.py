@@ -279,7 +279,7 @@ def _evidence_results(source_dirs: list[Path], set_result) -> None:
             if validation_failures
             else f"Revalidated evidence for {plans} source(s).",
         )
-        retention = kept_tokens / planned_tokens if planned_tokens else 0.0
+        retention = kept_tokens / planned_tokens if planned_tokens else 1.0
         set_result(
             "evidence-retention",
             "pass" if retention >= _MIN_PLANNED_TOKEN_RETENTION else "blocked",
@@ -296,10 +296,42 @@ def _evidence_results(source_dirs: list[Path], set_result) -> None:
 def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
     store = ScriptArtifactStore(root)
     script_dir = root / str(project_id) / "script"
+    script_codes = ("script-checks", "independent-verification", "script-review-decision")
     if not script_dir.exists():
-        for code in ("script-checks", "independent-verification", "script-review-decision"):
+        for code in script_codes:
             set_result(code, "not_reached", "Script artifacts do not exist.")
         return
+    if project.episode_plan is None:
+        for code in script_codes:
+            set_result(
+                code,
+                "unknown",
+                "Script artifacts exist but the Episode Plan is missing.",
+                script_dir,
+            )
+        return
+
+    current_hash = episode_plan_hash(project.episode_plan)
+    try:
+        if not store.artifacts_match_plan(project_id, current_hash):
+            for code in script_codes:
+                set_result(
+                    code,
+                    "blocked",
+                    "Script artifacts are bound to a different Episode Plan.",
+                    script_dir,
+                )
+            return
+    except (OSError, ValueError) as exc:
+        for code in script_codes:
+            set_result(
+                code,
+                "unknown",
+                f"Script plan binding is unreadable: {exc}",
+                script_dir,
+            )
+        return
+
     try:
         checks = store.load_latest_checks(project_id)
         set_result(
@@ -315,35 +347,42 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
         set_result("script-checks", "not_reached", "Deterministic checks have not run.", script_dir)
     except (OSError, ValueError) as exc:
         set_result("script-checks", "unknown", f"Check report is unreadable: {exc}", script_dir)
-    decision = store.load_review_decision_optional(project_id)
+
+    decision = None
+    decision_error: str | None = None
+    try:
+        decision = store.load_review_decision_optional(project_id)
+    except (OSError, ValueError) as exc:
+        decision_error = str(exc)
     accepted_current_review = bool(
-        decision
-        and decision.decision == "accepted"
-        and project.episode_plan is not None
-        and decision.plan_hash == episode_plan_hash(project.episode_plan)
+        decision and decision.decision == "accepted" and decision.plan_hash == current_hash
     )
     try:
         verification = store.load_latest_verification(project_id)
         verified_normally = (
             verification.verdict == "pass" and verification.unsupported_claim_ratio == 0
         )
-        verified = verified_normally or accepted_current_review
-        detail = (
-            "The independent verifier passed with no unsupported claims."
-            if verified_normally
-            else (
+        if verified_normally:
+            verification_status: GateStatus = "pass"
+            detail = "The independent verifier passed with no unsupported claims."
+        elif decision_error is not None:
+            verification_status = "unknown"
+            detail = f"Review decision is unreadable: {decision_error}"
+        elif accepted_current_review:
+            verification_status = "pass"
+            detail = (
                 "The verifier did not pass, but a named human accepted this exact "
                 "plan-bound script."
-                if accepted_current_review
-                else (
-                    f"Verifier verdict is {verification.verdict}; unsupported ratio is "
-                    f"{verification.unsupported_claim_ratio:.1%}."
-                )
             )
-        )
+        else:
+            verification_status = "blocked"
+            detail = (
+                f"Verifier verdict is {verification.verdict}; unsupported ratio is "
+                f"{verification.unsupported_claim_ratio:.1%}."
+            )
         set_result(
             "independent-verification",
-            "pass" if verified else "blocked",
+            verification_status,
             detail,
             script_dir,
         )
@@ -361,7 +400,15 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
             f"Verification report is unreadable: {exc}",
             script_dir,
         )
-    if project.state == ProjectState.SCRIPT_REVIEW_REQUIRED:
+
+    if decision_error is not None:
+        set_result(
+            "script-review-decision",
+            "unknown",
+            f"Review decision is unreadable: {decision_error}",
+            script_dir / "review-decision.json",
+        )
+    elif project.state == ProjectState.SCRIPT_REVIEW_REQUIRED:
         set_result(
             "script-review-decision",
             "blocked",
@@ -375,15 +422,7 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
             "No human script review was required.",
             script_dir,
         )
-    elif project.episode_plan is None:
-        set_result(
-            "script-review-decision",
-            "unknown",
-            "A review exists but the Episode Plan is missing.",
-            script_dir,
-        )
     else:
-        current_hash = episode_plan_hash(project.episode_plan)
         accepted = decision.decision == "accepted" and decision.plan_hash == current_hash
         set_result(
             "script-review-decision",
