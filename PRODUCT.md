@@ -58,7 +58,7 @@ The first UI slice covers:
 
 The development account is:
 
-- phone: `0912000000`
+- phone: `09120000000`
 - OTP: `999999`
 
 This credential exists only when `THESISOUND_ALLOW_TEST_OTP=true` outside production.

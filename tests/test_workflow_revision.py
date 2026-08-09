@@ -88,7 +88,7 @@ def test_rewind_to_sources_archives_downstream_and_preserves_raw_inputs(
     receipt = service.rewind(
         project.project_id,
         target="sources",
-        actor="0912000000",
+        actor="09120000000",
         reason="اصلاح منبع پس از خطا",
     )
 
@@ -117,7 +117,7 @@ def test_rewind_to_brief_resets_selection_and_invalidates_search_results(
     WorkflowRevisionService(workspace).rewind(
         project.project_id,
         target="brief",
-        actor="0912000000",
+        actor="09120000000",
     )
 
     current = workspace.load_project(project.project_id)
@@ -139,7 +139,7 @@ def test_rewind_rejects_an_active_run(tmp_path: Path) -> None:
         WorkflowRevisionService(workspace).rewind(
             project.project_id,
             target="sources",
-            actor="0912000000",
+            actor="09120000000",
         )
 
     assert workspace.load_project(project.project_id).state == ProjectState.FAILED_RETRYABLE

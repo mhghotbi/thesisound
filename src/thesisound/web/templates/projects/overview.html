@@ -30,7 +30,7 @@
       <div class="section-heading"><h2 id="overview-question">پرسش و محدوده</h2></div>
       {% if project.brief %}
       <dl class="summary-list">
-        <div class="summary-row"><dt>پرسش مرکزی</dt><dd>{{ project.brief.central_question }}</dd></div>
+        <div class="summary-row"><dt><span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span></dt><dd>{{ project.brief.central_question }}</dd></div>
         <div class="summary-row"><dt>مخاطب</dt><dd>{{ project.brief.audience }}</dd></div>
         <div class="summary-row"><dt>آشنایی پیشین</dt><dd>{{ knowledge_labels.get(project.brief.prior_knowledge, 'نامشخص') }} <code class="operator-only"><bdi dir="ltr">{{ project.brief.prior_knowledge }}</bdi></code></dd></div>
         <div class="summary-row"><dt>مدت تقریبی</dt><dd>{{ project.brief.target_duration_minutes | fa_num }} دقیقه</dd></div>
@@ -38,7 +38,7 @@
         {% if project.brief.scope_exclusions %}<div class="summary-row"><dt>خارج از این گفتار</dt><dd>{{ project.brief.scope_exclusions | join('، ') }}</dd></div>{% endif %}
       </dl>
       {% else %}
-      <div class="empty-inline"><strong>برداشت اولیه هنوز ساخته نشده است.</strong><span>برای تعریف پرسش مرکزی وارد مرحلهٔ موضوع و هدف شوید.</span></div>
+      <div class="empty-inline"><strong>برداشت اولیه هنوز ساخته نشده است.</strong><span>برای تعریف <span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span> وارد مرحلهٔ موضوع و هدف شوید.</span></div>
       {% endif %}
     </section>
 

@@ -33,7 +33,7 @@ OTP login
 تا قبل از اتصال سرویس پیامک، development login زیر فعال است:
 
 ```text
-phone: 0912000000
+phone: 09120000000
 otp:   999999
 ```
 

@@ -101,7 +101,7 @@
       <button class="button button--primary" type="submit">تلاش دوباره در اجرای جدید</button>
     </form>
   </div>
-  <div class="error-recovery__options"><a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/sources">بررسی منابع</a><a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a></div>
+  <div class="error-recovery__options"><a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/sources">اصلاح منابع</a><a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a></div>
   {% if corpus_run.last_error %}{% call technical_details('کد و متن خطا') %}<p><bdi dir="ltr">{{ corpus_run.last_error }}</bdi></p>{% endcall %}{% endif %}
 </section>
 {% elif planning_run and planning_run.status in ['blocked', 'succeeded', 'failed'] %}

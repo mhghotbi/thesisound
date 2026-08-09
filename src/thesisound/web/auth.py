@@ -66,7 +66,7 @@ class OtpService:
         resend_cooldown_seconds: int = 30,
         max_attempts: int = 5,
         allow_test_otp: bool = False,
-        test_phone: str = "0912000000",
+        test_phone: str = "09120000000",
         test_code: str = "999999",
     ) -> None:
         self._secret = secret.encode()

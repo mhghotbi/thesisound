@@ -14,7 +14,7 @@ def _settings(tmp_path: Path) -> Settings:
         ingestion_artifact_root=tmp_path / "artifacts",
         web_session_secret="test-secret-that-is-long-enough",
         allow_test_otp=True,
-        test_otp_phone="0912000000",
+        test_otp_phone="09120000000",
         test_otp_code="999999",
         otp_resend_cooldown_seconds=5,
         ui_demo_mode=False,
@@ -32,7 +32,7 @@ def _login(client: TestClient) -> None:
     client.post(
         "/login/request-code",
         data={
-            "phone": "0912000000",
+            "phone": "09120000000",
             "csrf_token": _csrf(page.text),
             "next_path": "/projects",
         },
@@ -83,7 +83,7 @@ def test_brief_validation_preserves_all_submitted_values(tmp_path: Path) -> None
         )
 
     assert response.status_code == 422
-    assert "پرسش مرکزی نمی‌تواند خالی باشد" in response.text
+    assert "پرسش اصلی نمی‌تواند خالی باشد" in response.text
     assert "زمینه تاریخی مغرب\nچرخه عصبیت" in response.text
     assert "زندگی‌نامه تفصیلی" in response.text
 

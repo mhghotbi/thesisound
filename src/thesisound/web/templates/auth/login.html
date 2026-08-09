@@ -6,7 +6,7 @@
 {% block content %}
 <section class="auth-story" aria-labelledby="auth-story-title">
   <div class="brand brand--auth">
-    <img class="auth-brand__logo" src="{{ url_for('static', path='/maghal-logo-full.webp') }}" alt="مقال؛ گفتار مستند شنیدنی" width="497" height="520">
+    <img class="auth-brand__logo" src="{{ url_for('static', path='/maghal-logo-full-reverse.webp') }}" alt="مقال" width="504" height="519">
   </div>
   <div>
     <h1 id="auth-story-title">از یک سؤال جدی، یک گفتار مستند بسازید.</h1>
@@ -48,7 +48,7 @@
   {% if test_otp_enabled and environment != "production" %}
   <details class="dev-note operator-only">
     <summary>ورود آزمایشی محیط توسعه</summary>
-    <p>شمارهٔ <bdi dir="ltr">0912000000</bdi> و کد <bdi dir="ltr">999999</bdi>.</p>
+    <p>شمارهٔ <bdi dir="ltr">09120000000</bdi> و کد <bdi dir="ltr">999999</bdi>.</p>
   </details>
   {% endif %}
 </section>

@@ -43,7 +43,7 @@ def _settings(tmp_path: Path) -> Settings:
         ingestion_artifact_root=tmp_path / "artifacts",
         web_session_secret="test-secret-that-is-long-enough",
         allow_test_otp=True,
-        test_otp_phone="0912000000",
+        test_otp_phone="09120000000",
         test_otp_code="999999",
         otp_resend_cooldown_seconds=5,
         ui_demo_mode=False,
@@ -61,7 +61,7 @@ def _login(client: TestClient) -> None:
     client.post(
         "/login/request-code",
         data={
-            "phone": "0912000000",
+            "phone": "09120000000",
             "csrf_token": _csrf(page.text),
             "next_path": "/projects",
         },
@@ -138,7 +138,7 @@ def test_get_has_no_side_effect_and_post_approval_queues_exact_plan(
     assert response.status_code == 303
     approval = EpisodePlanApprovalStore(settings.workspace_root).load(project.project_id)
     run = ScriptBuildRunStore(settings.workspace_root).load(project.project_id)
-    assert approval.approved_by == "0912000000"
+    assert approval.approved_by == "09120000000"
     assert approval.plan_hash == episode_plan_hash(project.episode_plan)
     assert run.approved_plan_hash == approval.plan_hash
     assert run.status == "queued"
@@ -199,7 +199,7 @@ def test_verified_script_page_shows_quality_and_source_trace(tmp_path: Path) -> 
     approval = EpisodePlanApproval(
         project_id=project.project_id,
         plan_hash=episode_plan_hash(project.episode_plan),
-        approved_by="0912000000",
+        approved_by="09120000000",
     )
     EpisodePlanApprovalStore(settings.workspace_root).save(approval)
     ScriptBuildRunStore(settings.workspace_root).save(

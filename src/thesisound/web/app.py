@@ -537,7 +537,7 @@ def create_app(
                 item.strip() for item in exclusions.splitlines() if item.strip()
             ]
             if not project.brief.central_question:
-                raise ValueError("پرسش مرکزی نمی‌تواند خالی باشد.")
+                raise ValueError("پرسش اصلی نمی‌تواند خالی باشد.")
             if action == "confirm" and project.state == ProjectState.BRIEF_READY:
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)

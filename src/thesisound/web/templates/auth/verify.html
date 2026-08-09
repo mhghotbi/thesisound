@@ -6,11 +6,11 @@
 {% block content %}
 <section class="auth-story" aria-labelledby="verify-story-title">
   <div class="brand brand--auth">
-    <img class="auth-brand__logo" src="{{ url_for('static', path='/maghal-logo-full.webp') }}" alt="مقال؛ گفتار مستند شنیدنی" width="497" height="520">
+    <img class="auth-brand__logo" src="{{ url_for('static', path='/maghal-logo-full-reverse.webp') }}" alt="مقال" width="504" height="519">
   </div>
   <div>
     <h1 id="verify-story-title">یک گام تا بازگشت به میز مطالعه.</h1>
-    <p>کد ورود فقط برای همین درخواست معتبر است. پس از ورود، گفتارها از آخرین مرحلهٔ معتبر ادامه پیدا می‌کنند.</p>
+    <p>کد ورود فقط برای همین درخواست معتبر است. پس از ورود، گفتارهای شما از آخرین مرحلهٔ معتبر ادامه پیدا می‌کنند.</p>
   </div>
   <div class="auth-story__note">
     <strong>شماره اشتباه است؟</strong>
@@ -32,7 +32,7 @@
       <input name="code" class="otp-input" type="text" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9۰-۹]{6}" placeholder="••••••" required autofocus aria-describedby="otp-hint">
       <small class="field-hint" id="otp-hint">شش رقم را پیوسته وارد کنید.</small>
     </label>
-    <button class="button button--primary button--full" type="submit">ورود به گفتارها</button>
+    <button class="button button--primary button--full" type="submit">ورود به گفتارهای من</button>
   </form>
 
   <div class="form-actions auth-card__footer">

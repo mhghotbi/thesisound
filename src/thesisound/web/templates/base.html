@@ -7,7 +7,9 @@
   <meta name="theme-color" content="#1d4268">
   <meta name="csrf-token" content="{{ csrf_token }}">
   <title>{% block title %}مقال{% endblock %}</title>
-  <link rel="icon" type="image/webp" href="{{ url_for('static', path='/maghal-logo-mark.webp') }}">
+  <link rel="icon" href="{{ url_for('static', path='/favicon.ico') }}" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', path='/favicon-32.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', path='/apple-touch-icon.png') }}">
   <script>
     (() => {
       const themes = new Set(["cobalt", "wood", "olive"]);
@@ -37,14 +39,14 @@
   <header class="app-header">
     <div class="shell app-header__inner">
       <a class="brand" href="/projects" aria-label="خانهٔ مقال">
-        <img class="brand__logo" src="{{ url_for('static', path='/maghal-logo-mark.webp') }}" alt="" width="128" height="128">
+        <img class="brand__logo" src="{{ url_for('static', path='/maghal-logo-mark.webp') }}" alt="" width="256" height="256">
         <span class="brand__identity">
           <strong>مقال</strong>
           <small>مطالعه‌ای که شنیده می‌شود</small>
         </span>
       </a>
       <nav class="app-nav" aria-label="ناوبری اصلی">
-        <a href="/projects" {% if request.url.path == '/projects' %}aria-current="page"{% endif %}>گفتارها</a>
+        <a href="/projects" {% if request.url.path == '/projects' %}aria-current="page"{% endif %}>گفتارهای من</a>
         <a href="/projects/new" {% if request.url.path == '/projects/new' %}aria-current="page"{% endif %}>گفتار تازه</a>
         <a class="operator-only" href="/system-check" {% if request.url.path == '/system-check' %}aria-current="page"{% endif %}>آمادگی اجرا</a>
       </nav>

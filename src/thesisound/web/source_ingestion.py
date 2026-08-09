@@ -180,12 +180,12 @@ def _locator_summary(issue: ParseIssue) -> str | None:
             pages.append(f"صفحه {locator.page_start}")
     if not pages:
         return None
-    return "محل: " + "، ".join(dict.fromkeys(pages))
+    return "نشانی: " + "، ".join(dict.fromkeys(pages))
 
 
 def _ingestion_error_message(error: Exception) -> str:
     if isinstance(error, FileNotFoundError):
         return "فایل بارگذاری‌شده پیدا نشد."
     if isinstance(error, ValueError):
-        return f"فایل قابل پردازش نیست: {str(error)[:240]}"
-    return f"پردازش فایل با خطای {type(error).__name__} متوقف شد."
+        return f"فایل قابل وارسی نیست: {str(error)[:240]}"
+    return f"وارسی فایل با خطای {type(error).__name__} متوقف شد."

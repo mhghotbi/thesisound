@@ -667,10 +667,10 @@ def _project_stages(
         ProjectState.COMPLETE,
     }
     return [
-        ("برداشت هدف", True),
-        ("افزودن و تأیید منابع", after_sources),
-        ("ساخت مجموعه شاهدها", corpus_ready),
-        ("سنجش کفایت و ساخت طرح گفتار", plan_ready),
+        ("موضوع و هدف", True),
+        ("منابع", after_sources),
+        ("تحلیل منابع و استخراج شاهدها", corpus_ready),
+        ("سنجش کفایت منابع و طرح گفتار", plan_ready),
     ]
 
 

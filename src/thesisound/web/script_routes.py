@@ -258,7 +258,7 @@ def _locator_label(locator: Locator) -> str:
         ):
             paragraph += f"–{locator.paragraph_end}"
         parts.append(f"بند {paragraph}")
-    return "، ".join(parts) if parts else "محل دقیق در artifact ثبت شده است"
+    return "، ".join(parts) if parts else "نشانی در منبع مشخص نیست"
 
 
 def _load_optional(loader: Callable[[UUID], object], project_id: UUID) -> object | None:

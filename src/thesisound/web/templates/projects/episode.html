@@ -60,7 +60,7 @@
     <form method="post" action="/projects/{{ project.project_id }}/episode/prepare"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button--primary" type="submit">شروع اجرای جدید</button></form>
     {% endif %}
   </div>
-  <div class="error-recovery__options"><a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/sources">بررسی منابع</a><a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a></div>
+  <div class="error-recovery__options"><a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/sources">اصلاح منابع</a><a class="button button--quiet button--small operator-only" href="/system-check?scope=model">بررسی محیط مدل</a></div>
   {% if planning_run.last_error %}{% call technical_details('کد و متن خطا') %}<p><bdi dir="ltr">{{ planning_run.last_error }}</bdi></p>{% endcall %}{% endif %}
 </section>
 {% endif %}
@@ -118,7 +118,7 @@
 
 {% if planning_run and planning_run.material_gaps %}
 <section class="section-block" aria-labelledby="remaining-gaps-title">
-  <div class="section-heading"><h2 id="remaining-gaps-title">کاستی‌های کفایت منابع</h2></div>
+  <div class="section-heading"><h2 id="remaining-gaps-title">کاستی‌های مهم</h2></div>
   <div class="data-panel"><ul>{% for gap in planning_run.material_gaps %}<li>{{ gap }}</li>{% endfor %}</ul></div>
 </section>
 {% endif %}
@@ -129,12 +129,19 @@
     {% for segment in episode_plan.segments %}
     <article class="segment-row">
       <span class="segment-row__number">{{ loop.index | fa_num }}</span>
-      <div><h3>{{ segment.title }}</h3><p>{{ segment.purpose }}</p><p>پرسش محوری: {{ segment.key_question }}</p><p class="operator-only">مدعاها: <code><bdi dir="ltr">{{ segment.claim_ids | join(', ') }}</bdi></code></p></div>
+      <div><h3>{{ segment.title }}</h3><p>{{ segment.purpose }}</p><p><span class="simple-only">پرسش اصلی</span><span class="operator-only">پرسش مرکزی</span>: {{ segment.key_question }}</p><p class="operator-only">مدعاها: <code><bdi dir="ltr">{{ segment.claim_ids | join(', ') }}</bdi></code></p></div>
       <span>{{ segment.estimated_minutes | round(1) | fa_num }} دقیقه</span>
     </article>
     {% endfor %}
   </div>
 </section>
+
+{% if episode_plan.deliberately_omitted_claims %}
+<section class="section-block" aria-labelledby="omitted-claims-title">
+  <div class="section-heading"><h2 id="omitted-claims-title">آنچه آگاهانه در این گفتار نیامده است</h2><span>{{ episode_plan.deliberately_omitted_claims | length | fa_num }} مورد</span></div>
+  <div class="data-panel"><ul>{% for claim_id, reason in episode_plan.deliberately_omitted_claims.items() %}<li>{{ reason }}{% if claim_id %}<code class="operator-only"> · <bdi dir="ltr">{{ claim_id }}</bdi></code>{% endif %}</li>{% endfor %}</ul></div>
+</section>
+{% endif %}
 
 {% call technical_details('جزئیات بسندگی شاهدها و بودجه') %}
   <p>Target: <code><bdi dir="ltr">{{ project.brief.target_duration_minutes }}</bdi></code> min · plan: <code><bdi dir="ltr">{{ episode_plan.estimated_duration_minutes | round(2) }}</bdi></code> min{% if coverage %} · coverage max: <code><bdi dir="ltr">{{ coverage.max_supported_minutes }}</bdi></code>{% endif %}{% if budget %} · effective: <code><bdi dir="ltr">{{ budget.effective_supported_minutes | round(2) }}</bdi></code>{% endif %}</p>

@@ -8,7 +8,7 @@
     <h1>منابع را اضافه و انتخاب کنید</h1>
     <p>فقط متن کامل و عبورکرده از وارسی کیفیت می‌تواند مبنای استخراج شاهد قرار گیرد. خلاصهٔ نتیجهٔ جست‌وجو به‌تنهایی منبع محسوب نمی‌شود.</p>
   </div>
-  {{ status_label((selected_count | fa_num) ~ ' منبع منتخب', 'مبنای گفتار', 'success' if selected_count else 'attention') }}
+  {{ status_label((selected_count | fa_num) ~ ' منبع منتخب', 'مجموعه منابع', 'success' if selected_count else 'attention') }}
 </header>
 
 {% if error %}
@@ -26,7 +26,7 @@
 {% elif request.query_params.get('error') == 'source-delete-failed' %}
   <div class="notice notice--danger" role="alert">حذف منبع انجام نشد. هیچ خروجی دیگری تغییر نکرد.</div>
 {% elif request.query_params.get('searched') %}
-  <div class="notice notice--success" role="status">پیشنهادهای منبع آماده‌اند. برای ورود به پشتوانهٔ گفتار باید متن کامل هر مورد بازیابی و وارسی شود.</div>
+  <div class="notice notice--success" role="status">پیشنهادهای منبع آماده‌اند. برای تبدیل به منبع پیشنهادی باید متن کامل هر مورد بازیابی و وارسی شود.</div>
 {% elif request.query_params.get('auto-search') %}
   <div class="notice notice--success" role="status">جست‌وجو و افزودن خودکار انجام شد. فقط منابع کامل و آماده به‌عنوان منبع منتخب ثبت شده‌اند.</div>
 {% endif %}
@@ -91,7 +91,7 @@
       {% if candidate.status == 'added' %}
         {{ status_label('متن کامل بازیابی شد', 'منبع پیشنهادی افزوده شد', 'success') }}
       {% elif candidate.status == 'failed' %}
-        {{ status_label('متن کامل بازیابی نشد', 'وارد پشتوانهٔ گفتار نشده', 'danger') }}
+        {{ status_label('متن کامل بازیابی نشد', 'منبع پیشنهادی نشد', 'danger') }}
         {% if candidate.issue_summary %}<p class="operator-only">{{ candidate.issue_summary }}</p>{% endif %}
       {% else %}
         <form method="post" action="/projects/{{ project.project_id }}/sources/web/{{ candidate.candidate_id }}/add">
@@ -130,7 +130,7 @@
       {% elif source.status == 'review' %}
         {{ status_label('نیازمند بازبینی', 'متن کامل یا کیفیت کافی نیست', 'attention', source.quality_verdict or 'review') }}
       {% else %}
-        {{ status_label('قابل‌استفاده نیست', 'وارد پشتوانهٔ گفتار نمی‌شود', 'danger', source.quality_verdict or 'blocked') }}
+        {{ status_label('قابل‌استفاده نیست', 'وارد مجموعه منابع نمی‌شود', 'danger', source.quality_verdict or 'blocked') }}
       {% endif %}
 
       {% if source.issue_summary %}<p class="source-row__summary">{{ source.issue_summary }}</p>{% endif %}
@@ -190,7 +190,7 @@
   {% else %}
     <form method="post" action="/projects/{{ project.project_id }}/corpus/confirm">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <button class="button button--primary" type="submit" {% if selected_count == 0 %}disabled aria-describedby="corpus-confirm-hint"{% endif %}>تأیید منابع و آغاز تحلیل</button>
+      <button class="button button--primary" type="submit" {% if selected_count == 0 %}disabled aria-describedby="corpus-confirm-hint"{% endif %}>تأیید منابع</button>
     </form>
   {% endif %}
 </section>

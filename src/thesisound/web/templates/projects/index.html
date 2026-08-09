@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "components.html" import status_label %}
-{% block title %}گفتارها | مقال{% endblock %}
+{% block title %}گفتارهای من | مقال{% endblock %}
 {% block content %}
 <header class="page-heading">
   <div>
@@ -8,7 +8,7 @@
     <h1>گفتارهای شما</h1>
     <p>هر گفتار از آخرین مرحلهٔ معتبر ادامه پیدا می‌کند. مواردی که به تصمیم شما نیاز دارند بالاتر آمده‌اند.</p>
   </div>
-  <a class="button button--primary" href="/projects/new">گفتار تازه</a>
+  <a class="button button--primary" href="/projects/new">ساخت گفتار تازه</a>
 </header>
 
 {% if projects %}
@@ -43,7 +43,7 @@
                 <p>{{ item.overview_summary }}</p>
                 {% if item.technical_detail %}<p class="operator-only"><bdi dir="ltr">{{ item.technical_detail }}</bdi></p>{% endif %}
               </div>
-              <a class="button button--secondary button--small" href="/projects/{{ item.project.project_id }}">باز کردن گفتار</a>
+              <a class="button button--secondary button--small" href="/projects/{{ item.project.project_id }}">ادامه</a>
             </article>
             {% endif %}
           {% endfor %}
@@ -57,7 +57,7 @@
   <p class="kicker">هنوز گفتاری ندارید</p>
   <h2>از یک سؤال واقعی شروع کنید</h2>
   <p>موضوع، مخاطب و مدت را مشخص کنید. بعد می‌توانید فایل‌های خودتان را بدهید یا جست‌وجوی منبع را به مقال بسپارید.</p>
-  <a class="button button--primary" href="/projects/new">ساخت نخستین گفتار</a>
+  <a class="button button--primary" href="/projects/new">ساخت گفتار تازه</a>
 </section>
 {% endif %}
 {% endblock %}

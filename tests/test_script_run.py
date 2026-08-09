@@ -96,11 +96,11 @@ def test_approval_queues_exact_plan_and_successful_run(tmp_path: Path) -> None:
     pipeline = FakePipeline(workspace)
     service = _service(tmp_path, project, pipeline)
 
-    queued = service.approve_and_queue(project.project_id, approved_by="0912000000")
+    queued = service.approve_and_queue(project.project_id, approved_by="09120000000")
 
     assert workspace.load_project(project.project_id).state == ProjectState.EPISODE_PLANNED
     assert queued.status == "queued"
-    assert queued.approved_by == "0912000000"
+    assert queued.approved_by == "09120000000"
     approval = service.approval_store.load(project.project_id)
     assert queued.approved_plan_hash == approval.plan_hash
 
