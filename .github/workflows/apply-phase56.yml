@@ -36,6 +36,18 @@ jobs:
           ):
               content = content.replace(needle, f"{needle}  # noqa: B008", 1)
           path.write_text(content, encoding="utf-8")
+
+          app_path = Path("src/thesisound/web/app.py")
+          app_content = app_path.read_text(encoding="utf-8")
+          app_content = app_content.replace(
+              '    return user_facing_error(value if isinstance(value, BaseException) else str(value), action=action)\n',
+              '    return user_facing_error(\n'
+              '        value if isinstance(value, BaseException) else str(value),\n'
+              '        action=action,\n'
+              '    )\n',
+              1,
+          )
+          app_path.write_text(app_content, encoding="utf-8")
           PY
 
       - name: Set up uv
