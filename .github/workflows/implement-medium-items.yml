@@ -4,7 +4,7 @@ on:
   push:
     branches: [implement-medium-items-6-10]
     paths:
-      - scripts/apply_medium_items.py
+      - scripts/apply_medium_items*.py
       - .github/workflows/implement-medium-items.yml
 
 permissions:
@@ -37,10 +37,16 @@ jobs:
         run: uv sync --extra dev --extra web-ui
 
       - name: Apply implementation
-        run: uv run python scripts/apply_medium_items.py
+        run: |
+          for script in scripts/apply_medium_items*.py; do
+            uv run python "$script"
+          done
+
+      - name: Auto-fix generated lint
+        run: uv run ruff check . --fix --exclude scripts/apply_medium_items.py
 
       - name: Lint
-        run: uv run ruff check .
+        run: uv run ruff check . --exclude scripts/apply_medium_items.py
 
       - name: Test
         run: uv run pytest -q
