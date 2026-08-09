@@ -5,6 +5,7 @@ on:
     branches: [implement-medium-items-6-10]
     paths:
       - .automation/medium-items.patch.gz.b64.*
+      - .automation/post_format_fix.py
       - .github/workflows/apply-final-medium-items.yml
 
 permissions:
@@ -49,6 +50,9 @@ jobs:
           mapfile -t py_files < <(git diff --name-only --diff-filter=ACMR HEAD -- '*.py')
           if ((${#py_files[@]})); then
             uv run ruff format "${py_files[@]}"
+            uv run python .automation/post_format_fix.py
+            uv run ruff format "${py_files[@]}"
+            rm .automation/post_format_fix.py
             uv run ruff check "${py_files[@]}" --fix
           fi
 
@@ -66,7 +70,7 @@ jobs:
 
       - name: Remove one-shot automation files
         if: success()
-        run: rm -f .automation/medium-items.patch.gz.b64.* .github/workflows/apply-final-medium-items.yml
+        run: rm -f .automation/medium-items.patch.gz.b64.* .automation/post_format_fix.py .github/workflows/apply-final-medium-items.yml
 
       - name: Commit validated implementation
         if: success()
