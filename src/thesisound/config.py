@@ -109,6 +109,9 @@ class Settings(BaseSettings):
     audio_sample_rate_hz: int = Field(default=24_000, ge=8_000, le=48_000)
     audio_qa_pass_threshold: float = Field(default=0.90, ge=0.5, le=1)
     audio_qa_review_threshold: float = Field(default=0.78, ge=0.4, le=1)
+    # Recorded and displayed only. Nothing gates on it yet -- see item 7 of
+    # docs/33-server-mono-process-adoption.md.
+    script_quality_min_overall: float = Field(default=0.70, ge=0, le=1)
     # Temporary for live e2e: keep scoring manual_review, but do not block assembly on it.
     audio_qa_accept_manual_review: bool = True
     audio_max_regeneration_attempts: int = Field(default=1, ge=0, le=1)

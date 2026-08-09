@@ -94,10 +94,39 @@ class ScriptCheckReport(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
+_QUALITY_WEIGHTS: dict[str, float] = {
+    "evidence_fidelity": 0.30,
+    "qualification_preservation": 0.25,
+    "stance_and_disagreement": 0.20,
+    "terminology_consistency": 0.15,
+    "listenability": 0.10,
+}
+
+
+class ScriptQualityScore(BaseModel):
+    evidence_fidelity: float = Field(ge=0, le=1)
+    qualification_preservation: float = Field(ge=0, le=1)
+    stance_and_disagreement: float = Field(ge=0, le=1)
+    terminology_consistency: float = Field(ge=0, le=1)
+    listenability: float = Field(ge=0, le=1)
+    actionable_feedback: str = ""
+
+    @property
+    def overall(self) -> float:
+        return round(
+            sum(
+                getattr(self, name) * weight
+                for name, weight in _QUALITY_WEIGHTS.items()
+            ),
+            4,
+        )
+
+
 class VerificationDraft(BaseModel):
     verdict: Literal["pass", "revise", "reject"]
     issues: list[VerificationIssue] = Field(default_factory=list)
     unsupported_claim_ratio: float = Field(ge=0, le=1)
+    quality: ScriptQualityScore | None = None
 
 
 class RevisedTurnDraft(BaseModel):

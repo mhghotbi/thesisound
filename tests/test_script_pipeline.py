@@ -31,6 +31,7 @@ from thesisound.script import (
     GlossaryDraft,
     GlossaryTermDraft,
     RevisedTurnDraft,
+    ScriptQualityScore,
     ScriptTurnDraft,
     SegmentScriptDraft,
     TargetedRevisionDraft,
@@ -124,12 +125,28 @@ class FakeScriptRunner:
                         )
                     ],
                     unsupported_claim_ratio=0,
+                    quality=ScriptQualityScore(
+                        evidence_fidelity=0.55,
+                        qualification_preservation=0.50,
+                        stance_and_disagreement=0.70,
+                        terminology_consistency=0.80,
+                        listenability=0.85,
+                        actionable_feedback="Restore the dropped qualification.",
+                    ),
                 )
             else:
                 output = VerificationDraft(
                     verdict="pass",
                     issues=[],
                     unsupported_claim_ratio=0,
+                    quality=ScriptQualityScore(
+                        evidence_fidelity=0.95,
+                        qualification_preservation=0.90,
+                        stance_and_disagreement=0.90,
+                        terminology_consistency=0.90,
+                        listenability=0.90,
+                        actionable_feedback="",
+                    ),
                 )
         elif output_type is TargetedRevisionDraft:
             targets = variables["target_turns"]
@@ -379,6 +396,7 @@ def test_full_run_produces_a_span_per_stage_and_a_revision_cycle(
 
     verify_span = recording_tracer.sink.one("script.verifying_draft")
     assert verify_span.attributes["verdict"] == "revise"
+    assert verify_span.metrics["quality_overall"] > 0
     reverify_span = recording_tracer.sink.one("script.verifying_revision")
     assert reverify_span.attributes["verdict"] == "pass"
     # run.stage_changed events come from ScriptBuildRunService's on_stage

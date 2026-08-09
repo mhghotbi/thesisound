@@ -335,6 +335,10 @@ class ScriptPipelineService:
                             prompt_version=prompt_version,
                         )
                         span.set(verdict=verification.verdict)
+                        if verification.quality is not None:
+                            span.measure(
+                                quality_overall=verification.quality.overall
+                            )
 
             if checks.verdict != "pass" or verification.verdict != "pass":
                 revised = self.script_store.load_script_optional(project_id, revised=True)
@@ -378,6 +382,10 @@ class ScriptPipelineService:
                             prompt_version=prompt_version,
                         )
                         span.set(verdict=revised_verification.verdict)
+                        if revised_verification.quality is not None:
+                            span.measure(
+                                quality_overall=revised_verification.quality.overall
+                            )
                 script = revised
                 checks = revised_checks
                 verification = revised_verification
