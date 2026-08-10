@@ -1,5 +1,5 @@
-from pathlib import Path
 import re
+from pathlib import Path
 
 path = Path("src/thesisound/observability.py")
 text = path.read_text(encoding="utf-8")
@@ -36,14 +36,28 @@ text, import_count = re.subn(
     text,
     count=1,
 )
-text, block_count = re.subn(
-    r'''            record\.__dict__\[key\] = \(\n                "\[REDACTED\]"\n                if is_sensitive_key\(key\)\n                else redact_value\(value, store_payloads=self\.store_payloads\)\n            \)''',
-    "            record.__dict__[key] = redact_value(\n"
-    "                {key: value}, store_payloads=self.store_payloads\n"
-    "            )[key]",
-    text,
-    count=1,
+loop_pattern = re.compile(
+    r'''        for key, value in list\(record\.__dict__\.items\(\)\):\n'''
+    r'''            if key in _STANDARD_LOG_RECORD_ATTRS:\n'''
+    r'''                continue\n'''
+    r'''(?:            #.*\n)*'''
+    r'''            record\.__dict__\[key\] = \(\n'''
+    r'''                "\[REDACTED\]"\n'''
+    r'''                if is_sensitive_key\(key\)\n'''
+    r'''                else redact_value\(value, store_payloads=self\.store_payloads\)\n'''
+    r'''            \)\n'''
 )
+replacement = (
+    "        extras = {\n"
+    "            key: value\n"
+    "            for key, value in record.__dict__.items()\n"
+    "            if key not in _STANDARD_LOG_RECORD_ATTRS\n"
+    "        }\n"
+    "        redacted_extras = redact_value(extras, store_payloads=self.store_payloads)\n"
+    "        for key, value in redacted_extras.items():\n"
+    "            record.__dict__[key] = value\n"
+)
+text, block_count = loop_pattern.subn(replacement, text, count=1)
 if import_count != 1 or block_count != 1:
     raise RuntimeError(
         f"logging central-redactor rewrite import={import_count} block={block_count}"
@@ -52,12 +66,20 @@ path.write_text(text, encoding="utf-8")
 
 path = Path("tests/test_observability_rollups.py")
 text = path.read_text(encoding="utf-8")
-text, count = re.subn(
+text, span_count = re.subn(
     r'(        kind="stage",\n)(        started_at=started,)',
     r'\1        subject_type=None,\n        subject_id=None,\n\2',
     text,
     count=1,
 )
-if count != 1:
-    raise RuntimeError(f"rollup SpanRecord fix count={count}")
+text, event_count = re.subn(
+    r'(                project_id=project_id,\n)(                occurred_at=)',
+    r'\1                workflow_run_id=None,\n                level="info",\n                subject_type=None,\n                subject_id=None,\n\2',
+    text,
+    count=1,
+)
+if span_count != 1 or event_count != 1:
+    raise RuntimeError(
+        f"rollup record fixture fixes span={span_count} event={event_count}"
+    )
 path.write_text(text, encoding="utf-8")
