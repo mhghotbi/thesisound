@@ -22,33 +22,12 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
+          import base64
           from pathlib import Path
-
           path = Path("src/thesisound/services/script_pipeline_service.py")
           text = path.read_text(encoding="utf-8")
-          old = '''        if project.state not in {
-            ProjectState.FAILED_RETRYABLE,
-            ProjectState.SCRIPT_READY,
-        }:
-            mark_failed(project, message)
-        else:
-            # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE. Preserve
-            # the original pipeline error instead of masking it with a transition
-            # error; a resumed run can restore drafting from SCRIPT_READY.
-            project.last_error = message
-            project.updated_at = datetime.now(UTC)
-'''
-          new = '''        if project.state == ProjectState.SCRIPT_READY:
-            # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE. Move
-            # through the existing retryable drafting state so deterministic
-            # rejection still uses the normal failure contract.
-            transition(project, ProjectState.SCRIPT_DRAFTING)
-        if project.state != ProjectState.FAILED_RETRYABLE:
-            mark_failed(project, message)
-        else:
-            project.last_error = message
-            project.updated_at = datetime.now(UTC)
-'''
+          old = base64.b64decode("ICAgICAgICBpZiBwcm9qZWN0LnN0YXRlIG5vdCBpbiB7CiAgICAgICAgICAgIFByb2plY3RTdGF0ZS5GQUlMRURfUkVUUllBQkxFLAogICAgICAgICAgICBQcm9qZWN0U3RhdGUuU0NSSVBUX1JFQURZLAogICAgICAgIH06CiAgICAgICAgICAgIG1hcmtfZmFpbGVkKHByb2plY3QsIG1lc3NhZ2UpCiAgICAgICAgZWxzZToKICAgICAgICAgICAgIyBTQ1JJUFRfUkVBRFkgY2Fubm90IHRyYW5zaXRpb24gZGlyZWN0bHkgdG8gRkFJTEVEX1JFVFJZQUJMRS4gUHJlc2VydmUKICAgICAgICAgICAgIyB0aGUgb3JpZ2luYWwgcGlwZWxpbmUgZXJyb3IgaW5zdGVhZCBvZiBtYXNraW5nIGl0IHdpdGggYSB0cmFuc2l0aW9uCiAgICAgICAgICAgICMgZXJyb3I7IGEgcmVzdW1lZCBydW4gY2FuIHJlc3RvcmUgZHJhZnRpbmcgZnJvbSBTQ1JJUFRfUkVBRFkuCiAgICAgICAgICAgIHByb2plY3QubGFzdF9lcnJvciA9IG1lc3NhZ2UKICAgICAgICAgICAgcHJvamVjdC51cGRhdGVkX2F0ID0gZGF0ZXRpbWUubm93KFVUQykK").decode()
+          new = base64.b64decode("ICAgICAgICBpZiBwcm9qZWN0LnN0YXRlID09IFByb2plY3RTdGF0ZS5TQ1JJUFRfUkVBRFk6CiAgICAgICAgICAgICMgU0NSSVBUX1JFQURZIGNhbm5vdCB0cmFuc2l0aW9uIGRpcmVjdGx5IHRvIEZBSUxFRF9SRVRSWUFCTEUuIE1vdmUKICAgICAgICAgICAgIyB0aHJvdWdoIHRoZSBleGlzdGluZyByZXRyeWFibGUgZHJhZnRpbmcgc3RhdGUgc28gZGV0ZXJtaW5pc3RpYwogICAgICAgICAgICAjIHJlamVjdGlvbiBzdGlsbCB1c2VzIHRoZSBub3JtYWwgZmFpbHVyZSBjb250cmFjdC4KICAgICAgICAgICAgdHJhbnNpdGlvbihwcm9qZWN0LCBQcm9qZWN0U3RhdGUuU0NSSVBUX0RSQUZUSU5HKQogICAgICAgIGlmIHByb2plY3Quc3RhdGUgIT0gUHJvamVjdFN0YXRlLkZBSUxFRF9SRVRSWUFCTEU6CiAgICAgICAgICAgIG1hcmtfZmFpbGVkKHByb2plY3QsIG1lc3NhZ2UpCiAgICAgICAgZWxzZToKICAgICAgICAgICAgcHJvamVjdC5sYXN0X2Vycm9yID0gbWVzc2FnZQogICAgICAgICAgICBwcm9qZWN0LnVwZGF0ZWRfYXQgPSBkYXRldGltZS5ub3coVVRDKQo=").decode()
           if old not in text:
               raise SystemExit("expected _mark_failed block not found")
           path.write_text(text.replace(old, new, 1), encoding="utf-8")
