@@ -17,6 +17,7 @@ from thesisound.observability import (
     ObservabilityLedger,
     ObservedModelGateway,
     ProviderMetadata,
+    redact_value,
 )
 from thesisound.services.observability_rollup import ObservabilityRollup
 
@@ -539,6 +540,9 @@ def test_sensitive_attribute_policy_uses_one_payload_switch(tmp_path: Path) -> N
     second = private_second.get_call(second_spec.call_id).metadata
     assert second["query"]["sha256"] == stored["query"]["sha256"]
     assert second["filename"]["filename_sha256"] == stored["filename"]["filename_sha256"]
+    assert (
+        redact_value({"query": stored["query"]}, store_payloads=False)["query"] == stored["query"]
+    )
 
     payloads = ObservabilityLedger(
         tmp_path / "payloads.sqlite3",

@@ -28,9 +28,9 @@ def register_observability_routes(
 ) -> None:
     """Register the operator-only, read-only observability surface.
 
-    Authorization is based on the authenticated account role, never the UI
-    preference stored in ``session['ui_mode']``. The latter only controls how
-    much technical information normal workflow pages choose to render.
+    Authorization requires the authenticated account role to be ``operator``.
+    The existing ``session['ui_mode'] == 'operator'`` preference is an additional
+    presentation gate; it never grants authorization by itself.
 
     ``validate_csrf`` is accepted intentionally to match the route-module
     composition signature. No route mutates state, so it is never called and

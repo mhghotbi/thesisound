@@ -1517,6 +1517,18 @@ def _sensitive_text(value: Any) -> str:
 
 
 def _hashed_sensitive_value(value: Any) -> dict[str, Any]:
+    if isinstance(value, Mapping):
+        digest = value.get("sha256")
+        length = value.get("length")
+        if (
+            isinstance(digest, str)
+            and re.fullmatch(r"[0-9a-f]{64}", digest)
+            and isinstance(length, int)
+            and not isinstance(length, bool)
+            and length >= 0
+        ):
+            return {"sha256": digest, "length": length}
+
     text = _sensitive_text(value)
     return {
         "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
