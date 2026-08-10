@@ -19,6 +19,7 @@ from thesisound.observability import (
     ObservabilityLedger,
     ProviderMetadata,
 )
+from thesisound.services.observability_rollup import ObservabilityRollup
 from thesisound.tracing import EventRecord, SpanContext, SpanRecord, Tracer
 
 
@@ -302,11 +303,13 @@ def test_stage_summary_ranks_by_total_duration(ledger: ObservabilityLedger) -> N
         with ledger_tracer.span("corpus.extract_evidence"):
             pass  # 1 second
 
-    summary = {row.name: row for row in ledger.stage_summary(project_id)}
+    summary = {row.name: row for row in ObservabilityRollup(ledger).stage_summary(project_id)}
 
     assert summary["corpus.extract_evidence"].call_count == 2
     assert summary["corpus.source"].call_count == 1
-    names_by_total_desc = [row.name for row in ledger.stage_summary(project_id)]
+    names_by_total_desc = [
+        row.name for row in ObservabilityRollup(ledger).stage_summary(project_id)
+    ]
     # corpus.run's own span duration includes all its children's time, so it
     # naturally ranks first in this simple (non-self-time) rollup.
     assert names_by_total_desc[0] == "corpus.run"
@@ -322,9 +325,7 @@ def test_get_trace_unions_spans_and_model_calls_into_one_tree(
 
     ledger_tracer = _ledger_tracer(ledger)
     project_id = uuid4()
-    with ledger_tracer.span(
-        "corpus.map_document", kind="stage", project_id=project_id
-    ) as step:
+    with ledger_tracer.span("corpus.map_document", kind="stage", project_id=project_id) as step:
         spec = ModelCallSpec(
             stage="document_map",
             operation="structured_text",
@@ -383,7 +384,7 @@ def test_stage_summary_counts_errors_per_stage(ledger: ObservabilityLedger) -> N
     with ledger_tracer.span("ingestion.parse", project_id=project_id):
         pass
 
-    summary = ledger.stage_summary(project_id)
+    summary = ObservabilityRollup(ledger).stage_summary(project_id)
 
     row = next(item for item in summary if item.name == "ingestion.parse")
     assert row.call_count == 3
@@ -412,11 +413,13 @@ def test_stage_summary_ranks_by_self_time_not_total_time(ledger: ObservabilityLe
             with ledger_tracer.span("model_call_leaf"):
                 pass
 
-    rows = {row.name: row for row in ledger.stage_summary(project_id)}
+    rows = {row.name: row for row in ObservabilityRollup(ledger).stage_summary(project_id)}
 
     assert rows["corpus.run"].total_ms > rows["corpus.extract_evidence"].total_ms
     assert rows["corpus.extract_evidence"].self_total_ms > rows["corpus.run"].self_total_ms
-    ranked_by_self_time = [row.name for row in ledger.stage_summary(project_id)]
+    ranked_by_self_time = [
+        row.name for row in ObservabilityRollup(ledger).stage_summary(project_id)
+    ]
     assert ranked_by_self_time[0] == "corpus.extract_evidence"
 
 
@@ -435,7 +438,7 @@ def test_cache_hit_rates_groups_by_the_cache_attribute(ledger: ObservabilityLedg
     ledger_tracer.event("cache.lookup", project_id=project_id, cache="episode_plan", result="miss")
     ledger_tracer.event("project.state_changed", project_id=project_id, previous="a", current="b")
 
-    rows = {row.cache: row for row in ledger.cache_hit_rates(project_id)}
+    rows = {row.cache: row for row in ObservabilityRollup(ledger).cache_hit_rates(project_id)}
 
     assert rows["shared_document_map"].hits == 2
     assert rows["shared_document_map"].misses == 1
@@ -443,7 +446,9 @@ def test_cache_hit_rates_groups_by_the_cache_attribute(ledger: ObservabilityLedg
     assert rows["episode_plan"].hits == 0
     assert rows["episode_plan"].misses == 1
     assert rows["episode_plan"].hit_rate == 0.0
-    assert "project.state_changed" not in [row.cache for row in ledger.cache_hit_rates(project_id)]
+    assert "project.state_changed" not in [
+        row.cache for row in ObservabilityRollup(ledger).cache_hit_rates(project_id)
+    ]
 
 
 def test_root_stage_span_with_run_id_writes_one_pipeline_run(
@@ -501,9 +506,7 @@ def test_root_stage_span_without_run_id_writes_no_pipeline_run(
     project_id = uuid4()
     ledger_tracer = _ledger_tracer(ledger)
 
-    with ledger_tracer.span(
-        "script.run", component="script", kind="stage", project_id=project_id
-    ):
+    with ledger_tracer.span("script.run", component="script", kind="stage", project_id=project_id):
         pass
 
     assert ledger.list_runs(project_id) == []

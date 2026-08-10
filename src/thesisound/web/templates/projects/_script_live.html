@@ -1,6 +1,6 @@
 {% from "components.html" import status_label %}
 {# Contents of the polled live region on the script page; see projects/processing.html. #}
-{% set current_span = observability_current_span(project.project_id) if ui_mode == 'operator' else none %}
+{% set current_span = observability_current_span(project.project_id) if is_operator and ui_mode == 'operator' else none %}
 {% if script_run and script_active %}
 <section class="data-panel section-block" aria-labelledby="script-progress-title">
   <div class="section-heading">

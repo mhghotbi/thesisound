@@ -3,7 +3,7 @@
   The contents of the polled live region on the processing page. The wrapper stays put
   across swaps so its aria-live announcements keep working; see processing.html.
 #}
-{% set current_span = observability_current_span(project.project_id) if ui_mode == 'operator' else none %}
+{% set current_span = observability_current_span(project.project_id) if is_operator and ui_mode == 'operator' else none %}
 {% set claim_total = corpus_run.sources | sum(attribute='claim_count') if corpus_run else 0 %}
 <section class="section-block" aria-labelledby="pipeline-title">
   <div class="section-heading"><h2 id="pipeline-title">مسیر تحلیل</h2><span>مرحله‌های واقعی گفتار</span></div>
