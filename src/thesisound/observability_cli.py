@@ -388,11 +388,12 @@ def _render_delta_table(
     table.add_column("Delta %", justify="right")
     for row in rows:
         percent = row.get("percent")
+        display_metric = str(row["name"]) if metric_name == "summary" else metric_name
         table.add_row(
             str(row["name"]),
-            _display_metric(metric_name, row.get("before")),
-            _display_metric(metric_name, row.get("after")),
-            _display_metric(metric_name, row.get("absolute")),
+            _display_metric(display_metric, row.get("before")),
+            _display_metric(display_metric, row.get("after")),
+            _display_metric(display_metric, row.get("absolute")),
             "unknown" if percent is None else f"{float(percent):+.1%}",
         )
     console.print(table)
