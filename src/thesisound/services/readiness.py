@@ -376,6 +376,7 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
             )
         return
 
+    artifact_set_error: str | None = None
     try:
         verified_artifacts = store.has_verified_artifacts(project_id, plan_hash=current_hash)
         reviewable_artifacts = (
@@ -383,32 +384,9 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
             and store.has_reviewable_artifacts(project_id, plan_hash=current_hash)
         )
     except (OSError, ValueError) as exc:
-        for code in script_codes:
-            set_result(
-                code,
-                "unknown",
-                f"Script artifact set is unreadable: {exc}",
-                script_dir,
-            )
-        return
-
-    script_artifacts_required = project.state in {
-        ProjectState.SCRIPT_REVIEW_REQUIRED,
-        ProjectState.SCRIPT_VERIFIED,
-        ProjectState.AUDIO_GENERATING,
-        ProjectState.AUDIO_READY,
-        ProjectState.AUDIO_VERIFYING,
-        ProjectState.COMPLETE,
-    }
-    if script_artifacts_required and not (verified_artifacts or reviewable_artifacts):
-        for code in script_codes:
-            set_result(
-                code,
-                "blocked",
-                "The current project state requires a complete current-plan script artifact set.",
-                script_dir,
-            )
-        return
+        verified_artifacts = False
+        reviewable_artifacts = False
+        artifact_set_error = str(exc)
 
     try:
         checks = store.load_latest_checks(project_id)
@@ -435,6 +413,7 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
     accepted_current_review = bool(
         decision and decision.decision == "accepted" and decision.plan_hash == current_hash
     )
+    verified_normally = False
     try:
         verification = store.load_latest_verification(project_id)
         verified_normally = (
@@ -510,6 +489,49 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
             else "The review decision is not an accepted decision for the current plan.",
             script_dir / "review-decision.json",
         )
+
+    if project.state == ProjectState.SCRIPT_REVIEW_REQUIRED and not reviewable_artifacts:
+        if artifact_set_error is not None and decision_error is None:
+            set_result(
+                "script-review-decision",
+                "unknown",
+                f"Reviewable script artifact set is unreadable: {artifact_set_error}",
+                script_dir,
+            )
+        elif artifact_set_error is None and decision_error is None:
+            set_result(
+                "script-review-decision",
+                "blocked",
+                "Human review requires a complete current-plan reviewable script artifact set.",
+                script_dir,
+            )
+
+    verified_state = project.state in {
+        ProjectState.SCRIPT_VERIFIED,
+        ProjectState.AUDIO_GENERATING,
+        ProjectState.AUDIO_READY,
+        ProjectState.AUDIO_VERIFYING,
+        ProjectState.COMPLETE,
+    }
+    if verified_state and not verified_artifacts:
+        if artifact_set_error is not None:
+            # A corrupt review decision is reported by its own human gate. When
+            # the independent verifier already passed normally, do not let that
+            # unrelated optional artifact erase the machine-verification result.
+            if not (decision_error is not None and verified_normally):
+                set_result(
+                    "independent-verification",
+                    "unknown",
+                    f"Verified script artifact set is unreadable: {artifact_set_error}",
+                    script_dir,
+                )
+        else:
+            set_result(
+                "independent-verification",
+                "blocked",
+                "The current state requires a complete current-plan verified script artifact set.",
+                script_dir,
+            )
 
 
 def _audio_results(project_id: UUID, root: Path, set_result) -> None:

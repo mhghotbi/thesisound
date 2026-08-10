@@ -287,6 +287,7 @@ def test_corrupt_review_decision_yields_unknown_not_a_crash(tmp_path: Path) -> N
 
     results = project_readiness(project_id=project.project_id, workspace_root=root)
 
+    assert _result(results, "script-checks").status == "pass"
     assert _result(results, "independent-verification").status == "unknown"
     assert _result(results, "script-review-decision").status == "unknown"
 
@@ -331,9 +332,9 @@ def test_verified_state_requires_complete_verified_script_artifacts(tmp_path: Pa
 
     results = project_readiness(project_id=project.project_id, workspace_root=root)
 
-    assert _result(results, "script-checks").status == "blocked"
+    assert _result(results, "script-checks").status == "pass"
     assert _result(results, "independent-verification").status == "blocked"
-    assert _result(results, "script-review-decision").status == "blocked"
+    assert _result(results, "script-review-decision").status == "not_reached"
 
 
 def test_evidence_retention_unknown_when_plan_references_missing_block(tmp_path: Path) -> None:
