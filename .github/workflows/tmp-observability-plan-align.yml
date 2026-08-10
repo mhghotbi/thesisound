@@ -29,6 +29,27 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Normalize temporary patcher guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/align_observability_plan.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''replace_once(OBS, "        error_message=row[16],", "        error_message=redact_exception_message(row[16]),")
+          # The span row has another error_message at index 16; replace the remaining occurrence.
+          replace_once(OBS, "        error_message=row[16],", "        error_message=redact_exception_message(row[16]),")'''
+          new = '''replace_all(
+              OBS,
+              "        error_message=row[16],",
+              "        error_message=redact_exception_message(row[16]),",
+              expected=2,
+          )'''
+          if text.count(old) != 1:
+              raise SystemExit('temporary patcher guard did not match exactly once')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
       - name: Apply precise plan corrections
         run: python .github/align_observability_plan.py
 
