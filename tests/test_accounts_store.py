@@ -1,9 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from threading import Event
 
 import pytest
 
+import thesisound.accounts as accounts_module
 from thesisound.accounts import (
     AccountError,
     AccountStore,
@@ -106,3 +108,58 @@ def test_membership_queries_are_idempotent(tmp_path: Path) -> None:
     assert store.has_any_member(project_id)
     assert store.is_project_member(project_id, account.user_id)
     assert store.project_ids_for_user(account.user_id) == {project_id}
+
+
+def test_password_hashing_does_not_hold_sqlite_writer_lock(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    database = tmp_path / "accounts.sqlite3"
+    verifier_store = AccountStore(database)
+    writer_store = AccountStore(database)
+    verifier_store.create_password_user("operator", "secret")
+
+    entered_hash = Event()
+    release_hash = Event()
+    original_verify = accounts_module.verify_password_hash
+
+    def blocking_verify(password: str, stored: str) -> bool:
+        entered_hash.set()
+        assert release_hash.wait(timeout=5)
+        return original_verify(password, stored)
+
+    monkeypatch.setattr(accounts_module, "verify_password_hash", blocking_verify)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        login = executor.submit(verifier_store.verify_password, "operator", "secret")
+        assert entered_hash.wait(timeout=1)
+        writer = executor.submit(writer_store.set_active, "operator", True)
+        try:
+            assert writer.result(timeout=1) is None
+        finally:
+            release_hash.set()
+        assert login.result(timeout=5).username == "operator"
+
+
+def test_concurrent_wrong_password_attempts_preserve_lockout_count(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "accounts.sqlite3"
+    first = AccountStore(database, password_login_max_attempts=2)
+    second = AccountStore(database, password_login_max_attempts=2)
+    first.create_password_user("operator", "secret")
+
+    def fail(store: AccountStore) -> str:
+        try:
+            store.verify_password("operator", "wrong")
+        except AccountError as exc:
+            return str(exc)
+        raise AssertionError("wrong password unexpectedly succeeded")
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        messages = list(executor.map(fail, (first, second)))
+
+    assert sum("تلاش‌ها" in message for message in messages) == 1
+    assert sum("رمز عبور" in message for message in messages) == 1
+    with pytest.raises(AccountError, match="تلاش‌ها"):
+        first.verify_password("operator", "secret")

@@ -165,8 +165,8 @@ workspaces/<project-id>/06-audio/
 
 ## Minimum checklist پیش از hosted deployment
 
-- [ ] authentication
-- [ ] per-user project isolation
+- [x] authentication (OTP + CLI-provisioned password accounts)
+- [x] per-user project isolation (member ownership + operator support access)
 - [ ] signed file access
 - [ ] SSRF protection
 - [ ] upload size limits

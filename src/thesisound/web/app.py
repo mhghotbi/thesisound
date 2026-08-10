@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import logging
 import secrets
+import shutil
 from collections.abc import Callable
 from datetime import date, datetime
 from pathlib import Path
@@ -683,11 +684,19 @@ def create_app(
             project = Project(raw_input=topic, brief=brief)
             transition(project, ProjectState.BRIEF_READY)
             workspace.save_project(project)
-            accounts.add_project_member(
-                project.project_id,
-                request.state.account.user_id,
-                role="owner",
-            )
+            try:
+                accounts.add_project_member(
+                    project.project_id,
+                    request.state.account.user_id,
+                    role="owner",
+                )
+            except Exception:
+                # Project metadata and membership live in independent stores.
+                # If membership persistence fails, leaving the freshly-created
+                # directory behind creates an invisible orphan and a retry
+                # creates a duplicate. Roll back only this brand-new UUID.
+                shutil.rmtree(workspace.project_dir(project.project_id), ignore_errors=True)
+                raise
         except ValueError as error:
             return render(
                 request,

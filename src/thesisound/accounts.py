@@ -52,10 +52,7 @@ def hash_password(password: str) -> str:
         salt,
         _PBKDF2_ITERATIONS,
     )
-    return (
-        f"{_PASSWORD_ALGORITHM}${_PBKDF2_ITERATIONS}$"
-        f"{salt.hex()}${derived.hex()}"
-    )
+    return f"{_PASSWORD_ALGORITHM}${_PBKDF2_ITERATIONS}${salt.hex()}${derived.hex()}"
 
 
 def verify_password_hash(password: str, stored: str) -> bool:
@@ -155,17 +152,26 @@ class AccountStore:
         except AccountError:
             verify_password_hash(password, _DUMMY_PASSWORD_HASH)
             raise AccountError(_GENERIC_LOGIN_ERROR) from None
+
         current_time = (now or _now()).astimezone(UTC)
-        with self._lock, closing(self._connect()) as connection, connection:
-            connection.execute("BEGIN IMMEDIATE")
-            row = connection.execute(
-                """
-                SELECT user_id, role, phone, username, password_hash, is_active,
-                       failed_attempts, locked_until
-                FROM users WHERE username = ?
-                """,
-                (normalized,),
-            ).fetchone()
+        # PBKDF2 is intentionally performed outside BEGIN IMMEDIATE. SQLite has
+        # one writer at a time; holding that lock for a 600k-iteration hash
+        # serializes unrelated logins/account writes and makes unknown-user
+        # traffic an avoidable write-lock denial of service. We optimistically
+        # read, hash, then re-check the security-relevant row under a short
+        # write transaction. If another process changed it meanwhile, retry
+        # against the fresh state rather than applying a stale decision.
+        while True:
+            with self._lock, closing(self._connect()) as connection:
+                row = connection.execute(
+                    """
+                    SELECT user_id, role, phone, username, password_hash, is_active,
+                           failed_attempts, locked_until
+                    FROM users WHERE username = ?
+                    """,
+                    (normalized,),
+                ).fetchone()
+
             if row is None:
                 verify_password_hash(password, _DUMMY_PASSWORD_HASH)
                 raise AccountError(_GENERIC_LOGIN_ERROR)
@@ -173,53 +179,82 @@ class AccountStore:
             locked_until = _parse_timestamp(row[7])
             if locked_until is not None and current_time < locked_until:
                 raise AccountError(_LOCKED_LOGIN_ERROR)
-            failed_attempts = 0 if locked_until is not None else int(row[6] or 0)
 
             if not bool(row[5]):
                 verify_password_hash(password, row[4] or _DUMMY_PASSWORD_HASH)
                 raise AccountError(_GENERIC_LOGIN_ERROR)
 
-            valid = bool(row[4]) and verify_password_hash(password, row[4])
-            if not valid:
-                failed_attempts += 1
-                lockout_until: str | None = None
-                message = _GENERIC_LOGIN_ERROR
-                if failed_attempts >= self.password_login_max_attempts:
-                    lockout_until = _timestamp(
-                        current_time + timedelta(seconds=self.password_login_lockout_seconds)
+            password_hash = str(row[4]) if row[4] is not None else None
+            valid = bool(password_hash) and verify_password_hash(password, password_hash)
+
+            with self._lock, closing(self._connect()) as connection:
+                connection.execute("BEGIN IMMEDIATE")
+                fresh = connection.execute(
+                    """
+                    SELECT user_id, role, phone, username, password_hash, is_active,
+                           failed_attempts, locked_until
+                    FROM users WHERE username = ?
+                    """,
+                    (normalized,),
+                ).fetchone()
+
+                # Account deletion or any concurrent security-state change
+                # invalidates the decision made from the optimistic read.
+                if fresh is None:
+                    connection.rollback()
+                    raise AccountError(_GENERIC_LOGIN_ERROR)
+                if tuple(fresh[4:8]) != tuple(row[4:8]):
+                    connection.rollback()
+                    continue
+
+                fresh_locked_until = _parse_timestamp(fresh[7])
+                failed_attempts = 0 if fresh_locked_until is not None else int(fresh[6] or 0)
+
+                if not valid:
+                    failed_attempts += 1
+                    lockout_until: str | None = None
+                    message = _GENERIC_LOGIN_ERROR
+                    if failed_attempts >= self.password_login_max_attempts:
+                        lockout_until = _timestamp(
+                            current_time + timedelta(seconds=self.password_login_lockout_seconds)
+                        )
+                        message = _LOCKED_LOGIN_ERROR
+                    connection.execute(
+                        """
+                        UPDATE users
+                        SET failed_attempts = ?, locked_until = ?, updated_at = ?
+                        WHERE user_id = ?
+                        """,
+                        (
+                            failed_attempts,
+                            lockout_until,
+                            _timestamp(current_time),
+                            int(fresh[0]),
+                        ),
                     )
-                    message = _LOCKED_LOGIN_ERROR
+                    connection.commit()
+                    raise AccountError(message)
+
                 connection.execute(
                     """
                     UPDATE users
-                    SET failed_attempts = ?, locked_until = ?, updated_at = ?
+                    SET failed_attempts = 0, locked_until = NULL,
+                        last_login_at = ?, updated_at = ?
                     WHERE user_id = ?
                     """,
                     (
-                        failed_attempts,
-                        lockout_until,
                         _timestamp(current_time),
-                        int(row[0]),
+                        _timestamp(current_time),
+                        int(fresh[0]),
                     ),
                 )
                 connection.commit()
-                raise AccountError(message)
-
-            connection.execute(
-                """
-                UPDATE users
-                SET failed_attempts = 0, locked_until = NULL,
-                    last_login_at = ?, updated_at = ?
-                WHERE user_id = ?
-                """,
-                (_timestamp(current_time), _timestamp(current_time), int(row[0])),
-            )
-            return AccountRecord(
-                user_id=int(row[0]),
-                role=str(row[1]),
-                phone=row[2],
-                username=row[3],
-            )
+                return AccountRecord(
+                    user_id=int(fresh[0]),
+                    role=str(fresh[1]),
+                    phone=fresh[2],
+                    username=fresh[3],
+                )
 
     def get_active_user(self, user_id: int) -> AccountRecord | None:
         with self._lock, closing(self._connect()) as connection, connection:
