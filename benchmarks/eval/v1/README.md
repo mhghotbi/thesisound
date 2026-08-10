@@ -1,7 +1,7 @@
 # Thesisound Semantic Golden Set — Phase 1 design
 
-Status: **proposal; not accepted or frozen**  
-Design version: `v1`  
+Status: **proposal; not accepted or frozen**
+Design version: `v1`
 Verification date: 2026-08-10
 
 This directory contains the source-discovery and case-design artifacts for a proposed 15-case MVP semantic Golden Set: 12 core regression cases and 3 holdouts. It is intentionally separate from both eventual frozen fixtures and the independent OCR/parser benchmarks.
@@ -46,4 +46,3 @@ The following independent benchmark trees are out of scope and must remain uncha
 ## Acceptance gate after this phase
 
 Independent review should challenge the case necessity, source relevance, bibliographic verification, licensing classification, and redundancy analysis before anything is frozen. In particular, `H15` must not advance until the Khanlari edition or an equivalently authoritative edition is legally acquired and the selected Persian verses are manually verified.
-
