@@ -1,0 +1,65 @@
+name: Fix script rejection state
+
+on:
+  push:
+    branches:
+      - agent/complete-server-mono-6-10
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/complete-server-mono-6-10
+          fetch-depth: 0
+
+      - name: Patch rejected script state
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/thesisound/services/script_pipeline_service.py")
+          text = path.read_text(encoding="utf-8")
+          old = '''        if project.state not in {
+            ProjectState.FAILED_RETRYABLE,
+            ProjectState.SCRIPT_READY,
+        }:
+            mark_failed(project, message)
+        else:
+            # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE. Preserve
+            # the original pipeline error instead of masking it with a transition
+            # error; a resumed run can restore drafting from SCRIPT_READY.
+            project.last_error = message
+            project.updated_at = datetime.now(UTC)
+'''
+          new = '''        if project.state == ProjectState.SCRIPT_READY:
+            # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE. Move
+            # through the existing retryable drafting state so deterministic
+            # rejection still uses the normal failure contract.
+            transition(project, ProjectState.SCRIPT_DRAFTING)
+        if project.state != ProjectState.FAILED_RETRYABLE:
+            mark_failed(project, message)
+        else:
+            project.last_error = message
+            project.updated_at = datetime.now(UTC)
+'''
+          if old not in text:
+              raise SystemExit("expected _mark_failed block not found")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Commit fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/thesisound/services/script_pipeline_service.py
+          git diff --cached --check
+          git commit -m "Fix rejected script retry state"
+          git push origin HEAD:agent/complete-server-mono-6-10
