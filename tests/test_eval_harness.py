@@ -124,7 +124,7 @@ def test_report_exit_codes_distinguish_gate_failure_from_case_error() -> None:
     assert errored.exit_code == 2
 
 
-def test_full_case_uses_production_sequence_and_never_constructs_audio(
+def test_full_case_runs_end_to_end_with_a_fake_runner(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -244,14 +244,22 @@ def test_full_case_uses_production_sequence_and_never_constructs_audio(
             status="ready",
         ),
     )
+    # Patch the three production composition roots, not _build_services itself.
+    # That keeps this test sensitive to drift in the eval harness composition.
     monkeypatch.setattr(
         eval_harness,
-        "_build_services",
-        lambda settings, root, project_id: (
-            FakeSourceService(),
-            FakeEpisodeService(root),
-            FakeScriptService(),
-        ),
+        "build_source_service",
+        lambda settings, root: FakeSourceService(),
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "build_episode_service",
+        lambda settings, root, project_id: FakeEpisodeService(root),
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "build_script_service",
+        lambda settings, root: FakeScriptService(),
     )
     original_import = builtins.__import__
 
@@ -262,11 +270,258 @@ def test_full_case_uses_production_sequence_and_never_constructs_audio(
 
     monkeypatch.setattr(builtins, "__import__", guarded_import)
 
-    metrics = eval_harness._run_case(case, tmp_path / "runtime", settings=None)
+    metrics = eval_harness._run_case(
+        case, tmp_path / "runtime", settings=eval_harness.Settings(_env_file=None)
+    )
 
     assert calls == ["source-analysis", "episode-preparation", "script-pipeline"]
     assert metrics.script_outcome == "verified"
     assert metrics.quality_overall == pytest.approx(0.9)
     assert metrics.coverage_recommendation == "continue"
     assert metrics.can_plan_episode is True
+    assert metrics.expectations == {"must_cover": ["argument"]}
+
+
+def test_metrics_are_collected_from_artifacts_and_ledger(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    import json
+    from types import SimpleNamespace
+    from uuid import UUID, uuid4
+
+    from thesisound.domain import (
+        EpisodePlan,
+        EpisodeSegment,
+        ResearchBrief,
+        Script,
+        ScriptTurn,
+        TopicType,
+    )
+    from thesisound.episode import CoverageReport
+    from thesisound.modeling import ModelUsage
+    from thesisound.observability import (
+        CostResult,
+        ModelCallSpec,
+        ObservabilityLedger,
+        ProviderMetadata,
+    )
+    from thesisound.pipeline import WorkspaceStore
+    from thesisound.script import (
+        Glossary,
+        RevisionDecision,
+        ScriptCheckReport,
+        ScriptPipelineResult,
+        ScriptQualityScore,
+        VerificationDraft,
+    )
+    from thesisound.services import eval_harness
+    from thesisound.services.script_artifact_store import ScriptArtifactStore
+
+    source_path = tmp_path / "source.md"
+    source_path.write_text("# Source\n\nA fixed argument.", encoding="utf-8")
+    case = eval_harness.EvalCase(
+        case_id="metrics-case",
+        directory=tmp_path,
+        brief=ResearchBrief(
+            normalized_topic="Fixed metric case",
+            topic_type=TopicType.CONCEPT,
+            central_question="What is the argument?",
+            target_duration_minutes=5,
+            output_language="fa",
+        ),
+        sources=(source_path,),
+        expectations={"must_cover": ["argument"]},
+    )
+
+    class FixedPricer:
+        def price(self, **kwargs):
+            return CostResult(cost_micros=600, pricing_version="test-pricing")
+
+    class FakeSourceService:
+        def __init__(self, settings) -> None:
+            self.settings = settings
+
+        def analyze_source(self, project_id, ingestion_path, *, source_id, **kwargs) -> None:
+            source_dir = self.settings.workspace_root / str(project_id) / "sources" / str(source_id)
+            source_dir.mkdir(parents=True, exist_ok=True)
+            (source_dir / "manifest.json").write_text(
+                json.dumps({"skipped_block_count": 2}), encoding="utf-8"
+            )
+
+            ledger = ObservabilityLedger(
+                self.settings.resolved_observability_database_path,
+                self.settings.resolved_observability_artifact_root,
+                cost_pricer=FixedPricer(),
+            )
+            success = ModelCallSpec(
+                project_id=project_id,
+                stage="eval-source",
+                operation="structured_text",
+                provider="fake",
+                requested_model="fake",
+            )
+            ledger.begin_call(success, {"input": "fixture"})
+            ledger.provider_succeeded(
+                success.call_id,
+                response_payload={"output": "fixture"},
+                usage=ModelUsage(input_tokens=10, output_tokens=20, total_tokens=30),
+                provider_metadata=ProviderMetadata(resolved_model="fake"),
+            )
+            ledger.succeed(success.call_id, {"parsed": True})
+
+            failure = ModelCallSpec(
+                project_id=project_id,
+                stage="eval-source",
+                operation="structured_text",
+                provider="fake",
+                requested_model="fake",
+            )
+            ledger.begin_call(failure, {"input": "fixture"})
+            ledger.fail(failure.call_id, RuntimeError("fixture failure"))
+
+    class FakeEpisodeService:
+        def __init__(self, root: Path) -> None:
+            self.root = root
+
+        def prepare_episode(self, project_id, **kwargs):
+            workspace = WorkspaceStore(self.root)
+            project = workspace.load_project(project_id)
+            project.episode_plan = EpisodePlan(
+                title="Plan",
+                listener_outcome="Understand the argument",
+                estimated_duration_minutes=5,
+                segments=[
+                    EpisodeSegment(
+                        segment_id="segment-1",
+                        title="Argument",
+                        purpose="Explain",
+                        estimated_minutes=5,
+                        claim_ids=["claim-1"],
+                        key_question="Why?",
+                        speaker_dynamic="explanation",
+                    )
+                ],
+            )
+            project.state = eval_harness.ProjectState.EPISODE_PLANNED
+            workspace.save_project(project)
+            coverage = CoverageReport(
+                project_id=project_id,
+                central_question_status="well_covered",
+                max_supported_minutes=5,
+                recommendation="continue",
+                recommendation_reason="Enough material.",
+                can_plan_episode=True,
+                model_run_id=uuid4(),
+            )
+            return coverage, None, None, None, project.episode_plan, []
+
+    class FakeScriptService:
+        def __init__(self, root: Path) -> None:
+            self.root = root
+
+        def run(self, project_id, **kwargs):
+            ScriptArtifactStore(self.root).save_revision_decision(
+                RevisionDecision(
+                    project_id=project_id,
+                    accepted=True,
+                    reason="The revision is better.",
+                    original_verdict="revise",
+                    revised_verdict="pass",
+                    original_overall=0.6,
+                    revised_overall=0.8,
+                    delta=0.2,
+                    original_issue_count=1,
+                    revised_issue_count=0,
+                    changed_turn_count=1,
+                )
+            )
+            quality = ScriptQualityScore(
+                evidence_fidelity=0.8,
+                qualification_preservation=0.8,
+                stance_and_disagreement=0.8,
+                terminology_consistency=0.8,
+                listenability=0.8,
+            )
+            return ScriptPipelineResult(
+                glossary=Glossary(project_id=project_id, model_run_id=uuid4()),
+                script=Script(
+                    title="Script",
+                    turns=[
+                        ScriptTurn(
+                            turn_id="turn-1",
+                            segment_id="segment-1",
+                            speaker="A",
+                            spoken_text_fa="متن آزمایشی",
+                            editorial_only=True,
+                        )
+                    ],
+                ),
+                checks=ScriptCheckReport(
+                    project_id=project_id,
+                    verdict="pass",
+                    word_count=270,
+                    estimated_minutes=2.0,
+                    substantive_turn_count=0,
+                ),
+                verification=VerificationDraft(
+                    verdict="pass",
+                    unsupported_claim_ratio=0,
+                    quality=quality,
+                ),
+            )
+
+    monkeypatch.setattr(
+        eval_harness,
+        "ingest_uploaded_source",
+        lambda *args, **kwargs: SimpleNamespace(
+            artifact_ref="ingestion-result.json",
+            safe_for_claim_extraction=True,
+            issue_summary=None,
+            status="ready",
+        ),
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "build_source_service",
+        lambda settings, root: FakeSourceService(settings),
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "build_episode_service",
+        lambda settings, root, project_id: FakeEpisodeService(root),
+    )
+    monkeypatch.setattr(
+        eval_harness,
+        "build_script_service",
+        lambda settings, root: FakeScriptService(root),
+    )
+
+    metrics = eval_harness._run_case(
+        case,
+        tmp_path / "runtime",
+        settings=eval_harness.Settings(_env_file=None),
+    )
+
+    assert metrics.case_id == "metrics-case"
+    UUID(metrics.project_id)
+    assert metrics.checks_verdict == "pass"
+    assert metrics.verification_verdict == "pass"
+    assert metrics.unsupported_claim_ratio == 0
+    assert metrics.quality_overall == pytest.approx(0.8)
+    assert metrics.script_outcome == "verified"
+    assert metrics.revision_accepted is True
+    assert metrics.revision_delta == pytest.approx(0.2)
+    assert metrics.coverage_recommendation == "continue"
+    assert metrics.max_supported_minutes == 5
+    assert metrics.can_plan_episode is True
+    assert metrics.estimated_minutes == pytest.approx(2.0)
+    assert metrics.skipped_block_count == 2
+    assert metrics.call_count == 2
+    assert metrics.failed_count == 1
+    assert metrics.total_tokens == 30
+    assert metrics.wall_clock_seconds >= 0
+    assert metrics.cost_micros == 600
+    assert metrics.cost_is_partial is False
+    assert metrics.cost_micros_per_output_minute == 300
     assert metrics.expectations == {"must_cover": ["argument"]}

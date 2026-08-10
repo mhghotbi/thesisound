@@ -395,3 +395,105 @@ def test_recovery_from_script_ready_preserves_retryable_state(tmp_path: Path) ->
     assert persisted.state == ProjectState.SCRIPT_READY
     assert "interrupted" in (persisted.last_error or "").lower()
     assert service.retry(project.project_id).status == "queued"
+
+
+def test_review_required_is_a_successful_run(tmp_path: Path) -> None:
+    class ReviewRequiredPipeline(FakePipeline):
+        def run(self, project_id: UUID, *, on_stage, **_):
+            self.calls += 1
+            on_stage("verifying_draft")
+            project = self.workspace.load_project(project_id)
+            assert project.state == ProjectState.SCRIPT_DRAFTING
+            transition(project, ProjectState.SCRIPT_READY)
+            transition(project, ProjectState.SCRIPT_VERIFYING)
+            transition(project, ProjectState.SCRIPT_REVIEW_REQUIRED)
+            self.workspace.save_project(project)
+            return object()
+
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    pipeline = ReviewRequiredPipeline(workspace)
+    service = _service(tmp_path, project, pipeline)
+    service.approve_and_queue(project.project_id, approved_by="operator")
+
+    run = service.run(project.project_id)
+
+    assert run.status == "succeeded"
+    assert run.stage == "complete"
+    assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_REVIEW_REQUIRED
+    assert pipeline.calls == 1
+
+
+def test_accepted_artifacts_survive_recover_interrupted_runs(tmp_path: Path) -> None:
+    from thesisound.script import ScriptReviewDecision
+
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    pipeline = FakePipeline(workspace)
+    service = _service(tmp_path, project, pipeline)
+    run = service.approve_and_queue(project.project_id, approved_by="operator")
+    run.status = "running"
+    run.stage = "verifying_revision"
+    service.run_store.save(run)
+
+    accepted = workspace.load_project(project.project_id)
+    transition(accepted, ProjectState.SCRIPT_DRAFTING)
+    transition(accepted, ProjectState.SCRIPT_READY)
+    transition(accepted, ProjectState.SCRIPT_VERIFYING)
+    transition(accepted, ProjectState.SCRIPT_REVIEW_REQUIRED)
+    transition(accepted, ProjectState.SCRIPT_VERIFIED)
+    workspace.save_project(accepted)
+
+    store = ScriptArtifactStore(workspace.root)
+    store.prepare_for_plan(project.project_id, run.approved_plan_hash)
+    store.save_script(
+        project.project_id,
+        Script(
+            title="متن",
+            turns=[
+                ScriptTurn(
+                    turn_id="seg-1-turn-001",
+                    segment_id="seg-1",
+                    speaker="A",
+                    spoken_text_fa="متن",
+                    claim_ids=["claim-1"],
+                    evidence_ids=["evidence-1"],
+                )
+            ],
+        ),
+    )
+    store.save_checks(
+        ScriptCheckReport(
+            project_id=project.project_id,
+            verdict="pass",
+            word_count=1,
+            estimated_minutes=0.01,
+            substantive_turn_count=1,
+        )
+    )
+    store.save_verification(
+        project.project_id,
+        VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),
+    )
+    store.save_manifest(ScriptPipelineManifest(project_id=project.project_id, status="verified"))
+    store.save_review_decision(
+        ScriptReviewDecision(
+            project_id=project.project_id,
+            decision="accepted",
+            reviewer="operator",
+            reason="Accept the residual qualification risk.",
+            plan_hash=run.approved_plan_hash,
+            checks_verdict="pass",
+            verification_verdict="revise",
+            unsupported_claim_ratio=0.1,
+            quality_overall=None,
+        )
+    )
+
+    recovered = service.recover_interrupted_runs()
+
+    assert recovered == [project.project_id]
+    current = service.run_store.load(project.project_id)
+    assert current.status == "succeeded"
+    assert current.stage == "complete"
+    assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_VERIFIED

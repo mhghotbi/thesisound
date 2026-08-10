@@ -835,6 +835,7 @@ def _prepare_equal_blocks_source(
     tokens_per_block: int,
     reject_block_ids: set[str] | frozenset[str] = frozenset(),
     provider_error_block_ids: set[str] | frozenset[str] = frozenset(),
+    max_workers: int = 4,
 ) -> tuple[SourceAnalysisService, UUID, UUID, list[SourceDocumentBlock]]:
     workspace = WorkspaceStore(tmp_path / "workspaces")
     project = Project(
@@ -891,7 +892,7 @@ def _prepare_equal_blocks_source(
         artifact_store=store,
         block_builder=BlockBuilder(),
         document_mapper=DocumentMapperService(map_runner),
-        evidence_extractor=EvidenceExtractorService(evidence_runner),
+        evidence_extractor=EvidenceExtractorService(evidence_runner, max_workers=max_workers),
         claim_reconciler=ClaimReconcilerService(map_runner),
     )
     service.map_document(project.project_id, source_id, model="fake")
@@ -912,13 +913,15 @@ def test_evidence_gate_tolerates_single_block_rejection(tmp_path: Path) -> None:
     assert any("coverage" in warning.casefold() for warning in warnings)
 
 
-def test_manifest_records_skipped_block_count_and_warning(tmp_path: Path) -> None:
+@pytest.mark.parametrize("max_workers", [1, 4])
+def test_manifest_records_skipped_block_count_and_warning(tmp_path: Path, max_workers: int) -> None:
     service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
         tmp_path,
         duration=10,
         block_count=18,
         tokens_per_block=100,
         provider_error_block_ids={"block-02"},
+        max_workers=max_workers,
     )
 
     manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
@@ -927,8 +930,10 @@ def test_manifest_records_skipped_block_count_and_warning(tmp_path: Path) -> Non
     assert any("1 skipped after provider errors" in warning for warning in warnings)
 
 
+@pytest.mark.parametrize("max_workers", [1, 4])
 def test_low_retention_after_skips_names_rejected_and_skipped_counts(
     tmp_path: Path,
+    max_workers: int,
 ) -> None:
     service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
         tmp_path,
@@ -936,6 +941,7 @@ def test_low_retention_after_skips_names_rejected_and_skipped_counts(
         block_count=18,
         tokens_per_block=100,
         provider_error_block_ids={"block-02", "block-03"},
+        max_workers=max_workers,
     )
 
     with pytest.raises(ValueError, match=r"0 rejected and 2 skipped"):
