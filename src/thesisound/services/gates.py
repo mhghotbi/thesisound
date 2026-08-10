@@ -64,10 +64,13 @@ GATE_REGISTRY: tuple[GateDefinition, ...] = (
         5,
         "Evidence retention",
         "machine",
-        "src/thesisound/services/source_analysis_service.py:292",
+        "src/thesisound/services/source_analysis_service.py:343",
         "Extraction plan and block outcomes",
         "Source-analysis manifest",
-        "Less than 85% of planned token mass survived extraction.",
+        (
+            "Less than 85% of planned token mass survived extraction, even after "
+            "forgiving the largest single lost block."
+        ),
     ),
     GateDefinition(
         "coverage-duration",

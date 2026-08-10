@@ -30,11 +30,39 @@ from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
     BlockEvidenceExtraction,
     ClaimLedger,
+    EvidenceExtractionPlan,
     SourceAnalysisManifest,
     SourceDocumentBlock,
 )
 
 _MIN_PLANNED_TOKEN_RETENTION = 0.85
+# R5 made extraction plans roughly three times smaller, so one block now carries 7-8% of
+# planned token mass instead of 2-3%, and two ordinary rejections could fail an otherwise
+# healthy source. The single largest loss is forgiven against the rule above, but overall
+# retention may never fall below this floor -- a systemic failure still trips the gate.
+_MIN_RETENTION_AFTER_LARGEST_LOSS = 0.75
+
+
+def evidence_retention_holds(
+    *,
+    planned_tokens: int,
+    kept_tokens: int,
+    largest_lost_tokens: int,
+) -> bool:
+    """Whether enough planned token mass survived extraction.
+
+    Shared with ``readiness`` so the live gate and the replayed one cannot drift.
+    """
+
+    if planned_tokens <= 0:
+        return True
+    retention = kept_tokens / planned_tokens
+    if retention + 1e-9 >= _MIN_PLANNED_TOKEN_RETENTION:
+        return True
+    if retention + 1e-9 < _MIN_RETENTION_AFTER_LARGEST_LOSS:
+        return False
+    forgiven = (kept_tokens + largest_lost_tokens) / planned_tokens
+    return forgiven + 1e-9 >= _MIN_PLANNED_TOKEN_RETENTION
 
 
 class SourceAnalysisService:
@@ -242,6 +270,14 @@ class SourceAnalysisService:
             for block in blocks
             if block.block_id in kept_ids and block.block_id in selected_ids
         )
+        largest_lost_tokens = max(
+            (
+                block.estimated_token_count
+                for block in blocks
+                if block.block_id in selected_ids and block.block_id not in kept_ids
+            ),
+            default=0,
+        )
         planned_tokens = plan.selected_source_tokens
         total_tokens = plan.total_source_tokens
         kept_coverage = kept_tokens / total_tokens if total_tokens else 1.0
@@ -273,6 +309,20 @@ class SourceAnalysisService:
             f"{len(skipped)} skipped after provider errors, {len(rejected)} rejected. "
             f"Kept {retention:.0%} of planned tokens."
         )
+        # Claim yield per surviving block is how a shrinking plan shows up downstream:
+        # the coverage audit judges the ledger, not the plan, so this has to be trackable
+        # across runs rather than reconstructed from artifacts after a gate blocks.
+        tracing.event(
+            "corpus.evidence_yield",
+            component="corpus",
+            project_id=project_id,
+            subject_type="source",
+            subject_id=str(source_id),
+            selected_block_count=len(plan.selected_block_ids),
+            kept_block_count=len(kept_ids),
+            claim_count=claim_count,
+            claims_per_kept_block=round(claim_count / len(kept_ids), 3) if kept_ids else 0.0,
+        )
 
         manifest = self.artifact_store.load_manifest(project_id, source_id)
         manifest.status = "evidence_ready"
@@ -290,11 +340,16 @@ class SourceAnalysisService:
             raise ValueError(
                 "Evidence extraction produced no claim-bearing evidence after retries."
             )
-        if retention + 1e-9 < _MIN_PLANNED_TOKEN_RETENTION:
+        if not evidence_retention_holds(
+            planned_tokens=planned_tokens,
+            kept_tokens=kept_tokens,
+            largest_lost_tokens=largest_lost_tokens,
+        ):
             raise ValueError(
                 f"Evidence extraction lost {1 - retention:.0%} of the planned source tokens "
                 f"across {len(rejected)} rejected and {len(skipped)} skipped block(s); at least "
-                f"{_MIN_PLANNED_TOKEN_RETENTION:.0%} must survive. "
+                f"{_MIN_PLANNED_TOKEN_RETENTION:.0%} must survive, with the largest single loss "
+                f"forgiven down to {_MIN_RETENTION_AFTER_LARGEST_LOSS:.0%}. "
                 f"Kept coverage is {kept_coverage:.0%} of the source."
             )
         if kept_coverage + 1e-9 < plan.profile.block_coverage_target:
@@ -302,7 +357,8 @@ class SourceAnalysisService:
                 f"Evidence coverage {kept_coverage:.0%} is below the "
                 f"{plan.profile.block_coverage_target:.0%} target for the "
                 f"{plan.profile.depth} profile "
-                f"(the plan itself could only reach {plan.achieved_token_coverage:.0%})."
+                f"(the plan itself could only reach {plan.achieved_token_coverage:.0%}"
+                f"{_coverage_cause(plan)})."
             )
         return manifest, warnings
 
@@ -447,6 +503,20 @@ class SourceAnalysisService:
         manifest.last_error = message
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
+
+
+def _coverage_cause(plan: EvidenceExtractionPlan) -> str:
+    """Why the plan could not reach its coverage target.
+
+    A budget-capped plan is a deliberate cost decision; a plan that fell short for any
+    other reason is a corpus problem. Both read identically in the coverage number and
+    they have opposite remedies, so the warning has to say which one happened.
+    """
+
+    budget = plan.profile.evidence_input_token_budget
+    if plan.target_source_tokens == budget and budget < plan.total_source_tokens:
+        return f", capped by the {budget:,}-token analysis budget"
+    return ""
 
 
 def _validate_ingestion(has_brief: bool, ingestion: IngestionResult) -> None:

@@ -74,6 +74,10 @@ class EvidenceExtractionPlan(BaseModel):
     selected_source_tokens: int = Field(ge=0)
     total_source_tokens: int = Field(ge=0)
     achieved_token_coverage: float = Field(ge=0, le=1)
+    # Defaulted so plans written before R5 still load.
+    target_source_tokens: int = Field(default=0, ge=0)
+    required_section_count: int = Field(default=0, ge=0)
+    seeded_block_count: int = Field(default=0, ge=0)
 
     @model_validator(mode="after")
     def require_disjoint_block_sets(self) -> EvidenceExtractionPlan:
@@ -81,6 +85,8 @@ class EvidenceExtractionPlan(BaseModel):
         deferred = set(self.deferred_block_ids)
         if selected & deferred:
             raise ValueError("Selected and deferred block IDs must be disjoint.")
+        if self.seeded_block_count > len(selected):
+            raise ValueError("Seeded blocks cannot outnumber selected blocks.")
         return self
 
 

@@ -1,0 +1,2102 @@
+{
+ "blocks": [
+  {
+   "block_id": "blk-98863830-00001-d63e18794c51",
+   "estimated_token_count": 273,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00002-9f16d7964abd",
+   "estimated_token_count": 38,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00003-a7d0021b37df",
+   "estimated_token_count": 543,
+   "block_type": "other",
+   "note_like": true
+  },
+  {
+   "block_id": "blk-98863830-00004-a1c4a049193c",
+   "estimated_token_count": 1231,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00005-9503519b95b8",
+   "estimated_token_count": 1400,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00006-ad83a09f8711",
+   "estimated_token_count": 1331,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00007-ef27bc8317db",
+   "estimated_token_count": 1283,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00008-bc48a961db74",
+   "estimated_token_count": 1334,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00009-d379d7f1d990",
+   "estimated_token_count": 1290,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00010-b07f10ee6718",
+   "estimated_token_count": 550,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00011-cfc985d154bc",
+   "estimated_token_count": 1375,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00012-e43525f478a5",
+   "estimated_token_count": 1501,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00013-ee676e873bdc",
+   "estimated_token_count": 741,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00014-2929fc16d449",
+   "estimated_token_count": 1525,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00015-0dc93405ad60",
+   "estimated_token_count": 1292,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00016-0bae9913560f",
+   "estimated_token_count": 1462,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00017-8d2b21d55a85",
+   "estimated_token_count": 1428,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00018-c110ef9718e2",
+   "estimated_token_count": 1476,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00019-87eeca01511a",
+   "estimated_token_count": 420,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00020-b6939d12c2ab",
+   "estimated_token_count": 1270,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00021-62fc4bace9d3",
+   "estimated_token_count": 1308,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00022-360c6289622f",
+   "estimated_token_count": 1403,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00023-5f79e4666b2e",
+   "estimated_token_count": 1242,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00024-2933cef84dd9",
+   "estimated_token_count": 1390,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00025-9be9277af64f",
+   "estimated_token_count": 1631,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00026-980ba5e99a46",
+   "estimated_token_count": 1433,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00027-5c53f02a15fc",
+   "estimated_token_count": 1487,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00028-9b4ca688b49a",
+   "estimated_token_count": 1200,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00029-f36b56728386",
+   "estimated_token_count": 1502,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00030-2024aaf66660",
+   "estimated_token_count": 1426,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00031-75f26de0f939",
+   "estimated_token_count": 1474,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00032-eee5696a79ca",
+   "estimated_token_count": 1298,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00033-0410164c12b2",
+   "estimated_token_count": 1596,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00034-2759e45d7054",
+   "estimated_token_count": 1501,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00035-bcf4009bded8",
+   "estimated_token_count": 1680,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00036-4bda9e090bb2",
+   "estimated_token_count": 1205,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00037-12ec6df6a76f",
+   "estimated_token_count": 1347,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00038-4bcfb6bf2ad4",
+   "estimated_token_count": 1420,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00039-6411020c333a",
+   "estimated_token_count": 1438,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00040-90b0c6194a41",
+   "estimated_token_count": 755,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00041-45a9fcc0206f",
+   "estimated_token_count": 1377,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00042-f7aa919f145a",
+   "estimated_token_count": 1614,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00043-ded5c049cadd",
+   "estimated_token_count": 1300,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00044-705024407fd9",
+   "estimated_token_count": 1720,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00045-09504c919bfd",
+   "estimated_token_count": 1581,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00046-6880025cebf7",
+   "estimated_token_count": 1630,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00047-e4926a23ac97",
+   "estimated_token_count": 1604,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00048-4ac3e959ea0e",
+   "estimated_token_count": 1408,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00049-99ac0610327d",
+   "estimated_token_count": 1266,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00050-e91b7ced182b",
+   "estimated_token_count": 1513,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00051-8ad6adfea771",
+   "estimated_token_count": 1502,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00052-1aaeca94df80",
+   "estimated_token_count": 1452,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00053-46ef49b52c96",
+   "estimated_token_count": 1228,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00054-0ea99ec2db54",
+   "estimated_token_count": 1277,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00055-f9f0a05390c9",
+   "estimated_token_count": 1320,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00056-e324fbf7401d",
+   "estimated_token_count": 1510,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00057-9d0d14d22955",
+   "estimated_token_count": 1523,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00058-11150ee95600",
+   "estimated_token_count": 1268,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00059-f73cea452505",
+   "estimated_token_count": 1494,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00060-4cd6cb863369",
+   "estimated_token_count": 718,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00061-5613acad3e65",
+   "estimated_token_count": 1314,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00062-9aa5de647675",
+   "estimated_token_count": 1261,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00063-9440742c4fce",
+   "estimated_token_count": 1522,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00064-7408029a32f4",
+   "estimated_token_count": 1528,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00065-936943606979",
+   "estimated_token_count": 1203,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00066-e49e49d808e4",
+   "estimated_token_count": 1301,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00067-66852767fa22",
+   "estimated_token_count": 1372,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00068-a58ed713283e",
+   "estimated_token_count": 1679,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00069-1e36a37977c9",
+   "estimated_token_count": 1523,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00070-0df9a0040a34",
+   "estimated_token_count": 1282,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00071-83645bcd1f3f",
+   "estimated_token_count": 1203,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00072-8432597e6bd2",
+   "estimated_token_count": 1582,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00073-484f60306745",
+   "estimated_token_count": 1280,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00074-152179c77412",
+   "estimated_token_count": 1680,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00075-90bd683a5dd0",
+   "estimated_token_count": 1394,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00076-4d3b5a787291",
+   "estimated_token_count": 510,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00077-5e4939c361c7",
+   "estimated_token_count": 1484,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00078-5653b51ca68d",
+   "estimated_token_count": 1362,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00079-d88c7d1cf9a9",
+   "estimated_token_count": 1355,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00080-56048fc53d98",
+   "estimated_token_count": 1354,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00081-40d4d7350bb0",
+   "estimated_token_count": 1256,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00082-f63270da96ee",
+   "estimated_token_count": 1246,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00083-50aedfaf5211",
+   "estimated_token_count": 1593,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00084-b85c260fac7b",
+   "estimated_token_count": 1563,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00085-6ee8c471e473",
+   "estimated_token_count": 1381,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00086-91c82aeb577e",
+   "estimated_token_count": 1200,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00087-bb5f87340bb1",
+   "estimated_token_count": 1515,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00088-a8f21f4e7a68",
+   "estimated_token_count": 1314,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00089-3d55d9c818ec",
+   "estimated_token_count": 1463,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00090-f8be348ef42a",
+   "estimated_token_count": 1260,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00091-f8ee3a7ac3d0",
+   "estimated_token_count": 1487,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00092-9337c543230a",
+   "estimated_token_count": 1279,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00093-04225164222d",
+   "estimated_token_count": 1401,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00094-b63e40e75606",
+   "estimated_token_count": 1300,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00095-5ce307767181",
+   "estimated_token_count": 1490,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00096-fcce8a507720",
+   "estimated_token_count": 1340,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00097-c807df4ea8b3",
+   "estimated_token_count": 1534,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00098-7a2891ea9fde",
+   "estimated_token_count": 1724,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00099-fcccca03da2f",
+   "estimated_token_count": 1435,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00100-44b7dec21c02",
+   "estimated_token_count": 1263,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00101-19f60938cfbd",
+   "estimated_token_count": 1414,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00102-38d13fb4d7a8",
+   "estimated_token_count": 1361,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00103-9dabc8aa9052",
+   "estimated_token_count": 1613,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00104-16bdc218816d",
+   "estimated_token_count": 1242,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00105-972f311af8fd",
+   "estimated_token_count": 1281,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00106-91a43b94f2cf",
+   "estimated_token_count": 1463,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00107-4ccb8c9f0388",
+   "estimated_token_count": 244,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00108-efae252f4a34",
+   "estimated_token_count": 1217,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00109-ae67b5bf1953",
+   "estimated_token_count": 1238,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00110-0d18ebd7d848",
+   "estimated_token_count": 1472,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00111-27537ce4c519",
+   "estimated_token_count": 1369,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00112-cb2bca930cf3",
+   "estimated_token_count": 1409,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00113-417abc62e5b6",
+   "estimated_token_count": 1434,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00114-654d87180d12",
+   "estimated_token_count": 1218,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00115-520a34af2a29",
+   "estimated_token_count": 1223,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00116-7b2921816395",
+   "estimated_token_count": 1400,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00117-45539534398f",
+   "estimated_token_count": 1362,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00118-93e67b6e862a",
+   "estimated_token_count": 1280,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00119-dee662b404b0",
+   "estimated_token_count": 1570,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00120-40586928a3b9",
+   "estimated_token_count": 1446,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00121-bdc0b69e5c27",
+   "estimated_token_count": 1646,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00122-0e31a023eddc",
+   "estimated_token_count": 1234,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00123-1ba98cb0a683",
+   "estimated_token_count": 1373,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00124-77699a827341",
+   "estimated_token_count": 1599,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00125-4ff44c65eecb",
+   "estimated_token_count": 1355,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00126-cad89b43c457",
+   "estimated_token_count": 1266,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00127-2d0d6e2910bc",
+   "estimated_token_count": 1305,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00128-797bccbff6e0",
+   "estimated_token_count": 1674,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00129-4f168757eb8e",
+   "estimated_token_count": 1303,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00130-efb120fbbe4a",
+   "estimated_token_count": 1512,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00131-77f4034108ec",
+   "estimated_token_count": 1214,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00132-196015dfbff9",
+   "estimated_token_count": 1201,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00133-650a8d0f2b33",
+   "estimated_token_count": 1543,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00134-87566bcfe622",
+   "estimated_token_count": 1237,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00135-3b8e656bcdf4",
+   "estimated_token_count": 1273,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00136-d1b9e86b28aa",
+   "estimated_token_count": 1206,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00137-c98ace9011b5",
+   "estimated_token_count": 1783,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00138-655c319689f1",
+   "estimated_token_count": 1439,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00139-7e259826d30c",
+   "estimated_token_count": 1277,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00140-0355bab509cf",
+   "estimated_token_count": 909,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00141-62b0d7197557",
+   "estimated_token_count": 344,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00142-56991480d620",
+   "estimated_token_count": 128,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00143-e7291095b2a2",
+   "estimated_token_count": 1332,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00144-16b12e01b035",
+   "estimated_token_count": 1203,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00145-4f7835c33d22",
+   "estimated_token_count": 1306,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00146-74fbdf17f664",
+   "estimated_token_count": 1292,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00147-79079d9f5094",
+   "estimated_token_count": 1423,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00148-25bac839ecd7",
+   "estimated_token_count": 1235,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00149-790d889bff76",
+   "estimated_token_count": 1206,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00150-0f3a9e3aed23",
+   "estimated_token_count": 1280,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00151-bff03997ac60",
+   "estimated_token_count": 1212,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00152-ff55653b5ce9",
+   "estimated_token_count": 1387,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00153-ca797199e59c",
+   "estimated_token_count": 1272,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00154-4fd131b4a47a",
+   "estimated_token_count": 1376,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00155-47b20935e369",
+   "estimated_token_count": 1203,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00156-84a20d6ee86e",
+   "estimated_token_count": 1296,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00157-73415661ecff",
+   "estimated_token_count": 1338,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00158-a8532d6f1ba0",
+   "estimated_token_count": 1202,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00159-a6ffadfaa395",
+   "estimated_token_count": 1213,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00160-3e88b3f9f6ab",
+   "estimated_token_count": 1405,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00161-f638ca54ad73",
+   "estimated_token_count": 1605,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00162-5059c635c53f",
+   "estimated_token_count": 1357,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00163-3ad84664951c",
+   "estimated_token_count": 1283,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00164-9d5a0fb35bbc",
+   "estimated_token_count": 1466,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00165-f6afc86861ff",
+   "estimated_token_count": 1202,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00166-15d4c346c292",
+   "estimated_token_count": 1204,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00167-845be5bd0ef9",
+   "estimated_token_count": 1264,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00168-7e391cc73ec7",
+   "estimated_token_count": 1259,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00169-79f4f85f24c7",
+   "estimated_token_count": 1293,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00170-8ba96b71ca2a",
+   "estimated_token_count": 1266,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00171-8f6adf2a2c73",
+   "estimated_token_count": 1319,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00172-161c9ebe9d12",
+   "estimated_token_count": 1239,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00173-420456daf1ef",
+   "estimated_token_count": 1366,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00174-d49b5a3edc1f",
+   "estimated_token_count": 1205,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00175-9b33a8ef7563",
+   "estimated_token_count": 1226,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00176-0e7147ab86d4",
+   "estimated_token_count": 1407,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00177-1a7906a1baf0",
+   "estimated_token_count": 1326,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00178-78c823a488ac",
+   "estimated_token_count": 1246,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00179-a35ffb89a0ad",
+   "estimated_token_count": 1205,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00180-0f692c0c3a73",
+   "estimated_token_count": 1475,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00181-03aa99c96d90",
+   "estimated_token_count": 1129,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00182-055e917c9509",
+   "estimated_token_count": 1556,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00183-97b57759bf03",
+   "estimated_token_count": 1273,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00184-2b799bca5c3b",
+   "estimated_token_count": 1195,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00185-c8c8aaf02230",
+   "estimated_token_count": 1268,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00186-4ef3b1a10267",
+   "estimated_token_count": 1218,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00187-ac363c3a2912",
+   "estimated_token_count": 1200,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00188-babd847c14fb",
+   "estimated_token_count": 1607,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00189-79a3fbf1ee49",
+   "estimated_token_count": 1407,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00190-d6ce3339ce17",
+   "estimated_token_count": 1239,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00191-f0f8c5349197",
+   "estimated_token_count": 1467,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00192-2545267a2692",
+   "estimated_token_count": 1205,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00193-b42fcf4c4f47",
+   "estimated_token_count": 1199,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00194-32134159f9b9",
+   "estimated_token_count": 1268,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00195-87d7f106e0ba",
+   "estimated_token_count": 1313,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00196-8b773ad9f351",
+   "estimated_token_count": 1276,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00197-1b33b31332b7",
+   "estimated_token_count": 1318,
+   "block_type": "other",
+   "note_like": false
+  },
+  {
+   "block_id": "blk-98863830-00198-1f76da3fc86e",
+   "estimated_token_count": 91,
+   "block_type": "other",
+   "note_like": false
+  }
+ ],
+ "sections": [
+  {
+   "section_id": "part-0001:sec-001",
+   "source_block_ids": [
+    "blk-98863830-00001-d63e18794c51",
+    "blk-98863830-00002-9f16d7964abd",
+    "blk-98863830-00003-a7d0021b37df",
+    "blk-98863830-00004-a1c4a049193c",
+    "blk-98863830-00005-9503519b95b8",
+    "blk-98863830-00006-ad83a09f8711",
+    "blk-98863830-00007-ef27bc8317db",
+    "blk-98863830-00008-bc48a961db74",
+    "blk-98863830-00009-d379d7f1d990",
+    "blk-98863830-00010-b07f10ee6718"
+   ],
+   "title": "Introduction to The Human Condition by Margaret Canovan",
+   "function": "front_matter",
+   "key_concepts": [
+    "vita activa",
+    "labor",
+    "work",
+    "action",
+    "plurality",
+    "world alienation",
+    "earth alienation",
+    "social"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0001:sec-002",
+   "source_block_ids": [
+    "blk-98863830-00011-cfc985d154bc",
+    "blk-98863830-00012-e43525f478a5",
+    "blk-98863830-00013-ee676e873bdc"
+   ],
+   "title": "Prologue",
+   "function": "argument",
+   "key_concepts": [
+    "space satellite",
+    "earthly imprisonment",
+    "automation",
+    "thoughtlessness",
+    "modern age"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0001:sec-003",
+   "source_block_ids": [
+    "blk-98863830-00014-2929fc16d449",
+    "blk-98863830-00015-0dc93405ad60"
+   ],
+   "title": "Chapter I, Section 1-1: Vita Activa and the Human Condition",
+   "function": "definition",
+   "key_concepts": [
+    "labor",
+    "work",
+    "action",
+    "plurality",
+    "natality",
+    "mortality",
+    "conditioned beings"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0001:sec-004",
+   "source_block_ids": [
+    "blk-98863830-00016-0bae9913560f",
+    "blk-98863830-00017-8d2b21d55a85",
+    "blk-98863830-00018-c110ef9718e2",
+    "blk-98863830-00019-87eeca01511a"
+   ],
+   "title": "Chapter I, Section 2-3: The Term Vita Activa and Eternity versus Immortality",
+   "function": "argument",
+   "key_concepts": [
+    "bios politikos",
+    "vita contemplativa",
+    "contemplation",
+    "immortality",
+    "eternity"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0001:sec-005",
+   "source_block_ids": [
+    "blk-98863830-00020-b6939d12c2ab",
+    "blk-98863830-00021-62fc4bace9d3",
+    "blk-98863830-00022-360c6289622f",
+    "blk-98863830-00023-5f79e4666b2e",
+    "blk-98863830-00024-2933cef84dd9"
+   ],
+   "title": "Chapter II, Section 4-5: Man: A Social or a Political Animal and The Polis and the Household",
+   "function": "argument",
+   "key_concepts": [
+    "zōon politikon",
+    "animal socialis",
+    "polis",
+    "household",
+    "freedom",
+    "necessity"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0001:sec-006",
+   "source_block_ids": [
+    "blk-98863830-00025-9be9277af64f",
+    "blk-98863830-00026-980ba5e99a46",
+    "blk-98863830-00027-5c53f02a15fc",
+    "blk-98863830-00028-9b4ca688b49a",
+    "blk-98863830-00029-f36b56728386",
+    "blk-98863830-00030-2024aaf66660"
+   ],
+   "title": "Chapter II, Section 6-7: The Rise of the Social and The Public Realm",
+   "function": "argument",
+   "key_concepts": [
+    "rise of society",
+    "intimacy",
+    "conformism",
+    "behaviorism",
+    "common world",
+    "excellence"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0001:sec-007",
+   "source_block_ids": [
+    "blk-98863830-00031-75f26de0f939",
+    "blk-98863830-00032-eee5696a79ca",
+    "blk-98863830-00033-0410164c12b2",
+    "blk-98863830-00034-2759e45d7054",
+    "blk-98863830-00035-bcf4009bded8",
+    "blk-98863830-00036-4bda9e090bb2",
+    "blk-98863830-00037-12ec6df6a76f",
+    "blk-98863830-00038-4bcfb6bf2ad4",
+    "blk-98863830-00039-6411020c333a",
+    "blk-98863830-00040-90b0c6194a41"
+   ],
+   "title": "Chapter II, Section 8-10: The Private Realm: Property, The Social and the Private, and The Location of Human Activities",
+   "function": "argument",
+   "key_concepts": [
+    "property",
+    "wealth",
+    "privacy",
+    "goodness",
+    "location of activities"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-001",
+   "source_block_ids": [
+    "blk-98863830-00041-45a9fcc0206f"
+   ],
+   "title": "Introduction: The Neglected Distinction Between Labor and Work",
+   "function": "front_matter",
+   "key_concepts": [
+    "labor",
+    "work",
+    "etymological distinction",
+    "ancient contempt for labor"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-002",
+   "source_block_ids": [
+    "blk-98863830-00042-f7aa919f145a"
+   ],
+   "title": "Antiquity, Slavery, and the Animal Laborans",
+   "function": "definition",
+   "key_concepts": [
+    "slavery",
+    "necessity",
+    "animal laborans",
+    "household vs. public realm"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-003",
+   "source_block_ids": [
+    "blk-98863830-00043-ded5c049cadd"
+   ],
+   "title": "Productivity of Labor and Modern Economic Theories",
+   "function": "argument",
+   "key_concepts": [
+    "productive and unproductive labor",
+    "Adam Smith",
+    "Karl Marx",
+    "labor power",
+    "surplus"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-004",
+   "source_block_ids": [
+    "blk-98863830-00044-705024407fd9"
+   ],
+   "title": "Skills, Manual and Intellectual Labor, and Bureaucracy",
+   "function": "argument",
+   "key_concepts": [
+    "skilled and unskilled work",
+    "manual and intellectual labor",
+    "liberal and servile arts",
+    "bureaucracy"
+   ],
+   "required_for_global_understanding": false
+  },
+  {
+   "section_id": "part-0002:sec-005",
+   "source_block_ids": [
+    "blk-98863830-00045-09504c919bfd"
+   ],
+   "title": "The Thing-Character of the World and Reification",
+   "function": "definition",
+   "key_concepts": [
+    "consumer goods",
+    "use objects",
+    "products of action and speech",
+    "reification"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-006",
+   "source_block_ids": [
+    "blk-98863830-00046-6880025cebf7"
+   ],
+   "title": "Labor and Life: Cyclical Nature and Biological Processes",
+   "function": "argument",
+   "key_concepts": [
+    "life process",
+    "cyclical movement",
+    "growth and decay",
+    "bios vs. zōē"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-007",
+   "source_block_ids": [
+    "blk-98863830-00047-e4926a23ac97",
+    "blk-98863830-00048-4ac3e959ea0e"
+   ],
+   "title": "Labor, Fertility, and Marx's Contradictions",
+   "function": "argument",
+   "key_concepts": [
+    "metabolism with nature",
+    "fertility",
+    "contradictions in Marx",
+    "realm of freedom vs. realm of necessity"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-008",
+   "source_block_ids": [
+    "blk-98863830-00049-99ac0610327d",
+    "blk-98863830-00050-e91b7ced182b"
+   ],
+   "title": "The Experience of Labor, Happiness, and Privacy",
+   "function": "argument",
+   "key_concepts": [
+    "blessing of life",
+    "happiness",
+    "fertility of life force",
+    "private property"
+   ],
+   "required_for_global_understanding": false
+  },
+  {
+   "section_id": "part-0002:sec-009",
+   "source_block_ids": [
+    "blk-98863830-00051-8ad6adfea771",
+    "blk-98863830-00052-1aaeca94df80"
+   ],
+   "title": "Locke, Private Property, and the Body as Quintessence of Property",
+   "function": "argument",
+   "key_concepts": [
+    "property in his own person",
+    "appropriation",
+    "pain and absence of pain",
+    "hedonism"
+   ],
+   "required_for_global_understanding": false
+  },
+  {
+   "section_id": "part-0002:sec-010",
+   "source_block_ids": [
+    "blk-98863830-00053-46ef49b52c96",
+    "blk-98863830-00054-0ea99ec2db54"
+   ],
+   "title": "Socialized Mankind, Worldlessness, and the Burden of Life",
+   "function": "argument",
+   "key_concepts": [
+    "socialized mankind",
+    "worldlessness",
+    "burden of biological life",
+    "vicarious life"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-011",
+   "source_block_ids": [
+    "blk-98863830-00055-f9f0a05390c9",
+    "blk-98863830-00056-e324fbf7401d"
+   ],
+   "title": "Tools, Machines, and the Division of Labor",
+   "function": "argument",
+   "key_concepts": [
+    "tools vs. machines",
+    "division of labor",
+    "specialization",
+    "mute robots"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-012",
+   "source_block_ids": [
+    "blk-98863830-00057-9d0d14d22955",
+    "blk-98863830-00058-11150ee95600",
+    "blk-98863830-00059-f73cea452505",
+    "blk-98863830-00060-4cd6cb863369"
+   ],
+   "title": "Consumers' Society and the Triumph of the Animal Laborans",
+   "function": "conclusion",
+   "key_concepts": [
+    "waste economy",
+    "consumers' society",
+    "mass culture",
+    "universal unhappiness"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-013",
+   "source_block_ids": [
+    "blk-98863830-00061-5613acad3e65",
+    "blk-98863830-00062-9aa5de647675"
+   ],
+   "title": "Chapter IV Work: The Durability of the World and Reification",
+   "function": "definition",
+   "key_concepts": [
+    "homo faber",
+    "durability of the human artifice",
+    "objectivity",
+    "reification"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-014",
+   "source_block_ids": [
+    "blk-98863830-00063-9440742c4fce",
+    "blk-98863830-00064-7408029a32f4",
+    "blk-98863830-00065-936943606979",
+    "blk-98863830-00066-e49e49d808e4",
+    "blk-98863830-00067-66852767fa22"
+   ],
+   "title": "Instrumentality, Models, and Automation",
+   "function": "argument",
+   "key_concepts": [
+    "guidance of a model",
+    "means and end",
+    "tools vs. machines",
+    "automation"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-015",
+   "source_block_ids": [
+    "blk-98863830-00068-a58ed713283e",
+    "blk-98863830-00069-1e36a37977c9",
+    "blk-98863830-00070-0df9a0040a34"
+   ],
+   "title": "The Perplexity of Utilitarianism and Protagoras' Measure",
+   "function": "argument",
+   "key_concepts": [
+    "utilitarianism",
+    "meaninglessness",
+    "Kant's formula",
+    "Protagoras",
+    "degradation of nature"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0002:sec-016",
+   "source_block_ids": [
+    "blk-98863830-00071-83645bcd1f3f",
+    "blk-98863830-00072-8432597e6bd2"
+   ],
+   "title": "The Exchange Market and Marketable Value",
+   "function": "argument",
+   "key_concepts": [
+    "exchange market",
+    "conspicuous production",
+    "marketable value",
+    "intrinsic worth"
+   ],
+   "required_for_global_understanding": false
+  },
+  {
+   "section_id": "part-0002:sec-017",
+   "source_block_ids": [
+    "blk-98863830-00073-484f60306745",
+    "blk-98863830-00074-152179c77412",
+    "blk-98863830-00075-90bd683a5dd0",
+    "blk-98863830-00076-4d3b5a787291"
+   ],
+   "title": "The Permanence of the World and the Work of Art",
+   "function": "conclusion",
+   "key_concepts": [
+    "works of art",
+    "thought vs. cognition",
+    "transfiguration",
+    "beauty and worldly transcendence"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0003:sec-001",
+   "source_block_ids": [
+    "blk-98863830-00077-5e4939c361c7",
+    "blk-98863830-00078-5653b51ca68d"
+   ],
+   "title": "The Conditions of Action and Speech: Plurality, Natality, and Revelation",
+   "function": "definition",
+   "key_concepts": [
+    "Human plurality",
+    "Equality and distinction",
+    "Uniqueness",
+    "Natality",
+    "Initiative and beginning",
+    "Disclosure of the 'who'"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0003:sec-002",
+   "source_block_ids": [
+    "blk-98863830-00079-d88c7d1cf9a9",
+    "blk-98863830-00080-56048fc53d98",
+    "blk-98863830-00081-40d4d7350bb0",
+    "blk-98863830-00082-f63270da96ee"
+   ],
+   "title": "The Web of Relationships and the Enacted Stories",
+   "function": "argument",
+   "key_concepts": [
+    "Sheer human togetherness",
+    "The web of human relationships",
+    "Enacted stories",
+    "The hero without an author",
+    "Intangibility of human affairs"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0003:sec-003",
+   "source_block_ids": [
+    "blk-98863830-00083-50aedfaf5211",
+    "blk-98863830-00084-b85c260fac7b"
+   ],
+   "title": "The Frailty, Boundlessness, and Unpredictability of Human Affairs",
+   "function": "argument",
+   "key_concepts": [
+    "Frailty of human affairs",
+    "Boundlessness of action",
+    "Chain reactions",
+    "Unpredictability",
+    "Hubris and moderation"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0003:sec-004",
+   "source_block_ids": [
+    "blk-98863830-00085-6ee8c471e473",
+    "blk-98863830-00086-91c82aeb577e",
+    "blk-98863830-00087-bb5f87340bb1"
+   ],
+   "title": "The Greek Solution: The Polis and the Agonal Spirit",
+   "function": "argument",
+   "key_concepts": [
+    "The polis",
+    "Sharing of words and deeds",
+    "Space of appearance",
+    "Immortality and remembrance"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0003:sec-005",
+   "source_block_ids": [
+    "blk-98863830-00088-a8f21f4e7a68",
+    "blk-98863830-00089-3d55d9c818ec",
+    "blk-98863830-00090-f8be348ef42a"
+   ],
+   "title": "Power, Violence, and Energeia",
+   "function": "definition",
+   "key_concepts": [
+    "Power (dynamis / potentia)",
+    "Tyranny and isolation",
+    "Violence versus power",
+    "Energeia and actuality"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0003:sec-006",
+   "source_block_ids": [
+    "blk-98863830-00091-f8ee3a7ac3d0",
+    "blk-98863830-00092-9337c543230a"
+   ],
+   "title": "Homo Faber and the Space of Appearance",
+   "function": "argument",
+   "key_concepts": [
+    "Homo faber",
+    "Alienation",
+    "Common sense",
+    "The exchange market",
+    "Genius and workmanship"
+   ],
+   "required_for_global_understanding": false
+  },
+  {
+   "section_id": "part-0003:sec-007",
+   "source_block_ids": [
+    "blk-98863830-00093-04225164222d",
+    "blk-98863830-00094-b63e40e75606",
+    "blk-98863830-00095-5ce307767181"
+   ],
+   "title": "The Labor Movement and the Sameness of Society",
+   "function": "argument",
+   "key_concepts": [
+    "Animal laborans",
+    "Labor gang and sameness",
+    "Emancipation of labor",
+    "People's councils"
+   ],
+   "required_for_global_understanding": false
+  },
+  {
+   "section_id": "part-0003:sec-008",
+   "source_block_ids": [
+    "blk-98863830-00096-fcce8a507720",
+    "blk-98863830-00097-c807df4ea8b3",
+    "blk-98863830-00098-7a2891ea9fde",
+    "blk-98863830-00099-fcccca03da2f",
+    "blk-98863830-00100-44b7dec21c02"
+   ],
+   "title": "The Traditional Substitution of Making for Acting",
+   "function": "objection",
+   "key_concepts": [
+    "Substitution of making for acting",
+    "Monarchy and rule",
+    "Plato's Statesman and Republic",
+    "Instrumentality and means-ends category",
+    "Process character of action and science"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0003:sec-009",
+   "source_block_ids": [
+    "blk-98863830-00101-19f60938cfbd",
+    "blk-98863830-00102-38d13fb4d7a8",
+    "blk-98863830-00103-9dabc8aa9052",
+    "blk-98863830-00104-16bdc218816d",
+    "blk-98863830-00105-972f311af8fd",
+    "blk-98863830-00106-91a43b94f2cf",
+    "blk-98863830-00107-4ccb8c9f0388"
+   ],
+   "title": "Remedies of Action: Forgiving, Promising, and Natality",
+   "function": "response",
+   "key_concepts": [
+    "Sovereignty versus freedom",
+    "Faculty of forgiving",
+    "Faculty of making promises",
+    "Respect",
+    "Miracle of natality",
+    "Faith and hope"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-001",
+   "source_block_ids": [
+    "blk-98863830-00108-efae252f4a34",
+    "blk-98863830-00109-ae67b5bf1953",
+    "blk-98863830-00110-0d18ebd7d848",
+    "blk-98863830-00111-27537ce4c519"
+   ],
+   "title": "World Alienation and the Threshold of Modernity",
+   "function": "argument",
+   "key_concepts": [
+    "world alienation",
+    "earth alienation",
+    "Reformation",
+    "capital accumulation",
+    "shrinkage of the globe"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-002",
+   "source_block_ids": [
+    "blk-98863830-00112-cb2bca930cf3",
+    "blk-98863830-00113-417abc62e5b6"
+   ],
+   "title": "The Discovery of the Archimedean Point",
+   "function": "argument",
+   "key_concepts": [
+    "Archimedean point",
+    "telescope",
+    "Galileo",
+    "sense perception",
+    "Copernican revolution"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-003",
+   "source_block_ids": [
+    "blk-98863830-00114-654d87180d12",
+    "blk-98863830-00115-520a34af2a29",
+    "blk-98863830-00116-7b2921816395",
+    "blk-98863830-00117-45539534398f",
+    "blk-98863830-00118-93e67b6e862a"
+   ],
+   "title": "Universal Science and Earth Alienation",
+   "function": "argument",
+   "key_concepts": [
+    "universal science",
+    "mathematization",
+    "algebra",
+    "despair and triumph",
+    "Cartesian philosophy"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-004",
+   "source_block_ids": [
+    "blk-98863830-00119-dee662b404b0",
+    "blk-98863830-00120-40586928a3b9",
+    "blk-98863830-00121-bdc0b69e5c27",
+    "blk-98863830-00122-0e31a023eddc",
+    "blk-98863830-00123-1ba98cb0a683"
+   ],
+   "title": "The Rise of Cartesian Doubt and Introspection",
+   "function": "argument",
+   "key_concepts": [
+    "Cartesian doubt",
+    "introspection",
+    "certainty",
+    "cogito ergo sum",
+    "theodicies"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-005",
+   "source_block_ids": [
+    "blk-98863830-00124-77699a827341",
+    "blk-98863830-00125-4ff44c65eecb",
+    "blk-98863830-00126-cad89b43c457",
+    "blk-98863830-00127-2d0d6e2910bc"
+   ],
+   "title": "The Reversal of Contemplation and Action",
+   "function": "argument",
+   "key_concepts": [
+    "vita contemplativa",
+    "vita activa",
+    "experiment",
+    "truthfulness",
+    "Platonic tradition"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-006",
+   "source_block_ids": [
+    "blk-98863830-00128-797bccbff6e0",
+    "blk-98863830-00129-4f168757eb8e",
+    "blk-98863830-00130-efb120fbbe4a",
+    "blk-98863830-00131-77f4034108ec"
+   ],
+   "title": "The Victory of Homo Faber and Process",
+   "function": "argument",
+   "key_concepts": [
+    "homo faber",
+    "process",
+    "making",
+    "Hobbes",
+    "political philosophy"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-007",
+   "source_block_ids": [
+    "blk-98863830-00132-196015dfbff9",
+    "blk-98863830-00133-650a8d0f2b33",
+    "blk-98863830-00134-87566bcfe622",
+    "blk-98863830-00135-3b8e656bcdf4"
+   ],
+   "title": "The Defeat of Homo Faber and Life as Highest Good",
+   "function": "argument",
+   "key_concepts": [
+    "utility",
+    "happiness principle",
+    "pain and pleasure calculus",
+    "life philosophy",
+    "causality"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-008",
+   "source_block_ids": [
+    "blk-98863830-00136-d1b9e86b28aa",
+    "blk-98863830-00137-c98ace9011b5",
+    "blk-98863830-00138-655c319689f1",
+    "blk-98863830-00139-7e259826d30c",
+    "blk-98863830-00140-0355bab509cf"
+   ],
+   "title": "The Victory of the Animal Laborans",
+   "function": "conclusion",
+   "key_concepts": [
+    "animal laborans",
+    "Christianity",
+    "immortality of life",
+    "laboring society",
+    "behaviorism"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0004:sec-009",
+   "source_block_ids": [
+    "blk-98863830-00141-62b0d7197557",
+    "blk-98863830-00142-56991480d620"
+   ],
+   "title": "Acknowledgments and Front Matter",
+   "function": "front_matter",
+   "key_concepts": [
+    "acknowledgments",
+    "Hannah Arendt"
+   ],
+   "required_for_global_understanding": false
+  },
+  {
+   "section_id": "part-0005:sec-001",
+   "source_block_ids": [
+    "blk-98863830-00143-e7291095b2a2",
+    "blk-98863830-00144-16b12e01b035",
+    "blk-98863830-00145-4f7835c33d22",
+    "blk-98863830-00146-74fbdf17f664",
+    "blk-98863830-00147-79079d9f5094",
+    "blk-98863830-00148-25bac839ecd7",
+    "blk-98863830-00149-790d889bff76",
+    "blk-98863830-00150-0f3a9e3aed23",
+    "blk-98863830-00151-bff03997ac60",
+    "blk-98863830-00152-ff55653b5ce9",
+    "blk-98863830-00153-ca797199e59c"
+   ],
+   "title": "Notes on Introduction and Chapter 1: The Human Condition, Classical Status of Labor, and Political Life",
+   "function": "argument",
+   "key_concepts": [
+    "vita activa",
+    "labor and necessity",
+    "slavery and freedom",
+    "the public realm vs. household",
+    "property and citizenship"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0005:sec-002",
+   "source_block_ids": [
+    "blk-98863830-00154-4fd131b4a47a",
+    "blk-98863830-00155-47b20935e369",
+    "blk-98863830-00156-84a20d6ee86e",
+    "blk-98863830-00157-73415661ecff",
+    "blk-98863830-00158-a8532d6f1ba0",
+    "blk-98863830-00159-a6ffadfaa395",
+    "blk-98863830-00160-3e88b3f9f6ab",
+    "blk-98863830-00161-f638ca54ad73",
+    "blk-98863830-00162-5059c635c53f",
+    "blk-98863830-00163-3ad84664951c"
+   ],
+   "title": "Notes on Chapter 2 and Chapter 3: Labor, Animal Laborans, and Historical Conceptions of Work",
+   "function": "argument",
+   "key_concepts": [
+    "animal laborans",
+    "Marx's labor theory",
+    "pain and effort",
+    "metabolism with nature",
+    "automation and modern labor"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0005:sec-003",
+   "source_block_ids": [
+    "blk-98863830-00164-9d5a0fb35bbc",
+    "blk-98863830-00165-f6afc86861ff",
+    "blk-98863830-00166-15d4c346c292",
+    "blk-98863830-00167-845be5bd0ef9",
+    "blk-98863830-00168-7e391cc73ec7",
+    "blk-98863830-00169-79f4f85f24c7",
+    "blk-98863830-00170-8ba96b71ca2a",
+    "blk-98863830-00171-8f6adf2a2c73",
+    "blk-98863830-00172-161c9ebe9d12",
+    "blk-98863830-00173-420456daf1ef",
+    "blk-98863830-00174-d49b5a3edc1f"
+   ],
+   "title": "Notes on Chapter 4 and Chapter 5: Homo Faber, Action, Speech, and Forgiveness",
+   "function": "argument",
+   "key_concepts": [
+    "homo faber",
+    "action and speech",
+    "plurality",
+    "forgiveness and promising",
+    "worldliness"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0005:sec-004",
+   "source_block_ids": [
+    "blk-98863830-00175-9b33a8ef7563",
+    "blk-98863830-00176-0e7147ab86d4",
+    "blk-98863830-00177-1a7906a1baf0",
+    "blk-98863830-00178-78c823a488ac",
+    "blk-98863830-00179-a35ffb89a0ad",
+    "blk-98863830-00180-0f692c0c3a73",
+    "blk-98863830-00181-03aa99c96d90"
+   ],
+   "title": "Notes on Chapter 6: The Modern Age, Cartesian Doubt, and the Loss of World",
+   "function": "conclusion",
+   "key_concepts": [
+    "modern science",
+    "Cartesian doubt",
+    "world alienation",
+    "Archimedean point",
+    "vita contemplativa vs. activa"
+   ],
+   "required_for_global_understanding": true
+  },
+  {
+   "section_id": "part-0006:sec-001",
+   "source_block_ids": [
+    "blk-98863830-00182-055e917c9509",
+    "blk-98863830-00183-97b57759bf03",
+    "blk-98863830-00184-2b799bca5c3b",
+    "blk-98863830-00185-c8c8aaf02230",
+    "blk-98863830-00186-4ef3b1a10267",
+    "blk-98863830-00187-ac363c3a2912",
+    "blk-98863830-00188-babd847c14fb",
+    "blk-98863830-00189-79a3fbf1ee49",
+    "blk-98863830-00190-d6ce3339ce17",
+    "blk-98863830-00191-f0f8c5349197",
+    "blk-98863830-00192-2545267a2692",
+    "blk-98863830-00193-b42fcf4c4f47",
+    "blk-98863830-00194-32134159f9b9",
+    "blk-98863830-00195-87d7f106e0ba",
+    "blk-98863830-00196-8b773ad9f351",
+    "blk-98863830-00197-1b33b31332b7",
+    "blk-98863830-00198-1f76da3fc86e"
+   ],
+   "title": "Index Blocks",
+   "function": "other",
+   "key_concepts": [
+    "Index",
+    "vita activa",
+    "action",
+    "labor",
+    "work"
+   ],
+   "required_for_global_understanding": true
+  }
+ ],
+ "brief": {
+  "normalized_topic": "کتاب «وضع بشر» هانا آرنت درباره چه صحبت می‌کند؟",
+  "topic_type": "question",
+  "central_question": "کتاب «وضع بشر» هانا آرنت درباره چه صحبت می‌کند؟",
+  "subquestions": [],
+  "scope_inclusions": [
+   "زمینه تاریخی مفاهیم مطرح شده"
+  ],
+  "modes": [
+   "explanatory"
+  ],
+  "target_duration_minutes": 10,
+  "prior_knowledge": "introductory",
+  "learning_objectives": [
+   "فهم روشن موضوع و ایده‌های اصلی آن"
+  ]
+ }
+}

@@ -16,7 +16,11 @@ from thesisound.services.gates import GATE_REGISTRY, GateActor
 from thesisound.services.parse_quality import assess_parse_quality
 from thesisound.services.plan_approval import EpisodePlanApproval, episode_plan_hash
 from thesisound.services.script_artifact_store import ScriptArtifactStore
-from thesisound.services.source_analysis_service import _MIN_PLANNED_TOKEN_RETENTION
+from thesisound.services.source_analysis_service import (
+    _MIN_PLANNED_TOKEN_RETENTION,
+    _MIN_RETENTION_AFTER_LARGEST_LOSS,
+    evidence_retention_holds,
+)
 from thesisound.source_analysis import (
     BlockEvidenceExtraction,
     EvidenceExtractionPlan,
@@ -252,7 +256,7 @@ def _evidence_results(source_dirs: list[Path], set_result) -> None:
     validation_failures: list[str] = []
     validated_sources = 0
     retention_errors: list[str] = []
-    planned_tokens = kept_tokens = 0
+    planned_tokens = kept_tokens = largest_lost_tokens = 0
     plans = 0
     try:
         for directory in source_dirs:
@@ -298,6 +302,16 @@ def _evidence_results(source_dirs: list[Path], set_result) -> None:
                 kept_tokens += sum(
                     block.estimated_token_count for block in planned if block.block_id in kept_ids
                 )
+                # One forgiven loss per source, so aggregating sources cannot make the
+                # gate stricter than running it on each source on its own.
+                largest_lost_tokens += max(
+                    (
+                        block.estimated_token_count
+                        for block in planned
+                        if block.block_id not in kept_ids
+                    ),
+                    default=0,
+                )
                 plans += 1
             except (OSError, ValueError, KeyError) as exc:
                 retention_errors.append(f"{directory.name}: {exc}")
@@ -323,12 +337,18 @@ def _evidence_results(source_dirs: list[Path], set_result) -> None:
             set_result("evidence-retention", "not_reached", "No completed extraction plan exists.")
         else:
             retention = kept_tokens / planned_tokens if planned_tokens else 1.0
+            holds = evidence_retention_holds(
+                planned_tokens=planned_tokens,
+                kept_tokens=kept_tokens,
+                largest_lost_tokens=largest_lost_tokens,
+            )
             set_result(
                 "evidence-retention",
-                "pass" if retention >= _MIN_PLANNED_TOKEN_RETENTION else "blocked",
+                "pass" if holds else "blocked",
                 (
                     f"Kept {retention:.0%} of planned token mass; minimum is "
-                    f"{_MIN_PLANNED_TOKEN_RETENTION:.0%}."
+                    f"{_MIN_PLANNED_TOKEN_RETENTION:.0%} with the largest single loss per "
+                    f"source forgiven, never below {_MIN_RETENTION_AFTER_LARGEST_LOSS:.0%}."
                 ),
             )
     except (OSError, ValueError, KeyError) as exc:

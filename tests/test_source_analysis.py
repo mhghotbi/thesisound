@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 from pathlib import Path
 from threading import Barrier, Lock
@@ -47,7 +48,10 @@ from thesisound.services.document_map_cache import (
 from thesisound.services.document_mapper import DocumentMapperService, scope_locator
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_validator import validate_evidence_extraction
-from thesisound.services.source_analysis_service import SourceAnalysisService
+from thesisound.services.source_analysis_service import (
+    SourceAnalysisService,
+    evidence_retention_holds,
+)
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
     BlockBuildReport,
@@ -59,6 +63,7 @@ from thesisound.source_analysis import (
     DocumentMapDraftSection,
     EvidenceClaimDraft,
     EvidenceExtractionDraft,
+    EvidenceExtractionPlan,
     SourceAnalysisManifest,
     SourceDocumentBlock,
 )
@@ -302,6 +307,56 @@ def _planning_fixture() -> tuple[UUID, list[SourceDocumentBlock], DocumentMap]:
     return source_id, blocks, document_map
 
 
+def _many_required_sections_fixture(
+    *,
+    sections: int = 60,
+    blocks_per_section: int = 4,
+    tokens_per_block: int = 1_400,
+    required: bool = True,
+) -> tuple[UUID, list[SourceDocumentBlock], DocumentMap]:
+    source_id = uuid4()
+    blocks: list[SourceDocumentBlock] = []
+    document_map_sections: list[DocumentMapSection] = []
+    for section_index in range(sections):
+        section_block_ids: list[str] = []
+        for block_index in range(blocks_per_section):
+            document_index = len(blocks) + 1
+            block_id = f"block-{section_index:03d}-{block_index:02d}"
+            section_block_ids.append(block_id)
+            blocks.append(
+                SourceDocumentBlock(
+                    block_id=block_id,
+                    source_id=source_id,
+                    locator=Locator(page_start=document_index, page_end=document_index),
+                    heading_path=[f"Section {section_index}"],
+                    block_type="other",
+                    text=f"Semantic content for section {section_index}, block {block_index}.",
+                    estimated_token_count=tokens_per_block,
+                    source_block_keys=[f"source-{section_index}-{block_index}"],
+                )
+            )
+        document_map_sections.append(
+            DocumentMapSection(
+                section_id=f"section-{section_index:03d}",
+                source_block_ids=section_block_ids,
+                title=f"Unrelated section {section_index}",
+                function="argument",
+                key_concepts=[f"concept-{section_index}"],
+                required_for_global_understanding=required,
+            )
+        )
+    return (
+        source_id,
+        blocks,
+        DocumentMap(
+            source_id=source_id,
+            scope_locator=Locator(page_start=1, page_end=len(blocks)),
+            working_thesis="Action differs from fabrication.",
+            sections=document_map_sections,
+        ),
+    )
+
+
 def test_analysis_profile_scales_with_requested_duration() -> None:
     short = build_analysis_profile(_brief(5))
     long = build_analysis_profile(_brief(60))
@@ -341,6 +396,172 @@ def test_extraction_plan_measures_selected_vs_deferred_blocks(
     assert span.metrics["deferred_count"] == len(plan.deferred_block_ids)
     assert span.metrics["deferred_count"] > 0
     assert 0 <= span.metrics["achieved_token_coverage"] <= 1
+
+
+def test_extraction_plan_keeps_required_seeding_inside_the_budget() -> None:
+    _, blocks, document_map = _many_required_sections_fixture()
+
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+
+    assert len(plan.selected_block_ids) == 13
+    assert plan.selected_source_tokens == 18_200
+    assert plan.seeded_block_count == 8
+
+
+def test_extraction_plan_ranks_required_sections_by_relevance() -> None:
+    _, blocks, document_map = _many_required_sections_fixture()
+    relevant = document_map.sections[-1].model_copy(
+        update={
+            "title": "What distinguishes action from fabrication?",
+            "function": "argument",
+            "key_concepts": ["action", "fabrication"],
+        }
+    )
+    document_map = document_map.model_copy(
+        update={
+            "sections": [
+                *[
+                    section.model_copy(update={"function": "transition"})
+                    for section in document_map.sections[:-1]
+                ],
+                relevant,
+            ]
+        }
+    )
+
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+
+    relevant_seed = document_map.sections[-1].source_block_ids[0]
+    lower_scoring_seed = document_map.sections[8].source_block_ids[0]
+    assert relevant_seed in plan.selected_block_ids
+    assert lower_scoring_seed not in plan.selected_block_ids
+    # The point of capping seeds below the full budget: the leftover share lets the
+    # ranking deepen the best section instead of buying one lonely block per section.
+    selected = set(plan.selected_block_ids)
+    per_section = [
+        len(selected.intersection(section.source_block_ids))
+        for section in document_map.sections
+    ]
+    assert max(per_section) > 1
+
+
+def test_extraction_plan_seeds_one_required_block_larger_than_the_allowance() -> None:
+    _, blocks, document_map = _many_required_sections_fixture(
+        sections=1,
+        blocks_per_section=1,
+        tokens_per_block=50_000,
+    )
+
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+
+    assert plan.selected_block_ids == [blocks[0].block_id]
+    assert plan.seeded_block_count == 1
+
+
+def test_extraction_plan_selects_nothing_extra_without_required_sections() -> None:
+    _, blocks, document_map = _many_required_sections_fixture(
+        sections=20,
+        blocks_per_section=1,
+        required=False,
+    )
+
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+
+    assert plan.seeded_block_count == 0
+    assert plan.selected_block_ids
+    assert plan.selected_block_ids == [block.block_id for block in blocks[:8]]
+
+
+def test_extraction_plan_deduplicates_shared_required_seed_blocks() -> None:
+    _, blocks, document_map = _many_required_sections_fixture(sections=2)
+    shared_seed = document_map.sections[0].source_block_ids[0]
+    document_map = document_map.model_copy(
+        update={
+            "sections": [
+                document_map.sections[0],
+                document_map.sections[1].model_copy(
+                    update={
+                        "source_block_ids": [
+                            shared_seed,
+                            *document_map.sections[1].source_block_ids,
+                        ]
+                    }
+                ),
+            ]
+        }
+    )
+
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+
+    assert plan.seeded_block_count == 1
+    assert shared_seed in plan.selected_block_ids
+    assert plan.selected_source_tokens == sum(
+        block.estimated_token_count
+        for block in blocks
+        if block.block_id in set(plan.selected_block_ids)
+    )
+
+
+def test_extraction_plan_records_budget_and_seed_counters() -> None:
+    _, blocks, document_map = _many_required_sections_fixture(sections=3, tokens_per_block=5_000)
+
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+
+    expected_target = min(
+        plan.total_source_tokens,
+        math.ceil(plan.total_source_tokens * plan.profile.block_coverage_target * 1.10),
+        plan.profile.evidence_input_token_budget,
+    )
+    assert plan.target_source_tokens == expected_target
+    assert plan.required_section_count == 3
+    assert plan.seeded_block_count <= len(plan.selected_block_ids)
+
+
+def test_extraction_plan_measures_budget_and_seeding(
+    recording_tracer: tracing.Tracer,
+) -> None:
+    _, blocks, document_map = _many_required_sections_fixture()
+
+    plan = plan_evidence_extraction(_brief(10), document_map, blocks)
+
+    span = recording_tracer.sink.one("corpus.plan_extraction")
+    assert span.metrics["selected_source_tokens"] == plan.selected_source_tokens
+    assert span.metrics["target_source_tokens"] == plan.target_source_tokens
+    assert span.metrics["required_section_count"] == plan.required_section_count
+    assert span.metrics["seeded_block_count"] == plan.seeded_block_count
+
+
+def test_extraction_plan_does_not_report_over_budget_when_seeding_is_capped(
+    recording_tracer: tracing.Tracer,
+) -> None:
+    _, blocks, document_map = _many_required_sections_fixture()
+
+    plan_evidence_extraction(_brief(10), document_map, blocks)
+
+    events = [
+        event for event in recording_tracer.sink.events if event.name == "corpus.plan_over_budget"
+    ]
+    assert events == []
+
+
+def test_extraction_plan_loads_without_the_r5_counters() -> None:
+    source_id = uuid4()
+    profile = build_analysis_profile(_brief(10))
+    payload = {
+        "source_id": str(source_id),
+        "profile": profile.model_dump(mode="json"),
+        "selected_block_ids": ["block-1"],
+        "deferred_block_ids": ["block-2"],
+        "selected_source_tokens": 100,
+        "total_source_tokens": 200,
+        "achieved_token_coverage": 0.5,
+    }
+
+    plan = EvidenceExtractionPlan.model_validate_json(json.dumps(payload))
+
+    assert plan.target_source_tokens == 0
+    assert plan.required_section_count == 0
+    assert plan.seeded_block_count == 0
 
 
 def test_block_builder_removes_margin_and_preserves_traceability() -> None:
@@ -1065,6 +1286,77 @@ def test_evidence_gate_passes_when_budget_caps_planned_coverage(tmp_path: Path) 
     manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
     assert manifest.status == "evidence_ready"
     assert any("coverage" in warning.casefold() for warning in warnings)
+    assert any("analysis budget" in warning for warning in warnings)
+
+
+def test_coverage_warning_omits_the_budget_cause_when_the_source_is_simply_small(
+    tmp_path: Path,
+) -> None:
+    # 18×100 = 1.8k tokens, far under the 18k budget: coverage is short because one
+    # planned block was rejected, not because the budget capped the plan.
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=18,
+        tokens_per_block=100,
+        reject_block_ids={"block-01"},
+    )
+    _manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
+    assert any("coverage" in warning.casefold() for warning in warnings)
+    assert not any("analysis budget" in warning for warning in warnings)
+
+
+def test_evidence_gate_forgives_one_lost_block_in_a_budget_capped_plan(tmp_path: Path) -> None:
+    # 40×1400 = 56k tokens against an 18k budget selects 13 blocks / 18,200 tokens, the
+    # shape R5 produces on a real book. Two rejections cost 15.4% of planned mass, which
+    # the bare 85% rule would fail even though 11 of 13 blocks extracted cleanly.
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=40,
+        tokens_per_block=1_400,
+        reject_block_ids={"block-01", "block-02"},
+    )
+
+    manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
+
+    assert manifest.status == "evidence_ready"
+    assert manifest.selected_block_count == 13
+    assert any("Kept 85% of planned tokens" in warning for warning in warnings)
+
+
+def test_evidence_gate_still_fails_a_budget_capped_plan_losing_three_blocks(
+    tmp_path: Path,
+) -> None:
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=40,
+        tokens_per_block=1_400,
+        reject_block_ids={"block-01", "block-02", "block-03"},
+    )
+
+    with pytest.raises(ValueError, match="planned source tokens"):
+        service.extract_evidence(project_id, source_id, model="fake")
+
+
+def test_evidence_retention_rule_forgives_only_the_largest_single_loss() -> None:
+    # 13 planned blocks of 1,400 tokens: the shape a budget-capped plan produces.
+    planned = 13 * 1_400
+    assert evidence_retention_holds(
+        planned_tokens=planned, kept_tokens=planned, largest_lost_tokens=0
+    )
+    assert evidence_retention_holds(
+        planned_tokens=planned, kept_tokens=planned - 2_800, largest_lost_tokens=1_400
+    )
+    # A third loss puts the forgiven retention under 85% as well.
+    assert not evidence_retention_holds(
+        planned_tokens=planned, kept_tokens=planned - 4_200, largest_lost_tokens=1_400
+    )
+    # One enormous block cannot buy its way past the absolute floor.
+    assert not evidence_retention_holds(
+        planned_tokens=planned, kept_tokens=1_400, largest_lost_tokens=planned - 1_400
+    )
 
 
 def test_extraction_plan_adds_headroom_above_coverage_target() -> None:

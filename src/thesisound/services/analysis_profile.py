@@ -4,7 +4,7 @@ import math
 import re
 
 from thesisound import tracing
-from thesisound.domain import DocumentMap, ResearchBrief
+from thesisound.domain import DocumentMap, DocumentMapSection, ResearchBrief
 from thesisound.source_analysis import (
     AnalysisProfile,
     EvidenceExtractionPlan,
@@ -13,6 +13,13 @@ from thesisound.source_analysis import (
 
 _WORD = re.compile(r"\w+", re.UNICODE)
 _SELECTION_HEADROOM = 0.10
+# Required sections seed the selection so a short episode still touches every part of
+# the argument. Before R5 that seeding ran before any budget check and could not be
+# stopped by one: a map marking 40 of 47 sections required produced 40 blocks /
+# 55,913 tokens against an 18,000-token budget, and the ranking loop below broke on
+# its first iteration. Seeds now compete for this share of target_tokens; the rest is
+# left to the ranking, which is what lets the best sections get a second block.
+_REQUIRED_SEED_BUDGET_SHARE = 0.60
 _NOTE_HEADINGS = frozenset(
     {
         "notes",
@@ -146,19 +153,30 @@ def plan_evidence_extraction(
         )
         target_tokens = min(total_tokens, coverage_tokens, profile.evidence_input_token_budget)
 
-        selected: set[str] = set()
         required_sections = [
             section
             for section in document_map.sections
             if section.required_for_global_understanding
         ]
-        for section in required_sections:
-            first = next(
-                (block_id for block_id in section.source_block_ids if block_id in block_by_id),
-                None,
-            )
-            if first is not None:
-                selected.add(first)
+        seed_ids = _required_section_seeds(required_sections, block_by_id)
+        seed_allowance = math.ceil(target_tokens * _REQUIRED_SEED_BUDGET_SHARE)
+
+        selected: set[str] = set()
+        selected_tokens = 0
+        for block_id in sorted(
+            seed_ids,
+            key=lambda block_id: (
+                -_block_score(block_id, section_by_block, brief),
+                index_by_id[block_id],
+            ),
+        ):
+            # Checked before the add, so the first seed always lands even when it alone
+            # exceeds the allowance -- a required section is never silently dropped.
+            if selected and selected_tokens >= seed_allowance:
+                break
+            selected.add(block_id)
+            selected_tokens += block_by_id[block_id].estimated_token_count
+        seeded_block_count = len(selected)
 
         ranked = sorted(
             eligible,
@@ -166,9 +184,6 @@ def plan_evidence_extraction(
                 -_block_score(block.block_id, section_by_block, brief),
                 index_by_id[block.block_id],
             ),
-        )
-        selected_tokens = sum(
-            block_by_id[block_id].estimated_token_count for block_id in selected
         )
         for block in ranked:
             if selected_tokens >= target_tokens and selected:
@@ -185,12 +200,32 @@ def plan_evidence_extraction(
             block.block_id for block in content_blocks if block.block_id not in selected
         ]
         achieved = selected_tokens / total_tokens if total_tokens else 1.0
+        largest_selected = max(
+            (block_by_id[block_id].estimated_token_count for block_id in selected),
+            default=0,
+        )
+        # Check-before-add lets exactly one block cross the line. Anything past that is
+        # a real budget failure and must not be silent again.
+        if selected_tokens - largest_selected > profile.evidence_input_token_budget:
+            tracing.event(
+                "corpus.plan_over_budget",
+                component="corpus",
+                level="warn",
+                subject_type="source",
+                subject_id=str(document_map.source_id),
+                selected_source_tokens=selected_tokens,
+                budget_source_tokens=profile.evidence_input_token_budget,
+            )
         # The single most direct cost lever in the corpus stage: every block NOT
         # selected here is a model call that never happens.
         span.measure(
             selected_count=len(selected_ids),
             deferred_count=len(deferred_ids),
             achieved_token_coverage=round(min(1.0, achieved), 4),
+            selected_source_tokens=selected_tokens,
+            target_source_tokens=target_tokens,
+            required_section_count=len(required_sections),
+            seeded_block_count=seeded_block_count,
         )
         span.set(depth=profile.depth)
         return EvidenceExtractionPlan(
@@ -201,7 +236,33 @@ def plan_evidence_extraction(
             selected_source_tokens=selected_tokens,
             total_source_tokens=total_tokens,
             achieved_token_coverage=min(1.0, achieved),
+            target_source_tokens=target_tokens,
+            required_section_count=len(required_sections),
+            seeded_block_count=seeded_block_count,
         )
+
+
+def _required_section_seeds(
+    required_sections: list[DocumentMapSection],
+    block_by_id: dict[str, SourceDocumentBlock],
+) -> list[str]:
+    """First eligible block of each globally required section, in document-map order.
+
+    Deduplicated: two sections can share a first eligible block when one of them has no
+    eligible block of its own, and a seed must not be paid for twice.
+    """
+
+    seeds: list[str] = []
+    seen: set[str] = set()
+    for section in required_sections:
+        first = next(
+            (block_id for block_id in section.source_block_ids if block_id in block_by_id),
+            None,
+        )
+        if first is not None and first not in seen:
+            seen.add(first)
+            seeds.append(first)
+    return seeds
 
 
 def _is_note_like(block: SourceDocumentBlock) -> bool:

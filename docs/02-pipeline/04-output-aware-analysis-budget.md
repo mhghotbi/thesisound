@@ -141,6 +141,10 @@ Pipeline:
 4. title و key conceptهای section با سؤال مرکزی، subquestionها و scope هم‌پوشانی داشته باشند؛
 5. مجموع tokenهای انتخاب‌شده به coverage target یا token budget برسد.
 
+sectionهای required ابتدا بر پایه‌ی همین امتیاز رتبه‌بندی می‌شوند و فقط تا سهم
+`_REQUIRED_SEED_BUDGET_SHARE` از `target_source_tokens` seed می‌شوند؛ باقی بودجه به
+رتبه‌بندی همه‌ی blockها اختصاص می‌یابد. بنابراین required بودن، budget را دور نمی‌زند.
+
 ترتیب نهایی blockهای منتخب مطابق ترتیب سند حفظ می‌شود.
 
 مدل زبانی تصمیم نهایی درباره token budget یا block IDها را نمی‌گیرد.
@@ -176,7 +180,8 @@ sources/<source-id>/evidence-extraction-plan.json
 - blockهای منتخب؛
 - blockهای deferred؛
 - tokenهای انتخاب‌شده و کل tokenهای محتوای قابل‌تحلیل (`total_source_tokens`؛ یادداشت‌ها و endnoteها از مخرج پوشش خارج‌اند)؛
-- coverage واقعی.
+- coverage واقعی؛
+- `target_source_tokens`، `required_section_count` و `seeded_block_count` برای ممیزی budget و سهم seedها.
 
 Source manifest نیز این مقادیر خلاصه را ثبت می‌کند:
 
