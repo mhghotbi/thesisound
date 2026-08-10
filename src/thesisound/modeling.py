@@ -71,6 +71,9 @@ class StructuredModelResponse[T: BaseModel](BaseModel):
 
 class ModelAttemptRecord(BaseModel):
     attempt: int = Field(ge=1)
+    # Wall-clock start of the attempt. The runner passes this explicitly; relying on
+    # the default here records the attempt's *end* time, because the record is built
+    # after the provider call returns.
     started_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     latency_ms: int | None = Field(default=None, ge=0)
     success: bool = False
@@ -116,10 +119,19 @@ class ModelExecution[T: BaseModel](BaseModel):
 class ModelError(RuntimeError):
     retryable = False
 
-    def __init__(self, message: str, *, retryable: bool | None = None) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        retryable: bool | None = None,
+        usage: ModelUsage | None = None,
+    ) -> None:
         super().__init__(message)
         if retryable is not None:
             self.retryable = retryable
+        # Tokens the provider billed before the call was rejected. None means
+        # nothing was billed (or we never found out) -- never coerce it to zero.
+        self.usage = usage
 
 
 class ModelProviderError(ModelError):

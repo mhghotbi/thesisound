@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from thesisound.adapters.models.okian import OkianHttpResponse, OkianStructuredModel
 from thesisound.config import Settings
-from thesisound.modeling import ModelConfigurationError
+from thesisound.modeling import ModelConfigurationError, SchemaValidationError
 from thesisound.observability import ObservabilityLedger
 from thesisound.ports import RunMetadata
 
@@ -133,3 +133,42 @@ def test_okian_refuses_gemini_grounding_before_http(tmp_path: Path) -> None:
         )
 
     assert client.requests == []
+
+
+def test_okian_adapter_attaches_billed_usage_to_schema_errors(tmp_path: Path) -> None:
+    class InvalidOutputClient(FakeOkianClient):
+        def create_chat_completion(
+            self,
+            payload: dict[str, object],
+            *,
+            timeout_seconds: float,
+        ) -> OkianHttpResponse:
+            response = super().create_chat_completion(payload, timeout_seconds=timeout_seconds)
+            response.payload["choices"] = [
+                {
+                    "message": {"content": '{"wrong":"field"}'},
+                    "finish_reason": "stop",
+                }
+            ]
+            return response
+
+    adapter = OkianStructuredModel(
+        client=InvalidOutputClient(),
+        settings=_settings(tmp_path),
+    )
+
+    with pytest.raises(SchemaValidationError) as exc_info:
+        adapter.generate_structured(
+            system_prompt="Return JSON.",
+            user_prompt="Answer.",
+            output_type=ExampleOutput,
+            model="qwen-private-id",
+            metadata=RunMetadata(
+                stage="document_map",
+                model_or_provider="qwen-private-id",
+                provider="okian",
+            ),
+        )
+
+    assert exc_info.value.usage is not None
+    assert exc_info.value.usage.input_tokens == 11

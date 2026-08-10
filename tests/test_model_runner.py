@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import time
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -13,6 +15,7 @@ from thesisound.modeling import (
     ModelSafetyError,
     ModelTimeoutError,
     ModelUsage,
+    SchemaValidationError,
     StructuredModelResponse,
 )
 from thesisound.ports import RunMetadata
@@ -28,10 +31,12 @@ class ExampleOutput(BaseModel):
 class FakeModel:
     provider = "fake"
 
-    def __init__(self, results: list[object]) -> None:
+    def __init__(self, results: list[object], *, dwell_seconds: float = 0) -> None:
         self.results = results
         self.prompts: list[str] = []
         self.metadata_seen: list[RunMetadata] = []
+        self.entered_at: list[datetime] = []
+        self.dwell_seconds = dwell_seconds
 
     def generate_structured(
         self,
@@ -45,6 +50,9 @@ class FakeModel:
         _ = system_prompt, output_type, model
         self.prompts.append(user_prompt)
         self.metadata_seen.append(metadata)
+        self.entered_at.append(datetime.now(UTC))
+        if self.dwell_seconds:
+            time.sleep(self.dwell_seconds)
         result = self.results.pop(0)
         if isinstance(result, Exception):
             raise result
@@ -110,8 +118,8 @@ def test_model_runner_persists_validated_output_without_raw_prompts(tmp_path: Pa
         model="fake-model",
     )
 
-    run_dir = tmp_path / "workspaces" / str(project_id) / "model-runs" / str(
-        execution.record.run_id
+    run_dir = (
+        tmp_path / "workspaces" / str(project_id) / "model-runs" / str(execution.record.run_id)
     )
     assert execution.output.value == "ok"
     assert execution.record.prompt_version == "1.0.0"
@@ -189,6 +197,157 @@ def test_model_runner_adds_targeted_repair_instruction(tmp_path: Path) -> None:
     assert "value must equal good" in model.prompts[1]
 
 
+def test_rejected_response_records_the_tokens_already_billed(tmp_path: Path) -> None:
+    model = FakeModel([ExampleOutput(value="a"), ExampleOutput(value="b")])
+    validations = 0
+
+    def validator(_: ExampleOutput) -> None:
+        nonlocal validations
+        validations += 1
+        if validations == 1:
+            raise DeterministicValidationError("reject first response")
+
+    execution = _runner(tmp_path, model).run(
+        project_id=uuid4(),
+        stage="example",
+        prompt_name="example",
+        variables={"context": "safe", "topic": "Arendt"},
+        output_type=ExampleOutput,
+        model="fake-model",
+        validator=validator,
+    )
+
+    first, second = execution.record.attempts
+    assert first.success is False
+    assert first.error_type == "DeterministicValidationError"
+    assert first.usage is not None
+    assert first.usage.input_tokens == 10
+    assert first.usage.output_tokens == 4
+    assert second.usage.input_tokens == 10
+
+
+def test_schema_error_records_the_tokens_the_adapter_carried(tmp_path: Path) -> None:
+    model = FakeModel(
+        [
+            SchemaValidationError(
+                "bad json",
+                usage=ModelUsage(input_tokens=99, output_tokens=3, total_tokens=102),
+            ),
+            ExampleOutput(value="ok"),
+        ]
+    )
+
+    execution = _runner(tmp_path, model).run(
+        project_id=uuid4(),
+        stage="example",
+        prompt_name="example",
+        variables={"context": "safe", "topic": "Arendt"},
+        output_type=ExampleOutput,
+        model="fake-model",
+    )
+
+    first = execution.record.attempts[0]
+    assert first.usage is not None
+    assert first.usage.input_tokens == 99
+    assert first.usage.total_tokens == 102
+    assert len(model.prompts) == 2
+    assert "<REPAIR_INSTRUCTION>" in model.prompts[1]
+
+
+def test_transport_failure_leaves_usage_unknown_rather_than_zero(tmp_path: Path) -> None:
+    project_id = uuid4()
+    execution = _runner(
+        tmp_path,
+        FakeModel([ModelTimeoutError("upstream timeout"), ExampleOutput(value="ok")]),
+    ).run(
+        project_id=project_id,
+        stage="example",
+        prompt_name="example",
+        variables={"context": "safe", "topic": "Arendt"},
+        output_type=ExampleOutput,
+        model="fake-model",
+    )
+
+    assert execution.record.attempts[0].usage is None
+    run_dir = (
+        tmp_path / "workspaces" / str(project_id) / "model-runs" / str(execution.record.run_id)
+    )
+    payload = json.loads((run_dir / "record.json").read_text(encoding="utf-8"))
+    assert payload["attempts"][0]["usage"] is None
+
+
+def test_terminal_failure_persists_billed_tokens_in_the_error_artifact(tmp_path: Path) -> None:
+    project_id = uuid4()
+    model = FakeModel([ModelSafetyError("blocked", usage=ModelUsage(input_tokens=77))])
+
+    with pytest.raises(ModelSafetyError):
+        _runner(tmp_path, model).run(
+            project_id=project_id,
+            stage="example",
+            prompt_name="example",
+            variables={"context": "safe", "topic": "Arendt"},
+            output_type=ExampleOutput,
+            model="fake-model",
+        )
+
+    run_dir = next((tmp_path / "workspaces" / str(project_id) / "model-runs").glob("*"))
+    payload = json.loads((run_dir / "error.json").read_text(encoding="utf-8"))
+    assert payload["attempts"][0]["usage"]["input_tokens"] == 77
+
+
+def test_attempt_started_at_precedes_the_provider_call(tmp_path: Path) -> None:
+    model = FakeModel(
+        [ExampleOutput(value="bad"), ExampleOutput(value="good")],
+        dwell_seconds=0.02,
+    )
+
+    def validator(output: ExampleOutput) -> None:
+        if output.value == "bad":
+            raise DeterministicValidationError("retry")
+
+    execution = _runner(tmp_path, model).run(
+        project_id=uuid4(),
+        stage="example",
+        prompt_name="example",
+        variables={"context": "safe", "topic": "Arendt"},
+        output_type=ExampleOutput,
+        model="fake-model",
+        validator=validator,
+    )
+
+    assert all(
+        attempt.started_at <= model.entered_at[index]
+        for index, attempt in enumerate(execution.record.attempts)
+    )
+    assert execution.record.attempts[0].started_at <= execution.record.attempts[1].started_at
+
+
+def test_record_json_reports_usage_for_every_attempt(tmp_path: Path) -> None:
+    project_id = uuid4()
+    execution = _runner(
+        tmp_path,
+        FakeModel(
+            [
+                SchemaValidationError("bad json", usage=ModelUsage(input_tokens=99)),
+                ExampleOutput(value="ok"),
+            ]
+        ),
+    ).run(
+        project_id=project_id,
+        stage="example",
+        prompt_name="example",
+        variables={"context": "safe", "topic": "Arendt"},
+        output_type=ExampleOutput,
+        model="fake-model",
+    )
+
+    run_dir = (
+        tmp_path / "workspaces" / str(project_id) / "model-runs" / str(execution.record.run_id)
+    )
+    payload = json.loads((run_dir / "record.json").read_text(encoding="utf-8"))
+    assert all(attempt["usage"]["input_tokens"] is not None for attempt in payload["attempts"])
+
+
 def test_model_runner_does_not_retry_safety_error(tmp_path: Path) -> None:
     model = FakeModel([ModelSafetyError("blocked"), ExampleOutput(value="unused")])
 
@@ -220,8 +379,8 @@ def test_prompt_store_can_explicitly_keep_rendered_prompts(tmp_path: Path) -> No
         model="fake-model",
     )
 
-    run_dir = tmp_path / "workspaces" / str(project_id) / "model-runs" / str(
-        execution.record.run_id
+    run_dir = (
+        tmp_path / "workspaces" / str(project_id) / "model-runs" / str(execution.record.run_id)
     )
     assert (run_dir / "rendered-prompts.json").exists()
 

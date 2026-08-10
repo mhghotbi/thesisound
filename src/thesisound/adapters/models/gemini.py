@@ -200,9 +200,15 @@ class GeminiStructuredModel:
             raise mapped from exc
 
         response = observed.response
+        # The provider has already billed for this response; keep the counts
+        # reachable even on the paths that reject it.
+        billed_usage = _usage(response)
         finish_reason = _finish_reason(response)
         if _is_safety_blocked(response, finish_reason):
-            error = ModelSafetyError("Gemini blocked the request or response for safety reasons.")
+            error = ModelSafetyError(
+                "Gemini blocked the request or response for safety reasons.",
+                usage=billed_usage,
+            )
             self.observability.fail(spec.call_id, error)
             raise error
 
@@ -210,6 +216,7 @@ class GeminiStructuredModel:
             output = _coerce_output(response, output_type)
             grounding = _grounding_metadata(response, metadata)
         except ModelError as exc:
+            exc.usage = billed_usage
             self.observability.fail(spec.call_id, exc)
             raise
 
@@ -224,7 +231,7 @@ class GeminiStructuredModel:
             output=output,
             provider=self.provider,
             model=model,
-            usage=_usage(response),
+            usage=billed_usage,
             latency_ms=max(0, round((perf_counter() - started) * 1000)),
             finish_reason=finish_reason,
             grounding=grounding,
