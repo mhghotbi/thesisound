@@ -1,0 +1,203 @@
+{
+  "schema_version": "thesisound.semantic-fixture-validation.v1",
+  "artifact_id": "C02-putnam",
+  "artifact_filename": "c02-putnam.pdf",
+  "intended_scope": "Complete Persian article, 31 PDF pages",
+  "expected_language": "fa",
+  "status": "fail",
+  "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
+  "metrics": {
+    "byte_size": 1188578,
+    "file_format": "pdf",
+    "mime_type": "application/pdf",
+    "text_encoding": null,
+    "page_count": 31,
+    "extractable_character_count": 51575,
+    "word_estimate": 9128,
+    "token_estimate": 14663,
+    "embedded_image_count": 8,
+    "pages_with_extractable_text": 31,
+    "unicode_decode_success": true,
+    "nul_byte_count": 3298,
+    "extracted_nul_character_count": 0,
+    "arabic_presentation_forms_count": 0,
+    "replacement_character_count": 0,
+    "control_character_anomaly_count": 2,
+    "control_character_anomalies": [
+      {
+        "code_point": "U+F02A UNNAMED",
+        "count": 2
+      },
+      {
+        "code_point": "U+F0AF UNNAMED",
+        "count": 2
+      }
+    ],
+    "private_use_character_count": 4,
+    "zwnj_count": 0,
+    "bidi_control_count": 0,
+    "mojibake_marker_count": 0,
+    "normalized_text_sha256": "b8c5cda72101fe8399320a74beda7f746e69dad130bd58e97ae0199a8c19cfb9",
+    "parsed_document_key": "00da6ea93ace0d70e737f180d9ab3ffd1237957d2dc21a26372e63dda1daf5b1",
+    "block_sequence_key": "f33890ec1e0732b22ab6a73847da1997b6a138e1eac6b549fcc43d2daf00cf7b",
+    "semantic_block_count": 11
+  },
+  "production_ingestion": {
+    "requested_parser": "native",
+    "selected_parser": "native",
+    "ocr_used": false,
+    "safe_for_claim_extraction": true,
+    "quality_verdict": "warning",
+    "quality_issues": [
+      {
+        "issue_type": "lost_headings",
+        "severity": "medium",
+        "affected_locators": [],
+        "evidence": "No heading hierarchy survived in a document with at least 12 blocks."
+      }
+    ],
+    "parser_warnings": []
+  },
+  "language_sanity": {
+    "expected_language": "fa",
+    "result": "pass",
+    "reason": "normal Arabic/Persian script=33897; presentation ratio=0.0000%; mojibake markers=0",
+    "normal_arabic_persian_script_count": 33897,
+    "persian_specific_letter_count": 5330,
+    "arabic_variant_letter_count": 231,
+    "presentation_forms_count": 0,
+    "presentation_forms_ratio": 0.0,
+    "normal_script_ratio": 1.0,
+    "latin_letter_count": 5435,
+    "mojibake_marker_count": 0,
+    "glyph_only_pdf_text_layer": false
+  },
+  "locator_viability": {
+    "result": "pass",
+    "reason": "block locator coverage=100.00%; page coverage=100.00%",
+    "locator_type": "page",
+    "coverage": 1.0,
+    "page_coverage": 1.0
+  },
+  "exact_span_matching": {
+    "requested_span_count": 20,
+    "tested_span_count": 20,
+    "recovered_span_count": 20,
+    "recovery_ratio": 1.0,
+    "can_operate_reliably": true,
+    "sample_normalized_hashes": [
+      "f35818665a132a47b3775ddb4127a9ffaaec634dd8baa7a5efab5afd438ae9bf",
+      "e9bc3cc9a07824309496e46a8bf76e426524bc29227344b8cb16a7ecec387220",
+      "83adac4f37ad99303a9dd46e593217be1c6bfb9e68918de8409f8d3dc3ec016b",
+      "3e08418a07794d761b9b854e91de95b2133295878a3e5dcaf5f099ce43f7e37a",
+      "909bd52160e7a5da124f6a3e496d1a34c78eb7bec23f00ba420fa7b3b5af6360",
+      "20e8e4561079889e05306a30ef2fc225876676dd4f3cce3b28c70fb3f0e347ad",
+      "bb3dfbea4744ea3441ad03cb99f28a07592551c3030ac565040bc751cdcf6d58",
+      "49a01a872f7db5bbf1b4b52878acc2058a489aca8c323880e4f712b6b25e4c29",
+      "d20ce4472778899871ed4153422baa9ba546f65d25a8ec4239b14560cee2e307",
+      "b7db0e95cdb11df225021308467fb4b5acb32b080404dd0a6ff84e7481220b2b",
+      "ffd26ba70b9314246cc64b559ecc183542eddc01143a93300e015364313d6898",
+      "4044ee53ac69ebaa68a93700126098a45d65ba823d1bf59be5ed4880b4d562fc",
+      "44266a6291824d56283dd5b5554a194f09d15058ccf3490e535f62a47b3bf682",
+      "d6d37982f8f9fa3543520da96fa232cc0766ee7ca8981cceb1ee63280a91cbb2",
+      "35f3f59edd793fb108b2fc4b40535d301ecee4bd886e46675d089029209fff39",
+      "d462e8e5314c0527e2e80df157fd964e68c3660cb7e900f05468d0d18dc3bb8e",
+      "3f17f6d91edac355d97bc9e89b5d7b9812cbe99ef702e7e7af3361c6d7dc916e",
+      "7a1a5451e2b29faacdab6b9bdfb66e605a78897b62c5ec83a5a46f3d8b95a7f5",
+      "e5413966e884edb9a1ba4d7ed5ba923334ee717b49cc463358a1a2360002e106",
+      "10b173ff50902158b4f8eea7f72fa4f7af4ffaabaedafe33ea825a2d71e7d215"
+    ]
+  },
+  "normalization_checks": {
+    "probe": "می‌رود، آیا؟ كی يک ۱۲٣",
+    "normalized_probe": "میرود، آیا؟ کی یک 123",
+    "expected_normalized_probe": "میرود، آیا؟ کی یک 123",
+    "zwnj_and_punctuation_compatible": true,
+    "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
+  },
+  "gates": [
+    {
+      "gate": "non_empty_bytes",
+      "status": "pass",
+      "evidence": "1188578 bytes"
+    },
+    {
+      "gate": "substantive_text_present",
+      "status": "pass",
+      "evidence": "51575 extractable characters"
+    },
+    {
+      "gate": "unicode_decode",
+      "status": "pass",
+      "evidence": "encoding=None"
+    },
+    {
+      "gate": "no_nul_bytes_in_decoded_text_format",
+      "status": "pass",
+      "evidence": "not applicable to binary container; raw count recorded"
+    },
+    {
+      "gate": "no_extracted_nul_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_replacement_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_control_character_anomalies",
+      "status": "fail",
+      "evidence": "count=2"
+    },
+    {
+      "gate": "no_private_use_characters",
+      "status": "fail",
+      "evidence": "count=4"
+    },
+    {
+      "gate": "presentation_forms_not_primary",
+      "status": "pass",
+      "evidence": "ratio=0.000000"
+    },
+    {
+      "gate": "language_sanity",
+      "status": "pass",
+      "evidence": "normal Arabic/Persian script=33897; presentation ratio=0.0000%; mojibake markers=0"
+    },
+    {
+      "gate": "not_glyph_only_pdf",
+      "status": "pass",
+      "evidence": "glyph_only=False"
+    },
+    {
+      "gate": "production_ingestion_safe",
+      "status": "pass",
+      "evidence": "verdict=warning"
+    },
+    {
+      "gate": "no_ocr",
+      "status": "pass",
+      "evidence": "native parser selected explicitly"
+    },
+    {
+      "gate": "locators_viable",
+      "status": "pass",
+      "evidence": "block locator coverage=100.00%; page coverage=100.00%"
+    },
+    {
+      "gate": "exact_span_matching_reliable",
+      "status": "pass",
+      "evidence": "recovered=20/20"
+    },
+    {
+      "gate": "persian_normalization_compatible",
+      "status": "pass",
+      "evidence": "میرود، آیا؟ کی یک 123"
+    }
+  ],
+  "warnings": [
+    "No ZWNJ characters survived extraction; verify this is faithful to the source typography."
+  ]
+}

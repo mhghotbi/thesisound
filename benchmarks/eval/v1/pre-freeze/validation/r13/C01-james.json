@@ -1,0 +1,192 @@
+{
+  "schema_version": "thesisound.semantic-fixture-validation.v1",
+  "artifact_id": "C01-james",
+  "artifact_filename": "C01-james-will-to-believe.txt",
+  "intended_scope": "The Will to Believe essay, volume pages 1-31",
+  "expected_language": "en",
+  "status": "pass",
+  "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
+  "metrics": {
+    "byte_size": 51500,
+    "file_format": "txt",
+    "mime_type": "text/plain",
+    "text_encoding": "utf-8-sig",
+    "page_count": null,
+    "extractable_character_count": 51490,
+    "word_estimate": 9080,
+    "token_estimate": 14693,
+    "embedded_image_count": null,
+    "pages_with_extractable_text": null,
+    "unicode_decode_success": true,
+    "nul_byte_count": 0,
+    "extracted_nul_character_count": 0,
+    "arabic_presentation_forms_count": 0,
+    "replacement_character_count": 0,
+    "control_character_anomaly_count": 0,
+    "control_character_anomalies": [],
+    "private_use_character_count": 0,
+    "zwnj_count": 0,
+    "bidi_control_count": 0,
+    "mojibake_marker_count": 0,
+    "normalized_text_sha256": "b64cb43ba5d41f4c820d6c8421bc38cb65bee68292f0b49da78d7f1566f405b9",
+    "parsed_document_key": "f94991f58e1029ae3466790f8ba495adc4b69668a650fec44a0d86c9d190eb88",
+    "block_sequence_key": "e3187b86149bed2af6c9aa46e980fa56714257122fddf59385bd0fb96836b0e7",
+    "semantic_block_count": 12
+  },
+  "production_ingestion": {
+    "requested_parser": "native",
+    "selected_parser": "native",
+    "ocr_used": false,
+    "safe_for_claim_extraction": true,
+    "quality_verdict": "warning",
+    "quality_issues": [
+      {
+        "issue_type": "lost_headings",
+        "severity": "medium",
+        "affected_locators": [],
+        "evidence": "No heading hierarchy survived in a document with at least 12 blocks."
+      }
+    ],
+    "parser_warnings": []
+  },
+  "language_sanity": {
+    "expected_language": "en",
+    "result": "pass",
+    "reason": "Latin letters=40625; letter ratio=100.0000%",
+    "normal_arabic_persian_script_count": 0,
+    "persian_specific_letter_count": 0,
+    "arabic_variant_letter_count": 0,
+    "presentation_forms_count": 0,
+    "presentation_forms_ratio": 0.0,
+    "normal_script_ratio": 0.0,
+    "latin_letter_count": 40625,
+    "mojibake_marker_count": 0,
+    "glyph_only_pdf_text_layer": false
+  },
+  "locator_viability": {
+    "result": "pass",
+    "reason": "stable unique source-block keys=67/67",
+    "locator_type": "source_block_key",
+    "coverage": 1.0,
+    "page_coverage": null
+  },
+  "exact_span_matching": {
+    "requested_span_count": 20,
+    "tested_span_count": 20,
+    "recovered_span_count": 20,
+    "recovery_ratio": 1.0,
+    "can_operate_reliably": true,
+    "sample_normalized_hashes": [
+      "8a69de74bea00f6e0da576f061748fb6ed49595f346827a3dfb4685edfffce1e",
+      "ca39f8e20050fc1c7a0d3943b07ab110905555a2632fe3b5d17294920eb8fcc4",
+      "a6bba286405011da8d2c9426a4f6fd95d4253aeb2f5fa7ab399f7eaea6a068b6",
+      "526c57e3ba7a4188bd39c7fbce0081e524e72051f54213ce387dd15818ac293f",
+      "f8a2f998fbeb799f697f4fc8325c39fbb030b076fd1b99add0d2a00984d4e42f",
+      "aeb57c7fc0943366104e183231136d644837b38fada32a61deddfb28b34279b3",
+      "78a99e738f3af842908aa7561ddde3c150f7c5b0629264661c7d5efc8be3ca98",
+      "adaaab75010fcabc06566f0f8d96e7a763ba6961dfddfb0c057c0c895f81647a",
+      "4ea782821c3a05ae57f53aed14cab7ae8de51c81e5bbffd7130d285147446ce5",
+      "b043c2fdfc12859b00bf625d2584aeb97c5f4db6e68b0006888111fdc17d72d6",
+      "baf79d4070404b80f84d8a258d36e7563c68b8881d172a549816696df690ba94",
+      "a6493f9c4f6ce083901b9fb3ca70f68a9ed6050ee2ee5de3255508b1f0f3e2e2",
+      "0c86a74b0e6abb21545ca709fa02ad98d1dc7d3aa6444ddb84bca7a71f186c83",
+      "b7af67f95612d80e9ddef447051c35b488910927df9e93847e47313cd8eb1834",
+      "4f710855e346d05f70974ebf8fb5a837748e259bf440307d8cee751f1d428dbb",
+      "a8a4858e02e481ab0ae6e4c291cf6b828f5ca4682d4f2809478dcf1efd4b6794",
+      "2783c7012c47478f614daa0d802f1a6d73d74c32f193da3a8c541fd9ebc2dbf1",
+      "b0565e28de5373b1d7c459d41b3c47fd06c0fd6b4078658123258a5fedb86b46",
+      "ba13256ba18a8ee74ab279607337dd18252dae2e83a34ee5abd31186a1adcc6a",
+      "573ea16a8cfc50351e32e3aaa8bad770b54ef7f9950e510813345b205a382376"
+    ]
+  },
+  "normalization_checks": {
+    "probe": "می‌رود، آیا؟ كی يک ۱۲٣",
+    "normalized_probe": "میرود، آیا؟ کی یک 123",
+    "expected_normalized_probe": "میرود، آیا؟ کی یک 123",
+    "zwnj_and_punctuation_compatible": true,
+    "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
+  },
+  "gates": [
+    {
+      "gate": "non_empty_bytes",
+      "status": "pass",
+      "evidence": "51500 bytes"
+    },
+    {
+      "gate": "substantive_text_present",
+      "status": "pass",
+      "evidence": "51490 extractable characters"
+    },
+    {
+      "gate": "unicode_decode",
+      "status": "pass",
+      "evidence": "encoding=utf-8-sig"
+    },
+    {
+      "gate": "no_nul_bytes_in_decoded_text_format",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_extracted_nul_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_replacement_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_control_character_anomalies",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_private_use_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "presentation_forms_not_primary",
+      "status": "pass",
+      "evidence": "ratio=0.000000"
+    },
+    {
+      "gate": "language_sanity",
+      "status": "pass",
+      "evidence": "Latin letters=40625; letter ratio=100.0000%"
+    },
+    {
+      "gate": "not_glyph_only_pdf",
+      "status": "pass",
+      "evidence": "glyph_only=False"
+    },
+    {
+      "gate": "production_ingestion_safe",
+      "status": "pass",
+      "evidence": "verdict=warning"
+    },
+    {
+      "gate": "no_ocr",
+      "status": "pass",
+      "evidence": "native parser selected explicitly"
+    },
+    {
+      "gate": "locators_viable",
+      "status": "pass",
+      "evidence": "stable unique source-block keys=67/67"
+    },
+    {
+      "gate": "exact_span_matching_reliable",
+      "status": "pass",
+      "evidence": "recovered=20/20"
+    },
+    {
+      "gate": "persian_normalization_compatible",
+      "status": "pass",
+      "evidence": "میرود، آیا؟ کی یک 123"
+    }
+  ],
+  "warnings": []
+}

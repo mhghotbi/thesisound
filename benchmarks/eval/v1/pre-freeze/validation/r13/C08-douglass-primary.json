@@ -1,0 +1,185 @@
+{
+  "schema_version": "thesisound.semantic-fixture-validation.v1",
+  "artifact_id": "C08-douglass-primary",
+  "artifact_filename": "C08-douglass-speech-neutralized.md",
+  "intended_scope": "Complete speech with structural headings neutralized",
+  "expected_language": "en",
+  "status": "pass",
+  "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
+  "metrics": {
+    "byte_size": 60109,
+    "file_format": "md",
+    "mime_type": "text/markdown",
+    "text_encoding": "utf-8-sig",
+    "page_count": null,
+    "extractable_character_count": 59888,
+    "word_estimate": 10413,
+    "token_estimate": 17073,
+    "embedded_image_count": null,
+    "pages_with_extractable_text": null,
+    "unicode_decode_success": true,
+    "nul_byte_count": 0,
+    "extracted_nul_character_count": 0,
+    "arabic_presentation_forms_count": 0,
+    "replacement_character_count": 0,
+    "control_character_anomaly_count": 0,
+    "control_character_anomalies": [],
+    "private_use_character_count": 0,
+    "zwnj_count": 0,
+    "bidi_control_count": 0,
+    "mojibake_marker_count": 0,
+    "normalized_text_sha256": "48bf0189f4a2210fbf187af3bff137eb67fd7bd9204480d219a8a3d1824fd2a1",
+    "parsed_document_key": "73000ac2ec59d35a297a72505bbe9f892056fe0d3436f279926a81a93300bb48",
+    "block_sequence_key": "0cc20913ec7b37dfeb954c7e139781798d302c4ce97de3c3ea6833ef2e0b8e5f",
+    "semantic_block_count": 13
+  },
+  "production_ingestion": {
+    "requested_parser": "native",
+    "selected_parser": "native",
+    "ocr_used": false,
+    "safe_for_claim_extraction": true,
+    "quality_verdict": "pass",
+    "quality_issues": [],
+    "parser_warnings": []
+  },
+  "language_sanity": {
+    "expected_language": "en",
+    "result": "pass",
+    "reason": "Latin letters=47395; letter ratio=100.0000%",
+    "normal_arabic_persian_script_count": 0,
+    "persian_specific_letter_count": 0,
+    "arabic_variant_letter_count": 0,
+    "presentation_forms_count": 0,
+    "presentation_forms_ratio": 0.0,
+    "normal_script_ratio": 0.0,
+    "latin_letter_count": 47395,
+    "mojibake_marker_count": 0,
+    "glyph_only_pdf_text_layer": false
+  },
+  "locator_viability": {
+    "result": "pass",
+    "reason": "stable unique source-block keys=134/134",
+    "locator_type": "source_block_key",
+    "coverage": 1.0,
+    "page_coverage": null
+  },
+  "exact_span_matching": {
+    "requested_span_count": 20,
+    "tested_span_count": 20,
+    "recovered_span_count": 20,
+    "recovery_ratio": 1.0,
+    "can_operate_reliably": true,
+    "sample_normalized_hashes": [
+      "45f10f6253e2cfc3bf7e34b6d251280d5c948a6c7debb80089f0fdb04b365b0b",
+      "e4dc199c35d69ee5240828906a235c37789d610d72638350d7e8d69726eeb9da",
+      "9a78f2dab9c2744c8f7c81a51bf9b0a2cc91aa5b6e6ffdc34bf1985e15b0f02b",
+      "140604f0627521506927ae4341ef294eee2531c86200196aba430ce29a0c4a34",
+      "6d04610c229e636035fed64359044cf90bbbdffe28f87e9c6c0bcc83ad54859a",
+      "e0400562cf7f0c66b8a0a4cd6c86618019ef3441223f815efc96737e17faa398",
+      "34ccbd81d9ea353cf0bdefdc8c2fd989b20267b5a0edeb816a59223592183eea",
+      "74605bfa5cdcd7bd68a4b7718a6c30354aed910ebf7dbf75642c11ac8540eb6c",
+      "070a2b5e2ff17cb261dd76ebdcc8612c5dd455b18a82714961e6f6e58aa552e6",
+      "e5b5417f55d1e763d2b0dab3037dee029da07767192d9eaa2d7a10cb0fd4d72a",
+      "ae0e770215a510676f30d6b5aff4a0acafd9509e3da616bc213de6df716b2a4b",
+      "dc7f30574e99a820a9eeb65799194a83fc3f68e50e0f173385dadfddf198508a",
+      "bef035606dbcb1aee2359fec934fa98a5e267780dc3cc3dd8b7f7a8395c542e3",
+      "bdf54bbca1ed50cd89ac537851b11f2ad1168419541b3e62c1dcaa0454062541",
+      "72c38e638602479fe6b32025c07b3368bd83702be895d191e1a922eaaf1cbb7d",
+      "84b0ac148a2927f612551ec7686e3e5232f65a0dabe3516da5476efdbc9e2072",
+      "66a7b8f9e74e44a3f5fe80b94399f591561edfa1be04c25b87cb2b32ae65e81e",
+      "6beec2405aa554ec45f067966edc5c99bded92ae8b1cc9ccc20e435d67b00c9f",
+      "20e3c4a8e0d4f4b3a5052a7807d08e2f1d6897baed9a94553b2840db1276143a",
+      "1c44c1f7ff681e3d446c17823d8934eba09efc4fd3e764332f926efb6de53874"
+    ]
+  },
+  "normalization_checks": {
+    "probe": "می‌رود، آیا؟ كی يک ۱۲٣",
+    "normalized_probe": "میرود، آیا؟ کی یک 123",
+    "expected_normalized_probe": "میرود، آیا؟ کی یک 123",
+    "zwnj_and_punctuation_compatible": true,
+    "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
+  },
+  "gates": [
+    {
+      "gate": "non_empty_bytes",
+      "status": "pass",
+      "evidence": "60109 bytes"
+    },
+    {
+      "gate": "substantive_text_present",
+      "status": "pass",
+      "evidence": "59888 extractable characters"
+    },
+    {
+      "gate": "unicode_decode",
+      "status": "pass",
+      "evidence": "encoding=utf-8-sig"
+    },
+    {
+      "gate": "no_nul_bytes_in_decoded_text_format",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_extracted_nul_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_replacement_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_control_character_anomalies",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_private_use_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "presentation_forms_not_primary",
+      "status": "pass",
+      "evidence": "ratio=0.000000"
+    },
+    {
+      "gate": "language_sanity",
+      "status": "pass",
+      "evidence": "Latin letters=47395; letter ratio=100.0000%"
+    },
+    {
+      "gate": "not_glyph_only_pdf",
+      "status": "pass",
+      "evidence": "glyph_only=False"
+    },
+    {
+      "gate": "production_ingestion_safe",
+      "status": "pass",
+      "evidence": "verdict=pass"
+    },
+    {
+      "gate": "no_ocr",
+      "status": "pass",
+      "evidence": "native parser selected explicitly"
+    },
+    {
+      "gate": "locators_viable",
+      "status": "pass",
+      "evidence": "stable unique source-block keys=134/134"
+    },
+    {
+      "gate": "exact_span_matching_reliable",
+      "status": "pass",
+      "evidence": "recovered=20/20"
+    },
+    {
+      "gate": "persian_normalization_compatible",
+      "status": "pass",
+      "evidence": "میرود، آیا؟ کی یک 123"
+    }
+  ],
+  "warnings": []
+}

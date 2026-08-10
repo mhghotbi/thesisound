@@ -1,0 +1,185 @@
+{
+  "schema_version": "thesisound.semantic-fixture-validation.v1",
+  "artifact_id": "C04-dubois-primary",
+  "artifact_filename": "C04-dubois-primary.md",
+  "intended_scope": "The Souls of Black Folk, Chapters I, III and XIV",
+  "expected_language": "en",
+  "status": "pass",
+  "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
+  "metrics": {
+    "byte_size": 84638,
+    "file_format": "md",
+    "mime_type": "text/markdown",
+    "text_encoding": "utf-8-sig",
+    "page_count": null,
+    "extractable_character_count": 83918,
+    "word_estimate": 14078,
+    "token_estimate": 23928,
+    "embedded_image_count": null,
+    "pages_with_extractable_text": null,
+    "unicode_decode_success": true,
+    "nul_byte_count": 0,
+    "extracted_nul_character_count": 0,
+    "arabic_presentation_forms_count": 0,
+    "replacement_character_count": 0,
+    "control_character_anomaly_count": 0,
+    "control_character_anomalies": [],
+    "private_use_character_count": 0,
+    "zwnj_count": 0,
+    "bidi_control_count": 0,
+    "mojibake_marker_count": 0,
+    "normalized_text_sha256": "07e02594ada2ab8fef10f1967cfa6350a054b70a53f5ab5b1e099c08a615a457",
+    "parsed_document_key": "99731994272dcb80ac8a7d8ff84dad3888c2287233d9788d1db00995be283b7e",
+    "block_sequence_key": "210f33e677844a756d83f157e1dede344987ecd93b4997353cbd3bffcddd7422",
+    "semantic_block_count": 18
+  },
+  "production_ingestion": {
+    "requested_parser": "native",
+    "selected_parser": "native",
+    "ocr_used": false,
+    "safe_for_claim_extraction": true,
+    "quality_verdict": "pass",
+    "quality_issues": [],
+    "parser_warnings": []
+  },
+  "language_sanity": {
+    "expected_language": "en",
+    "result": "pass",
+    "reason": "Latin letters=67081; letter ratio=100.0000%",
+    "normal_arabic_persian_script_count": 0,
+    "persian_specific_letter_count": 0,
+    "arabic_variant_letter_count": 0,
+    "presentation_forms_count": 0,
+    "presentation_forms_ratio": 0.0,
+    "normal_script_ratio": 0.0,
+    "latin_letter_count": 67081,
+    "mojibake_marker_count": 0,
+    "glyph_only_pdf_text_layer": false
+  },
+  "locator_viability": {
+    "result": "pass",
+    "reason": "stable unique source-block keys=172/172",
+    "locator_type": "source_block_key",
+    "coverage": 1.0,
+    "page_coverage": null
+  },
+  "exact_span_matching": {
+    "requested_span_count": 20,
+    "tested_span_count": 20,
+    "recovered_span_count": 20,
+    "recovery_ratio": 1.0,
+    "can_operate_reliably": true,
+    "sample_normalized_hashes": [
+      "8634bd6abd3531f5be551a5412ec9caae8355d8dd7c2c05661fb5f3a0754832f",
+      "63a9f064cdbe36d65829ace32f6a91760590d34397e7cba602dbbb8d4dfe67d6",
+      "ad00a35a841ed91bcf47d9dff0f8a315cd110f1c8c872ff101f29b8e8407b65b",
+      "247f46a291545c39405c264713378ceafa043becfb4875e2258c963b8f6dd28a",
+      "0c315a54bd445d4512fa6ed9d5cdc95f1bff01beaa5e2e58b5f9b57e0c89b4bf",
+      "9536d807367adb58572d0559e530d57b6dfc673d6c8953234f997e3cfb6c832f",
+      "a4618439b23b7bcd2d2133a64974645b1b64972e1107203ca416b03fe8a8f696",
+      "a6f9975533177de0f8dbdff0570ec54bd2a83be161f4feef7f78c889f2c2ef47",
+      "1cfeedb678579dbd56f0c8abab7298b9c27c3959d532c16f8e20a3186cb7666e",
+      "fbf0a9209ccee7403f67aa09b44b619179d044ea0f9ebcee8922a06b73a039af",
+      "0a4c8412c5b804e5cdbea92a90b6be337232290469aa4c5f03679a11c016cbe3",
+      "8f7302a1bea39c555111dfafdc61e1046004341226615a1ac9d4cef3256b31d9",
+      "0c9b3226c088755b706d3afebc2324418565d2fc7f3712601db0a0ab18d1a964",
+      "b6f048d7c441685ad30e53f1c129fac1e6c41f7b212a2a611faec8f78a421cb3",
+      "07b92beca2fece2a713660476563e0958bd1d1b058a3a2126adf4d640c200ec6",
+      "0aed3272eddf020463b612784ced8dd8a1258977ed6cb28615b5534d71733c93",
+      "b1e96d8d52691ee8cc088489fb571f1f63220eba637936f3bcbdb0b8d09aab57",
+      "c1c726bd2d8ed97ac0bf1c3cf9ce844f70d10025cbd5c9868ac3b0c6fc1bd777",
+      "19bdb1dee039a4fdcb1176339d0949bd72a8cb04151baf291ee02c4cba4e10d0",
+      "637929e7346b0829affcb7e4d3973f76eb808e431cbeb08398be1a04abfdba2d"
+    ]
+  },
+  "normalization_checks": {
+    "probe": "می‌رود، آیا؟ كی يک ۱۲٣",
+    "normalized_probe": "میرود، آیا؟ کی یک 123",
+    "expected_normalized_probe": "میرود، آیا؟ کی یک 123",
+    "zwnj_and_punctuation_compatible": true,
+    "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
+  },
+  "gates": [
+    {
+      "gate": "non_empty_bytes",
+      "status": "pass",
+      "evidence": "84638 bytes"
+    },
+    {
+      "gate": "substantive_text_present",
+      "status": "pass",
+      "evidence": "83918 extractable characters"
+    },
+    {
+      "gate": "unicode_decode",
+      "status": "pass",
+      "evidence": "encoding=utf-8-sig"
+    },
+    {
+      "gate": "no_nul_bytes_in_decoded_text_format",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_extracted_nul_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_replacement_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_control_character_anomalies",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_private_use_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "presentation_forms_not_primary",
+      "status": "pass",
+      "evidence": "ratio=0.000000"
+    },
+    {
+      "gate": "language_sanity",
+      "status": "pass",
+      "evidence": "Latin letters=67081; letter ratio=100.0000%"
+    },
+    {
+      "gate": "not_glyph_only_pdf",
+      "status": "pass",
+      "evidence": "glyph_only=False"
+    },
+    {
+      "gate": "production_ingestion_safe",
+      "status": "pass",
+      "evidence": "verdict=pass"
+    },
+    {
+      "gate": "no_ocr",
+      "status": "pass",
+      "evidence": "native parser selected explicitly"
+    },
+    {
+      "gate": "locators_viable",
+      "status": "pass",
+      "evidence": "stable unique source-block keys=172/172"
+    },
+    {
+      "gate": "exact_span_matching_reliable",
+      "status": "pass",
+      "evidence": "recovered=20/20"
+    },
+    {
+      "gate": "persian_normalization_compatible",
+      "status": "pass",
+      "evidence": "میرود، آیا؟ کی یک 123"
+    }
+  ],
+  "warnings": []
+}

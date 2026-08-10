@@ -1,0 +1,260 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.source-package.v1",
+  "phase": "2.5-source-settlement",
+  "freeze_status": "not_frozen",
+  "hash_policy": "R13 normalized-text hashes are diagnostics only; no package freeze hashes exist.",
+  "visible_core": ["C01", "C02", "C03", "C04", "C05R", "C06", "C07", "C08", "C09", "C10", "C11", "V15"],
+  "visible_challenge_non_gating": ["V13", "V14"],
+  "deferred": ["C05", "C12"],
+  "burned_holdout_ids": ["H13", "H14", "H15"],
+  "packages": {
+    "C01": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "English-to-Persian conceptual distinction network",
+      "current_code_compatibility": "pass_intra_source",
+      "readiness": "ready",
+      "sources": [{
+        "logical_source_id": "james_will_to_believe",
+        "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C01/C01-james-will-to-believe.txt",
+        "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C01-james-will-to-believe.txt",
+        "r13_report": "validation/r13/C01-james.json",
+        "offline_verification_reference_ids": ["C01-LOC-1897"]
+      }],
+      "blockers": []
+    },
+    "C02": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Native Persian scholarly conceptual distinctions",
+      "current_code_compatibility": "pass_intra_source",
+      "readiness": "blocked",
+      "sources": [{
+        "logical_source_id": "ebadi_emdadi_putnam_2021",
+        "ingested_fixture": null,
+        "rejected_candidate_artifact": ".thesisound/eval-v1-prefreeze/raw/c02-putnam.pdf",
+        "r13_report": "validation/r13/C02-putnam.json",
+        "offline_verification_reference_ids": []
+      }],
+      "blockers": ["R13 fails: four Unicode private-use characters (U+F02A x2, U+F0AF x2). No OCR or text repair is permitted."]
+    },
+    "C03": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Argument, qualification, and rhetorical-device typing",
+      "current_code_compatibility": "pass_intra_source",
+      "readiness": "ready",
+      "sources": [{
+        "logical_source_id": "woolf_room_1929_complete",
+        "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C03/C03-woolf-room-complete.md",
+        "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C03-woolf-room-complete.md",
+        "r13_report": "validation/r13/C03-woolf.json",
+        "offline_verification_reference_ids": ["C03-HOGARTH-1929"]
+      }],
+      "blockers": []
+    },
+    "C04": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Primary-position versus scholarly-interpretation attribution",
+      "current_code_compatibility": "pass_source_role_attribution_without_cross_source_reconciliation",
+      "readiness": "ready",
+      "sources": [
+        {
+          "logical_source_id": "dubois_souls_1903",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C04/C04-dubois-primary.md",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C04-dubois-primary.md",
+          "r13_report": "validation/r13/C04-dubois-primary.json",
+          "offline_verification_reference_ids": []
+        },
+        {
+          "logical_source_id": "dubois_strivings_1897",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C04/C04-dubois-strivings-1897.md",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C04-dubois-strivings-1897.md",
+          "r13_report": "validation/r13/C04-dubois-strivings.json",
+          "offline_verification_reference_ids": ["C04-ATLANTIC-1897-PDF"]
+        },
+        {
+          "logical_source_id": "pittman_sep_double_consciousness",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C04/C04-sep-sections-2.3-and-3.md",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C04-sep-sections-2.3-and-3.md",
+          "r13_report": "validation/r13/C04-sep-commentary.json",
+          "offline_verification_reference_ids": []
+        }
+      ],
+      "blockers": []
+    },
+    "C05R": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Single-source objection/reply voice attribution",
+      "current_code_compatibility": "pass_intra_source_objection_response",
+      "readiness": "ready",
+      "sources": [{
+        "logical_source_id": "lin_philosophy_normative_discipline_2026",
+        "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C05R/C05R-lin.pdf",
+        "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/raw/c05r-lin.pdf",
+        "r13_report": "validation/r13/C05R-lin.json",
+        "offline_verification_reference_ids": []
+      }],
+      "blockers": []
+    },
+    "C06": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Complementary multi-source composition at episode planning",
+      "current_code_compatibility": "pass_composition_only_m8_reconciliation_absent",
+      "readiness": "blocked",
+      "sources": [
+        {
+          "logical_source_id": "stiglitz_sen_fitoussi_2009",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C06/C06-cmepsp-focused.pdf",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C06-cmepsp-focused.pdf",
+          "r13_report": "validation/r13/C06-cmepsp.json",
+          "offline_verification_reference_ids": ["C06-CMEPSP-FULL"]
+        },
+        {
+          "logical_source_id": "oecd_hows_life_2011",
+          "ingested_fixture": null,
+          "rejected_candidate_artifact": ".thesisound/eval-v1-prefreeze/prepared/C06-oecd-focused.pdf",
+          "r13_report": "validation/r13/C06-oecd.json",
+          "offline_verification_reference_ids": ["C06-OECD-FULL"]
+        }
+      ],
+      "blockers": ["The official OECD PDF extraction contains 291 control-code occurrences across eight anomalous code points; no clean official semantic copy was acquired."]
+    },
+    "C07": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Bounded inference, observable unsupported objectives, and narrowing",
+      "current_code_compatibility": "pass_coverage_audit_and_narrow_scope",
+      "readiness": "ready",
+      "sources": [{
+        "logical_source_id": "bloom_han_liang_2024",
+        "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C07/C07-bloom-rct.md",
+        "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C07-bloom-rct.md",
+        "r13_report": "validation/r13/C07-bloom.json",
+        "offline_verification_reference_ids": ["C07-NATURE-VERSION"]
+      }],
+      "blockers": []
+    },
+    "C08": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Claim-level relevance filtering and purposeful omission",
+      "current_code_compatibility": "pass_claim_prioritization_not_source_triage",
+      "readiness": "blocked",
+      "sources": [
+        {
+          "logical_source_id": "douglass_oration_1852",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C08/C08-source-a.md",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C08-douglass-speech-neutralized.md",
+          "r13_report": "validation/r13/C08-douglass-primary.json",
+          "offline_verification_reference_ids": ["C08-1852-SCAN"]
+        },
+        {
+          "logical_source_id": "nps_douglass_biography",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C08/C08-source-b.md",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C08-nps-decoy-neutralized.md",
+          "r13_report": "validation/r13/C08-nps-decoy.json",
+          "offline_verification_reference_ids": []
+        },
+        {
+          "logical_source_id": "loc_douglass_july4_context",
+          "ingested_fixture": null,
+          "candidate_or_prepared_artifact": null,
+          "r13_report": null,
+          "offline_verification_reference_ids": []
+        }
+      ],
+      "blockers": ["The LoC partial-relevance decoy is protected by an automated-access challenge; current validated decoy share is only 14.42% by extractable characters instead of the approved 25-30%."]
+    },
+    "C09": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Long hierarchical dependencies across bounded chapters",
+      "current_code_compatibility": "pass_document_mapping_and_budget_bounded_planning",
+      "readiness": "ready_with_recorded_budget_caution",
+      "sources": [{
+        "logical_source_id": "darwin_origin_1859_scoped",
+        "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C09/C09-darwin-scoped.md",
+        "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C09-darwin-scoped.md",
+        "r13_report": "validation/r13/C09-darwin.json",
+        "offline_verification_reference_ids": ["C09-DARWIN-ONLINE-1859", "C09-1859-SCAN"]
+      }],
+      "blockers": [],
+      "budget_observation": "Current estimator counts 114328 source tokens. The 40-minute 72000-token cap permits at most 62.98% selection, below the deep profile's 85% target. This does not itself trip a deterministic release gate, but the limitation must remain visible."
+    },
+    "C10": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Controlled 20-minute standard-profile compression",
+      "current_code_compatibility": "pass_standard_profile",
+      "readiness": "ready",
+      "sources": [{
+        "logical_source_id": "ostrom_nobel_lecture_2009",
+        "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C10-C11/ostrom-nobel.pdf",
+        "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/raw/ostrom-nobel.pdf",
+        "r13_report": "validation/r13/C10-C11-ostrom.json",
+        "offline_verification_reference_ids": ["C10-C11-AEA-PUBLICATION"]
+      }],
+      "blockers": []
+    },
+    "C11": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Controlled 40-minute deep-profile expansion without padding",
+      "current_code_compatibility": "pass_deep_profile",
+      "readiness": "ready",
+      "sources": [{
+        "logical_source_id": "ostrom_nobel_lecture_2009",
+        "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C10-C11/ostrom-nobel.pdf",
+        "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/raw/ostrom-nobel.pdf",
+        "r13_report": "validation/r13/C10-C11-ostrom.json",
+        "offline_verification_reference_ids": ["C10-C11-AEA-PUBLICATION"]
+      }],
+      "blockers": []
+    },
+    "V13": {
+      "tier": "challenge",
+      "release_gating": false,
+      "capability": "Typed normative-to-operational relations including non-mappings",
+      "current_code_compatibility": "partial_multi_source_composition_without_structured_cross_source_reconciliation",
+      "readiness": "blocked",
+      "sources": [
+        {"logical_source_id": "unesco_ai_ethics_2021_bounded", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": []},
+        {"logical_source_id": "nist_ai_rmf_1_0_bounded", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": []}
+      ],
+      "blockers": ["Bounded fixtures have not been acquired and validated; UNESCO licence compatibility remains conditional."]
+    },
+    "V14": {
+      "tier": "challenge",
+      "release_gating": false,
+      "capability": "Heat-extreme attribution with calibrated uncertainty",
+      "current_code_compatibility": "pass_budget_bounded_multi_source_composition",
+      "readiness": "blocked",
+      "sources": [
+        {"logical_source_id": "ipcc_ar6_wgi_ch11_heat_sections", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": []},
+        {"logical_source_id": "bellprat_event_attribution_2019", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": []}
+      ],
+      "blockers": ["Bounded fixtures have not been acquired or R13-validated; IPCC CC BY-NC-ND limits transformed storage."]
+    },
+    "V15": {
+      "tier": "core",
+      "release_gating": true,
+      "capability": "Persian primary, cross-language attribution, and constitutive ambiguity",
+      "current_code_compatibility": "pass_attribution_and_composition_without_m8_reconciliation",
+      "readiness": "blocked",
+      "sources": [
+        {"logical_source_id": "hafez_qazvini_ghani_selection", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": ["V15-WIKISOURCE-SCANS"]},
+        {"logical_source_id": "lewis_hafez_rendi_bounded", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": []},
+        {"logical_source_id": "debruijn_hafez_poetic_art_bounded", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": []}
+      ],
+      "blockers": [
+        "Wikisource index revision 290057 is pinned, but linked Wikidata identifies a 1989 Sina printing rather than the assumed 1941 printing; exact printing and underlying-edition rights are unresolved.",
+        "No poems were selected from the scholars' citations and no human verse-to-scan collation has been performed.",
+        "Bounded Lewis/de Bruijn passages have not been acquired or R13-validated."
+      ]
+    }
+  }
+}

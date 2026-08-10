@@ -1,0 +1,26 @@
+{
+  "$schema": "public-manifest.schema.json",
+  "schema_version": "thesisound.holdout-public.v1",
+  "evaluator_version": "thesisound-eval-split-boundary-v1",
+  "slots": [
+    {
+      "opaque_id": "OH-7K2M9Q4X",
+      "fixture_sha256": null,
+      "gold_sha256": null,
+      "status": "unprovisioned"
+    },
+    {
+      "opaque_id": "OH-B8R3T6WY",
+      "fixture_sha256": null,
+      "gold_sha256": null,
+      "status": "unprovisioned"
+    },
+    {
+      "opaque_id": "OH-N5V2C7LP",
+      "fixture_sha256": null,
+      "gold_sha256": null,
+      "status": "unprovisioned"
+    }
+  ],
+  "last_run": null
+}

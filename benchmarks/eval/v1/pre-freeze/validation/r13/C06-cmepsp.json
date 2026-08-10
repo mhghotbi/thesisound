@@ -1,0 +1,192 @@
+{
+  "schema_version": "thesisound.semantic-fixture-validation.v1",
+  "artifact_id": "C06-cmepsp",
+  "artifact_filename": "C06-cmepsp-focused.pdf",
+  "intended_scope": "Executive Summary plus Short Narrative Chapter 2: Quality of Life",
+  "expected_language": "en",
+  "status": "pass",
+  "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
+  "metrics": {
+    "byte_size": 476211,
+    "file_format": "pdf",
+    "mime_type": "application/pdf",
+    "text_encoding": null,
+    "page_count": 32,
+    "extractable_character_count": 106980,
+    "word_estimate": 16717,
+    "token_estimate": 30510,
+    "embedded_image_count": 0,
+    "pages_with_extractable_text": 31,
+    "unicode_decode_success": true,
+    "nul_byte_count": 1341,
+    "extracted_nul_character_count": 0,
+    "arabic_presentation_forms_count": 0,
+    "replacement_character_count": 0,
+    "control_character_anomaly_count": 0,
+    "control_character_anomalies": [],
+    "private_use_character_count": 0,
+    "zwnj_count": 0,
+    "bidi_control_count": 0,
+    "mojibake_marker_count": 0,
+    "normalized_text_sha256": "57087d96ed7da7ef31cb1a5cb723084383e12dbb922dcf65e20d8000c44a7adc",
+    "parsed_document_key": "c59625ffae8d5f5ec6dffd203ac6b9e73865637853f1e4fc79f440e0e1b6d2c9",
+    "block_sequence_key": "817995f49d439d2cac827301dc33c0a5ba3055fdd2843e341781eb9d20b5d9bd",
+    "semantic_block_count": 28
+  },
+  "production_ingestion": {
+    "requested_parser": "native",
+    "selected_parser": "native",
+    "ocr_used": false,
+    "safe_for_claim_extraction": true,
+    "quality_verdict": "warning",
+    "quality_issues": [
+      {
+        "issue_type": "lost_headings",
+        "severity": "medium",
+        "affected_locators": [],
+        "evidence": "No heading hierarchy survived in a document with at least 12 blocks."
+      }
+    ],
+    "parser_warnings": []
+  },
+  "language_sanity": {
+    "expected_language": "en",
+    "result": "pass",
+    "reason": "Latin letters=87035; letter ratio=100.0000%",
+    "normal_arabic_persian_script_count": 0,
+    "persian_specific_letter_count": 0,
+    "arabic_variant_letter_count": 0,
+    "presentation_forms_count": 0,
+    "presentation_forms_ratio": 0.0,
+    "normal_script_ratio": 0.0,
+    "latin_letter_count": 87035,
+    "mojibake_marker_count": 0,
+    "glyph_only_pdf_text_layer": false
+  },
+  "locator_viability": {
+    "result": "pass",
+    "reason": "block locator coverage=100.00%; page coverage=96.88%",
+    "locator_type": "page",
+    "coverage": 1.0,
+    "page_coverage": 0.96875
+  },
+  "exact_span_matching": {
+    "requested_span_count": 20,
+    "tested_span_count": 20,
+    "recovered_span_count": 20,
+    "recovery_ratio": 1.0,
+    "can_operate_reliably": true,
+    "sample_normalized_hashes": [
+      "ef0a37d95cf96c82c2d808914c74f19a21231901f867025f30fe3a4371473b44",
+      "705674a8fcd75baca870c67f9c40442a487378a22317fb00a7e3d5df52ce9b5f",
+      "ceda3a7e5b0d3bf6108d0806986b3aed3b7391fe6fcdbf2c5c4e3dd49d946ea8",
+      "b43f97e6d5ae70b89751351dab73d861747d4ed18dc78ba8efbd56ea910527ab",
+      "30183e3f1a4f5b1276085193d388c215f012f5b40590dd5a538d9cd1d8206ef6",
+      "1d992ccf14b61bba83e6e98f56d50bcbdebf4048eae71de8a2c96bc9dc962ea1",
+      "faddeb8964636c8751fc6e5ea081962b53143925ecff123a208c033abbb01ee5",
+      "a4546d33751e09e9df99fdb958e7e2936ec6b3af80aa5bacb2ae9be17d8f2c72",
+      "8428a32c8783e9d67ac059f1b703440f9a2ef9118dbba1da66bfc31fe7bb46a9",
+      "24edcb89ae73a5170f27852100cf532f417b3bd62b46f2eb4af5460e80f6f6de",
+      "26ce576c93f3d0986e57634fec506abf40b891c576db828f036c20a38d1b435a",
+      "049e179a3754c087a60e6d6d03d4bd17e7ee2a5902bca87b40b7f3d95b7ac63a",
+      "667260b5325c04c7a0ddde4ed1fc5fe66323f6ae3d77c99d2d565aee80185efe",
+      "383374d88e56494bef0b8d3259d97c19c7f9dc1e440ef8fa42da62eb78bb3844",
+      "6be28b8d9a0a75c7fb5d73fbfee167fba3c24111b1d31029764a8db991f422da",
+      "5dafd0de90fac00e41c17a5bb1e8af0cebb8683d9d29f412dc0b7dafa3e18eb7",
+      "85a7542b416c55ad2f53965a8c94fc734955f3aaddfe40df5cb17e3c7555f75a",
+      "d3fbb731cd1a541913079f20f3273202e817c72d62f670c755f263c21b2ace87",
+      "1f07442e87b7cbaa35898efd8d776720273616fb1a51cfb68926d8160437a3b6",
+      "ab6fa21066673da782240ee7f9d50c504283f8b762366541c3c8b6f4ef4f5cde"
+    ]
+  },
+  "normalization_checks": {
+    "probe": "می‌رود، آیا؟ كی يک ۱۲٣",
+    "normalized_probe": "میرود، آیا؟ کی یک 123",
+    "expected_normalized_probe": "میرود، آیا؟ کی یک 123",
+    "zwnj_and_punctuation_compatible": true,
+    "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
+  },
+  "gates": [
+    {
+      "gate": "non_empty_bytes",
+      "status": "pass",
+      "evidence": "476211 bytes"
+    },
+    {
+      "gate": "substantive_text_present",
+      "status": "pass",
+      "evidence": "106980 extractable characters"
+    },
+    {
+      "gate": "unicode_decode",
+      "status": "pass",
+      "evidence": "encoding=None"
+    },
+    {
+      "gate": "no_nul_bytes_in_decoded_text_format",
+      "status": "pass",
+      "evidence": "not applicable to binary container; raw count recorded"
+    },
+    {
+      "gate": "no_extracted_nul_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_replacement_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_control_character_anomalies",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_private_use_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "presentation_forms_not_primary",
+      "status": "pass",
+      "evidence": "ratio=0.000000"
+    },
+    {
+      "gate": "language_sanity",
+      "status": "pass",
+      "evidence": "Latin letters=87035; letter ratio=100.0000%"
+    },
+    {
+      "gate": "not_glyph_only_pdf",
+      "status": "pass",
+      "evidence": "glyph_only=False"
+    },
+    {
+      "gate": "production_ingestion_safe",
+      "status": "pass",
+      "evidence": "verdict=warning"
+    },
+    {
+      "gate": "no_ocr",
+      "status": "pass",
+      "evidence": "native parser selected explicitly"
+    },
+    {
+      "gate": "locators_viable",
+      "status": "pass",
+      "evidence": "block locator coverage=100.00%; page coverage=96.88%"
+    },
+    {
+      "gate": "exact_span_matching_reliable",
+      "status": "pass",
+      "evidence": "recovered=20/20"
+    },
+    {
+      "gate": "persian_normalization_compatible",
+      "status": "pass",
+      "evidence": "میرود، آیا؟ کی یک 123"
+    }
+  ],
+  "warnings": []
+}

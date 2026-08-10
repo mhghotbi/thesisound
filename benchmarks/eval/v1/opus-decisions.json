@@ -1,0 +1,1316 @@
+{
+  "schema_version": "opus-independent-review-1.1",
+  "phase": "phase2_independent_review_plus_reconciliation",
+  "status": "reconciliation_complete_nothing_frozen",
+  "reviewer": "Opus 5",
+  "reviewed_on": "2026-08-10",
+  "reviews_design_version": "v1",
+  "artifact_location_note": "The task named benchmarks/eval-design/v1/. That directory does not exist; the Phase-1 artifacts are in benchmarks/eval/v1/ and this review is written beside them.",
+  "phase1_artifacts_modified": false,
+  "source_recommendations_md_available": true,
+  "source_recommendations_md_note": "SOURCE-RECOMMENDATIONS.md was deliberately withheld during the first pass to prevent anchoring on Sol's preferred packages and numeric scores. All 15 case verdicts were formed before it was read. Its absence was NOT a Phase-1 defect and blocker B15 is withdrawn. The file is currently untracked in git; committing it is an audit-trail task, not a design defect. Sol's score_total_50 values were not used as evidence at any point.",
+  "source_recommendations_review": {
+    "read_after_verdicts_formed": true,
+    "verdicts_changed": 0,
+    "verdicts_modified_without_changing": [
+      "C10"
+    ],
+    "rubric_assessment": "The ranking method is sound and auditable: ten criteria (Authority, Provenance, Semantic challenge, Failure-mode fit, Reproducibility, Accessibility, Licensing practicality, Corpus size/cost, low Noise, Independence), scored 1-5, deliberately unweighted so authority cannot mask an access or licensing failure, with the explicit caveat that low licensing scores are not waivers. The criticism that the ranking was unauditable is withdrawn and blocker B15 is closed.",
+    "rubric_blind_spots": [
+      "No criterion scores whether the source text is machine-usable. C12-A scores accessibility 4 and reproducibility 3, which is defensible if only the collection page was opened; opening the files shows the 1906 law has zero extractable characters and the 1907 file yields 618 words of glyph fragments. This supports proposed requirement R13 and motivates a new criterion T (text usability), scored only after opening the file.",
+      "No criterion scores fit against implemented capability. C05-A scores Failure-mode fit 5; the fit is perfect against the documented product and impossible against the running system, since M8 is not implemented. Add a criterion or a hard precondition that a stage exists which can exhibit the measured behaviour.",
+      "No criterion penalises ingesting a verification scan as a corpus source. C01-A scores 50/50 with Provenance 5 while listing both the Gutenberg transcript and the LoC scan as package sources. This is why proposed requirement R14 is needed."
+    ],
+    "agreements": [
+      {
+        "case_id": "C04",
+        "sol_objection": "SEP's taxonomy is so clear that a model may reproduce it while under-reading Du Bois, turning the test into commentary summarization.",
+        "position": "Same conclusion reached independently. Sol named the hypothesis first; I measured it and specified the repair."
+      },
+      {
+        "case_id": "C03",
+        "sol_objection": "Non-contiguous chapter selection can manufacture an argument if excerpt boundaries are too aggressive.",
+        "position": "Agree. My repair, using the complete essay, is the concrete form of Sol's concern."
+      },
+      {
+        "case_id": "C09",
+        "sol_objection": "Scale and nineteenth-century exposition make cost and language difficulty potential confounds.",
+        "position": "Agree as far as it goes, but not the decisive defect."
+      },
+      {
+        "case_id": "H14",
+        "sol_objection": "The brief must specify an event class or remain explicitly methodological.",
+        "position": "Agree. Sol posed the same A/B choice and deferred it; I chose B on gold-stability grounds."
+      },
+      {
+        "case_id": "H15",
+        "sol_objection": "Low until acquisition and collation; do not freeze. Expert poem selection could itself bake in one interpretation.",
+        "position": "Agree fully. Sol's own confidence rating already refuses this package; my contribution is the replacement, not the diagnosis."
+      }
+    ],
+    "disagreements": [
+      {
+        "case_id": "C04",
+        "sol_position": "Preferred C04-A at confidence High, risk noted but not acted on.",
+        "my_position": "Naming a risk is not mitigating it. Confidence should not be High and the package should not pass unchanged. Verdict stands: ACCEPT_WITH_CHANGES."
+      },
+      {
+        "case_id": "C05",
+        "sol_position": "Objection is operational only: copyrighted copies, not always versions of record.",
+        "my_position": "Does not reach the decisive problem. The blocker is architectural, not operational; fixing access would not make the case measurable. Verdict stands: BLOCKED."
+      },
+      {
+        "case_id": "C08",
+        "sol_position": "Obvious filenames or source-role labels could let the system game the case; confidence High if fixture labels are neutral.",
+        "my_position": "Partially refuted. Filenames and source roles never reach the semantic prompts, so that vector does not exist; the real vector is the document's own heading_path. Sol's confidence qualifier guards the wrong thing. Verdict stands."
+      },
+      {
+        "case_id": "C09",
+        "sol_position": "Confidence High; size penalised only as cost, failure-mode fit scored 5.",
+        "my_position": "Failure-mode fit is not 5: the extraction planner defers about 64 percent of the book deterministically, so the case cannot exhibit the behaviour it scores for. Verdict stands: REPLACE_SOURCE."
+      },
+      {
+        "case_id": "C11",
+        "sol_position": "The lecture may not support 30 minutes at the evidence-density standard; the correct pipeline behaviour could be to reject or narrow.",
+        "my_position": "Refuted by arithmetic: the gate needs 600 tokens for 30 minutes and the corpus carries about 20000, a 33x margin. Sol's reasoning is sound in principle but the premise is false here. Do not lower to 15 or 20 minutes."
+      },
+      {
+        "case_id": "C12",
+        "sol_position": "Confidence Medium; objection limited to the unopened 1907 PDF and unclear portal rights.",
+        "my_position": "Flagging the unopened file was good practice. Opening it converts the risk into two disqualifying facts, plus a companion file that is a pure image scan. Verdict stands: BLOCKED."
+      }
+    ],
+    "pattern": "Sol's objections are accurate where they rest on bibliographic reasoning and miss where the answer required opening a file or reading the pipeline code."
+  },
+  "verdict_values": [
+    "ACCEPT",
+    "ACCEPT_WITH_CHANGES",
+    "REPLACE_SOURCE",
+    "REPLACE_CASE",
+    "BLOCKED"
+  ],
+  "cross_cutting_findings": [
+    {
+      "id": "F1",
+      "severity": "critical",
+      "title": "Multi-source semantic reconciliation is not implemented",
+      "evidence": "ClaimReconcilerService.reconcile() is scoped to a single source_id and receives only that source's evidence_items; DisagreementGraphBuilder emits nodes only from agreeing_source_ids/disagreeing_source_ids or CONTESTED status, which single-source reconciliation cannot populate with valid foreign UUIDs; STATUS.md line 64 states 'M8 Full multi-source semantic reconciliation: not implemented'.",
+      "affected_cases": [
+        "C05",
+        "C06",
+        "C12",
+        "H13",
+        "H15"
+      ],
+      "consequence": "Cases whose target failure mode is cross-source disagreement cannot distinguish model failure from an absent architectural stage."
+    },
+    {
+      "id": "F2",
+      "severity": "critical",
+      "title": "C12 primary texts are machine-unusable and one is the wrong document",
+      "evidence": "Local inspection of both Iran Data Portal PDFs. 1906: 12 pages, 0 extractable characters, 12 embedded images (pure image scan). 1907: 26 pages, 3058 characters, 618 words, 626 NUL bytes, 1453 Arabic presentation-form characters, article bodies do not extract. Normalized 1907 text contains پهلوي, قاجاريه and ولايتعهد, indicating a consolidated text carrying the 1925 Pahlavi amendment.",
+      "affected_cases": [
+        "C12"
+      ],
+      "consequence": "Would force Persian OCR into a benchmark that excludes OCR, would break evidence_validator verbatim excerpt matching, and would ground gold atoms in a document of the wrong vintage."
+    },
+    {
+      "id": "F3",
+      "severity": "high",
+      "title": "C09 measures the deterministic extraction planner, not long-range reasoning",
+      "evidence": "plan_evidence_extraction caps selection at min(total, coverage*1.1, max(12000, min(180000, duration*1800))). Darwin 1859 is ~150k words ~ 200k tokens; at 40 minutes the budget is 72000 tokens, about 36 percent of the book, with the remainder deferred by design.",
+      "affected_cases": [
+        "C09"
+      ],
+      "consequence": "The declared failure mode 'sampling masquerading as full coverage' is guaranteed to trip on every run because of fixed code."
+    },
+    {
+      "id": "F4",
+      "severity": "high",
+      "title": "Holdout designs are already public",
+      "evidence": "CASE-MATRIX.md commits each holdout's Research Brief, source package, capability, and explicit 'Failures exposed' list to git history.",
+      "affected_cases": [
+        "H13",
+        "H14",
+        "H15"
+      ],
+      "consequence": "Withholding gold atoms later does not restore holdout value; H13/H14/H15 must be treated as core-visible."
+    },
+    {
+      "id": "F5",
+      "severity": "medium",
+      "title": "Source roles and filenames do not reach the semantic prompts; in-document headings do",
+      "evidence": "coverage_audit/1.0.0/user.md and episode_plan/1.1.0/user.md receive briefs, claims, priorities and IDs only; claims carry source_id UUIDs. evidence_extraction/1.3.0/user.md receives the block JSON including heading_path.",
+      "affected_cases": [
+        "C08"
+      ],
+      "consequence": "Role-based gaming is impossible via filenames or source metadata; the real leakage vector is the document's own headings and front matter."
+    },
+    {
+      "id": "F6",
+      "severity": "medium",
+      "title": "The eval harness has no source triage stage",
+      "evidence": "eval_harness._run_case ingests every configured source and calls analyze_source on all of them; uploaded sources are registered full_text + include.",
+      "affected_cases": [
+        "C08"
+      ],
+      "consequence": "C08 measures claim-level relevance at prioritisation and planning, not source triage. Its failures will be misread if described as triage."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "C01",
+      "case_key": "james_genuine_option_en_fa",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C01-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Ingest exactly one text. Package C01-A lists both the Gutenberg transcript (james_pg_26659) and the Library of Congress 1897 scan (james_loc_04003036) as sources; the scan must be an offline collation reference only.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience.",
+        "Record the 1912-impression-to-1897 collation result as a fixture provenance note."
+      ],
+      "blocking_issues": [],
+      "replacement_package_ids": [],
+      "gold_authorable": true,
+      "confidence": "high",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C01-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "on_package",
+        "sol_reasoning_provides_new_evidence": "No. Sol's collation risk (1912 impression vs 1897 first edition) matches mine and I adopted it. Sol did not notice that C01-A lists both the transcript and the verification scan as package sources.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved. Original rationale stands."
+      },
+      "final_disposition": "visible_core"
+    },
+    {
+      "case_id": "C02",
+      "case_key": "putnam_fact_value_fa_fa",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C02-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Correct the licence record: the publisher states Attribution-NonCommercial 4.0 International (CC BY-NC 4.0). Sol recorded 'unresolved'.",
+        "Reclassify redistribution from private_fixture to conditional_commit; the NC term still needs checking against repository distribution.",
+        "Correct the bibliographic record: publisher and DOAJ agree on volume 17, issue 68, Winter 1400, pages 123-153, DOI 10.22054/wph.2021.53089.1867. The PDF masthead 'volume 16' is the outlier, not a genuine record conflict.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience."
+      ],
+      "blocking_issues": [
+        "The Persian PDF text layer has not been verified. Given the C12 finding, extractable Unicode Persian with no presentation-form glyphs and no NUL bytes must be confirmed before acceptance. This is blocking because C02 is one of only two surviving Persian-source cases."
+      ],
+      "replacement_package_ids": [],
+      "gold_authorable": true,
+      "confidence": "medium",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "medium",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C02-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "on_package",
+        "sol_reasoning_provides_new_evidence": "No. Sol's stated objection ('no article reuse license was found') is refuted by the publisher page, which states CC BY-NC 4.0. My independent correction stands.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved. Original rationale stands."
+      },
+      "final_disposition": "visible_core"
+    },
+    {
+      "case_id": "C03",
+      "case_key": "woolf_argument_qualifications",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C03-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Use the complete essay rather than non-contiguous chapters 1, 3 and 6. The work is short enough to fit the budget whole, and non-contiguous excerpting breaks the argument-dependency chain the case exists to test while making coverage and deferral figures misleading.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience.",
+        "Gold must constrain typing (assertion / qualification / historical claim / illustrative fiction) rather than segment ordering, since several orderings are legitimately excellent."
+      ],
+      "blocking_issues": [],
+      "replacement_package_ids": [],
+      "gold_authorable": true,
+      "confidence": "high",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C03-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "yes",
+        "sol_reasoning_provides_new_evidence": "No new evidence, but Sol named the hypothesis first: 'non-contiguous chapter selection can manufacture an argument if excerpt boundaries are too aggressive.' My 'use the complete essay' repair is the concrete form of Sol's own concern. Credit recorded.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved. Original rationale stands, with attribution to Sol for naming the risk."
+      },
+      "final_disposition": "visible_core"
+    },
+    {
+      "case_id": "C04",
+      "case_key": "dubois_primary_commentary",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C04-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Bound the SEP scope to sections 2.3 and 3 only, replacing Sol's 'Sections 2-4'. Verified independently: roughly 55-60 percent of the entry is a taxonomy of interpretations with six named readings, it quotes Du Bois throughout, and its section structure is a ready-made answer key.",
+        "Rewrite the brief so the answer is unobtainable from the commentary alone. Sol's brief ('explain how the scholarly commentary distinguishes possible meanings and historical developments') restates SEP's contents page. Ask instead which of Du Bois's own formulations support and which resist a given reading.",
+        "Enlarge the primary scope so it is load-bearing.",
+        "Score the case primarily on ClaimType attribution (author_position vs scholarly_interpretation), which is measurable today without M8."
+      ],
+      "blocking_issues": [],
+      "replacement_package_ids": [],
+      "rejected_alternates": [
+        {
+          "package_id": "C04-B",
+          "reason": "5 primary pages against 20-30 commentary pages maximises the dominance ratio the case is supposed to resist."
+        }
+      ],
+      "gold_authorable": true,
+      "confidence": "medium_high",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "medium_high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C04-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "on_package_not_on_confidence",
+        "sol_reasoning_provides_new_evidence": "No. Sol states the objection precisely ('SEP's taxonomy is so clear that a model may reproduce it while under-reading Du Bois, turning the test into commentary summarization') and then rates confidence High and lets the package pass unchanged. Naming a risk is not mitigating it. My measurement (~55-60 percent of the entry is the interpretation taxonomy, six named readings, Du Bois quoted throughout) converts Sol's hypothesis into a fact and specifies the repair.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved: ACCEPT_WITH_CHANGES. Confidence should not have been High."
+      },
+      "final_disposition": "visible_core"
+    },
+    {
+      "case_id": "C05",
+      "case_key": "replication_competing_interpretations",
+      "split": "core",
+      "verdict": "BLOCKED",
+      "preferred_package_id": "C05-A",
+      "preferred_package_verdict": "reject",
+      "required_changes": [
+        "Remove from v1. Preserve the design for v1.1, to be re-admitted once M8 cross-source semantic reconciliation ships.",
+        "If a disagreement case is wanted in v1, replace it with a single-source objection/response case: Darwin 'Difficulties on Theory' (chapter VI, 1859 first edition), already inside the rescoped C09 corpus."
+      ],
+      "blocking_issues": [
+        "The target failure mode is cross-source disagreement, which has no implementing stage. Claim reconciliation is per-source and the disagreement graph will be empty for a multi-source corpus, so the case cannot distinguish a collapsed disagreement from an absent architecture.",
+        "All three sources are AAAS-copyrighted private_fixture material, so a public CI regression run cannot acquire them."
+      ],
+      "replacement_package_ids": [
+        "C05-REPLACEMENT-DARWIN-CH6"
+      ],
+      "gold_authorable": false,
+      "confidence": "high",
+      "original_independent_judgment": {
+        "verdict": "BLOCKED",
+        "preferred_package_verdict": "reject",
+        "gold_authorable": false,
+        "confidence": "high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C05-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "no",
+        "sol_reasoning_provides_new_evidence": "No. Sol's objection is operational only: copyrighted copies, not always versions of record. It does not reach the decisive problem. Fixing access would not make the case measurable, because the blocker is architectural (M8 not implemented).",
+        "verdict_changed": false,
+        "reason": "Verdict preserved: BLOCKED. Slot now filled by a genuinely distinct replacement rather than left empty."
+      },
+      "final_disposition": "blocked_slot_filled_by_C05R"
+    },
+    {
+      "case_id": "C06",
+      "case_key": "beyond_gdp_complementary_synthesis",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C06-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Cut the corpus from 90-130 pages to roughly 40: each report's executive summary plus one framework chapter. At current size it is the second most expensive case in the suite for a capability a third of the text would expose equally well.",
+        "Resolve both licences, currently recorded as unresolved for both sources.",
+        "Pin a stable Stiglitz endpoint; Sol correctly noted the original Commission endpoint is not currently stable.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience."
+      ],
+      "blocking_issues": [
+        "Both sources are licence-unresolved and manifest_or_excerpt, so a public CI run cannot acquire them without a private fixture store."
+      ],
+      "replacement_package_ids": [],
+      "gold_authorable": true,
+      "confidence": "medium",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "medium",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C06-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "yes",
+        "sol_reasoning_provides_new_evidence": "No. Sol's selection-effect risk ('an overly curated excerpt could predetermine the synthesis') matches my corpus-shrink requirement.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved. Original rationale stands."
+      },
+      "final_disposition": "visible_core"
+    },
+    {
+      "case_id": "C07",
+      "case_key": "wfh_bounded_inference",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C07-A",
+      "preferred_package_verdict": "accept",
+      "required_changes": [
+        "Construct the brief so at least one learning objective is unanswerable by construction from a single-firm, single-country, graduate-workforce study, such as occupational or firm-size generality.",
+        "Make the expected abstention observable in coverage-report.json as a not_covered objective plus a narrow_scope recommendation, rather than only as hedging prose.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience."
+      ],
+      "blocking_issues": [],
+      "replacement_package_ids": [],
+      "verification_note": "Independently confirmed in every field: Bloom, Han and Liang, Nature 630:920-925, 12 June 2024, DOI 10.1038/s41586-024-07500-2, CC BY 4.0, N=1612 at Trip.com China, six-month RCT, predominantly graduate-educated staff. Kept rather than replaced: the measurable behaviour is the coverage auditor's recommendation and max_supported_minutes feeding can_plan_episode, which fluent hedging cannot fake.",
+      "gold_authorable": true,
+      "confidence": "high",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept",
+        "gold_authorable": true,
+        "confidence": "high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C07-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "yes",
+        "sol_reasoning_provides_new_evidence": "No, but Sol independently raised the same 'too easy' question I was asked to test ('the abstention behavior may be easier than in normal use'). We reach the same keep decision by different routes: Sol on realism, me on the deterministic coverage artifact being non-gameable.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved. Original rationale stands."
+      },
+      "final_disposition": "visible_core"
+    },
+    {
+      "case_id": "C08",
+      "case_key": "douglass_relevance_filter",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C08-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Neutralise in-document headings and front matter in the fixtures. Filenames and source-role metadata never reach the semantic prompts, but heading_path does, so a decoy whose H1 announces 'Biography' leaks its role.",
+        "Enlarge the decoys to roughly 25-30 percent of the corpus. At 5-10 decoy pages against 40 primary pages a deep-tier run at 85 percent coverage extracts everything anyway, so admitting decoys costs almost nothing and there is little to detect.",
+        "Add at least one partially relevant decoy so the correct answer is selective use rather than blanket exclusion.",
+        "Re-label the case as claim-level relevance filtering rather than source triage; the eval harness auto-admits every uploaded source and has no triage stage.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience."
+      ],
+      "blocking_issues": [],
+      "replacement_package_ids": [],
+      "rejected_alternates": [
+        {
+          "package_id": "C08-B",
+          "reason": "A single decoy gives too little diagnostic power, as Sol's own risk note states."
+        }
+      ],
+      "gold_authorable": true,
+      "confidence": "medium_high",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "medium_high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C08-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "partially",
+        "sol_reasoning_provides_new_evidence": "Partially refuted. Sol's stated vector - 'obvious filenames or source-role labels could let the system game the case' - does not exist: neither filenames nor source roles reach the semantic prompts. The real vector is the document's own heading_path. Sol's confidence qualifier ('High if fixture labels are neutral') guards the wrong thing.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved. Original rationale stands and is strengthened."
+      },
+      "final_disposition": "visible_core"
+    },
+    {
+      "case_id": "C09",
+      "case_key": "darwin_long_argument_dependencies",
+      "split": "core",
+      "verdict": "REPLACE_SOURCE",
+      "preferred_package_id": "C09-A",
+      "preferred_package_verdict": "reject_scope_accept_source",
+      "required_changes": [
+        "Rescope from the complete 1859 first edition to chapters I-IV plus chapter VI plus chapter XIV, roughly 60-70k words. At 40 minutes the 72000-token budget then yields about 80 percent coverage, so the system actually sees the prerequisite chain it is asked to reconstruct.",
+        "Keep Project Gutenberg #1228 as the sole ingested artifact; Darwin Online remains an offline reference only.",
+        "Record archaic English, nineteenth-century vocabulary and EN-to-FA rendering as accepted, documented confounds so a C09 regression is never read as a pure reasoning result.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience."
+      ],
+      "blocking_issues": [
+        "As scoped, the extraction planner defers roughly two-thirds of the book at any product-realistic duration, so the case measures the deterministic block selector rather than the model."
+      ],
+      "replacement_package_ids": [
+        "C09-A-RESCOPED"
+      ],
+      "rejected_alternates": [
+        {
+          "package_id": "C09-B",
+          "reason": "Sixth edition; Sol's edition-mixing reasoning is correct."
+        }
+      ],
+      "verification_note": "Bibliography independently confirmed: Project Gutenberg #1228 is the 1859 first edition, public domain in the USA.",
+      "gold_authorable": true,
+      "confidence": "high",
+      "original_independent_judgment": {
+        "verdict": "REPLACE_SOURCE",
+        "preferred_package_verdict": "reject_scope_accept_source",
+        "gold_authorable": true,
+        "confidence": "high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C09-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "on_source_not_on_scope",
+        "sol_reasoning_provides_new_evidence": "No. Sol penalises size only as cost (C=2) while scoring failure-mode fit 5. Failure-mode fit is not 5: the extraction planner defers about 64 percent of the book deterministically, so the case cannot exhibit the behaviour it scores for.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved: REPLACE_SOURCE (rescope)."
+      },
+      "final_disposition": "visible_core"
+    },
+    {
+      "case_id": "C10",
+      "case_key": "ostrom_20min_standard",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C10-11-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Pin modes, prior_knowledge, audience and output_language identically to C11; only target_duration_minutes may differ, or the duration control is void. A stray critical/debate mode adds 10 percentage points of coverage and advanced prior_knowledge raises claim caps and neighbour context.",
+        "Acquire a born-digital copy. The Nobel URL listed as stable returned HTTP 403 to automated retrieval and the freely reachable copy is a JSTOR scan with an OCR text layer, which would inject OCR noise into a semantic case.",
+        "Plan for private-fixture acquisition in CI; the licence is unresolved (Nobel Foundation / AEA).",
+        "ADDED AFTER READING SOURCE-RECOMMENDATIONS.md: author C10's gold as a small must-cover core plus an explicitly licensed variation set - the thesis and the markets-versus-states challenge as required atoms, with the remaining selection recorded as acceptable alternatives - rather than a fixed atom list."
+      ],
+      "blocking_issues": [],
+      "replacement_package_ids": [],
+      "gold_authorable": true,
+      "confidence": "high",
+      "gold_authoring_confidence": "medium_high",
+      "changed_after_reading_recommendations": {
+        "what_changed": "gold_authoring_confidence lowered from high to medium_high, and one required change added. The verdict, preferred_package_verdict and gold_authorable flag are unchanged.",
+        "new_evidence": "Sol's adversarial objection for C10, which I had not made: 'A five-minute brief may still force omission of a term that reviewers personally consider essential, making later gold brittle.'",
+        "why_it_persuaded_me": "My own section 4.9 arithmetic strengthens Sol's point without my having noticed: at 5 minutes the profile selects about 38 percent of tokens with a cap of 2 claims per block, so which material survives is legitimately variable and several excellent five-minute episodes could select materially different subsets. My section 9 listed C03, H13, H14 and H15 as the cases at risk of arbitrary-summary gold and omitted C10. That was an omission on my part.",
+        "knock_on_effect": "The C10/C11 differential metric must be distinct-atom coverage growth from 5 to 30 minutes, which tolerates variable selection at 5 minutes, rather than atom-for-atom recall at both durations."
+      },
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C10-11-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "yes",
+        "sol_reasoning_provides_new_evidence": "Sol raises a good point I had not made: a five-minute brief may force omission of a term reviewers consider essential, making later gold brittle. It is now moot - the 5-minute member is replaced by 20 minutes under the MVP product-contract correction, which also resolves Sol's concern.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved; CONFIGURATION CHANGED from 5 to 20 minutes under the product-contract correction, not under Sol's reasoning."
+      },
+      "final_disposition": "visible_core",
+      "reconfiguration": {
+        "was": "5 minutes (brief tier)",
+        "now": "20 minutes (standard tier)",
+        "basis": "MVP product contract defines output as a 20-40 minute private episode; 5 minutes is outside it.",
+        "computed_profile": {
+          "tier": "standard",
+          "coverage_target": 0.6,
+          "coverage_tokens": 13860,
+          "token_budget": 36000,
+          "effective_target_tokens": 13860,
+          "achieved_coverage": "66%",
+          "max_claims_per_block": 3,
+          "neighbor_context_blocks": 0,
+          "include_examples": true,
+          "include_objections_and_responses": false,
+          "can_plan_episode_requires_max_supported_minutes": 16,
+          "persian_script_words_at_130wpm": 2600
+        }
+      }
+    },
+    {
+      "case_id": "C11",
+      "case_key": "ostrom_40min_deep",
+      "split": "core",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "C10-11-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Retain 30 minutes. Sol's stated risk that the corpus may not meet the evidence-density gate is unfounded: the gate requires 600 original evidence tokens for 30 minutes and the corpus carries roughly 20000; the claim-time gate clears at 30 claims at the floor value; and a 30-minute Persian episode is about 3900 words at 130 wpm against roughly 15000 source words. Do not lower to 15 or 20 minutes, which would collapse the tier contrast from brief-to-deep into brief-to-standard.",
+        "Same identical-configuration pinning and born-digital acquisition as C10.",
+        "Define the differential metric at gold time: distinct-claim count, distinct-atom coverage at 30 versus 5, and repetition rate. Because every deterministic gate clears easily, C11 cannot fail on supported-duration grounds and padding must be detected explicitly."
+      ],
+      "blocking_issues": [],
+      "replacement_package_ids": [],
+      "verification_note": "Measured from a retrieved copy: 33 pages, 18907 words, so roughly 15-16k analysable words after the cover page and reference list. Computed profiles: 5 min yields 8085 selected tokens (~38 percent), 2 claims per block, 0 neighbours; 30 min yields 19635 selected tokens (~94 percent), 5 claims per block, 1 neighbour. The controlled experiment is sound and is the best-designed element of Phase 1.",
+      "gold_authorable": true,
+      "confidence": "high",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C10-11-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "on_package_not_on_risk",
+        "sol_reasoning_provides_new_evidence": "Refuted by arithmetic. Sol: 'the lecture may not support 30 minutes at the product's evidence-density standard.' The gate needs 600 original evidence tokens for 30 minutes and the corpus carries about 21000 - a 35x margin. Sol's reasoning is sound in principle but the premise is false for this corpus.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved; CONFIGURATION CHANGED from 30 to 40 minutes under the product-contract correction."
+      },
+      "final_disposition": "visible_core",
+      "reconfiguration": {
+        "was": "30 minutes (deep tier)",
+        "now": "40 minutes (deep tier)",
+        "basis": "Keeps the pair inside the MVP 20-40 minute band and sets a harder supported-duration bar (32 vs 24 minutes).",
+        "computed_profile": {
+          "tier": "deep",
+          "coverage_target": 0.85,
+          "coverage_tokens": 19635,
+          "token_budget": 72000,
+          "effective_target_tokens": 19635,
+          "achieved_coverage": "93.5%",
+          "max_claims_per_block": 5,
+          "neighbor_context_blocks": 1,
+          "include_examples": true,
+          "include_objections_and_responses": true,
+          "can_plan_episode_requires_max_supported_minutes": 32,
+          "persian_script_words_at_130wpm": 5200
+        }
+      }
+    },
+    {
+      "case_id": "C12",
+      "case_key": "iran_constitution_mixed_language",
+      "split": "core",
+      "verdict": "BLOCKED",
+      "preferred_package_id": "C12-A",
+      "preferred_package_verdict": "reject",
+      "required_changes": [
+        "Remove from v1; defer to v1.1.",
+        "Locate a born-digital, edition-identified Persian text of both the 1906 Fundamental Law and the 1907 Supplement with stated provenance, and verify it under the proposed R13 machine-usable-text gate.",
+        "Do not substitute an English translation as the primary; that would delete the case's reason to exist.",
+        "If rebuilt, keep Arjomand but bound its scope and write the brief so provision-level reading is unavoidable, or the case inherits the C04 commentary-dominance defect in acute form."
+      ],
+      "blocking_issues": [
+        "The 1906 Persian PDF is a pure image scan: 12 pages, 0 extractable characters, 12 embedded images. Using it would force Persian OCR into a benchmark that explicitly excludes OCR.",
+        "The 1907 Persian PDF has a broken text layer: 26 pages yielding 3058 characters and 618 words, with 626 NUL bytes and 1453 Arabic presentation-form characters; only article headers extract. This would also break evidence_validator's verbatim excerpt matching, so the case would fail for encoding reasons while appearing to fail semantically.",
+        "The 1907 PDF contains پهلوي, قاجاريه and ولايتعهد, indicating a consolidated text carrying the 1925 Pahlavi amendment rather than the 1907 settlement as enacted. Gold atoms drawn from it would be historically false.",
+        "The Iran Data Portal carries no reuse licence (© Syracuse University)."
+      ],
+      "replacement_package_ids": [],
+      "verification_note": "Sol marked the 1907 source partially_verified because automated retrieval returned an access error. That specific blocker is resolved: the file was retrieved successfully. Retrieval was never the problem; the file's contents are.",
+      "gold_authorable": false,
+      "confidence": "high",
+      "original_independent_judgment": {
+        "verdict": "BLOCKED",
+        "preferred_package_verdict": "reject",
+        "gold_authorable": false,
+        "confidence": "high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "C12-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "no",
+        "sol_reasoning_provides_new_evidence": "No. Sol flagged that the 1907 PDF was not opened during automated verification, which was good practice. Opening it converts one flagged risk into two disqualifying facts (broken glyph-only encoding; post-1907 Pahlavi amendment content) plus a companion 1906 file that is a pure image scan.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved: BLOCKED. Replacement search performed and documented; no defensible replacement verified yet."
+      },
+      "final_disposition": "deferred_to_v1_1"
+    },
+    {
+      "case_id": "H13",
+      "case_key": "ai_ethics_normative_to_operational",
+      "split": "holdout",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "H13-A",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Repair via the brief: state explicitly that some normative commitments have no operational counterpart and some practices have no normative counterpart, and that saying so is a correct answer. Sol's 'identify useful mappings and gaps' is too weak to prevent a forced table.",
+        "Require typed relations rather than a mapping table: operationalizes, partially_addresses, no_counterpart, in_tension.",
+        "Gold must include licensed non-mappings and explicit must-not-assert atoms, chiefly that neither document is evidence that any practice works. Gold must never presuppose one-to-one correspondence.",
+        "Bound the corpus from about 92 pages to UNESCO's values, principles and policy areas plus the NIST Core functions, roughly 45-55 pages.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience."
+      ],
+      "blocking_issues": [
+        "The UNESCO CC BY-NC-SA 3.0 IGO licence could not be independently verified; UNESDOC returned HTTP 403. Must be checked by hand before freezing.",
+        "Holdout status is already compromised: the brief, sources, capability and failure list are public in CASE-MATRIX.md."
+      ],
+      "replacement_package_ids": [],
+      "rejected_alternates": [
+        {
+          "package_id": "H13-B",
+          "reason": "OECD amendments create benchmark version drift, as Sol notes."
+        }
+      ],
+      "gold_authorable": true,
+      "confidence": "medium_high",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "medium_high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "H13-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "yes",
+        "sol_reasoning_provides_new_evidence": "No. Sol identifies the same artificiality ('UNESCO and NIST were not written as counterparts; a prompt asking for mapping may encourage false equivalence') and, unlike C04, does not let it pass silently. My contribution is the specific repair, not the diagnosis.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved. Reclassified from holdout to visible challenge tier."
+      },
+      "final_disposition": "visible_challenge_non_gating"
+    },
+    {
+      "case_id": "H14",
+      "case_key": "climate_event_attribution_uncertainty",
+      "split": "holdout",
+      "verdict": "ACCEPT_WITH_CHANGES",
+      "preferred_package_id": "H14-B",
+      "preferred_package_verdict": "accept_with_changes",
+      "required_changes": [
+        "Adopt option B: freeze one explicit event class, specifically heat extremes. A general methodological brief yields gold with few checkable atoms and enormous legitimate variation, forcing one arbitrary reference summary to become the answer. Heat extremes inherit AR6 WGI Ch.11's calibrated confidence language attached to a specific event type, giving stable atoms: occurrence versus changed probability versus changed intensity, an explicit likelihood term, an explicit confidence level, and quotable locators.",
+        "Shrink the corpus from 50-80 assessment pages to the Executive Summary plus the heat-extremes section, reducing both cost and excerpt-selection bias.",
+        "Use unmodified IPCC excerpts or prefer the Executive Summary / SPM verbatim, given the CC BY-NC-ND no-derivatives term, and record a rights determination before freezing.",
+        "Pin target_duration_minutes, modes, prior_knowledge and audience."
+      ],
+      "blocking_issues": [
+        "The Bellprat et al. 2019 CC BY 4.0 licence could not be independently confirmed; the record lookup resolved to a different article. Treat as unverified pending a manual check.",
+        "Holdout status is already compromised: the brief, sources, capability and failure list are public in CASE-MATRIX.md."
+      ],
+      "replacement_package_ids": [],
+      "rejected_alternates": [
+        {
+          "package_id": "H14-A",
+          "reason": "Adds size and restrictive rights for heavy topical overlap; Sol's ranking of H14-B above H14-A is correct."
+        }
+      ],
+      "gold_authorable": true,
+      "confidence": "medium_high",
+      "original_independent_judgment": {
+        "verdict": "ACCEPT_WITH_CHANGES",
+        "preferred_package_verdict": "accept_with_changes",
+        "gold_authorable": true,
+        "confidence": "medium_high",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "H14-B",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "yes",
+        "sol_reasoning_provides_new_evidence": "No. Sol poses the identical A/B choice ('the brief must specify an event class or remain explicitly methodological') and defers it. I chose B on gold-stability grounds.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved. Reclassified from holdout to visible challenge tier."
+      },
+      "final_disposition": "visible_challenge_non_gating"
+    },
+    {
+      "case_id": "H15",
+      "case_key": "hafez_interpretive_ambiguity_mixed",
+      "split": "holdout",
+      "verdict": "REPLACE_SOURCE",
+      "preferred_package_id": "H15-A",
+      "preferred_package_verdict": "reject",
+      "required_changes": [
+        "Replace the Khanlari primary with the Qazvini and Ghani critical edition (1320 SH / 1941) taken from the Persian Wikisource proofread transcription, pinned to a specific revision ID.",
+        "Bound the secondary scope. Lewis's 'Hafez viii. Hafez and Rendi' is an entry about rendi and supplies the interpretive vocabulary the brief asks the system to derive; this is the C04 dominance defect again.",
+        "Select the ghazals from the scholars' own citations rather than reviewer preference, so the selection does not bake in a reading.",
+        "Human-collate every selected verse against the page scans before acceptance.",
+        "Gold must specify which readings must remain open rather than which reading is correct, since the ambiguity is constitutive."
+      ],
+      "blocking_issues": [
+        "The Khanlari edition is in copyright and commercially in print (Khwarazmi, Tehran, 1362 SH, two volumes, established from fourteen manuscripts); the only digital copies in circulation are unauthorised. No lawful digital acquisition path exists.",
+        "The Qazvini-Ghani rights determination and exact printing are not yet resolved.",
+        "Holdout status is already compromised: the brief, sources, capability and failure list are public in CASE-MATRIX.md."
+      ],
+      "replacement_package_ids": [
+        "H15-C",
+        "H15-D",
+        "H15-E"
+      ],
+      "rejected_alternates": [
+        {
+          "package_id": "H15-B",
+          "reason": "Manuscript MS.PERS.29 would contaminate a semantic benchmark with paleography and transcription work, and a single sixteenth-century witness is not a critical edition. Sol's own risk note says the same."
+        }
+      ],
+      "verification_note": "The case is worth keeping rather than replacing: constitutive literary ambiguity with contested terminology is exercised nowhere else, and with C12 blocked it is one of only two remaining Persian-primary cases. The acquisition cost should be paid on Qazvini-Ghani, not Khanlari.",
+      "gold_authorable": true,
+      "confidence": "medium",
+      "original_independent_judgment": {
+        "verdict": "REPLACE_SOURCE",
+        "preferred_package_verdict": "reject",
+        "gold_authorable": true,
+        "confidence": "medium",
+        "formed_before_reading_sol_recommendations": true
+      },
+      "reconciliation": {
+        "sol_preferred_package_id": "H15-A",
+        "same_preferred_package_as_mine": true,
+        "agreement_with_sol": "yes_fully",
+        "sol_reasoning_provides_new_evidence": "No new evidence, but Sol's handling is the strongest in the document: confidence 'Low until acquisition/collation; do not freeze' already refuses the package, and Sol independently raised that expert poem selection could bake in one interpretation - a risk I adopted. My contribution is the verified replacement, not the diagnosis.",
+        "verdict_changed": false,
+        "reason": "Verdict preserved: REPLACE_SOURCE. Reclassified from holdout to VISIBLE CORE (slot 12)."
+      },
+      "final_disposition": "visible_core"
+    }
+  ],
+  "proposed_replacement_packages": [
+    {
+      "package_id": "H15-C",
+      "rank": 1,
+      "for_case": "H15",
+      "topology": "public_domain_critical_edition_persian_primary_plus_two_bounded_english_specialist_entries",
+      "sources": [
+        "Divan-e Hafez, critical edition of Muhammad Qazvini and Qasem Ghani (1320 SH / 1941), via the Persian Wikisource proofread transcription, pinned revision",
+        "Franklin Lewis, 'Hafez viii. Hafez and Rendi', Encyclopaedia Iranica (bounded scope)",
+        "J. T. P. de Bruijn, 'Hafez iii. Hafez's Poetic Art', Encyclopaedia Iranica (bounded scope)"
+      ],
+      "verified": "Persian Wikisource hosts a scan-backed, fully proofread and validated page-by-page transcription of roughly 430 pages. The edition is the first scholarly critical edition of the Divan, 495 ghazals, established against the Khalkhali manuscript of 827 AH. Editors died 1949 and 1952.",
+      "why_better": "Removes the acquisition blocker entirely, is a genuine critical edition rather than a generic web transcription, provides born-digital clean Unicode with page-level locators mapping to a printed edition, and involves no manuscript paleography or OCR.",
+      "outstanding": [
+        "Pin the Wikisource revision ID; a wiki is mutable.",
+        "Document a rights determination for both the underlying edition and the CC BY-SA transcription.",
+        "Confirm the exact printing behind the scanned pages."
+      ]
+    },
+    {
+      "package_id": "H15-D",
+      "rank": 2,
+      "for_case": "H15",
+      "topology": "same_primary_single_secondary",
+      "sources": [
+        "Qazvini and Ghani critical edition via pinned Wikisource revision",
+        "Franklin Lewis, 'Hafez viii. Hafez and Rendi', Encyclopaedia Iranica (bounded scope)"
+      ],
+      "why_better": "Halves commentary volume, directly mitigating interpretive dominance, and keeps attribution testable without M8. Prefer if H15-C's two-secondary corpus dominates in a pilot.",
+      "outstanding": [
+        "Same as H15-C."
+      ]
+    },
+    {
+      "package_id": "H15-E",
+      "rank": 3,
+      "for_case": "H15",
+      "topology": "public_domain_persian_prose_primary_plus_one_specialist_entry",
+      "sources": [
+        "Sa'di, Golestan, in a public-domain scholarly edition (Foroughi, died 1942)",
+        "One specialist scholarly entry"
+      ],
+      "why_better": "Fully clean public-domain Persian primary prose with real interpretive and terminological ambiguity, if Hafez rights cannot be settled.",
+      "verified": "NOT VERIFIED. Named as a fallback only, not a recommendation.",
+      "outstanding": [
+        "Verify edition, rights and text availability before any use.",
+        "Ambiguity is rhetorical rather than constitutive, so semantic value is lower than Hafez."
+      ]
+    },
+    {
+      "package_id": "C09-A-RESCOPED",
+      "rank": 1,
+      "for_case": "C09",
+      "topology": "bounded_long_primary_monograph_span",
+      "sources": [
+        "Charles Darwin, On the Origin of Species, 1859 first edition, Project Gutenberg #1228, chapters I-IV plus VI plus XIV"
+      ],
+      "why_better": "Roughly 60-70k words, about 90k tokens. At 40 minutes the 72000-token budget yields about 80 percent coverage, so the system sees the prerequisite chain rather than a deterministic one-third sample. Preserves genuine long-range structure: mechanism defined early, objections mid-book, synthesis depending on both."
+    },
+    {
+      "package_id": "C05R-A",
+      "rank": 1,
+      "for_case": "C05 (slot replacement, not a rehabilitation of the original design)",
+      "supersedes": "C05-REPLACEMENT-DARWIN-CH6, withdrawn because it overlapped C09",
+      "topology": "single_source_internal_objection_and_response",
+      "sources": [
+        "John Stuart Mill, Utilitarianism (1861/1863), Project Gutenberg #11224"
+      ],
+      "verified": "PG #11224 confirmed: title Utilitarianism, Mill (1806-1873), released 2004-02-01, last updated 2024-10-28, public domain in the USA, available as plain-text UTF-8 (179 kB) and HTML. Born-digital, no OCR, passes R13 by construction. Chapter II is an explicit sequence of objections stated in the objector's voice and then answered.",
+      "redistribution_class": "commit_safe",
+      "why_it_fits": "The target failure - attributing a stated objection to Mill as his own position - is measurable today and entirely single-source: the document mapper assigns objection and response section functions, ClaimType.COUNTERARGUMENT exists alongside AUTHOR_POSITION, and the reconciler is explicitly forbidden to merge an objection with its response or convert criticism into an author position. No M8 dependency.",
+      "why_no_overlap_with_C09": "Different source, author, domain (moral philosophy vs natural science) and failure mode: C09 tests long-range prerequisite ordering across a long monograph; C05R tests dense, local, high-frequency dialectical voice attribution in a short text.",
+      "scope_and_cost": "Whole book about 30k words ~ 40k tokens. At 25 minutes (standard tier): target = min(40000, 26400, 45000) = 26400 tokens, 66 percent coverage. Mid-sized and cheap.",
+      "declared_residual_overlap": "Shares a claim-typing family with C03 (Woolf): rhetorical-device typing vs dialectical voice attribution. Different specific distinction, shared family. Recorded rather than hidden.",
+      "outstanding": [
+        "Author the brief and pin scope plus output configuration (R15)."
+      ]
+    }
+  ],
+  "dataset_level": {
+    "basis": "Reconciliation pass: independent judgment plus the MVP product-contract correction and the burned-holdout correction.",
+    "proposed_final_visible_core": {
+      "count": 12,
+      "release_gating": true,
+      "cases": [
+        {
+          "slot": 1,
+          "case": "C01",
+          "label": "James",
+          "capability": "EN to FA conceptual distinction network",
+          "status": "accept_with_changes"
+        },
+        {
+          "slot": 2,
+          "case": "C02",
+          "label": "Putnam (FA)",
+          "capability": "FA to FA conceptual distinction; native Persian scholarly prose",
+          "status": "accept_with_changes; R13 check BLOCKING"
+        },
+        {
+          "slot": 3,
+          "case": "C03",
+          "label": "Woolf",
+          "capability": "argument plus qualification; typing rhetorical and fictional devices",
+          "status": "accept_with_changes"
+        },
+        {
+          "slot": 4,
+          "case": "C04",
+          "label": "Du Bois + SEP",
+          "capability": "primary versus secondary attribution",
+          "status": "accept_with_changes"
+        },
+        {
+          "slot": 5,
+          "case": "C05R",
+          "label": "Mill, Utilitarianism",
+          "capability": "single-source objection and response preservation",
+          "status": "NEW replacement package C05R-A"
+        },
+        {
+          "slot": 6,
+          "case": "C06",
+          "label": "Beyond GDP",
+          "capability": "complementary multi-source synthesis",
+          "status": "accept_with_changes"
+        },
+        {
+          "slot": 7,
+          "case": "C07",
+          "label": "Bloom hybrid RCT",
+          "capability": "bounded inference, narrowing, abstention",
+          "status": "accept_with_changes"
+        },
+        {
+          "slot": 8,
+          "case": "C08",
+          "label": "Douglass",
+          "capability": "claim-level relevance filtering, purposeful omission",
+          "status": "accept_with_changes"
+        },
+        {
+          "slot": 9,
+          "case": "C09",
+          "label": "Darwin (rescoped)",
+          "capability": "long hierarchical dependency reconstruction",
+          "status": "rescoped to chapters I-IV plus VI plus XIV"
+        },
+        {
+          "slot": 10,
+          "case": "C10",
+          "label": "Ostrom 20 min",
+          "capability": "duration control, standard-tier member",
+          "status": "reconfigured from 5 minutes"
+        },
+        {
+          "slot": 11,
+          "case": "C11",
+          "label": "Ostrom 40 min",
+          "capability": "duration control, deep-tier member",
+          "status": "reconfigured from 30 minutes"
+        },
+        {
+          "slot": 12,
+          "case": "V15",
+          "label": "Hafez (Qazvini-Ghani)",
+          "capability": "Persian primary plus cross-language plus interpretive ambiguity",
+          "status": "promoted from burned holdout; source replaced (H15-C)"
+        }
+      ],
+      "rationale_for_slot_12": "Promoting the repaired Hafez case is what makes twelve defensible rather than arithmetic. It is Persian-primary with English secondary scholarship, so it carries most of C12's intended capability, and it repairs the language-diversity gap that was the set's most serious imbalance."
+    },
+    "visible_challenge_tier": {
+      "count": 2,
+      "release_gating": false,
+      "cases": [
+        {
+          "case": "V13",
+          "was": "H13",
+          "label": "UNESCO + NIST",
+          "note": "Weakest-differentiated case in the set (overlaps C06); first candidate for removal if suite cost becomes a problem. Licence unverified."
+        },
+        {
+          "case": "V14",
+          "was": "H14",
+          "label": "IPCC heat extremes + Bellprat",
+          "note": "Narrowed to one event class. Licence unverified."
+        }
+      ],
+      "rationale": "Executed and reported on every release run but not release-gating, because their designs are public and their licences are unverified. Valuable regression signal; no longer holdouts."
+    },
+    "cases_still_blocked": [
+      {
+        "case": "C05",
+        "kind": "architectural",
+        "detail": "Cross-source disagreement cannot be a release-gating capability until M8 exists. Returns in v1.1. Its v1 slot is filled by C05R, which measures a genuinely distinct and implemented capability rather than standing in for it."
+      },
+      {
+        "case": "C12",
+        "kind": "source provenance",
+        "detail": "Returns in v1.1 if the bounded vintage-and-rights task on a born-digital Persian legal text resolves. Slot deliberately NOT force-filled."
+      }
+    ],
+    "treatment_of_H13_H15": {
+      "classification": "burned as holdouts",
+      "reason": "Their detailed Research Briefs, sources, target capabilities and failure modes are already committed to visible benchmark-design history. Hiding only future gold atoms is insufficient.",
+      "disposition": {
+        "H15": "promoted to visible core slot 12",
+        "H13": "visible challenge tier as V13",
+        "H14": "visible challenge tier as V14"
+      },
+      "no_unpublishing": "No attempt is made to un-publish them; that would not restore holdout value and would damage the audit trail."
+    },
+    "fresh_hidden_holdouts": {
+      "count": 3,
+      "design_status": "coverage slots defined only; no brief, source, trap or gold designed or revealed here",
+      "selection_principle": "Target the three behaviours that are simultaneously most product-critical and most tunable, so the holdouts guard against overfitting the visible set rather than merely adding topics.",
+      "coverage_slots": [
+        {
+          "slot": "HS-1",
+          "required_coverage": "Persian-primary semantic fidelity: a Persian source where fluent Persian paraphrase is tempting but verbatim excerpt support must hold.",
+          "guards_against_overfitting": "C02 and V15 - the product highest-risk path, since output is always Persian"
+        },
+        {
+          "slot": "HS-2",
+          "required_coverage": "Output-aware depth control on a corpus never used in any visible case.",
+          "guards_against_overfitting": "C10/C11 - the single most directly tunable behaviour in the pipeline"
+        },
+        {
+          "slot": "HS-3",
+          "required_coverage": "Evidence insufficiency and correct narrowing on an unseen corpus.",
+          "guards_against_overfitting": "C07 - and it protects the core product promise that the system refuses to pad an episode when the selected corpus is insufficient (PRODUCT.md)"
+        }
+      ],
+      "binding_constraints": [
+        "Single-source or otherwise M8-independent: no holdout may depend on unimplemented capability.",
+        "Must pass R13 including a pinned revision or edition.",
+        "Must be commit_safe or private_fixture with a documented acquisition procedure, so release runs can actually execute.",
+        "No source, author, publisher or corpus reused from any visible case, or the holdout inherits visible-set tuning.",
+        "Sized for cost: none should exceed the median visible-case corpus."
+      ],
+      "public_manifest": {
+        "path": "benchmarks/eval/holdout-manifest.json",
+        "may_contain": [
+          "opaque case_id carrying no semantic hint (e.g. HS-A1)",
+          "bundle SHA-256",
+          "bundle byte size",
+          "bundle schema version",
+          "created_at",
+          "last_executed_at",
+          "runner version",
+          "gate outcome (pass/fail/skipped)"
+        ],
+        "must_never_contain": [
+          "Research Brief",
+          "sources",
+          "capability slot assignment",
+          "semantic traps",
+          "gold atoms",
+          "per-atom diffs"
+        ],
+        "auditability_note": "The slot SET is public; the MAPPING from slot to case ID stays private, so coverage is auditable without revealing what any given holdout tests."
+      },
+      "execution_architecture": [
+        "Holdout design and gold live in a private git submodule at benchmarks/eval/holdout/; the public repo commits only the submodule pointer. One .gitmodules entry, no new infrastructure, provenance stays version-controlled.",
+        "thesisound eval --split core (default) and --split all; all requires THESISOUND_HOLDOUT_PATH. When the bundle is absent, holdout gates report skipped, never pass - reusing the convention evaluate_gates already implements for unknown cost.",
+        "Run holdouts on release tags only, with the bundle mounted from a CI secret. Publish per-case pass/fail and gate status only. Never publish per-atom diffs - that is the leak channel.",
+        "Rotation: a holdout is partly consumed the first time its failures are debugged. Budget one rotation per release cycle and keep at least one reserve case designed but unreferenced.",
+        "A CONTRIBUTING note that prompt changes must not be authored while reading holdout outputs. Unenforceable alone, which is why the diff-withholding rule matters."
+      ]
+    },
+    "duration_pair": {
+      "question": "Does 20/40 replace 5/30?",
+      "answer": "YES",
+      "summary": "Stays inside the MVP contract, preserves the two qualitative depth levers (neighbor_context_blocks 0 to 1 and include_objections_and_responses False to True) plus a 27.5 percentage-point coverage spread and a 3 to 5 claim cap, sets a harder supported-duration bar (32 vs 24 minutes), and validates the contract stated output endpoints. The only loss is the include_examples contrast, documented and accepted."
+    },
+    "replacement_work_required": [
+      {
+        "item": "C05R",
+        "work": "Author brief; pin scope and output configuration",
+        "size": "small - source verified, commit_safe"
+      },
+      {
+        "item": "V15",
+        "work": "Pin Wikisource revision; human-collate selected ghazals; rights determination; bound secondary scope",
+        "size": "medium - the largest remaining human task"
+      },
+      {
+        "item": "C09",
+        "work": "Rescope to chapters I-IV plus VI plus XIV",
+        "size": "small"
+      },
+      {
+        "item": "C10/C11",
+        "work": "Reconfigure to 20/40; acquire born-digital Ostrom",
+        "size": "small plus one acquisition"
+      },
+      {
+        "item": "C02",
+        "work": "Run the R13 procedure on the Persian PDF",
+        "size": "small, BLOCKING"
+      },
+      {
+        "item": "C04, C08, V13, V14",
+        "work": "Brief rewrites and fixture neutralisation",
+        "size": "small each"
+      },
+      {
+        "item": "C06",
+        "work": "Shrink corpus; resolve licences; pin endpoint",
+        "size": "medium"
+      },
+      {
+        "item": "Licences",
+        "work": "UNESCO, Bellprat, C06 x2, Qazvini-Ghani",
+        "size": "medium, human"
+      },
+      {
+        "item": "C12 (v1.1)",
+        "work": "Vintage and rights determination for a born-digital Persian legal text",
+        "size": "bounded, deferred"
+      }
+    ],
+    "blockers": [
+      "B2: Restate R04, R08 and R09 as intra-source or budget-bounded requirements for v1.",
+      "B4: Replace V15 primary with Qazvini-Ghani via a pinned Wikisource revision and complete human collation.",
+      "B5: Rescope C09 to chapters I-IV plus VI plus XIV.",
+      "B6: Verify the C02 Persian PDF text layer under R13; blocking because C02 is one of only two Persian-source cases.",
+      "B7: Acquire a born-digital Ostrom lecture; the listed stable Nobel URL returns HTTP 403 and the reachable copy is a JSTOR scan.",
+      "B8: Resolve the UNESCO, Bellprat, C06 and Qazvini-Ghani licences by hand.",
+      "B9: Pin target_duration_minutes, modes, prior_knowledge and audience for every case, and pin them identically across C10 and C11.",
+      "B10: Rewrite the C04 brief and bound the SEP scope so the answer is unobtainable from commentary alone.",
+      "B11: Rewrite the V13 brief to license non-mappings and require typed relations.",
+      "B12: Narrow V14 to heat extremes.",
+      "B13: For C08, neutralise in-document headings, enlarge decoys to 25-30 percent of corpus, add a partially relevant decoy, and re-label as claim-level relevance filtering.",
+      "B14: Apply one-ingested-artifact-per-source (R14) to C01 and C09.",
+      "B16: Implement the holdout submodule, public manifest and runner split before authoring any holdout gold.",
+      "B17 (new): Author the C05R brief.",
+      "B18 (new): Adopt the R13 procedure as a committed pre-freeze check."
+    ],
+    "blockers_withdrawn": [
+      "B15: SOURCE-RECOMMENDATIONS.md was deliberately withheld, not missing. The ranking rubric is sound and auditable. Withdrawn."
+    ],
+    "blockers_superseded": [
+      "B1 (remove C05) and B3 (remove C12): now satisfied by replacement and deferral rather than removal alone."
+    ],
+    "proposed_new_requirements": [
+      "R13: Machine-usable text is a source-selection gate, with the concrete pre-freeze validation procedure in r13_validation_procedure. RETAINED.",
+      "R14: One ingested artifact per source; verification scans and facsimiles are offline collation references. RETAINED - independently supported by a blind spot in Sol rubric.",
+      "R15: Every case pins target_duration_minutes, modes, prior_knowledge and audience. RETAINED."
+    ],
+    "dataset_level_cautions": [
+      "Victorian-prose concentration: C01 (James), C03 (Woolf), C05R (Mill) and C09 (Darwin) are four of twelve core cases in nineteenth-century English prose. Domains differ, register does not, so a regression in archaic-English handling would hit four cases at once and the failures would be correlated, reducing effective information. No fifth Victorian text should be added.",
+      "Persian coverage rests on C02 and V15 only. Both carry outstanding verification work, which is why the C02 R13 check is blocking.",
+      "V13 overlaps C06 and is the first candidate for removal on cost grounds.",
+      "Suite is a release gate, not a per-PR check: evidence extraction runs one model call per selected block, so call count is the cost driver.",
+      "Several cases are manifest_or_excerpt or private_fixture, so a public CI run cannot acquire them; without a private fixture store those gates will silently degrade to skipped."
+    ],
+    "counts": {
+      "visible_core": 12,
+      "visible_challenge_non_gating": 2,
+      "fresh_hidden_holdouts_to_design": 3,
+      "still_blocked": 2,
+      "verdicts_changed_by_sol_reasoning": 0,
+      "cases_reconfigured_by_product_contract": 2
+    },
+    "ready_for_source_freeze": false,
+    "ready_for_source_freeze_reason": "The set is now structurally sound: 12 visible core with no case measuring an unimplemented subsystem, no case depending on an unusable file, a duration pair inside the product contract, and a holdout architecture that can actually hold something back. What remains is execution: one source swap with human collation, one blocking text-usability check, one acquisition, several brief rewrites, and a licence pass.",
+    "stop_condition_observed": "No source frozen, no hashes created, no gold authored."
+  },
+  "reconciled_on": "2026-08-10",
+  "reconciliation": {
+    "read_source_recommendations_after_verdicts_formed": true,
+    "verdicts_changed_by_sol_reasoning": 0,
+    "cases_with_configuration_changed": [
+      "C10",
+      "C11"
+    ],
+    "configuration_change_basis": "MVP product-contract correction, not Sol reasoning",
+    "preferred_package_agreement": {
+      "same_preferred_package_in_all_cases": true,
+      "count": 15,
+      "note": "Two models working separately from the same candidate pool converged on the same preferred package in every case. No case exists where I preferred one of Sol's alternates. Every divergence is about whether the agreed package is usable, or about scope and brief repair - never about which candidate ranks first."
+    },
+    "rubric_assessment": "Sound and auditable: ten criteria (Authority, Provenance, Semantic challenge, Failure-mode fit, stable Reproducibility, Accessibility, Licensing practicality, Corpus size/cost, low Noise, Independence), scored 1-5, deliberately unweighted so a high-authority source cannot hide an access or licensing failure, with the explicit caveat that low licensing scores are not waivers. Better designed than I assumed in its absence. Blocker B15 withdrawn.",
+    "rubric_blind_spots": [
+      {
+        "gap": "No criterion scores whether the source text is machine-usable; Accessibility scores whether the file is obtainable, not whether it parses.",
+        "evidence": "C12-A scores Accessibility 4 and Reproducibility 3, defensible if only the collection page was opened; opening the files shows 0 extractable characters (1906) and 618 words of glyph fragments (1907).",
+        "supports": "R13, plus a new criterion T (text usability) scored only after opening the file"
+      },
+      {
+        "gap": "No criterion scores fit against implemented capability; Failure-mode fit measures fit against the documented product.",
+        "evidence": "C05-A scores Failure-mode fit 5. The fit is perfect against the documentation and impossible against the running system.",
+        "supports": "A hard precondition that a stage must exist which can exhibit the measured behaviour"
+      },
+      {
+        "gap": "No criterion penalises ingesting a verification scan as a corpus source.",
+        "evidence": "C01-A scores 50/50 with Provenance 5 while listing both the Gutenberg transcript and the LoC scan as package sources.",
+        "supports": "R14"
+      }
+    ],
+    "pattern": "Sol's objections are accurate wherever they rest on bibliographic reasoning and miss wherever the answer required opening a file or reading the pipeline code. All four of my cross-cutting findings fall in the second category. Sol also stated the core risk for C03, C04, C07, C08, C10, H13 and H15 - the diagnostic instinct was largely right; what was missing was the step from naming a risk to acting on it, which shows most sharply at C04 where the risk is stated and confidence is still High.",
+    "duration_pair_decision": {
+      "question": "Does a 20/40 pair replace the Phase-1 5/30 pair?",
+      "decision": "YES - adopt 20/40, drop 5/30",
+      "basis": "MVP product contract defines output as a 20-40 minute private episode. 5 minutes is outside it. Retained nothing merely because Phase 1 proposed it.",
+      "key_implementation_finding": "30 and 40 minutes produce an IDENTICAL analysis profile - both fall in the deep tier (26-45), so the extraction stage cannot distinguish them. The entire depth contrast in a 20/40 pair comes from the 20-minute member crossing into standard. Choosing 40 over 30 affects only the episode and script stage: a harder supported-duration bar (32 vs 24) and 33 percent more script.",
+      "levers_preserved": {
+        "neighbor_context_blocks": "0 -> 1 (identical to 5/30, preserved)",
+        "include_objections_and_responses": "False -> True (identical to 5/30, preserved)",
+        "block_coverage_target": "0.60 -> 0.85, achieved 66% -> 93.5%, a 27.5 percentage-point spread (narrower than 5/30 but substantial)",
+        "max_claims_per_block": "3 -> 5 (narrower than 2 -> 5, still a 67 percent increase)"
+      },
+      "lever_lost": "include_examples no longer contrasts (True in both members). The least consequential of the four; documented and accepted.",
+      "supportability_of_40_minutes": {
+        "evidence_density_gate": "40 x 20 = 800 tokens required; corpus carries about 21000; 26x margin",
+        "claim_time_gate": "600 claim-seconds required; a deep run over ~40 blocks at up to 5 claims per block yields far more; per-claim floor is 15s",
+        "can_plan_episode": "requires model-reported max_supported_minutes >= 32; deterministic estimator will report well over 100",
+        "output_ratio": "5200 Persian words at 130 wpm from about 15000 source words, with explanation_expansion_factor 4.0 encoding that claim time expands; comfortably selection-and-explanation, not padding"
+      },
+      "bonus": "20 and 40 are the endpoints of the MVP output band, so the pair now validates the contract range directly. 5/30 never did.",
+      "pinning_requirement": "Corpus, brief text, modes, prior_knowledge, audience and output_language must be pinned IDENTICALLY. A stray critical/debate mode (+10pp coverage) or advanced prior_knowledge (+1 claim, +1 neighbour) voids the control.",
+      "resolves_sol_objection": "Sol's C10 objection that a five-minute brief may force omissions reviewers consider essential, making gold brittle, is resolved by this change."
+    },
+    "c12_replacement_search": {
+      "outcome": "No defensible replacement verified. C12 stays blocked and its slot is NOT force-filled.",
+      "what_was_established": [
+        "laws.tehran.ir/Law/MainLawView/245 carries the full متمم as selectable born-digital HTML, 107 articles, opening with the authentic formula, and would pass R13 where the Iran Data Portal PDFs fail catastrophically.",
+        "Blocker (a): vintage unverified. It is a current municipal legal database that also presents additional clauses and amendments and cites no source edition. Whether it reproduces the 1907 text as enacted or a consolidated text is exactly the defect that disqualified the Iran Data Portal file.",
+        "Blocker (b): rights. The footer reserves all rights to the Tehran City Council.",
+        "Persian Wikisource is not a clean alternative here: unlike the Hafez case, the constitutional pages are redirects and version pages with no visible proofreading status and no scan backing."
+      ],
+      "capability_preservation": "The capability C12 carried - Persian-primary plus cross-language plus source-role attribution - is substantially preserved by promoting the repaired Hafez case into the visible core. What is genuinely lost is the legal/institutional domain and the primary legal instrument form, not the underlying capability. That is a domain gap, not a coverage gap, and does not justify freezing an unverified source.",
+      "bounded_v1_1_task": "Determine the vintage of the laws.tehran.ir text by comparing اصل ۳۶ against a scholarly edition; identify a citable source edition; resolve rights."
+    }
+  },
+  "r13_validation_procedure": {
+    "status": "retained and specified",
+    "when": "Once per fixture file, before freezing",
+    "output": "text-usability.json committed beside the source manifest",
+    "principle": "Every gate is fail-closed: a fixture that cannot be measured is rejected, never assumed clean.",
+    "steps": [
+      {
+        "id": "Step 0",
+        "name": "Extract through the production path",
+        "detail": "Use the repo parser route (thesisound parse --parser auto), not an ad-hoc tool, so the check measures what the pipeline will actually see."
+      },
+      {
+        "id": "Step 1",
+        "name": "Record the raw profile",
+        "detail": "Page count, extractable characters, words, embedded image count, characters per page."
+      },
+      {
+        "id": "Gate A",
+        "name": "Text presence",
+        "detail": "Reject if extractable characters are approximately 0, or characters-per-page falls below a prose floor (about 800 for body text).",
+        "retrospective": "Rejects the C12 1906 file: 0 characters across 12 pages, 12 embedded images."
+      },
+      {
+        "id": "Gate B",
+        "name": "Encoding sanity",
+        "detail": "Reject on any of: NUL (U+0000) present; characters in Arabic Presentation Forms-A (U+FB50-U+FDFF) or Forms-B (U+FE70-U+FEFF), which indicate glyph-level encoding with no proper Unicode mapping; Private Use Area characters (U+E000-U+F8FF); replacement character U+FFFD count greater than 0.",
+        "retrospective": "Rejects the C12 1907 file: 626 NULs and 1453 presentation-form characters."
+      },
+      {
+        "id": "Gate C",
+        "name": "Persian-specific checks",
+        "detail": "Mirroring document_identity.py normalisation. Script ratio: at least 95 percent of letters in the Arabic block (U+0600-U+06FF) for Persian fixtures. Letter forms: record counts of Persian ی (U+06CC) and ک (U+06A9) versus Arabic ي (U+064A) and ك (U+0643); mixed forms are not fatal but must be normalised consistently and counted. ZWNJ: record U+200C count - zero ZWNJ in a long Persian text is a red flag for lossy extraction. Digits: record Persian/Arabic-Indic versus ASCII mix. Bidi sanity: confirm embedded Latin and numeric runs are not reversed."
+      },
+      {
+        "id": "Gate D",
+        "name": "Round-trip excerpt matching (decisive)",
+        "detail": "Sample N=20 random 40-character spans from the extracted text and verify each matches verbatim in the parsed block text after whitespace normalisation, using the repo excerpt_matching / evidence_validator normalisation. Any failure rejects the fixture.",
+        "why": "This is what production enforces. A source that fails here would make evidence_validator block every claim, so the case would appear to fail semantically while actually failing on encoding."
+      },
+      {
+        "id": "Gate E",
+        "name": "Human spot-check",
+        "detail": "A reader fluent in the fixture language confirms three randomly chosen pages read correctly and reading order is right (RTL/LTR mixing, footnote interleaving, table and verse layout). Required for all Persian fixtures and for any English fixture whose Gate A-D margins are thin."
+      },
+      {
+        "id": "Gate F",
+        "name": "Identity pinning",
+        "detail": "Compute and record parsed_document_key and block_sequence_key so the fixture is pinned and later drift is detectable."
+      },
+      {
+        "id": "Step 7",
+        "name": "Provenance record",
+        "detail": "Record source edition, publication year, retrieval URL and date, retrieval HTTP status, and for wiki-hosted transcriptions the exact revision ID. A mutable source without a pinned revision fails R13 regardless of text quality."
+      }
+    ],
+    "applied_retrospectively": {
+      "C12-A": "fails Gates A, B and D",
+      "C10/C11 reachable Ostrom copy": "fails Gate A's spirit (33 embedded images = scan plus OCR layer); requires the born-digital substitute",
+      "C02": "UNTESTED and blocking",
+      "C05R-A": "passes by construction (Gutenberg plain-text UTF-8)",
+      "C09": "passes by construction (PG #1228)"
+    }
+  },
+  "dataset_level_original_independent": {
+    "note": "Preserved from the independent pass, before the product-contract correction and the reconciliation instructions.",
+    "recommended_final_core_count": 11,
+    "recommended_final_holdout_count": 3,
+    "recommended_final_total": 14,
+    "path_to_15": "C12 returns in v1.1 once a born-digital, edition-identified Persian text of the 1906 and 1907 laws is located and verified under R13. C05 returns as a separate v1.1 case once M8 ships.",
+    "cases_accepted_unchanged": [],
+    "cases_accepted_with_changes": [
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "C06",
+      "C07",
+      "C08",
+      "C10",
+      "C11",
+      "H13",
+      "H14"
+    ],
+    "cases_requiring_new_source": [
+      "C09",
+      "H15"
+    ],
+    "cases_requiring_replacement": [
+      "C05",
+      "C12"
+    ]
+  }
+}

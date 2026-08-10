@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thesisound.local/schemas/opaque-holdout-manifest-v1.json",
+  "title": "Thesisound opaque holdout manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evaluator_version",
+    "slots",
+    "last_run"
+  ],
+  "properties": {
+    "schema_version": {"const": "thesisound.holdout-public.v1"},
+    "evaluator_version": {"type": "string", "minLength": 1},
+    "slots": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["opaque_id", "fixture_sha256", "gold_sha256", "status"],
+        "properties": {
+          "opaque_id": {"type": "string", "pattern": "^OH-[A-Z0-9]{8}$"},
+          "fixture_sha256": {
+            "oneOf": [
+              {"type": "null"},
+              {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            ]
+          },
+          "gold_sha256": {
+            "oneOf": [
+              {"type": "null"},
+              {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            ]
+          },
+          "status": {"enum": ["unprovisioned", "sealed", "retired"]}
+        }
+      }
+    },
+    "last_run": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["run_id", "completed_at", "aggregate_status"],
+          "properties": {
+            "run_id": {"type": "string", "minLength": 1},
+            "completed_at": {"type": "string", "format": "date-time"},
+            "aggregate_status": {"enum": ["pass", "fail", "error"]}
+          }
+        }
+      ]
+    }
+  }
+}

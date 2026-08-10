@@ -1,0 +1,185 @@
+{
+  "schema_version": "thesisound.semantic-fixture-validation.v1",
+  "artifact_id": "C04-dubois-strivings",
+  "artifact_filename": "C04-dubois-strivings-1897.md",
+  "intended_scope": "Complete 1897 Strivings of the Negro People article",
+  "expected_language": "en",
+  "status": "pass",
+  "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
+  "metrics": {
+    "byte_size": 15717,
+    "file_format": "md",
+    "mime_type": "text/markdown",
+    "text_encoding": "utf-8-sig",
+    "page_count": null,
+    "extractable_character_count": 15622,
+    "word_estimate": 2712,
+    "token_estimate": 4458,
+    "embedded_image_count": null,
+    "pages_with_extractable_text": null,
+    "unicode_decode_success": true,
+    "nul_byte_count": 0,
+    "extracted_nul_character_count": 0,
+    "arabic_presentation_forms_count": 0,
+    "replacement_character_count": 0,
+    "control_character_anomaly_count": 0,
+    "control_character_anomalies": [],
+    "private_use_character_count": 0,
+    "zwnj_count": 0,
+    "bidi_control_count": 0,
+    "mojibake_marker_count": 0,
+    "normalized_text_sha256": "fc1c8bf8be54824393e4c72afeefdae2812039baa0d4dcaf509ac12825fc776b",
+    "parsed_document_key": "7c63369a3984f7a3b3bf6b7c6682a6f7438c5e99a7ba90cb64d7ae836b489537",
+    "block_sequence_key": "1cad3d756aa1299af84dde8e2e842b77b3d2c6b6083a297e88a9c762b580a18b",
+    "semantic_block_count": 4
+  },
+  "production_ingestion": {
+    "requested_parser": "native",
+    "selected_parser": "native",
+    "ocr_used": false,
+    "safe_for_claim_extraction": true,
+    "quality_verdict": "pass",
+    "quality_issues": [],
+    "parser_warnings": []
+  },
+  "language_sanity": {
+    "expected_language": "en",
+    "result": "pass",
+    "reason": "Latin letters=12405; letter ratio=100.0000%",
+    "normal_arabic_persian_script_count": 0,
+    "persian_specific_letter_count": 0,
+    "arabic_variant_letter_count": 0,
+    "presentation_forms_count": 0,
+    "presentation_forms_ratio": 0.0,
+    "normal_script_ratio": 0.0,
+    "latin_letter_count": 12405,
+    "mojibake_marker_count": 0,
+    "glyph_only_pdf_text_layer": false
+  },
+  "locator_viability": {
+    "result": "pass",
+    "reason": "stable unique source-block keys=22/22",
+    "locator_type": "source_block_key",
+    "coverage": 1.0,
+    "page_coverage": null
+  },
+  "exact_span_matching": {
+    "requested_span_count": 20,
+    "tested_span_count": 20,
+    "recovered_span_count": 20,
+    "recovery_ratio": 1.0,
+    "can_operate_reliably": true,
+    "sample_normalized_hashes": [
+      "8e1c420aa846b062c000bd2219abe4e17d30038457ab40ce2971651f302736c9",
+      "52e6b2c5e6e8648932c9e297a26a0f5c70cedea660900cbd50f09c4694401576",
+      "697c739178f01e9755e90dac577490a5e8d9218645742ba4e5b1073a3e4981c6",
+      "9ed05b1ca7df2b32cf49c1c81a7b6c2e1fc73a202d9bfe589b8cc82e4fea26a0",
+      "a7a35533721ef4b5c4ce9013e3f67b58f8ee7119a81d3b993edffbd8763e1be3",
+      "908c4d1e09ad167224ac8c7690af1f842788f47898fdf476818806f2e7e82799",
+      "42f2124ad835d167318a91f91155ff1fc33ebea001f0dba2ff7970da4adb876b",
+      "66de0ba1858a21aa2613b0e98ea1b3ae6a74b8e87ae7475738acd1ca4cc9461a",
+      "28109f1ed4d03232bd6fdf1a35a4b0bad6cf985f18b3f4e308e368702170c114",
+      "e2d2dd5a3005c48ede24a39304defe26196788f9db09448dce6bd78c843fb2f3",
+      "c70c000223d42f8ee45518373e1a864cf85998b7c3d2928249a8684bf3ed8b4c",
+      "f0b9689ef2a4037bf30304f3e642a34eb17c076db9bd539f5b280952d6d5ebe9",
+      "2a47e5459d60cf7f05e7bb4ae6ff56738b53b6e47b13883b16786b45b36e0501",
+      "3442ac6247961646dcd57abe0b030f84b9da5d39b3c07505f92b5a967cb0e123",
+      "5cc113221beefe47f88f9773f7cc6b5b0a20ab9182d632ed9269b415fe48ba18",
+      "8b289a91b551b494011a1088a3baa945bee15f841e97eab0728cbb6ec1416858",
+      "1100cb04f0bff8deeef13c36be65a6fac3ec97a310e6b08ca960b432a0ef5278",
+      "0effbb81f9650ea4105d4daa7834e03add0854af353dcd026326b0acbf759637",
+      "30a93cb897dee0242bec78754daf94677d4d84e18cc432616c6486eb20a4482d",
+      "5e0eca9d746abfe2f4fbb4dfd2f4fe85c45932ad1738030363879f6e3ddbd7d4"
+    ]
+  },
+  "normalization_checks": {
+    "probe": "می‌رود، آیا؟ كی يک ۱۲٣",
+    "normalized_probe": "میرود، آیا؟ کی یک 123",
+    "expected_normalized_probe": "میرود، آیا؟ کی یک 123",
+    "zwnj_and_punctuation_compatible": true,
+    "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
+  },
+  "gates": [
+    {
+      "gate": "non_empty_bytes",
+      "status": "pass",
+      "evidence": "15717 bytes"
+    },
+    {
+      "gate": "substantive_text_present",
+      "status": "pass",
+      "evidence": "15622 extractable characters"
+    },
+    {
+      "gate": "unicode_decode",
+      "status": "pass",
+      "evidence": "encoding=utf-8-sig"
+    },
+    {
+      "gate": "no_nul_bytes_in_decoded_text_format",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_extracted_nul_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_replacement_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_control_character_anomalies",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_private_use_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "presentation_forms_not_primary",
+      "status": "pass",
+      "evidence": "ratio=0.000000"
+    },
+    {
+      "gate": "language_sanity",
+      "status": "pass",
+      "evidence": "Latin letters=12405; letter ratio=100.0000%"
+    },
+    {
+      "gate": "not_glyph_only_pdf",
+      "status": "pass",
+      "evidence": "glyph_only=False"
+    },
+    {
+      "gate": "production_ingestion_safe",
+      "status": "pass",
+      "evidence": "verdict=pass"
+    },
+    {
+      "gate": "no_ocr",
+      "status": "pass",
+      "evidence": "native parser selected explicitly"
+    },
+    {
+      "gate": "locators_viable",
+      "status": "pass",
+      "evidence": "stable unique source-block keys=22/22"
+    },
+    {
+      "gate": "exact_span_matching_reliable",
+      "status": "pass",
+      "evidence": "recovered=20/20"
+    },
+    {
+      "gate": "persian_normalization_compatible",
+      "status": "pass",
+      "evidence": "میرود، آیا؟ کی یک 123"
+    }
+  ],
+  "warnings": []
+}

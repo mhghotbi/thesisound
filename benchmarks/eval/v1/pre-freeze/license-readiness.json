@@ -1,0 +1,28 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.licence-readiness.v1",
+  "status": "pre_freeze_not_legal_advice",
+  "entries": [
+    {"source_id": "james_will_to_believe", "rights": "Public domain in the United States; Project Gutenberg terms apply to its wrapper", "storage_strategy": "commit_safe_with_attribution_and_pg_notice", "ready": true},
+    {"source_id": "ebadi_emdadi_putnam_2021", "rights": "Publisher page states CC BY-NC 4.0", "storage_strategy": "private_fixture_until_noncommercial_compatibility_is_approved", "ready": false, "note": "Bibliography corrected to Hekmat va Falsafeh 17(68), 123-153, DOI 10.22054/wph.2021.53089.1867; R13 failure independently blocks use."},
+    {"source_id": "woolf_room_1929_complete", "rights": "Underlying 1929 text is public domain in the United States; Wikisource presentation is CC BY-SA", "storage_strategy": "commit_safe_with_wikisource_revision_and_attribution", "ready": true},
+    {"source_id": "dubois_souls_1903", "rights": "Public domain in the United States", "storage_strategy": "commit_safe_with_pg_notice", "ready": true},
+    {"source_id": "dubois_strivings_1897", "rights": "Underlying 1897 article is public domain in the United States; modern Atlantic presentation is proprietary", "storage_strategy": "reconstruct_from_manifest_or_keep_prepared_text_private; preserve archive provenance", "ready": true},
+    {"source_id": "pittman_sep_double_consciousness", "rights": "SEP text is copyrighted by the Metaphysics Research Lab", "storage_strategy": "private_fixture_or_manifest_based_acquisition; do_not_commit_full_excerpt_without_review", "ready": true},
+    {"source_id": "lin_philosophy_normative_discipline_2026", "rights": "Creative Commons Attribution 4.0", "storage_strategy": "commit_safe_with_article_attribution_and_third_party_notice_review", "ready": true},
+    {"source_id": "stiglitz_sen_fitoussi_2009", "rights": "No permissive full-report licence verified", "storage_strategy": "private_fixture_or_manifest_based_acquisition", "ready": true},
+    {"source_id": "oecd_hows_life_2011", "rights": "OECD reuse terms allow personal use and limited excerpts; full transformed redistribution not cleared", "storage_strategy": "private_fixture_or_manifest_based_acquisition", "ready": false, "note": "R13 failure blocks this artifact regardless of storage strategy."},
+    {"source_id": "bloom_han_liang_2024", "rights": "Creative Commons Attribution 4.0 for covered article content", "storage_strategy": "commit_safe_with_attribution_and_third_party_notice_review", "ready": true},
+    {"source_id": "douglass_oration_1852", "rights": "Underlying 1852 speech is public domain; Wikisource presentation is CC BY-SA", "storage_strategy": "commit_safe_with_revision_and_attribution", "ready": true},
+    {"source_id": "nps_douglass_biography", "rights": "United States government page, subject to page-specific third-party notices", "storage_strategy": "manifest_or_private_fixture_pending_final_notice_check", "ready": true},
+    {"source_id": "loc_douglass_july4_context", "rights": "LoC page-specific rights/byline require review", "storage_strategy": "manifest_or_private_fixture", "ready": false},
+    {"source_id": "darwin_origin_1859_scoped", "rights": "Public domain in the United States; Project Gutenberg terms apply to its wrapper", "storage_strategy": "commit_safe_with_pg_notice", "ready": true},
+    {"source_id": "ostrom_nobel_lecture_2009", "rights": "No permissive redistribution licence verified for Nobel/AER text", "storage_strategy": "private_fixture_or_manifest_based_acquisition", "ready": true},
+    {"source_id": "unesco_ai_ethics_2021_bounded", "rights": "CC BY-NC-SA 3.0 IGO; noncommercial and share-alike compatibility remains conditional", "storage_strategy": "private_fixture_or_unmodified_manifest_until_review", "ready": false},
+    {"source_id": "nist_ai_rmf_1_0_bounded", "rights": "NIST technical publication generally public domain in the United States; inspect third-party material", "storage_strategy": "commit_safe_after_notice_check", "ready": true},
+    {"source_id": "ipcc_ar6_wgi_ch11_heat_sections", "rights": "CC BY-NC-ND 4.0", "storage_strategy": "unmodified_private_fixture_or_manifest; do_not_commit_transformed_excerpt", "ready": false},
+    {"source_id": "bellprat_event_attribution_2019", "rights": "Creative Commons Attribution 4.0", "storage_strategy": "commit_safe_with_attribution_and_third_party_notice_review", "ready": true},
+    {"source_id": "hafez_qazvini_ghani_selection", "rights": "Wikisource transcription is CC BY-SA; underlying 1989 Sina scan/printing rights and exact edition relationship are unresolved", "storage_strategy": "no_fixture_until_rights_and_printing_are_resolved", "ready": false},
+    {"source_id": "lewis_hafez_rendi_bounded", "rights": "Encyclopaedia Iranica copyrighted", "storage_strategy": "private_fixture_or_manifest_and_legally_reviewed_excerpt", "ready": true},
+    {"source_id": "debruijn_hafez_poetic_art_bounded", "rights": "Encyclopaedia Iranica copyrighted", "storage_strategy": "private_fixture_or_manifest_and_legally_reviewed_excerpt", "ready": true}
+  ]
+}

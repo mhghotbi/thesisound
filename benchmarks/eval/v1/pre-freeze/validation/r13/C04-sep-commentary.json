@@ -1,0 +1,185 @@
+{
+  "schema_version": "thesisound.semantic-fixture-validation.v1",
+  "artifact_id": "C04-sep-commentary",
+  "artifact_filename": "C04-sep-sections-2.3-and-3.md",
+  "intended_scope": "Archived Summer 2024 SEP sections 2.3 and 3 only",
+  "expected_language": "en",
+  "status": "pass",
+  "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
+  "metrics": {
+    "byte_size": 13672,
+    "file_format": "md",
+    "mime_type": "text/markdown",
+    "text_encoding": "utf-8-sig",
+    "page_count": null,
+    "extractable_character_count": 13327,
+    "word_estimate": 2055,
+    "token_estimate": 3801,
+    "embedded_image_count": null,
+    "pages_with_extractable_text": null,
+    "unicode_decode_success": true,
+    "nul_byte_count": 0,
+    "extracted_nul_character_count": 0,
+    "arabic_presentation_forms_count": 0,
+    "replacement_character_count": 0,
+    "control_character_anomaly_count": 0,
+    "control_character_anomalies": [],
+    "private_use_character_count": 0,
+    "zwnj_count": 0,
+    "bidi_control_count": 0,
+    "mojibake_marker_count": 0,
+    "normalized_text_sha256": "62eb94880b56c28d55e38735d478fa043b1a1f20624becf3f676f878f55cafef",
+    "parsed_document_key": "ba70528fbccbcd70d527a3c7f27d538fe72102d8aa5d782ed8d406ec901a0612",
+    "block_sequence_key": "c2debda72c7f8d306025c2c0d42ed32beb95cacd11cf9643d275050d84ec3884",
+    "semantic_block_count": 3
+  },
+  "production_ingestion": {
+    "requested_parser": "native",
+    "selected_parser": "native",
+    "ocr_used": false,
+    "safe_for_claim_extraction": true,
+    "quality_verdict": "pass",
+    "quality_issues": [],
+    "parser_warnings": []
+  },
+  "language_sanity": {
+    "expected_language": "en",
+    "result": "pass",
+    "reason": "Latin letters=10580; letter ratio=100.0000%",
+    "normal_arabic_persian_script_count": 0,
+    "persian_specific_letter_count": 0,
+    "arabic_variant_letter_count": 0,
+    "presentation_forms_count": 0,
+    "presentation_forms_ratio": 0.0,
+    "normal_script_ratio": 0.0,
+    "latin_letter_count": 10580,
+    "mojibake_marker_count": 0,
+    "glyph_only_pdf_text_layer": false
+  },
+  "locator_viability": {
+    "result": "pass",
+    "reason": "stable unique source-block keys=27/27",
+    "locator_type": "source_block_key",
+    "coverage": 1.0,
+    "page_coverage": null
+  },
+  "exact_span_matching": {
+    "requested_span_count": 20,
+    "tested_span_count": 20,
+    "recovered_span_count": 20,
+    "recovery_ratio": 1.0,
+    "can_operate_reliably": true,
+    "sample_normalized_hashes": [
+      "d8f8ab5724aeeaf87300888b04c295075e491cce2eb71edbd5db3377386aefbc",
+      "1d6961b33767b08f5a239928783a70a1d629508bd34736acba6013bdce288eaf",
+      "694650a93c6573d9b41cf95367b6355237d9ac4909574b38184512c3628732e2",
+      "e78928e3ad54522db462cf26397551463f9265512ea25aa9173619782de53dfa",
+      "1c0fe9ca4047067013d1f706a4760b6d8f7103d1ab202231231d7337f3c1032d",
+      "1077c19e63785515c2ab58115ce4d18de5e1817f73111ee71b88fd3b40c0046d",
+      "128bf3e36cae60def18345c74e72a18dbc1cec2c1804dd4ef2531a927d52b1d4",
+      "969a1c725543c9256472162d4124e52fbe29f9b7c7878a8442af5ee1e757c79e",
+      "c2eb3d3ebeae8fed8412b46ce6f22052a2dbb8d5cedd1a1f1f06c41a73a64c4e",
+      "12faf71a82ab1df6fe5cd9221ba1fdea641084fd9fa27c7a49cc3a6cd77c58a1",
+      "410d6165929cb427ab4be8437868e3a7260d02bcbb5ee8bda66de54ec0cb7036",
+      "6e6105548a8fe7d2d0a73d15edbbf0525b6fa1920ace18cf23bcf2cb29f8f57a",
+      "415672d1fd18ac900e52807bde7556da80bbdbcf3390bb0b13d65db8494ce0fd",
+      "e51a19cdb7cbabe3a80fbbda12985f7008ad8725a64d0271761a32952222305b",
+      "83cc3c94497b893bdfffb74f580bb6c5109e5c85aca98c49db22d74bef230ee8",
+      "2918c78d10d3198c04d345d5849d83ab1798d00c47ab0c3384a268a89cd77072",
+      "29e6b17ea7edcf05ad05d257044e99519140950e7bb807f31a7a69aaf6740fdf",
+      "528aa8c8bc47d8135681c87bba0abbe07b819c27c9cd55aaac2af92057a5699c",
+      "cc058a9d5c971329bec238db38991a61ddd50fb51ef1c719d245d2c75651adcd",
+      "d49f77033854c35935dd16d92011d981686ae9fa08dcf6dcc51a3812d40cc9fe"
+    ]
+  },
+  "normalization_checks": {
+    "probe": "می‌رود، آیا؟ كی يک ۱۲٣",
+    "normalized_probe": "میرود، آیا؟ کی یک 123",
+    "expected_normalized_probe": "میرود، آیا؟ کی یک 123",
+    "zwnj_and_punctuation_compatible": true,
+    "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
+  },
+  "gates": [
+    {
+      "gate": "non_empty_bytes",
+      "status": "pass",
+      "evidence": "13672 bytes"
+    },
+    {
+      "gate": "substantive_text_present",
+      "status": "pass",
+      "evidence": "13327 extractable characters"
+    },
+    {
+      "gate": "unicode_decode",
+      "status": "pass",
+      "evidence": "encoding=utf-8-sig"
+    },
+    {
+      "gate": "no_nul_bytes_in_decoded_text_format",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_extracted_nul_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_replacement_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_control_character_anomalies",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_private_use_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "presentation_forms_not_primary",
+      "status": "pass",
+      "evidence": "ratio=0.000000"
+    },
+    {
+      "gate": "language_sanity",
+      "status": "pass",
+      "evidence": "Latin letters=10580; letter ratio=100.0000%"
+    },
+    {
+      "gate": "not_glyph_only_pdf",
+      "status": "pass",
+      "evidence": "glyph_only=False"
+    },
+    {
+      "gate": "production_ingestion_safe",
+      "status": "pass",
+      "evidence": "verdict=pass"
+    },
+    {
+      "gate": "no_ocr",
+      "status": "pass",
+      "evidence": "native parser selected explicitly"
+    },
+    {
+      "gate": "locators_viable",
+      "status": "pass",
+      "evidence": "stable unique source-block keys=27/27"
+    },
+    {
+      "gate": "exact_span_matching_reliable",
+      "status": "pass",
+      "evidence": "recovered=20/20"
+    },
+    {
+      "gate": "persian_normalization_compatible",
+      "status": "pass",
+      "evidence": "میرود، آیا؟ کی یک 123"
+    }
+  ],
+  "warnings": []
+}

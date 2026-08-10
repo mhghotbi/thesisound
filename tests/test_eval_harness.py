@@ -9,6 +9,7 @@ from thesisound.services.eval_harness import (
     dry_run,
     evaluate_gates,
     load_cases,
+    resolve_eval_bundle_root,
 )
 
 
@@ -52,6 +53,42 @@ def test_dry_run_validates_cases_and_constructs_no_model_client(monkeypatch) -> 
     payload = dry_run(Path("benchmarks/eval").resolve())
     assert payload["model_clients_constructed"] == 0
     assert len(payload["cases"]) >= 3
+
+
+def test_core_bundle_never_inspects_private_path(tmp_path: Path) -> None:
+    public = tmp_path / "public"
+    public.mkdir()
+    assert resolve_eval_bundle_root(public_eval_root=public, split="core") == public.resolve()
+    with pytest.raises(ValueError, match="only valid"):
+        resolve_eval_bundle_root(
+            public_eval_root=public,
+            split="core",
+            private_bundle=tmp_path / "private",
+        )
+
+
+def test_holdout_bundle_is_explicit_external_and_structured(tmp_path: Path) -> None:
+    public = tmp_path / "public"
+    public.mkdir()
+    with pytest.raises(ValueError, match="explicit"):
+        resolve_eval_bundle_root(public_eval_root=public, split="holdout")
+    with pytest.raises(ValueError, match="outside"):
+        resolve_eval_bundle_root(
+            public_eval_root=public,
+            split="holdout",
+            private_bundle=public / "private",
+        )
+    private = tmp_path / "private"
+    (private / "cases").mkdir(parents=True)
+    (private / "gates.toml").write_text("", encoding="utf-8")
+    assert (
+        resolve_eval_bundle_root(
+            public_eval_root=public,
+            split="holdout",
+            private_bundle=private,
+        )
+        == private.resolve()
+    )
 
 
 def test_missing_source_file_fails_dry_run_with_named_case(tmp_path: Path) -> None:

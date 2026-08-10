@@ -1,0 +1,185 @@
+{
+  "schema_version": "thesisound.semantic-fixture-validation.v1",
+  "artifact_id": "C03-woolf",
+  "artifact_filename": "C03-woolf-room-complete.md",
+  "intended_scope": "Complete A Room of One's Own, Chapters I-VI",
+  "expected_language": "en",
+  "status": "pass",
+  "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
+  "metrics": {
+    "byte_size": 211136,
+    "file_format": "md",
+    "mime_type": "text/markdown",
+    "text_encoding": "utf-8-sig",
+    "page_count": null,
+    "extractable_character_count": 210359,
+    "word_estimate": 37900,
+    "token_estimate": 60034,
+    "embedded_image_count": null,
+    "pages_with_extractable_text": null,
+    "unicode_decode_success": true,
+    "nul_byte_count": 0,
+    "extracted_nul_character_count": 0,
+    "arabic_presentation_forms_count": 0,
+    "replacement_character_count": 0,
+    "control_character_anomaly_count": 0,
+    "control_character_anomalies": [],
+    "private_use_character_count": 0,
+    "zwnj_count": 0,
+    "bidi_control_count": 0,
+    "mojibake_marker_count": 0,
+    "normalized_text_sha256": "c41d7e100db29c2a41811686bd4d1a5bf16ef8158a4ef54618c306f5513fd7ce",
+    "parsed_document_key": "e2836cea2a0f64551e9d583c49cf8d543bcc835fdcec353e012f9404a2c24ba4",
+    "block_sequence_key": "7c9b571508dc0b8a3cf451e6f606e5d7e81b85c4b25e09fc283d0d1fc72e80b2",
+    "semantic_block_count": 47
+  },
+  "production_ingestion": {
+    "requested_parser": "native",
+    "selected_parser": "native",
+    "ocr_used": false,
+    "safe_for_claim_extraction": true,
+    "quality_verdict": "pass",
+    "quality_issues": [],
+    "parser_warnings": []
+  },
+  "language_sanity": {
+    "expected_language": "en",
+    "result": "pass",
+    "reason": "Latin letters=166310; letter ratio=100.0000%",
+    "normal_arabic_persian_script_count": 0,
+    "persian_specific_letter_count": 0,
+    "arabic_variant_letter_count": 0,
+    "presentation_forms_count": 0,
+    "presentation_forms_ratio": 0.0,
+    "normal_script_ratio": 0.0,
+    "latin_letter_count": 166310,
+    "mojibake_marker_count": 0,
+    "glyph_only_pdf_text_layer": false
+  },
+  "locator_viability": {
+    "result": "pass",
+    "reason": "stable unique source-block keys=240/240",
+    "locator_type": "source_block_key",
+    "coverage": 1.0,
+    "page_coverage": null
+  },
+  "exact_span_matching": {
+    "requested_span_count": 20,
+    "tested_span_count": 20,
+    "recovered_span_count": 20,
+    "recovery_ratio": 1.0,
+    "can_operate_reliably": true,
+    "sample_normalized_hashes": [
+      "df16367e868cd33eb068e95ad9f23d576cbe9ba0755af184e4cd0a8be2e19f83",
+      "766e671da68fc457ebcc1d582f4478cba93765da90f9a941e7ea4ea3f8f1e4eb",
+      "1d2f53752ee526ecefd61c30951c09bd69e180a6da4d6007ea87c881d2df87b9",
+      "d03528dc9cb54579a823057bb96ebadbf3df77641390abb7cf0aef3fe8fda6ed",
+      "1666b11a3be3b2a3b42d5fe8c7b86a26b37be492fb2cf9337c748152a4bce294",
+      "e314354be4df5f977331a316566b5d17e7f1353ea737a25ea9e600d22dbc029a",
+      "d12772b64dab576c4f005c86faec8fa186eb41193dd3c9a4c3b732960e68f851",
+      "91bc54f4c500282b68b0755ca248e3450e9d8459c098a83654fc00eecf4ce26d",
+      "d842e2ad4ccd7895dbc35252505f523261756aec374cf718e2add0950cc41402",
+      "73f4dfa58ee4edac467a1ed8722ad86cb4b2f348abc605cf1ecaa96b96d8044b",
+      "8ef6804617da14cb0dfae0d03284bb2c390b5429574811054870ddcac2a5ac45",
+      "4de5ed7ff8ecafae4eb60e1f7a2551b43c522b5e0b18ae07b74ac53a450d5757",
+      "4db6959d671f21cab04b03bcc4d7b037df14204f80d53e588b9af114d969daac",
+      "414ed949936fee59e6b19c7e8b9b3665b4eb4d81726942ab4472279735fa857a",
+      "471ab9019586597156e54c86be5e9a6b85d5a0531b5b75e6248fc67aa8ce6f5b",
+      "d70a8d7c1d6f68bd9368dddca7909dc68887af6e1fb613409fd342cf53089da8",
+      "1b65e583847723e8e2066226428ae27bcd01e0adb486ffae91e433ed90272955",
+      "4293d275e56b5e914aac14815d2d2592691262edef76d36f029f8ea704f0e281",
+      "48b23e2caad21463264e9d2a37973a868cbb73e37a768490a52a9146a303c2f5",
+      "7456ce719f9ba8d385d73edc88329c42d5e79f64f544d14b53f0ff2ed8ac10b0"
+    ]
+  },
+  "normalization_checks": {
+    "probe": "می‌رود، آیا؟ كی يک ۱۲٣",
+    "normalized_probe": "میرود، آیا؟ کی یک 123",
+    "expected_normalized_probe": "میرود، آیا؟ کی یک 123",
+    "zwnj_and_punctuation_compatible": true,
+    "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
+  },
+  "gates": [
+    {
+      "gate": "non_empty_bytes",
+      "status": "pass",
+      "evidence": "211136 bytes"
+    },
+    {
+      "gate": "substantive_text_present",
+      "status": "pass",
+      "evidence": "210359 extractable characters"
+    },
+    {
+      "gate": "unicode_decode",
+      "status": "pass",
+      "evidence": "encoding=utf-8-sig"
+    },
+    {
+      "gate": "no_nul_bytes_in_decoded_text_format",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_extracted_nul_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_replacement_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_control_character_anomalies",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "no_private_use_characters",
+      "status": "pass",
+      "evidence": "count=0"
+    },
+    {
+      "gate": "presentation_forms_not_primary",
+      "status": "pass",
+      "evidence": "ratio=0.000000"
+    },
+    {
+      "gate": "language_sanity",
+      "status": "pass",
+      "evidence": "Latin letters=166310; letter ratio=100.0000%"
+    },
+    {
+      "gate": "not_glyph_only_pdf",
+      "status": "pass",
+      "evidence": "glyph_only=False"
+    },
+    {
+      "gate": "production_ingestion_safe",
+      "status": "pass",
+      "evidence": "verdict=pass"
+    },
+    {
+      "gate": "no_ocr",
+      "status": "pass",
+      "evidence": "native parser selected explicitly"
+    },
+    {
+      "gate": "locators_viable",
+      "status": "pass",
+      "evidence": "stable unique source-block keys=240/240"
+    },
+    {
+      "gate": "exact_span_matching_reliable",
+      "status": "pass",
+      "evidence": "recovered=20/20"
+    },
+    {
+      "gate": "persian_normalization_compatible",
+      "status": "pass",
+      "evidence": "میرود، آیا؟ کی یک 123"
+    }
+  ],
+  "warnings": []
+}

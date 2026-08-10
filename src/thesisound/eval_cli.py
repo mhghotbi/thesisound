@@ -14,6 +14,7 @@ from thesisound.services.eval_harness import (
     dry_run,
     report_markdown,
     report_payload,
+    resolve_eval_bundle_root,
     run_eval,
 )
 
@@ -35,12 +36,29 @@ def register_eval_command(app: typer.Typer) -> None:
         as_json: Annotated[
             bool, typer.Option("--json", help="Print JSON instead of a table")
         ] = False,
+        split: Annotated[
+            str,
+            typer.Option("--split", help="Evaluation split: core or holdout"),
+        ] = "core",
+        private_bundle: Annotated[
+            Path | None,
+            typer.Option(
+                "--private-bundle",
+                help="Explicit external private bundle root; required for holdout",
+            ),
+        ] = None,
     ) -> None:
         """Run the frozen machine-checkable golden set; live runs write and spend."""
 
         settings = Settings()
-        eval_root = Path("benchmarks/eval").resolve()
         try:
+            if split not in {"core", "holdout"}:
+                raise ValueError("--split must be either 'core' or 'holdout'")
+            eval_root = resolve_eval_bundle_root(
+                public_eval_root=Path("benchmarks/eval"),
+                split=split,
+                private_bundle=private_bundle,
+            )
             if dry:
                 payload = dry_run(eval_root, case_ids)
                 if as_json:

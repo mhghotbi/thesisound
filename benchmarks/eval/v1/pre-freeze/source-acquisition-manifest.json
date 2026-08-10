@@ -1,0 +1,253 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.acquisition.v1",
+  "status": "pre_freeze_not_frozen",
+  "cache_policy": "Acquired texts live under the gitignored .thesisound/eval-v1-prefreeze cache until a lawful public/private fixture placement is approved.",
+  "sources": [
+    {
+      "source_id": "james_will_to_believe",
+      "cases": ["C01"],
+      "title": "The Will to Believe",
+      "authority": "William James primary essay",
+      "acquisition_url": "https://www.gutenberg.org/ebooks/26659",
+      "acquired_format": "utf-8 text",
+      "scope": "The Will to Believe essay only",
+      "pin": "Project Gutenberg #26659, release 2008-09-19, 1912 impression transcription",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "ebadi_emdadi_putnam_2021",
+      "cases": ["C02"],
+      "title": "پاتنم؛ دوگانه واقعیت/ارزش و سازه‌گرایی واقعیت",
+      "authority": "Peer-reviewed Hekmat va Falsafeh article",
+      "acquisition_url": "https://wph.atu.ac.ir/article_13403_93fe9e041126e4ff9695a1115c56fef8.pdf",
+      "acquired_format": "publisher PDF",
+      "scope": "Complete article, 31 PDF pages",
+      "pin": "DOI 10.22054/wph.2021.53089.1867; volume 17, issue 68, pages 123-153; Winter 1400/2022 PDF",
+      "status": "rejected_r13_failed"
+    },
+    {
+      "source_id": "woolf_room_1929_complete",
+      "cases": ["C03"],
+      "title": "A Room of One's Own",
+      "authority": "Virginia Woolf complete 1929 primary essay",
+      "acquisition_url": "https://en.wikisource.org/wiki/A_Room_of_One%27s_Own_(Hogarth_1929)",
+      "acquired_format": "Wikisource expanded parse HTML transformed to UTF-8 Markdown",
+      "scope": "Chapters I-VI, complete essay",
+      "pin": "Wikisource work revision 14911138; chapter revisions 14907454, 14907457, 14909051, 14909273, 14909241, 14909251",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "dubois_souls_1903",
+      "cases": ["C04"],
+      "title": "The Souls of Black Folk",
+      "authority": "W. E. B. Du Bois primary work",
+      "acquisition_url": "https://www.gutenberg.org/ebooks/408",
+      "acquired_format": "utf-8 text",
+      "scope": "Chapters I, III, and XIV",
+      "pin": "Project Gutenberg #408",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "dubois_strivings_1897",
+      "cases": ["C04"],
+      "title": "Strivings of the Negro People",
+      "authority": "W. E. B. Du Bois primary article",
+      "acquisition_url": "https://www.theatlantic.com/magazine/archive/1897/08/strivings-of-the-negro-people/305446/",
+      "offline_pdf_url": "https://cdn.theatlantic.com/media/archives/1897/08/80-478/131953250.pdf",
+      "acquired_format": "publisher archive HTML payload transformed to UTF-8 Markdown",
+      "scope": "Complete article body",
+      "pin": "Published 1897-08-01; archive page observed modified 2024-02-23",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "pittman_sep_double_consciousness",
+      "cases": ["C04"],
+      "title": "Double Consciousness",
+      "authority": "Stanford Encyclopedia of Philosophy scholarly commentary",
+      "acquisition_url": "https://plato.stanford.edu/archives/sum2024/entries/double-consciousness/",
+      "acquired_format": "archived HTML transformed to UTF-8 Markdown",
+      "scope": "Sections 2.3 and 3 only",
+      "pin": "Summer 2024 archive; substantive revision 2023-02-16",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "lin_philosophy_normative_discipline_2026",
+      "cases": ["C05R"],
+      "title": "Philosophy as a Normative Discipline",
+      "authority": "Peer-reviewed Philosophy article",
+      "acquisition_url": "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/7284733070C4D0D9B5422EF014C97694/S0031819126101430a.pdf/philosophy_as_a_normative_discipline.pdf",
+      "acquired_format": "publisher PDF",
+      "scope": "Complete article, including sections 3.1 and 3.2",
+      "pin": "Yao Lin; DOI 10.1017/S0031819126101430; published online 2026-06-23",
+      "status": "acquired_r13_pass"
+    },
+    {
+      "source_id": "stiglitz_sen_fitoussi_2009",
+      "cases": ["C06"],
+      "title": "Report by the Commission on the Measurement of Economic Performance and Social Progress",
+      "authority": "Commission primary institutional report",
+      "acquisition_url": "https://www.cbs.nl/en-gb/background/2011/36/report-by-the-commission-on-the-measurement-of-economic-performance-and-social-progress",
+      "acquired_format": "institutional PDF sliced without text rewriting",
+      "scope": "Physical pages 7-18 and 41-60: executive summary and quality-of-life framework chapter",
+      "pin": "292-page institutional PDF; source page indices embedded in prepared PDF metadata",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "oecd_hows_life_2011",
+      "cases": ["C06"],
+      "title": "How's Life?: Measuring Well-being",
+      "authority": "OECD institutional report",
+      "acquisition_url": "https://www.oecd.org/en/publications/how-s-life_9789264121164-en.html",
+      "acquired_format": "official PDF sliced without text rewriting",
+      "scope": "Physical pages 16-34: complete overview/framework chapter",
+      "pin": "286-page official PDF; source page indices embedded in prepared PDF metadata",
+      "status": "rejected_r13_failed"
+    },
+    {
+      "source_id": "bloom_han_liang_2024",
+      "cases": ["C07"],
+      "title": "Hybrid working from home improves retention without damaging performance",
+      "authority": "Peer-reviewed Nature randomized trial",
+      "acquisition_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11208135/fullTextXML",
+      "canonical_url": "https://www.nature.com/articles/s41586-024-07500-2",
+      "acquired_format": "Europe PMC JATS XML article body transformed to UTF-8 Markdown",
+      "scope": "Complete article body and methods",
+      "pin": "DOI 10.1038/s41586-024-07500-2; PMCID PMC11208135",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "douglass_oration_1852",
+      "cases": ["C08"],
+      "title": "Oration, Delivered in Corinthian Hall, Rochester",
+      "authority": "Frederick Douglass primary speech",
+      "acquisition_url": "https://en.wikisource.org/wiki/What_to_the_Slave_Is_the_Fourth_of_July%3F",
+      "acquired_format": "Wikisource expanded parse HTML transformed to UTF-8 Markdown",
+      "scope": "Complete speech",
+      "pin": "Wikisource revision 16072004",
+      "neutralization": "Drop web UI/front matter; replace HTML h1-h6 labels and only short uppercase Wikisource wst-center labels (including the initial document-form label) in order with Section NN; retain centered quotations, every paragraph, paragraph order, punctuation, and substantive sentence; outer title becomes Source A.",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "nps_douglass_biography",
+      "cases": ["C08"],
+      "title": "Frederick Douglass",
+      "authority": "U.S. National Park Service contextual page",
+      "acquisition_url": "https://www.nps.gov/people/frederick-douglass.htm",
+      "acquired_format": "NPS HTML article body transformed to UTF-8 Markdown",
+      "scope": "Complete page body",
+      "pin": "Retrieved 2026-08-10",
+      "neutralization": "Drop navigation, images, scripts, related items, and footer; replace HTML h1-h6 labels and NPS section_title spans in order with Section NN; retain every substantive paragraph and its order; outer title becomes Source B.",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "loc_douglass_july4_context",
+      "cases": ["C08"],
+      "title": "What to the American Slave Is Your 4th of July?",
+      "authority": "Library of Congress contextual article; intended partially relevant decoy",
+      "acquisition_url": "https://blogs.loc.gov/headlinesandheroes/2020/07/what-to-the-american-slave-is-your-4th-of-july/",
+      "acquired_format": null,
+      "scope": "Complete article body after the same heading/front-matter neutralization",
+      "pin": null,
+      "status": "blocked_automated_access_challenge"
+    },
+    {
+      "source_id": "darwin_origin_1859_scoped",
+      "cases": ["C09"],
+      "title": "On the Origin of Species, first edition",
+      "authority": "Charles Darwin primary monograph",
+      "acquisition_url": "https://www.gutenberg.org/ebooks/1228",
+      "acquired_format": "utf-8 text transformed to scoped UTF-8 Markdown",
+      "scope": "Chapters I-IV, VI, and XIV exactly",
+      "pin": "Project Gutenberg #1228, 1859 first-edition text",
+      "status": "acquired_prepared_r13_pass"
+    },
+    {
+      "source_id": "ostrom_nobel_lecture_2009",
+      "cases": ["C10", "C11"],
+      "title": "Beyond Markets and States: Polycentric Governance of Complex Economic Systems",
+      "authority": "Elinor Ostrom Nobel lecture / AER article",
+      "acquisition_url": "https://www.nobelprize.org/uploads/2018/06/ostrom_lecture.pdf",
+      "acquired_format": "official born-digital PDF",
+      "scope": "Complete 37-page lecture",
+      "pin": "Nobel Prize official-host PDF; DOI 10.1257/aer.100.3.641",
+      "status": "acquired_r13_pass"
+    },
+    {
+      "source_id": "unesco_ai_ethics_2021_bounded",
+      "cases": ["V13"],
+      "title": "Recommendation on the Ethics of Artificial Intelligence",
+      "authority": "UNESCO normative instrument",
+      "acquisition_url": "https://unesdoc.unesco.org/ark:/48223/pf0000381137",
+      "acquired_format": null,
+      "scope": "Preamble, scope, values, principles, selected policy-action areas, monitoring",
+      "pin": "2021 recommendation",
+      "status": "not_acquired"
+    },
+    {
+      "source_id": "nist_ai_rmf_1_0_bounded",
+      "cases": ["V13"],
+      "title": "Artificial Intelligence Risk Management Framework 1.0",
+      "authority": "NIST operational framework",
+      "acquisition_url": "https://nvlpubs.nist.gov/nistpubs/ai/nist.ai.100-1.pdf",
+      "acquired_format": null,
+      "scope": "Framing and Govern, Map, Measure, Manage functions",
+      "pin": "NIST AI 100-1, January 2023",
+      "status": "not_acquired"
+    },
+    {
+      "source_id": "ipcc_ar6_wgi_ch11_heat_sections",
+      "cases": ["V14"],
+      "title": "Weather and Climate Extreme Events in a Changing Climate",
+      "authority": "IPCC AR6 WGI consensus assessment",
+      "acquisition_url": "https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_Chapter11.pdf",
+      "acquired_format": null,
+      "scope": "Executive summary, section 11.2, and heat-extreme sections only",
+      "pin": "AR6 WGI Chapter 11",
+      "status": "not_acquired"
+    },
+    {
+      "source_id": "bellprat_event_attribution_2019",
+      "cases": ["V14"],
+      "title": "Towards reliable extreme weather and climate event attribution",
+      "authority": "Peer-reviewed Nature Communications methods paper",
+      "acquisition_url": "https://www.nature.com/articles/s41467-019-09729-2",
+      "acquired_format": null,
+      "scope": "Complete article, interpreted only for heat-extreme attribution in this case",
+      "pin": "DOI 10.1038/s41467-019-09729-2; 2019-04-15",
+      "status": "metadata_and_license_verified_not_acquired"
+    },
+    {
+      "source_id": "hafez_qazvini_ghani_selection",
+      "cases": ["V15"],
+      "title": "دیوان حافظ, Qazvini-Ghani critical text route",
+      "authority": "Scan-backed Persian Wikisource transcription",
+      "acquisition_url": "https://fa.wikisource.org/wiki/%D9%81%D9%87%D8%B1%D8%B3%D8%AA:%D8%AD%D8%A7%D9%81%D8%B8_%D9%82%D8%B2%D9%88%DB%8C%D9%86%DB%8C_%D8%BA%D9%86%DB%8C.pdf",
+      "acquired_format": null,
+      "scope": "No poems selected until specialist-citation selection and human scan collation are complete",
+      "pin": "Index revision 290057, 2026-06-29T09:23:36Z; Wikidata Q140377339 says 1989; index says Sina, Tehran and supplies no year",
+      "status": "provenance_conflict_blocked"
+    },
+    {
+      "source_id": "lewis_hafez_rendi_bounded",
+      "cases": ["V15"],
+      "title": "Hafez viii. Hafez and Rendi",
+      "authority": "Encyclopaedia Iranica specialist entry",
+      "acquisition_url": "https://www.iranicaonline.org/articles/hafez-viii/",
+      "acquired_format": null,
+      "scope": "Only passages that cite the selected ghazals and define the interpretive claim under test",
+      "pin": "Updated 2015-07-31",
+      "status": "not_acquired_pending_primary_selection"
+    },
+    {
+      "source_id": "debruijn_hafez_poetic_art_bounded",
+      "cases": ["V15"],
+      "title": "Hafez iii. Hafez's Poetic Art",
+      "authority": "Encyclopaedia Iranica specialist entry",
+      "acquisition_url": "https://www.iranicaonline.org/articles/hafez-iii/",
+      "acquired_format": null,
+      "scope": "Only passages that cite the selected ghazals and discuss relevant ambiguity; no general answer-key taxonomy",
+      "pin": "Updated 2013-06-05",
+      "status": "not_acquired_pending_primary_selection"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.offline-reference.v1",
+  "rule": "These artifacts are provenance/collation witnesses only. The evaluator and semantic ingestion pipeline must never ingest them.",
+  "references": [
+    {
+      "reference_id": "C01-LOC-1897",
+      "cases": ["C01"],
+      "title": "The Will to Believe, and Other Essays in Popular Philosophy",
+      "edition": "New York: Longmans, Green, and Co., 1897 [c1896]",
+      "url": "https://www.loc.gov/item/04003036/",
+      "local_metadata": ".thesisound/eval-v1-prefreeze/raw/c01-loc-item.json",
+      "local_ocr_for_offline_comparison": ".thesisound/eval-v1-prefreeze/raw/c01-loc-1897-ocr.txt",
+      "role": "offline_collation_reference_only",
+      "ingest": false,
+      "collation_findings": {
+        "direction": "1912 Project Gutenberg transcription checked against 1897 first-edition LoC witness",
+        "method": "Word-level alignment against LoC's scan-derived OCR, followed by targeted checks around the live/dead, forced/avoidable, momentous/trivial definitions, genuine-option definition, Pascal discussion, and concluding permission.",
+        "metrics": {"ingested_words": 9177, "loc_ocr_words_in_essay_window": 12067, "matching_words": 8794, "sequence_match_ratio": 0.827904},
+        "result": "No confirmed substantive change was found in the target essay's argument or the benchmark-critical formulations. Non-matches were dominated by LoC OCR errors, running headers/page numbers, hyphenation, and front/footnote material; examples include live->zve and option->oftion. The ingested artifact remains identified as the 1912-impression Gutenberg transcription, not silently relabelled as the 1897 text.",
+        "limitations": "This is not a new critical edition and does not authorize the LoC OCR as semantic evidence. Any later claimed wording difference must be checked directly against the page image before freeze."
+      }
+    },
+    {
+      "reference_id": "C03-HOGARTH-1929",
+      "cases": ["C03"],
+      "title": "A Room of One's Own, Hogarth Press 1929 scan",
+      "url": "https://www.lse.ac.uk/library/assets/documents/rare-books/45-A-Room-of-Ones-Own.pdf",
+      "role": "edition_and_pagination_witness_only",
+      "ingest": false
+    },
+    {
+      "reference_id": "C04-ATLANTIC-1897-PDF",
+      "cases": ["C04"],
+      "title": "The Atlantic Monthly, August 1897 archival PDF",
+      "url": "https://cdn.theatlantic.com/media/archives/1897/08/80-478/131953250.pdf",
+      "role": "page_image_and_original_printing_witness_only",
+      "ingest": false
+    },
+    {
+      "reference_id": "C06-CMEPSP-FULL",
+      "cases": ["C06"],
+      "title": "Full Commission report",
+      "url": "https://www.cbs.nl/en-gb/background/2011/36/report-by-the-commission-on-the-measurement-of-economic-performance-and-social-progress",
+      "role": "scope_and_page_map_witness_only",
+      "ingest": false
+    },
+    {
+      "reference_id": "C06-OECD-FULL",
+      "cases": ["C06"],
+      "title": "Full How's Life? report",
+      "url": "https://www.oecd.org/en/publications/how-s-life_9789264121164-en.html",
+      "role": "scope_and_page_map_witness_only; current scoped derivative failed R13",
+      "ingest": false
+    },
+    {
+      "reference_id": "C07-NATURE-VERSION",
+      "cases": ["C07"],
+      "title": "Nature version of record",
+      "url": "https://www.nature.com/articles/s41586-024-07500-2",
+      "role": "version_of_record_and_third_party_notice_check",
+      "ingest": false
+    },
+    {
+      "reference_id": "C08-1852-SCAN",
+      "cases": ["C08"],
+      "title": "What to the Slave Is the Fourth of July? 1852 pamphlet scan",
+      "url": "https://commons.wikimedia.org/wiki/File:What_to_the_Slave_Is_the_Fourth_of_July.pdf",
+      "role": "primary_transcription_collation_witness_only",
+      "ingest": false
+    },
+    {
+      "reference_id": "C09-DARWIN-ONLINE-1859",
+      "cases": ["C09"],
+      "title": "Darwin Online transcription of the 1859 first edition",
+      "url": "https://darwin-online.org.uk/converted/published/1859_Origin_F373.html",
+      "role": "edition_and_locator_verification_only",
+      "ingest": false
+    },
+    {
+      "reference_id": "C09-1859-SCAN",
+      "cases": ["C09"],
+      "title": "1859 first-edition page images",
+      "url": "https://darwin-online.org.uk/content/frameset?pageseq=1&itemID=F373&viewtype=side",
+      "role": "facsimile_witness_only",
+      "ingest": false
+    },
+    {
+      "reference_id": "C10-C11-AEA-PUBLICATION",
+      "cases": ["C10", "C11"],
+      "title": "American Economic Review publication record",
+      "url": "https://www.aeaweb.org/articles?id=10.1257/aer.100.3.641",
+      "role": "bibliographic_and_version_reference_only",
+      "ingest": false
+    },
+    {
+      "reference_id": "V15-WIKISOURCE-SCANS",
+      "cases": ["V15"],
+      "title": "Hafez Qazvini-Ghani route page scans",
+      "url": "https://fa.wikisource.org/wiki/%D9%81%D9%87%D8%B1%D8%B3%D8%AA:%D8%AD%D8%A7%D9%81%D8%B8_%D9%82%D8%B2%D9%88%DB%8C%D9%86%DB%8C_%D8%BA%D9%86%DB%8C.pdf",
+      "pinned_index_revision": 290057,
+      "role": "future_human_collation_reference_only",
+      "ingest": false,
+      "note": "No poem or verse has been selected or collated in Phase 2.5."
+    }
+  ]
+}

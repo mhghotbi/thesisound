@@ -1,0 +1,179 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.case-config.v1",
+  "status": "pre_freeze_not_frozen",
+  "notes": [
+    "These are benchmark inputs, not gold or expected answers.",
+    "All visible cases are source-bound; web research during a benchmark run is forbidden."
+  ],
+  "cases": {
+    "C01": {
+      "target_duration_minutes": 25,
+      "modes": ["explanatory"],
+      "prior_knowledge": "introductory",
+      "audience": "Persian-speaking undergraduate philosophy student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Explain how James distinguishes live from dead, forced from avoidable, and momentous from trivial options; show how the three distinctions form a genuine option and what limits James places on the resulting permission to believe."
+    },
+    "C02": {
+      "target_duration_minutes": 25,
+      "modes": ["explanatory"],
+      "prior_knowledge": "intermediate",
+      "audience": "Persian-speaking graduate philosophy student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Explain the article's distinction between a fact/value distinction and a fact/value dichotomy, and reconstruct how that distinction functions in its account of Putnam's criticism and constructivism. Keep the article's terminology and attribution stable."
+    },
+    "C03": {
+      "target_duration_minutes": 40,
+      "modes": ["explanatory", "critical"],
+      "prior_knowledge": "introductory",
+      "audience": "Persian-speaking undergraduate literature student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Reconstruct the central argument of the complete A Room of One's Own, explaining the role and limits of material conditions, counterfactual figures, and narrative framing. Distinguish assertion, qualification, historical claim, and illustrative fiction."
+    },
+    "C04": {
+      "target_duration_minutes": 30,
+      "modes": ["explanatory", "comparative", "critical"],
+      "prior_knowledge": "intermediate",
+      "audience": "Persian-speaking graduate social-theory student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Using Du Bois's 1897 Strivings and the supplied 1903 chapters as the primary evidence, identify which of his own formulations support and which resist reading double consciousness as a permanent condition rather than a historically specific one. Then use only SEP sections 2.3 and 3 to state the deflationist reading and its problems. Attribute every primary position and scholarly interpretation to its source, and identify where the commentary goes beyond Du Bois's wording."
+    },
+    "C05R": {
+      "target_duration_minutes": 25,
+      "modes": ["explanatory", "critical"],
+      "prior_knowledge": "intermediate",
+      "audience": "Persian-speaking graduate philosophy student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Reconstruct Lin's normative account of philosophy and the two contrasting objections he names. For each objection, separate the objector's claim from Lin's reply and explain how the reply bears on the account without attributing the objection to Lin."
+    },
+    "C06": {
+      "target_duration_minutes": 30,
+      "modes": ["explanatory", "comparative"],
+      "prior_knowledge": "introductory",
+      "audience": "Persian-speaking graduate public-policy student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Compose a joint orientation to how the Commission report and OECD framework supplement GDP. Use claims from both sources to explain their complementary roles, dimensions, and cautions without presenting them as one reconciled framework or a single substitute index."
+    },
+    "C07": {
+      "target_duration_minutes": 20,
+      "modes": ["explanatory", "critical"],
+      "prior_knowledge": "introductory",
+      "audience": "Persian-speaking organizational manager with no methods training",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "State what the supplied randomized study supports about hybrid work, retention, and performance. Also determine whether the same effects hold for hourly or frontline workers, workers without university education, and organizations outside China; where the article cannot answer those objectives, narrow explicitly instead of generalizing."
+    },
+    "C08": {
+      "target_duration_minutes": 25,
+      "modes": ["explanatory"],
+      "prior_knowledge": "introductory",
+      "audience": "Persian-speaking undergraduate rhetoric student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Explain the internal argumentative and rhetorical progression of Douglass's 1852 oration, including changes in address to the audience. Admit a claim from contextual material only when it helps explain that progression; otherwise omit it deliberately."
+    },
+    "C09": {
+      "target_duration_minutes": 40,
+      "modes": ["explanatory"],
+      "prior_knowledge": "introductory",
+      "audience": "Persian-speaking graduate history-of-science student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Trace the dependency chain across the 1859 first-edition Chapters I-IV, VI, and XIV: variation and struggle, natural selection, major difficulties, then classification and the concluding synthesis. Preserve Darwin's uncertainties and make prerequisites explicit."
+    },
+    "C10": {
+      "target_duration_minutes": 20,
+      "modes": ["explanatory"],
+      "prior_knowledge": "introductory",
+      "audience": "Persian-speaking graduate social-science student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Explain Ostrom's challenge to the markets-versus-states dichotomy and the role of polycentric governance, using only the supplied Nobel lecture."
+    },
+    "C11": {
+      "target_duration_minutes": 40,
+      "modes": ["explanatory"],
+      "prior_knowledge": "introductory",
+      "audience": "Persian-speaking graduate social-science student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Explain Ostrom's challenge to the markets-versus-states dichotomy and the role of polycentric governance, using only the supplied Nobel lecture."
+    },
+    "V13": {
+      "target_duration_minutes": 30,
+      "modes": ["explanatory", "comparative"],
+      "prior_knowledge": "intermediate",
+      "audience": "Persian-speaking AI policy and governance team",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Relate the bounded UNESCO values, principles, and policy-action areas to the bounded NIST Govern, Map, Measure, and Manage material. Type every relation as direct support, partial overlap, tension, or no counterpart. Non-mappings are allowed and must not be forced into equivalence; neither document is empirical proof that a practice works."
+    },
+    "V14": {
+      "target_duration_minutes": 30,
+      "modes": ["explanatory", "critical"],
+      "prior_knowledge": "intermediate",
+      "audience": "Persian-speaking graduate climate-policy student",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "For heat extremes only, explain what the bounded IPCC assessment says can be attributed and how the Bellprat reliability paper qualifies model-based risk attribution. Distinguish occurrence, changed probability, changed intensity, event classes, confidence, and causal wording."
+    },
+    "V15": {
+      "target_duration_minutes": 30,
+      "modes": ["explanatory", "comparative", "critical"],
+      "prior_knowledge": "advanced",
+      "audience": "Persian-speaking graduate student of classical Persian literature",
+      "output_language": "fa",
+      "source_behavior": {"kind": "source_bound", "external_research": "forbidden", "allowed_material": "ingested_fixture_only"},
+      "research_brief": "Using only the eventual scholar-cited, edition-collated poem selection and the bounded Lewis and de Bruijn passages, explain how ambiguity supports and constrains readings of rend and related terms. Keep poem text, editorial evidence, and each scholar's interpretation distinct; do not force a final equivalence or resolve ambiguity by fiat."
+    }
+  },
+  "controlled_pair": {
+    "case_ids": ["C10", "C11"],
+    "equality_rule": "After removing target_duration_minutes, the two case objects must be structurally identical.",
+    "computed_from": "src/thesisound/services/analysis_profile.py",
+    "shared_fixture_token_estimate": 32032,
+    "C10": {
+      "depth": "standard",
+      "block_coverage_target": 0.6,
+      "evidence_input_token_budget": 36000,
+      "max_claims_per_block": 3,
+      "neighbor_context_blocks": 0,
+      "include_examples": true,
+      "include_objections_and_responses": false,
+      "target_source_tokens_with_10_percent_headroom": 21142,
+      "nominal_expected_selected_coverage": 0.66,
+      "supported_duration_gate_minutes": 16,
+      "persian_script_word_target": 2600
+    },
+    "C11": {
+      "depth": "deep",
+      "block_coverage_target": 0.85,
+      "evidence_input_token_budget": 72000,
+      "max_claims_per_block": 5,
+      "neighbor_context_blocks": 1,
+      "include_examples": true,
+      "include_objections_and_responses": true,
+      "target_source_tokens_with_10_percent_headroom": 29950,
+      "nominal_expected_selected_coverage": 0.935,
+      "supported_duration_gate_minutes": 32,
+      "persian_script_word_target": 5200
+    },
+    "exact_controlled_differences": [
+      "target_duration_minutes: 20 -> 40",
+      "computed depth: standard -> deep",
+      "block_coverage_target: 0.60 -> 0.85",
+      "evidence_input_token_budget: 36000 -> 72000",
+      "max_claims_per_block: 3 -> 5",
+      "neighbor_context_blocks: 0 -> 1",
+      "include_objections_and_responses: false -> true",
+      "supported-duration gate: 16 -> 32 minutes",
+      "Persian script target: 2600 -> 5200 words"
+    ]
+  }
+}

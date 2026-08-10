@@ -25,6 +25,7 @@ from thesisound.source_cli import _model_service as build_source_service
 from thesisound.web.source_ingestion import ingest_uploaded_source
 
 GateStatus = Literal["pass", "fail", "skipped"]
+EvalSplit = Literal["core", "holdout"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,6 +84,36 @@ class EvalReport:
         if self.errors:
             return 2
         return 1 if any(gate.status == "fail" for gate in self.gates) else 0
+
+
+def resolve_eval_bundle_root(
+    *,
+    public_eval_root: Path,
+    split: EvalSplit,
+    private_bundle: Path | None = None,
+) -> Path:
+    """Resolve a split without letting ordinary core runs inspect holdout files.
+
+    A private bundle is deliberately opt-in and must be outside the public eval
+    tree. Core tuning therefore cannot enumerate private case names, briefs,
+    sources, expectations, or fixture contents as a side effect of startup.
+    """
+
+    public_root = public_eval_root.expanduser().resolve()
+    if split == "core":
+        if private_bundle is not None:
+            raise ValueError("--private-bundle is only valid with --split holdout")
+        return public_root
+    if private_bundle is None:
+        raise ValueError("--split holdout requires an explicit --private-bundle path")
+    private_root = private_bundle.expanduser().resolve()
+    if private_root == public_root or public_root in private_root.parents:
+        raise ValueError("The holdout bundle must live outside the public benchmarks/eval tree")
+    if not (private_root / "cases").is_dir():
+        raise ValueError("The private holdout bundle is missing its cases directory")
+    if not (private_root / "gates.toml").is_file():
+        raise ValueError("The private holdout bundle is missing gates.toml")
+    return private_root
 
 
 def load_cases(eval_root: Path, case_ids: list[str] | None = None) -> list[EvalCase]:
