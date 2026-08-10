@@ -10,7 +10,8 @@ from pydantic import ValidationError
 
 from thesisound.modeling import PromptBundle, PromptContract
 
-_PLACEHOLDER = re.compile(r"{{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}")
+_TOKEN = re.compile(r"{{(.*?)}}", re.DOTALL)
+_IDENTIFIER = re.compile(r"\A\s*([A-Za-z_][A-Za-z0-9_]*)\s*\Z")
 
 
 class PromptNotFoundError(FileNotFoundError):
@@ -94,8 +95,16 @@ class PromptLoader:
 
         system_template = self._read_required(version_dir / contract.system_file)
         user_template = self._read_required(version_dir / contract.user_file)
-        system_prompt = _render(system_template, variables)
-        user_prompt = _render(user_template, variables)
+        system_prompt = _render(
+            system_template,
+            variables,
+            source=str(version_dir / contract.system_file),
+        )
+        user_prompt = _render(
+            user_template,
+            variables,
+            source=str(version_dir / contract.user_file),
+        )
         content_hash = _prompt_hash(contract, system_template, user_template)
         return PromptBundle(
             contract=contract,
@@ -127,23 +136,53 @@ class PromptLoader:
             raise PromptNotFoundError(f"Missing prompt template: {path}") from exc
 
 
-def _render(template: str, variables: dict[str, Any]) -> str:
-    required = set(_PLACEHOLDER.findall(template))
-    missing = sorted(required - variables.keys())
+def _placeholder_name(body: str) -> str | None:
+    match = _IDENTIFIER.fullmatch(body)
+    return match.group(1) if match is not None else None
+
+
+def _format_value(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    return json.dumps(value, ensure_ascii=False, sort_keys=True)
+
+
+def _render(template: str, variables: dict[str, Any], *, source: str) -> str:
+    """Substitute `{{ name }}` placeholders and refuse anything else.
+
+    The renderer is a plain substitution, not a template engine: a filter or an
+    expression cannot be executed, so it must be a load-time error rather than a
+    token that silently survives into the prompt. Only the template is scanned;
+    a `{{ ... }}` sequence inside a *value* is data and is passed through
+    untouched, because source documents are allowed to contain anything.
+    """
+
+    tokens = list(_TOKEN.finditer(template))
+    if template.count("{{") != len(tokens):
+        raise PromptRenderError(source + ": template contains an unclosed '{{' placeholder.")
+
+    unsupported = sorted(
+        {match.group(0) for match in tokens if _placeholder_name(match.group(1)) is None}
+    )
+    if unsupported:
+        raise PromptRenderError(
+            f"{source}: unsupported placeholder syntax: {', '.join(unsupported)}. "
+            "Only a bare '{{ name }}' is supported; filters and expressions are not implemented."
+        )
+
+    names = {
+        name for match in tokens if (name := _placeholder_name(match.group(1))) is not None
+    }
+    missing = sorted(names - variables.keys())
     if missing:
-        raise PromptRenderError(f"Missing prompt variables: {', '.join(missing)}")
+        raise PromptRenderError(f"{source}: missing prompt variables: {', '.join(missing)}")
 
-    def replace(match: re.Match[str]) -> str:
-        value = variables[match.group(1)]
-        if isinstance(value, str):
-            return value
-        return json.dumps(value, ensure_ascii=False, sort_keys=True)
-
-    rendered = _PLACEHOLDER.sub(replace, template).strip()
-    unresolved = _PLACEHOLDER.findall(rendered)
-    if unresolved:
-        raise PromptRenderError(f"Unresolved prompt variables: {', '.join(sorted(unresolved))}")
-    return rendered
+    rendered_by_token = {
+        match.group(0): _format_value(variables[name])
+        for match in tokens
+        if (name := _placeholder_name(match.group(1))) is not None
+    }
+    return _TOKEN.sub(lambda match: rendered_by_token[match.group(0)], template).strip()
 
 
 def _prompt_hash(

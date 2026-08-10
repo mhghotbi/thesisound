@@ -13,6 +13,13 @@ from thesisound.services.document_mapper import scope_locator
 from thesisound.source_analysis import SourceDocumentBlock
 
 _CONTENT_KEY = re.compile(r"\A[0-9a-f]{64}\Z")
+MAP_BUILDER_VERSION = 2
+"""Bumped when a mapper change makes previously cached maps wrong.
+
+Version 2: `document_map_merge` produced no cross-partition structure at all
+before prompt version 1.1.0, so every multi-partition map cached under version 1
+is missing its global layer.
+"""
 
 
 class CachedMapSection(BaseModel):
@@ -36,6 +43,7 @@ class CachedDocumentMap(BaseModel):
     """
 
     content_key: str
+    builder_version: int = 1
     content_block_count: int = Field(ge=1)
     working_thesis: str | None = None
     sections: list[CachedMapSection] = Field(default_factory=list)
@@ -81,6 +89,8 @@ class DocumentMapCache:
             return None
         if cached.content_block_count != len(content):
             return None
+        if cached.builder_version != MAP_BUILDER_VERSION:
+            return None
         try:
             return DocumentMap(
                 source_id=source_id,
@@ -122,6 +132,7 @@ class DocumentMapCache:
         index_by_id = {block.block_id: index for index, block in enumerate(content)}
         cached = CachedDocumentMap(
             content_key=content_key,
+            builder_version=MAP_BUILDER_VERSION,
             content_block_count=len(content),
             working_thesis=document_map.working_thesis,
             sections=[
