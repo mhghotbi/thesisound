@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import ast
 import re
+import sqlite3
 from pathlib import Path
 from uuid import uuid4
 
@@ -105,6 +107,7 @@ def test_member_cannot_reach_another_users_project_across_all_route_files(
             f"/projects/{project_b.project_id}/episode",
             f"/projects/{project_b.project_id}/script",
             f"/projects/{project_b.project_id}/audio",
+            f"/projects/{project_b.project_id}/readiness",
             f"/projects/{project_b.project_id}/audio/segments/audio-0.wav",
         ]
         for url in denied_gets:
@@ -223,3 +226,63 @@ def test_orphan_is_invisible_until_adopt_command_runs(
         assert orphan.raw_input in after.text
 
     assert app.state.accounts.is_project_member(orphan.project_id, member.user_id)
+
+
+def test_failed_membership_write_rolls_back_new_project_directory(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    app = create_app(_settings(tmp_path))
+
+    def fail_membership(*_args, **_kwargs) -> None:
+        raise sqlite3.OperationalError("accounts database unavailable")
+
+    monkeypatch.setattr(app.state.accounts, "add_project_member", fail_membership)
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        _otp_login(client)
+        page = client.get("/projects/new")
+        response = client.post(
+            "/projects",
+            data={
+                "csrf_token": _csrf(page.text),
+                "topic": "atomic project creation",
+            },
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 500
+    assert app.state.workspace.list_projects() == []
+    assert not any(app.state.workspace.root.glob("*/project.json"))
+
+
+def test_every_project_scoped_web_handler_has_an_authorization_guard() -> None:
+    web_root = Path(__file__).parents[1] / "src" / "thesisound" / "web"
+    missing: list[str] = []
+    guard_markers = (
+        "_project_redirect(request, project_id)",
+        "project_redirect(request, project_id)",
+        "require_operator(request, project_id)",
+        "authenticated_operator(request)",
+    )
+
+    for path in sorted(web_root.glob("*.py")):
+        source = path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            if not any(argument.arg == "project_id" for argument in node.args.args):
+                continue
+            decorators = [
+                ast.get_source_segment(source, item) or "" for item in node.decorator_list
+            ]
+            if not any(
+                item.startswith("app.get(") or item.startswith("app.post(") for item in decorators
+            ):
+                continue
+            body = ast.get_source_segment(source, node) or ""
+            if not any(marker in body for marker in guard_markers):
+                missing.append(f"{path.name}:{node.lineno}:{node.name}")
+
+    assert missing == []
