@@ -10,6 +10,7 @@ from thesisound.cli_with_audio import app
 from thesisound.domain import (
     EpisodePlan,
     EpisodeSegment,
+    Locator,
     Project,
     ProjectState,
     ResearchBrief,
@@ -30,8 +31,9 @@ from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
     episode_plan_hash,
 )
-from thesisound.services.readiness import project_readiness
+from thesisound.services.readiness import _evidence_results, project_readiness
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.source_analysis import AnalysisProfile, EvidenceExtractionPlan, SourceDocumentBlock
 
 
 def _project(state: ProjectState = ProjectState.EPISODE_PLANNED) -> Project:
@@ -332,3 +334,52 @@ def test_verified_state_requires_complete_verified_script_artifacts(tmp_path: Pa
     assert _result(results, "script-checks").status == "blocked"
     assert _result(results, "independent-verification").status == "blocked"
     assert _result(results, "script-review-decision").status == "blocked"
+
+
+def test_evidence_retention_unknown_when_plan_references_missing_block(tmp_path: Path) -> None:
+    source_id = uuid4()
+    source_dir = tmp_path / "source"
+    extraction_dir = source_dir / "evidence" / "extractions"
+    extraction_dir.mkdir(parents=True)
+    block = SourceDocumentBlock(
+        block_id="present",
+        source_id=source_id,
+        locator=Locator(page_start=1, page_end=1),
+        text="A valid source block with enough text.",
+        estimated_token_count=20,
+        source_block_keys=["block-1"],
+    )
+    (source_dir / "document-blocks.jsonl").write_text(
+        block.model_dump_json() + "\n", encoding="utf-8"
+    )
+    plan = EvidenceExtractionPlan(
+        source_id=source_id,
+        profile=AnalysisProfile(
+            depth="brief",
+            target_duration_minutes=10,
+            block_coverage_target=0.5,
+            evidence_input_token_budget=100,
+            max_claims_per_block=3,
+            neighbor_context_blocks=0,
+            include_examples=False,
+            include_objections_and_responses=False,
+            second_pass_for_core_sections=False,
+        ),
+        selected_block_ids=["missing"],
+        deferred_block_ids=["present"],
+        selected_source_tokens=20,
+        total_source_tokens=40,
+        achieved_token_coverage=0.5,
+    )
+    (source_dir / "evidence-extraction-plan.json").write_text(
+        plan.model_dump_json(), encoding="utf-8"
+    )
+    statuses: dict[str, str] = {}
+
+    def capture(code: str, status: str, detail: str, evidence=None) -> None:
+        statuses[code] = status
+
+    _evidence_results([source_dir], capture)
+
+    assert statuses["evidence-validation"] == "unknown"
+    assert statuses["evidence-retention"] == "unknown"

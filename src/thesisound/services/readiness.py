@@ -275,7 +275,13 @@ def _evidence_results(source_dirs: list[Path], set_result) -> None:
             except DeterministicValidationError as exc:
                 validation_failures.append(f"{directory.name}: {exc}")
             by_id = {block.block_id: block for block in blocks}
-            planned = [by_id[block_id] for block_id in plan.selected_block_ids if block_id in by_id]
+            missing_block_ids = [
+                block_id for block_id in plan.selected_block_ids if block_id not in by_id
+            ]
+            if missing_block_ids:
+                missing = ", ".join(missing_block_ids[:4])
+                raise ValueError(f"Extraction plan references missing source block(s): {missing}")
+            planned = [by_id[block_id] for block_id in plan.selected_block_ids]
             kept_ids = {record.block_id for record in extracted}
             planned_tokens += sum(block.estimated_token_count for block in planned)
             kept_tokens += sum(
