@@ -28,6 +28,10 @@ def register_observability_routes(
 ) -> None:
     """Register the operator-only, read-only observability surface.
 
+    Authorization is based on the authenticated account role, never the UI
+    preference stored in ``session['ui_mode']``. The latter only controls how
+    much technical information normal workflow pages choose to render.
+
     ``validate_csrf`` is accepted intentionally to match the route-module
     composition signature. No route mutates state, so it is never called and
     this module adds no CSRF surface.
@@ -35,10 +39,14 @@ def register_observability_routes(
 
     del validate_csrf
 
+    def authenticated_operator(request: Request) -> bool:
+        account = getattr(request.state, "account", None)
+        return account is not None and getattr(account, "role", None) == "operator"
+
     def require_operator(request: Request, project_id: UUID) -> Response | None:
         if redirect := login_redirect(request):
             return redirect
-        if request.session.get("ui_mode") != "operator":
+        if not authenticated_operator(request):
             return RedirectResponse(f"/projects/{project_id}", status_code=HTTP_303_SEE_OTHER)
         return None
 
@@ -90,7 +98,7 @@ def register_observability_routes(
     def observability_live(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
-        if request.session.get("ui_mode") != "operator":
+        if not authenticated_operator(request):
             return HTMLResponse("", status_code=403)
         try:
             workspace.load_project(project_id)
