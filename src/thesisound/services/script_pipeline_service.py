@@ -592,15 +592,14 @@ class ScriptPipelineService:
         project = self.workspace_store.load_project(project_id)
         if project.state == ProjectState.EPISODE_PLANNED:
             return
-        if project.state not in {
-            ProjectState.FAILED_RETRYABLE,
-            ProjectState.SCRIPT_READY,
-        }:
+        if project.state == ProjectState.SCRIPT_READY:
+            # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE. Move
+            # through the existing retryable drafting state so deterministic
+            # rejection still uses the normal failure contract.
+            transition(project, ProjectState.SCRIPT_DRAFTING)
+        if project.state != ProjectState.FAILED_RETRYABLE:
             mark_failed(project, message)
         else:
-            # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE. Preserve
-            # the original pipeline error instead of masking it with a transition
-            # error; a resumed run can restore drafting from SCRIPT_READY.
             project.last_error = message
             project.updated_at = datetime.now(UTC)
         self.workspace_store.save_project(project)
