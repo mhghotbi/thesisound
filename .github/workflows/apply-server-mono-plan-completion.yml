@@ -1,0 +1,624 @@
+name: Apply server-mono plan completion fixes
+
+on:
+  push:
+    branches:
+      - agent/complete-server-mono-6-10
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/complete-server-mono-6-10
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v9.0.0
+
+      - name: Apply remaining original-plan fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path: str, old: str, new: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding="utf-8")
+              if old not in text:
+                  raise SystemExit(f"expected text not found in {path}: {old[:120]!r}")
+              target.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          def append_once(path: str, marker: str, addition: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding="utf-8")
+              if marker in text:
+                  return
+              target.write_text(text.rstrip() + "\n\n" + addition.strip() + "\n", encoding="utf-8")
+
+          Path("docs/34-production-sop.md").write_text(
+              '''# Production SOP
+
+          ## Purpose
+
+          This is the procedure a single operator follows to produce one defensible episode. It is an operating sequence, not a feature list. A step is complete only when the named gate has passed and the produced artifact is bound to the inputs that were reviewed.
+
+          ## The twelve gates
+
+          The `Reads`, `Writes`, `Enforced at`, and `Blocked means` cells below intentionally use the same facts as `GATE_REGISTRY`; `tests/test_gates.py` keeps the registry and this SOP synchronized.
+
+          | Step | Code | Actor | Reads | Writes | Enforced at | Blocked means | Operator action |
+          |---:|---|---|---|---|---|---|---|
+          | 1 | `brief-confirmed` | Human | Project brief | SOURCES_COLLECTING state | `src/thesisound/web/app.py:787` | The operator has not confirmed the brief. | Correct or narrow the brief, then confirm it. |
+          | 2 | `source-selection-confirmed` | Human | Selected source manifest | CORPUS_BUILDING state and queued corpus run | `src/thesisound/web/source_routes.py:610` | The operator has not confirmed the source set. | Review source relevance and inclusion, then confirm the set. |
+          | 3 | `parse-quality` | Machine | Parsed documents | Parse-quality verdicts | `src/thesisound/services/parse_quality.py:15` | At least one selected source is unsafe for claim extraction. | Re-parse, OCR, or replace unsafe sources. |
+          | 4 | `evidence-validation` | Machine | Block extractions and source text | Validated evidence items | `src/thesisound/services/evidence_validator.py:51` | Quoted support cannot be matched or validated. | Repair the extraction or remove unsupported material. |
+          | 5 | `evidence-retention` | Machine | Extraction plan and block outcomes | Source-analysis manifest | `src/thesisound/services/source_analysis_service.py:292` | Less than 85% of planned token mass survived extraction. | Restore enough planned evidence or reduce the source scope. |
+          | 6 | `coverage-duration` | Machine | Coverage report and current brief | Episode-planning eligibility | `src/thesisound/services/coverage_auditor.py:13` | Coverage cannot support at least 80% of the requested duration. | Add sources or reduce the requested duration. |
+          | 7 | `episode-plan-approval` | Human | Episode Plan | Named approval bound to plan hash | `src/thesisound/services/plan_approval.py:57` | The plan is unapproved or changed after approval. | Review and approve the current plan; edited plans require new approval. |
+          | 8 | `script-checks` | Machine | Script, plan, evidence packs and glossary | Script check report | `src/thesisound/services/script_checks.py:185` | A deterministic blocking violation exists. | Correct blocking structure or grounding defects. |
+          | 9 | `independent-verification` | Machine | Script and evidence packs | Verification report | `src/thesisound/services/script_verifier.py:30` | Claims remain unsupported or verification did not pass. | Revise unsupported claims or send the non-blocking result to human review. |
+          | 10 | `script-review-decision` | Human | Review-required script artifacts | Named review decision | `src/thesisound/web/script_routes.py:114` | A review-required script has no accepted human decision. | Accept with a reason or send the script back for drafting. |
+          | 11 | `audio-qa` | Machine | Audio QA report | Accepted audio manifest | `src/thesisound/services/audio_pipeline_service.py:205` | Audio QA failed and no manual-review escape was used. | Regenerate, fix segmentation, or explicitly accept manual review. |
+          | 12 | `final-listen` | Human | Final assembled audio | Operator release decision | Unenforced | No human final-listen confirmation exists; this is a known gap. | Listen before release. |
+
+          ## The five steps no model may perform
+
+          These five gates are human-only because replacing their judgment with another model output would invalidate the auditability claim:
+
+          - `brief-confirmed`: the operator owns the intended question and scope; a model cannot confirm the operator's intent on their behalf.
+          - `source-selection-confirmed`: the operator owns which sources are admitted as the evidentiary corpus; a model selecting itself as authoritative would collapse source choice into generation.
+          - `episode-plan-approval`: the operator accepts the editorial structure and emphasis of the current, hash-bound Episode Plan.
+          - `script-review-decision`: the operator, not the verifier, accepts any residual non-blocking grounding or qualification risk and must record a reason.
+          - `final-listen`: the operator accepts the delivered listening experience; another automated judgment cannot substitute for that release decision.
+
+          ## Why fewer, better-audited episodes win
+
+          Audit cost is fixed and irreducible. Output produced by skipping source selection, approval, verification, or listening is not additional defensible throughput; it is unpriced review debt. The correct optimization target is audited episodes per unit of operator effort, not raw generations per hour.
+
+          ## What is recorded, and what is not
+
+          The operator identity is captured for Episode Plan approval in `EpisodePlanApproval.approved_by` and for a script review decision in `ScriptReviewDecision.reviewer`. It is not yet captured for brief confirmation, source confirmation, or the final listen. Those three missing identities are the known attribution gap tracked by item 12 of the server-mono process-adoption study; they must not be presented as complete human accountability.
+
+          ## Failure handling
+
+          Use [the local live end-to-end runbook](26-local-live-e2e-runbook.md), especially section 7, for retry, recovery, and artifact inspection. This SOP defines decision gates; it does not duplicate operational recovery instructions.
+          ''',
+              encoding="utf-8",
+          )
+
+          Path("tests/test_gates.py").write_text(
+              '''from __future__ import annotations
+
+          import re
+          from pathlib import Path
+
+          from thesisound.services.gates import GATE_REGISTRY
+
+          ROOT = Path(__file__).resolve().parents[1]
+
+
+          def test_gate_codes_are_unique_and_kebab_case() -> None:
+              codes = [gate.code for gate in GATE_REGISTRY]
+              assert len(codes) == len(set(codes))
+              assert all(re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", code) for code in codes)
+
+
+          def test_gate_order_is_contiguous_starting_at_one() -> None:
+              assert [gate.order for gate in GATE_REGISTRY] == list(range(1, len(GATE_REGISTRY) + 1))
+
+
+          def test_every_enforced_at_reference_resolves() -> None:
+              for gate in GATE_REGISTRY:
+                  if gate.enforced_at == "unenforced":
+                      continue
+                  path_text, line_text = gate.enforced_at.rsplit(":", 1)
+                  path = ROOT / path_text
+                  assert path.exists(), gate.code
+                  lines = path.read_text(encoding="utf-8").splitlines()
+                  assert len(lines) >= int(line_text), gate.code
+                  assert lines[int(line_text) - 1].strip(), gate.code
+
+
+          def test_human_only_gates_match_the_documented_set() -> None:
+              assert {gate.code for gate in GATE_REGISTRY if gate.actor == "human"} == {
+                  "brief-confirmed",
+                  "source-selection-confirmed",
+                  "episode-plan-approval",
+                  "script-review-decision",
+                  "final-listen",
+              }
+
+
+          def test_sop_document_lists_every_gate_code() -> None:
+              document = (ROOT / "docs/34-production-sop.md").read_text(encoding="utf-8")
+              assert all(f"`{gate.code}`" in document for gate in GATE_REGISTRY)
+
+
+          def test_sop_document_lists_every_enforced_location() -> None:
+              document = (ROOT / "docs/34-production-sop.md").read_text(encoding="utf-8")
+              for gate in GATE_REGISTRY:
+                  expected = "Unenforced" if gate.enforced_at == "unenforced" else f"`{gate.enforced_at}`"
+                  assert expected in document, gate.code
+
+
+          def test_sop_document_lists_every_registry_fact() -> None:
+              document = (ROOT / "docs/34-production-sop.md").read_text(encoding="utf-8")
+              for gate in GATE_REGISTRY:
+                  assert gate.reads in document, f"{gate.code}: reads"
+                  assert gate.writes in document, f"{gate.code}: writes"
+                  assert gate.blocked_means in document, f"{gate.code}: blocked_means"
+          ''',
+              encoding="utf-8",
+          )
+
+          replace_exact(
+              "tests/test_eval_harness.py",
+              "def test_full_case_uses_production_sequence_and_never_constructs_audio(\n",
+              "def test_full_case_runs_end_to_end_with_a_fake_runner(\n",
+          )
+          replace_exact(
+              "tests/test_eval_harness.py",
+              '''    monkeypatch.setattr(\n        eval_harness,\n        "_build_services",\n        lambda settings, root, project_id: (\n            FakeSourceService(),\n            FakeEpisodeService(root),\n            FakeScriptService(),\n        ),\n    )\n''',
+              '''    # Patch the three production composition roots, not _build_services itself.\n    # That keeps this test sensitive to drift in the eval harness composition.\n    monkeypatch.setattr(\n        eval_harness,\n        "build_source_service",\n        lambda settings, root: FakeSourceService(),\n    )\n    monkeypatch.setattr(\n        eval_harness,\n        "build_episode_service",\n        lambda settings, root, project_id: FakeEpisodeService(root),\n    )\n    monkeypatch.setattr(\n        eval_harness,\n        "build_script_service",\n        lambda settings, root: FakeScriptService(),\n    )\n''',
+          )
+          replace_exact(
+              "tests/test_eval_harness.py",
+              '    metrics = eval_harness._run_case(case, tmp_path / "runtime", settings=None)\n',
+              '    metrics = eval_harness._run_case(\n        case, tmp_path / "runtime", settings=eval_harness.Settings(_env_file=None)\n    )\n',
+          )
+
+          append_once(
+              "tests/test_eval_harness.py",
+              "def test_metrics_are_collected_from_artifacts_and_ledger",
+              r'''
+          def test_metrics_are_collected_from_artifacts_and_ledger(
+              tmp_path: Path,
+              monkeypatch,
+          ) -> None:
+              import json
+              from types import SimpleNamespace
+              from uuid import UUID, uuid4
+
+              from thesisound.domain import (
+                  EpisodePlan,
+                  EpisodeSegment,
+                  ResearchBrief,
+                  Script,
+                  ScriptTurn,
+                  TopicType,
+              )
+              from thesisound.episode import CoverageReport
+              from thesisound.modeling import ModelUsage
+              from thesisound.observability import (
+                  CostResult,
+                  ModelCallSpec,
+                  ObservabilityLedger,
+                  ProviderMetadata,
+              )
+              from thesisound.pipeline import WorkspaceStore
+              from thesisound.script import (
+                  Glossary,
+                  RevisionDecision,
+                  ScriptCheckReport,
+                  ScriptPipelineResult,
+                  ScriptQualityScore,
+                  VerificationDraft,
+              )
+              from thesisound.services import eval_harness
+              from thesisound.services.script_artifact_store import ScriptArtifactStore
+
+              source_path = tmp_path / "source.md"
+              source_path.write_text("# Source\n\nA fixed argument.", encoding="utf-8")
+              case = eval_harness.EvalCase(
+                  case_id="metrics-case",
+                  directory=tmp_path,
+                  brief=ResearchBrief(
+                      normalized_topic="Fixed metric case",
+                      topic_type=TopicType.CONCEPT,
+                      central_question="What is the argument?",
+                      target_duration_minutes=5,
+                      output_language="fa",
+                  ),
+                  sources=(source_path,),
+                  expectations={"must_cover": ["argument"]},
+              )
+
+              class FixedPricer:
+                  def price(self, **kwargs):
+                      return CostResult(cost_micros=600, pricing_version="test-pricing")
+
+              class FakeSourceService:
+                  def __init__(self, settings) -> None:
+                      self.settings = settings
+
+                  def analyze_source(self, project_id, ingestion_path, *, source_id, **kwargs) -> None:
+                      source_dir = (
+                          self.settings.workspace_root / str(project_id) / "sources" / str(source_id)
+                      )
+                      source_dir.mkdir(parents=True, exist_ok=True)
+                      (source_dir / "manifest.json").write_text(
+                          json.dumps({"skipped_block_count": 2}), encoding="utf-8"
+                      )
+
+                      ledger = ObservabilityLedger(
+                          self.settings.resolved_observability_database_path,
+                          self.settings.resolved_observability_artifact_root,
+                          cost_pricer=FixedPricer(),
+                      )
+                      success = ModelCallSpec(
+                          project_id=project_id,
+                          stage="eval-source",
+                          operation="structured_text",
+                          provider="fake",
+                          requested_model="fake",
+                      )
+                      ledger.begin_call(success, {"input": "fixture"})
+                      ledger.provider_succeeded(
+                          success.call_id,
+                          response_payload={"output": "fixture"},
+                          usage=ModelUsage(input_tokens=10, output_tokens=20, total_tokens=30),
+                          provider_metadata=ProviderMetadata(resolved_model="fake"),
+                      )
+                      ledger.succeed(success.call_id, {"parsed": True})
+
+                      failure = ModelCallSpec(
+                          project_id=project_id,
+                          stage="eval-source",
+                          operation="structured_text",
+                          provider="fake",
+                          requested_model="fake",
+                      )
+                      ledger.begin_call(failure, {"input": "fixture"})
+                      ledger.fail(failure.call_id, RuntimeError("fixture failure"))
+
+              class FakeEpisodeService:
+                  def __init__(self, root: Path) -> None:
+                      self.root = root
+
+                  def prepare_episode(self, project_id, **kwargs):
+                      workspace = WorkspaceStore(self.root)
+                      project = workspace.load_project(project_id)
+                      project.episode_plan = EpisodePlan(
+                          title="Plan",
+                          listener_outcome="Understand the argument",
+                          estimated_duration_minutes=5,
+                          segments=[
+                              EpisodeSegment(
+                                  segment_id="segment-1",
+                                  title="Argument",
+                                  purpose="Explain",
+                                  estimated_minutes=5,
+                                  claim_ids=["claim-1"],
+                                  key_question="Why?",
+                                  speaker_dynamic="explanation",
+                              )
+                          ],
+                      )
+                      project.state = eval_harness.ProjectState.EPISODE_PLANNED
+                      workspace.save_project(project)
+                      coverage = CoverageReport(
+                          project_id=project_id,
+                          central_question_status="well_covered",
+                          max_supported_minutes=5,
+                          recommendation="continue",
+                          recommendation_reason="Enough material.",
+                          can_plan_episode=True,
+                          model_run_id=uuid4(),
+                      )
+                      return coverage, None, None, None, project.episode_plan, []
+
+              class FakeScriptService:
+                  def __init__(self, root: Path) -> None:
+                      self.root = root
+
+                  def run(self, project_id, **kwargs):
+                      ScriptArtifactStore(self.root).save_revision_decision(
+                          RevisionDecision(
+                              project_id=project_id,
+                              accepted=True,
+                              reason="The revision is better.",
+                              original_verdict="revise",
+                              revised_verdict="pass",
+                              original_overall=0.6,
+                              revised_overall=0.8,
+                              delta=0.2,
+                              original_issue_count=1,
+                              revised_issue_count=0,
+                              changed_turn_count=1,
+                          )
+                      )
+                      quality = ScriptQualityScore(
+                          evidence_fidelity=0.8,
+                          qualification_preservation=0.8,
+                          stance_and_disagreement=0.8,
+                          terminology_consistency=0.8,
+                          listenability=0.8,
+                      )
+                      return ScriptPipelineResult(
+                          glossary=Glossary(project_id=project_id, model_run_id=uuid4()),
+                          script=Script(
+                              title="Script",
+                              turns=[
+                                  ScriptTurn(
+                                      turn_id="turn-1",
+                                      segment_id="segment-1",
+                                      speaker="A",
+                                      spoken_text_fa="متن آزمایشی",
+                                      editorial_only=True,
+                                  )
+                              ],
+                          ),
+                          checks=ScriptCheckReport(
+                              project_id=project_id,
+                              verdict="pass",
+                              word_count=270,
+                              estimated_minutes=2.0,
+                              substantive_turn_count=0,
+                          ),
+                          verification=VerificationDraft(
+                              verdict="pass",
+                              unsupported_claim_ratio=0,
+                              quality=quality,
+                          ),
+                      )
+
+              monkeypatch.setattr(
+                  eval_harness,
+                  "ingest_uploaded_source",
+                  lambda *args, **kwargs: SimpleNamespace(
+                      artifact_ref="ingestion-result.json",
+                      safe_for_claim_extraction=True,
+                      issue_summary=None,
+                      status="ready",
+                  ),
+              )
+              monkeypatch.setattr(
+                  eval_harness,
+                  "build_source_service",
+                  lambda settings, root: FakeSourceService(settings),
+              )
+              monkeypatch.setattr(
+                  eval_harness,
+                  "build_episode_service",
+                  lambda settings, root, project_id: FakeEpisodeService(root),
+              )
+              monkeypatch.setattr(
+                  eval_harness,
+                  "build_script_service",
+                  lambda settings, root: FakeScriptService(root),
+              )
+
+              metrics = eval_harness._run_case(
+                  case,
+                  tmp_path / "runtime",
+                  settings=eval_harness.Settings(_env_file=None),
+              )
+
+              assert metrics.case_id == "metrics-case"
+              UUID(metrics.project_id)
+              assert metrics.checks_verdict == "pass"
+              assert metrics.verification_verdict == "pass"
+              assert metrics.unsupported_claim_ratio == 0
+              assert metrics.quality_overall == pytest.approx(0.8)
+              assert metrics.script_outcome == "verified"
+              assert metrics.revision_accepted is True
+              assert metrics.revision_delta == pytest.approx(0.2)
+              assert metrics.coverage_recommendation == "continue"
+              assert metrics.max_supported_minutes == 5
+              assert metrics.can_plan_episode is True
+              assert metrics.estimated_minutes == pytest.approx(2.0)
+              assert metrics.skipped_block_count == 2
+              assert metrics.call_count == 2
+              assert metrics.failed_count == 1
+              assert metrics.total_tokens == 30
+              assert metrics.wall_clock_seconds >= 0
+              assert metrics.cost_micros == 600
+              assert metrics.cost_is_partial is False
+              assert metrics.cost_micros_per_output_minute == 300
+              assert metrics.expectations == {"must_cover": ["argument"]}
+              ''',
+          )
+
+          replace_exact(
+              "tests/test_source_analysis.py",
+              '''    provider_error_block_ids: set[str] | frozenset[str] = frozenset(),\n) -> tuple[SourceAnalysisService, UUID, UUID, list[SourceDocumentBlock]]:\n''',
+              '''    provider_error_block_ids: set[str] | frozenset[str] = frozenset(),\n    max_workers: int = 4,\n) -> tuple[SourceAnalysisService, UUID, UUID, list[SourceDocumentBlock]]:\n''',
+          )
+          replace_exact(
+              "tests/test_source_analysis.py",
+              "        evidence_extractor=EvidenceExtractorService(evidence_runner),\n",
+              "        evidence_extractor=EvidenceExtractorService(evidence_runner, max_workers=max_workers),\n",
+          )
+          replace_exact(
+              "tests/test_source_analysis.py",
+              '''def test_manifest_records_skipped_block_count_and_warning(tmp_path: Path) -> None:\n    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(\n''',
+              '''@pytest.mark.parametrize("max_workers", [1, 4])\ndef test_manifest_records_skipped_block_count_and_warning(\n    tmp_path: Path, max_workers: int\n) -> None:\n    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(\n''',
+          )
+          replace_exact(
+              "tests/test_source_analysis.py",
+              '''        provider_error_block_ids={"block-02"},\n    )\n\n    manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")\n''',
+              '''        provider_error_block_ids={"block-02"},\n        max_workers=max_workers,\n    )\n\n    manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")\n''',
+          )
+          replace_exact(
+              "tests/test_source_analysis.py",
+              '''def test_low_retention_after_skips_names_rejected_and_skipped_counts(\n    tmp_path: Path,\n) -> None:\n''',
+              '''@pytest.mark.parametrize("max_workers", [1, 4])\ndef test_low_retention_after_skips_names_rejected_and_skipped_counts(\n    tmp_path: Path,\n    max_workers: int,\n) -> None:\n''',
+          )
+          replace_exact(
+              "tests/test_source_analysis.py",
+              '''        provider_error_block_ids={"block-02", "block-03"},\n    )\n\n    with pytest.raises(ValueError, match=r"0 rejected and 2 skipped"):\n''',
+              '''        provider_error_block_ids={"block-02", "block-03"},\n        max_workers=max_workers,\n    )\n\n    with pytest.raises(ValueError, match=r"0 rejected and 2 skipped"):\n''',
+          )
+
+          append_once(
+              "tests/test_script_run.py",
+              "def test_review_required_is_a_successful_run",
+              r'''
+          def test_review_required_is_a_successful_run(tmp_path: Path) -> None:
+              class ReviewRequiredPipeline(FakePipeline):
+                  def run(self, project_id: UUID, *, on_stage, **_):
+                      self.calls += 1
+                      on_stage("verifying_draft")
+                      project = self.workspace.load_project(project_id)
+                      assert project.state == ProjectState.SCRIPT_DRAFTING
+                      transition(project, ProjectState.SCRIPT_READY)
+                      transition(project, ProjectState.SCRIPT_VERIFYING)
+                      transition(project, ProjectState.SCRIPT_REVIEW_REQUIRED)
+                      self.workspace.save_project(project)
+                      return object()
+
+              workspace = WorkspaceStore(tmp_path / "workspaces")
+              project = _project()
+              pipeline = ReviewRequiredPipeline(workspace)
+              service = _service(tmp_path, project, pipeline)
+              service.approve_and_queue(project.project_id, approved_by="operator")
+
+              run = service.run(project.project_id)
+
+              assert run.status == "succeeded"
+              assert run.stage == "complete"
+              assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_REVIEW_REQUIRED
+              assert pipeline.calls == 1
+
+
+          def test_accepted_artifacts_survive_recover_interrupted_runs(tmp_path: Path) -> None:
+              from thesisound.script import ScriptReviewDecision
+
+              workspace = WorkspaceStore(tmp_path / "workspaces")
+              project = _project()
+              pipeline = FakePipeline(workspace)
+              service = _service(tmp_path, project, pipeline)
+              run = service.approve_and_queue(project.project_id, approved_by="operator")
+              run.status = "running"
+              run.stage = "verifying_revision"
+              service.run_store.save(run)
+
+              accepted = workspace.load_project(project.project_id)
+              transition(accepted, ProjectState.SCRIPT_DRAFTING)
+              transition(accepted, ProjectState.SCRIPT_READY)
+              transition(accepted, ProjectState.SCRIPT_VERIFYING)
+              transition(accepted, ProjectState.SCRIPT_REVIEW_REQUIRED)
+              transition(accepted, ProjectState.SCRIPT_VERIFIED)
+              workspace.save_project(accepted)
+
+              store = ScriptArtifactStore(workspace.root)
+              store.prepare_for_plan(project.project_id, run.approved_plan_hash)
+              store.save_script(
+                  project.project_id,
+                  Script(
+                      title="متن",
+                      turns=[
+                          ScriptTurn(
+                              turn_id="seg-1-turn-001",
+                              segment_id="seg-1",
+                              speaker="A",
+                              spoken_text_fa="متن",
+                              claim_ids=["claim-1"],
+                              evidence_ids=["evidence-1"],
+                          )
+                      ],
+                  ),
+              )
+              store.save_checks(
+                  ScriptCheckReport(
+                      project_id=project.project_id,
+                      verdict="pass",
+                      word_count=1,
+                      estimated_minutes=0.01,
+                      substantive_turn_count=1,
+                  )
+              )
+              store.save_verification(
+                  project.project_id,
+                  VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),
+              )
+              store.save_manifest(
+                  ScriptPipelineManifest(project_id=project.project_id, status="verified")
+              )
+              store.save_review_decision(
+                  ScriptReviewDecision(
+                      project_id=project.project_id,
+                      decision="accepted",
+                      reviewer="operator",
+                      reason="Accept the residual qualification risk.",
+                      plan_hash=run.approved_plan_hash,
+                      checks_verdict="pass",
+                      verification_verdict="revise",
+                      unsupported_claim_ratio=0.1,
+                      quality_overall=None,
+                  )
+              )
+
+              recovered = service.recover_interrupted_runs()
+
+              assert recovered == [project.project_id]
+              current = service.run_store.load(project.project_id)
+              assert current.status == "succeeded"
+              assert current.stage == "complete"
+              assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_VERIFIED
+              ''',
+          )
+
+          append_once(
+              "tests/test_script_pipeline.py",
+              "def test_blocking_deterministic_issue_still_rejects",
+              r'''
+          def test_blocking_deterministic_issue_still_rejects(tmp_path: Path) -> None:
+              root = tmp_path / "workspaces"
+              project_id, _, _ = _seed(root)
+              _approve(root, project_id)
+              runner = FakeScriptRunner(revision_text_prefix="system prompt")
+
+              with pytest.raises(ValueError):
+                  _service(root, runner).run(
+                      project_id,
+                      glossary_model="fake",
+                      writer_model="fake",
+                      verifier_model="fake",
+                      reviser_model="fake",
+                  )
+
+              assert WorkspaceStore(root).load_project(project_id).state == ProjectState.FAILED_RETRYABLE
+              ''',
+          )
+          PY
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        run: uv sync --extra dev --extra web-ui
+
+      - name: Format changed Python tests
+        run: uv run ruff format tests/test_gates.py tests/test_eval_harness.py tests/test_source_analysis.py tests/test_script_run.py tests/test_script_pipeline.py
+
+      - name: Lint
+        run: uv run ruff check . --output-format=github
+
+      - name: Validate golden cases without model clients
+        run: uv run thesisound eval --dry-run
+
+      - name: Targeted regression tests
+        run: uv run pytest tests/test_gates.py tests/test_eval_harness.py tests/test_source_analysis.py tests/test_script_run.py tests/test_script_pipeline.py
+
+      - name: Full test suite
+        run: uv run pytest
+
+      - name: Commit fixes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/34-production-sop.md tests/test_gates.py tests/test_eval_harness.py tests/test_source_analysis.py tests/test_script_run.py tests/test_script_pipeline.py
+          git diff --cached --check
+          git commit -m "Complete server-mono items 6-10 verification"
+          git push origin HEAD:agent/complete-server-mono-6-10
