@@ -1,27 +1,93 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import math
+import secrets
+import shutil
 import sqlite3
 from collections import defaultdict
-from collections.abc import Iterable
 from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean, median
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from thesisound.observability import ObservabilityLedger, redact_text, redact_value
+from thesisound.observability import ObservabilityLedger, redact_value
 
 _EXPORT_FILES = ("spans.jsonl", "events.jsonl", "model_calls.jsonl")
+_EXPORT_ARTIFACTS = frozenset((*_EXPORT_FILES, "manifest.json"))
 _TRACE_PAGE_SIZE = 10
 _EVENT_PAGE_SIZE = 50
 _MAX_TRACE_NODES = 1_000
 _MAX_WATERFALL_ROWS = 200
-_HASHED_EXPORT_KEYS = {"query", "text", "excerpt", "filename", "topic", "prompt"}
+
+# Export only code-controlled operational attributes. Unknown keys are omitted,
+# rather than trying to guess whether a newly-added free-text field contains
+# user content. This makes the export policy fail closed as the ledger evolves.
+_SAFE_LITERAL_EXPORT_KEYS = frozenset(
+    {
+        "pipeline_code_version",
+        "method",
+        "route",
+        "cache",
+        "result",
+        "verdict",
+        "provider",
+        "model",
+        "requested_model",
+        "resolved_model",
+        "operation",
+        "stage",
+        "finish_reason",
+        "grounding_mode",
+        "parser",
+        "mime_type",
+        "language",
+    }
+)
+_SAFE_SCALAR_EXPORT_KEYS = frozenset(
+    {
+        "status_code",
+        "http_status",
+        "retryable",
+        "retry_scheduled",
+        "logical_attempt",
+        "provider_attempt",
+        "provider_attempt_count",
+        "backoff_ms",
+        "attempt",
+        "source_count",
+        "page_count",
+        "block_count",
+        "claim_count",
+        "similarity_ratio",
+    }
+)
+_SAFE_METRIC_KEYS = frozenset(
+    {
+        "claim_count",
+        "similarity_ratio",
+        "input_tokens",
+        "output_tokens",
+        "thinking_tokens",
+        "cached_tokens",
+        "total_tokens",
+        "page_count",
+        "block_count",
+        "byte_count",
+        "source_count",
+        "duration_ms",
+        "cost_micros",
+        "hits",
+        "misses",
+        "count",
+        "attempt_count",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,76 +110,144 @@ class ObservabilityReporter:
 
     def export_project(self, project_id: UUID, out_dir: Path) -> ExportResult:
         directory = out_dir.expanduser().resolve()
-        directory.mkdir(parents=True, exist_ok=True)
-        queries = {
-            "spans.jsonl": (
-                "SELECT * FROM pipeline_spans WHERE project_id = ? ORDER BY started_at, span_id",
-                (str(project_id),),
-            ),
-            "events.jsonl": (
-                "SELECT * FROM pipeline_events WHERE project_id = ? ORDER BY occurred_at, event_id",
-                (str(project_id),),
-            ),
-            "model_calls.jsonl": (
-                "SELECT * FROM model_calls WHERE project_id = ? ORDER BY started_at, call_id",
-                (str(project_id),),
-            ),
-        }
+        staging = self._prepare_staging_directory(directory)
+        fingerprint_key = secrets.token_bytes(32)
         counts: dict[str, int] = {}
         digests: dict[str, str] = {}
+        snapshot_started_at = datetime.now(UTC).isoformat()
 
-        with self._connect() as connection:
-            for filename, (query, params) in queries.items():
-                path = directory / filename
-                rows = (self._export_row(row) for row in connection.execute(query, params))
-                counts[filename] = self._write_jsonl(path, rows)
-                digests[filename] = self._sha256(path)
+        try:
+            with self._connect() as connection:
+                # A single explicit read transaction pins one WAL snapshot for
+                # every output file and the manifest, even while a live run is
+                # still appending rows through other connections.
+                connection.execute("BEGIN")
+                try:
+                    span_rows = connection.execute(
+                        """
+                        SELECT span_id, trace_id, parent_span_id, project_id,
+                               workflow_run_id, name, component, kind,
+                               subject_type, subject_id, status, started_at,
+                               ended_at, duration_ms, process, pid, error_type,
+                               error_message, attributes_json, metrics_json
+                          FROM pipeline_spans
+                         WHERE project_id = ?
+                         ORDER BY started_at, span_id
+                        """,
+                        (str(project_id),),
+                    )
+                    counts["spans.jsonl"] = self._write_jsonl(
+                        staging / "spans.jsonl",
+                        (
+                            self._export_span_row(row, fingerprint_key)
+                            for row in span_rows
+                        ),
+                    )
+                    digests["spans.jsonl"] = self._sha256(staging / "spans.jsonl")
 
-            prompt_versions = [
-                {"prompt_id": row[0], "prompt_version": row[1]}
-                for row in connection.execute(
-                    """
-                    SELECT DISTINCT prompt_id, prompt_version
-                      FROM model_calls
-                     WHERE project_id = ?
-                       AND (prompt_id IS NOT NULL OR prompt_version IS NOT NULL)
-                     ORDER BY prompt_id, prompt_version
-                    """,
-                    (str(project_id),),
-                )
-            ]
-            code_versions = [
-                row[0]
-                for row in connection.execute(
-                    """
-                    SELECT DISTINCT json_extract(
-                               attributes_json, '$.pipeline_code_version'
-                           )
-                      FROM pipeline_spans
-                     WHERE project_id = ?
-                       AND parent_span_id IS NULL
-                       AND json_extract(
-                               attributes_json, '$.pipeline_code_version'
-                           ) IS NOT NULL
-                     ORDER BY 1
-                    """,
-                    (str(project_id),),
-                )
-            ]
-            schema_row = connection.execute(
-                "SELECT value FROM schema_meta WHERE key = 'schema_version'"
-            ).fetchone()
+                    event_rows = connection.execute(
+                        """
+                        SELECT event_id, trace_id, span_id, project_id,
+                               workflow_run_id, occurred_at, name, component,
+                               level, subject_type, subject_id, attributes_json
+                          FROM pipeline_events
+                         WHERE project_id = ?
+                         ORDER BY occurred_at, event_id
+                        """,
+                        (str(project_id),),
+                    )
+                    counts["events.jsonl"] = self._write_jsonl(
+                        staging / "events.jsonl",
+                        (
+                            self._export_event_row(row, fingerprint_key)
+                            for row in event_rows
+                        ),
+                    )
+                    digests["events.jsonl"] = self._sha256(staging / "events.jsonl")
 
-        manifest = redact_value(
-            {
-                "format_version": 1,
+                    call_rows = connection.execute(
+                        """
+                        SELECT call_id, trace_id, parent_call_id,
+                               pipeline_trace_id, parent_span_id, project_id,
+                               workflow_run_id, stage, operation, provider,
+                               requested_model, resolved_model, prompt_id,
+                               prompt_version, subject_type, subject_id,
+                               logical_attempt, status, started_at, ended_at,
+                               latency_ms, timeout_ms, provider_attempt_count,
+                               input_tokens, output_tokens, thinking_tokens,
+                               cached_tokens, total_tokens, finish_reason,
+                               grounding_mode, http_status, error_type,
+                               error_code, error_message, retry_scheduled,
+                               retry_reason, backoff_ms, request_sha256,
+                               raw_response_sha256, parsed_output_sha256,
+                               metadata_json, cost_micros, pricing_version
+                          FROM model_calls
+                         WHERE project_id = ?
+                         ORDER BY started_at, call_id
+                        """,
+                        (str(project_id),),
+                    )
+                    counts["model_calls.jsonl"] = self._write_jsonl(
+                        staging / "model_calls.jsonl",
+                        (
+                            self._export_model_call_row(row, fingerprint_key)
+                            for row in call_rows
+                        ),
+                    )
+                    digests["model_calls.jsonl"] = self._sha256(
+                        staging / "model_calls.jsonl"
+                    )
+
+                    prompt_versions = [
+                        {"prompt_id": row[0], "prompt_version": row[1]}
+                        for row in connection.execute(
+                            """
+                            SELECT DISTINCT prompt_id, prompt_version
+                              FROM model_calls
+                             WHERE project_id = ?
+                               AND (prompt_id IS NOT NULL OR prompt_version IS NOT NULL)
+                             ORDER BY prompt_id, prompt_version
+                            """,
+                            (str(project_id),),
+                        )
+                    ]
+                    code_versions = [
+                        row[0]
+                        for row in connection.execute(
+                            """
+                            SELECT DISTINCT json_extract(
+                                       attributes_json, '$.pipeline_code_version'
+                                   )
+                              FROM pipeline_spans
+                             WHERE project_id = ?
+                               AND parent_span_id IS NULL
+                               AND json_extract(
+                                       attributes_json, '$.pipeline_code_version'
+                                   ) IS NOT NULL
+                             ORDER BY 1
+                            """,
+                            (str(project_id),),
+                        )
+                    ]
+                    schema_row = connection.execute(
+                        "SELECT value FROM schema_meta WHERE key = 'schema_version'"
+                    ).fetchone()
+                    connection.execute("COMMIT")
+                except BaseException:
+                    if connection.in_transaction:
+                        connection.execute("ROLLBACK")
+                    raise
+
+            manifest = {
+                "format_version": 2,
                 "project_id": str(project_id),
+                "snapshot_started_at": snapshot_started_at,
                 "exported_at": datetime.now(UTC).isoformat(),
                 "schema_version": int(schema_row[0]) if schema_row else None,
-                "redaction": (
-                    "thesisound.observability.redact_value plus hashed sensitive "
-                    "free-text attributes"
-                ),
+                "redaction": {
+                    "policy": "allowlisted operational fields; arbitrary free text omitted",
+                    "opaque_fields": "HMAC-SHA256 keyed per export; key is not persisted",
+                },
                 "pipeline_code_versions": code_versions,
                 "prompt_versions": prompt_versions,
                 "files": {
@@ -124,21 +258,23 @@ class ObservabilityReporter:
                     for filename in _EXPORT_FILES
                 },
             }
-        )
-        manifest_path = directory / "manifest.json"
-        self._write_json(manifest_path, manifest)
+            self._write_json(staging / "manifest.json", manifest)
+            self._publish_staging_directory(staging, directory)
+        except BaseException:
+            if staging.exists():
+                shutil.rmtree(staging, ignore_errors=True)
+            raise
+
         return ExportResult(
             directory=directory,
-            manifest_path=manifest_path,
+            manifest_path=directory / "manifest.json",
             row_counts=counts,
         )
 
     def compare_runs(self, run_a: UUID, run_b: UUID) -> dict[str, Any]:
         with self._connect() as connection:
-            trace_a = self._resolve_trace(connection, run_a)
-            trace_b = self._resolve_trace(connection, run_b)
-            stats_a = self._trace_statistics(connection, trace_a)
-            stats_b = self._trace_statistics(connection, trace_b)
+            stats_a = self._identifier_statistics(connection, run_a)
+            stats_b = self._identifier_statistics(connection, run_b)
 
         return {
             "run_a": stats_a,
@@ -351,7 +487,140 @@ class ObservabilityReporter:
             "latest_error": self._event_row(latest_error) if latest_error else None,
         }
 
-    def _trace_statistics(self, connection: sqlite3.Connection, trace_id: UUID) -> dict[str, Any]:
+    def _identifier_statistics(
+        self,
+        connection: sqlite3.Connection,
+        identifier: UUID,
+    ) -> dict[str, Any]:
+        value = str(identifier)
+        run_row = connection.execute(
+            """
+            SELECT kind, started_at, finished_at, duration_ms
+              FROM pipeline_runs
+             WHERE workflow_run_id = ?
+            """,
+            (value,),
+        ).fetchone()
+        run_exists = run_row is not None or connection.execute(
+            """
+            SELECT 1
+              FROM pipeline_spans
+             WHERE workflow_run_id = ?
+             LIMIT 1
+            """,
+            (value,),
+        ).fetchone() is not None
+        if not run_exists:
+            run_exists = connection.execute(
+                """
+                SELECT 1
+                  FROM model_calls
+                 WHERE workflow_run_id = ?
+                 LIMIT 1
+                """,
+                (value,),
+            ).fetchone() is not None
+        if run_exists:
+            return self._run_statistics(connection, identifier, run_row)
+
+        trace_exists = connection.execute(
+            "SELECT 1 FROM pipeline_spans WHERE trace_id = ? LIMIT 1",
+            (value,),
+        ).fetchone() is not None
+        if not trace_exists:
+            trace_exists = connection.execute(
+                """
+                SELECT 1
+                  FROM model_calls
+                 WHERE pipeline_trace_id = ?
+                 LIMIT 1
+                """,
+                (value,),
+            ).fetchone() is not None
+        if trace_exists:
+            return self._trace_statistics(connection, identifier)
+        raise FileNotFoundError(f"Run or trace not found: {identifier}")
+
+    def _run_statistics(
+        self,
+        connection: sqlite3.Connection,
+        run_id: UUID,
+        run_row: sqlite3.Row | None,
+    ) -> dict[str, Any]:
+        value = str(run_id)
+        roots = connection.execute(
+            """
+            SELECT trace_id, name, started_at, ended_at, duration_ms,
+                   attributes_json
+              FROM pipeline_spans
+             WHERE workflow_run_id = ? AND parent_span_id IS NULL
+             ORDER BY started_at, span_id
+            """,
+            (value,),
+        ).fetchall()
+        code_versions = sorted(
+            {
+                version
+                for root in roots
+                if (
+                    version := self._load_json(root[5]).get("pipeline_code_version")
+                )
+            }
+        )
+
+        if run_row is not None:
+            duration_ms = self._duration_from_values(
+                run_row[1], run_row[2], run_row[3]
+            )
+            root_name = str(run_row[0])
+        elif roots:
+            starts = [self._parse_timestamp(root[2]) for root in roots]
+            ends = [
+                self._parse_timestamp(root[3]) if root[3] else datetime.now(UTC)
+                for root in roots
+            ]
+            duration_ms = max(
+                0,
+                round((max(ends) - min(starts)).total_seconds() * 1000),
+            )
+            root_name = roots[0][1]
+        else:
+            envelope = connection.execute(
+                """
+                SELECT MIN(started_at), MAX(ended_at)
+                  FROM model_calls
+                 WHERE workflow_run_id = ?
+                """,
+                (value,),
+            ).fetchone()
+            if envelope is None or envelope[0] is None:
+                raise FileNotFoundError(f"Run not found: {run_id}")
+            duration_ms = self._duration_from_values(envelope[0], envelope[1], None)
+            root_name = "run"
+
+        pipeline_code_version = None
+        if len(code_versions) == 1:
+            pipeline_code_version = code_versions[0]
+        elif code_versions:
+            pipeline_code_version = "mixed:" + ",".join(str(item) for item in code_versions)
+
+        return self._scope_statistics(
+            connection,
+            scope="run",
+            identifier=run_id,
+            workflow_run_id=run_id,
+            root_name=root_name,
+            duration_ms=duration_ms,
+            pipeline_code_version=pipeline_code_version,
+            pipeline_code_versions=code_versions,
+            trace_count=len({root[0] for root in roots}),
+        )
+
+    def _trace_statistics(
+        self,
+        connection: sqlite3.Connection,
+        trace_id: UUID,
+    ) -> dict[str, Any]:
         root = connection.execute(
             """
             SELECT workflow_run_id, name, started_at, ended_at, duration_ms,
@@ -365,38 +634,75 @@ class ObservabilityReporter:
         if root is None:
             raise FileNotFoundError(f"Trace not found: {trace_id}")
         root_attributes = self._load_json(root[5])
+        code_version = root_attributes.get("pipeline_code_version")
+        return self._scope_statistics(
+            connection,
+            scope="trace",
+            identifier=trace_id,
+            workflow_run_id=UUID(root[0]) if root[0] else None,
+            root_name=root[1],
+            duration_ms=self._duration_from_values(root[2], root[3], root[4]),
+            pipeline_code_version=code_version,
+            pipeline_code_versions=[code_version] if code_version else [],
+            trace_count=1,
+        )
+
+    def _scope_statistics(
+        self,
+        connection: sqlite3.Connection,
+        *,
+        scope: str,
+        identifier: UUID,
+        workflow_run_id: UUID | None,
+        root_name: str,
+        duration_ms: int,
+        pipeline_code_version: Any,
+        pipeline_code_versions: list[Any],
+        trace_count: int,
+    ) -> dict[str, Any]:
+        value = str(identifier)
+        span_column = "trace_id" if scope == "trace" else "workflow_run_id"
+        event_column = span_column
+        call_column = "pipeline_trace_id" if scope == "trace" else "workflow_run_id"
+
         stages = {
             row[0]: {"duration_ms": int(row[1] or 0), "count": int(row[2] or 0)}
             for row in connection.execute(
-                """
+                f"""
                 SELECT name, SUM(COALESCE(duration_ms, 0)), COUNT(*)
                   FROM pipeline_spans
-                 WHERE trace_id = ? AND kind = 'stage'
+                 WHERE {span_column} = ? AND kind = 'stage'
                  GROUP BY name
-                """,
-                (str(trace_id),),
+                """,  # noqa: S608
+                (value,),
             )
         }
         model = connection.execute(
-            """
+            f"""
             SELECT COUNT(*),
                    COALESCE(SUM(total_tokens), 0),
                    COALESCE(SUM(cost_micros), 0),
-                   COUNT(*) FILTER (WHERE status = 'succeeded' AND cost_micros IS NULL),
+                   COUNT(*) FILTER (
+                       WHERE status = 'succeeded' AND cost_micros IS NULL
+                   ),
+                   COUNT(*) FILTER (
+                       WHERE status = 'succeeded' AND cost_micros IS NOT NULL
+                   ),
                    COUNT(*) FILTER (
                        WHERE retry_scheduled = 1 OR provider_attempt_count > 1
                    )
               FROM model_calls
-             WHERE pipeline_trace_id = ?
-            """,
-            (str(trace_id),),
+             WHERE {call_column} = ?
+            """,  # noqa: S608
+            (value,),
         ).fetchone()
         call_count = int(model[0] or 0)
         unpriced_count = int(model[3] or 0)
-        priced_count = call_count - unpriced_count
+        priced_count = int(model[4] or 0)
+
         cache: dict[str, dict[str, Any]] = {}
         for row in connection.execute(
-            """
+            f"""
             SELECT json_extract(attributes_json, '$.cache') AS cache,
                    COUNT(*) FILTER (
                        WHERE json_extract(attributes_json, '$.result') = 'hit'
@@ -405,10 +711,10 @@ class ObservabilityReporter:
                        WHERE json_extract(attributes_json, '$.result') = 'miss'
                    )
               FROM pipeline_events
-             WHERE trace_id = ? AND name = 'cache.lookup'
+             WHERE {event_column} = ? AND name = 'cache.lookup'
              GROUP BY cache
-            """,
-            (str(trace_id),),
+            """,  # noqa: S608
+            (value,),
         ):
             if row[0] is None:
                 continue
@@ -418,62 +724,72 @@ class ObservabilityReporter:
                 "misses": misses,
                 "hit_rate": hits / (hits + misses) if hits + misses else 0.0,
             }
+
         audio_rows = connection.execute(
-            """
+            f"""
             SELECT attributes_json, metrics_json
               FROM pipeline_spans
-             WHERE trace_id = ? AND name = 'audio.qa'
-            """,
-            (str(trace_id),),
+             WHERE {span_column} = ? AND name = 'audio.qa'
+            """,  # noqa: S608
+            (value,),
         ).fetchall()
         similarities: list[float] = []
         verdicts: dict[str, int] = defaultdict(int)
         for row in audio_rows:
             attributes = self._load_json(row[0])
             metrics = self._load_json(row[1])
-            value = metrics.get("similarity_ratio")
-            if isinstance(value, int | float):
-                similarities.append(float(value))
+            similarity = metrics.get("similarity_ratio")
+            if isinstance(similarity, int | float):
+                similarities.append(float(similarity))
             verdicts[str(attributes.get("verdict") or "unknown")] += 1
+
         evidence: dict[str, dict[str, Any]] = {}
         for row in connection.execute(
-            """
+            f"""
             SELECT subject_id, metrics_json
               FROM pipeline_spans
-             WHERE trace_id = ? AND name = 'corpus.source'
+             WHERE {span_column} = ? AND name = 'corpus.source'
              ORDER BY started_at
-            """,
-            (str(trace_id),),
+            """,  # noqa: S608
+            (value,),
         ):
             if not row[0]:
                 continue
             metrics = self._load_json(row[1])
-            evidence[str(row[0])] = {"claim_count": int(metrics.get("claim_count") or 0)}
+            claim_count = int(metrics.get("claim_count") or 0)
+            source = str(row[0])
+            previous = evidence.get(source, {}).get("claim_count", 0)
+            evidence[source] = {"claim_count": max(int(previous), claim_count)}
+
         prompts = [
             {"prompt_id": row[0], "prompt_version": row[1]}
             for row in connection.execute(
-                """
+                f"""
                 SELECT DISTINCT prompt_id, prompt_version
                   FROM model_calls
-                 WHERE pipeline_trace_id = ?
+                 WHERE {call_column} = ?
                    AND (prompt_id IS NOT NULL OR prompt_version IS NOT NULL)
                  ORDER BY prompt_id, prompt_version
-                """,
-                (str(trace_id),),
+                """,  # noqa: S608
+                (value,),
             )
         ]
         return {
-            "trace_id": str(trace_id),
-            "workflow_run_id": root[0],
-            "root_name": root[1],
-            "pipeline_code_version": root_attributes.get("pipeline_code_version"),
+            "scope": scope,
+            "trace_id": str(identifier),
+            "workflow_run_id": str(workflow_run_id) if workflow_run_id else None,
+            "trace_count": trace_count,
+            "root_name": root_name,
+            "pipeline_code_version": pipeline_code_version,
+            "pipeline_code_versions": pipeline_code_versions,
             "prompt_versions": prompts,
             "summary": {
-                "duration_ms": int(root[4] or 0),
+                "duration_ms": duration_ms,
                 "model_call_count": call_count,
-                "retry_count": int(model[4] or 0),
+                "retry_count": int(model[5] or 0),
                 "total_tokens": int(model[1] or 0),
-                "cost_micros": int(model[2] or 0) if priced_count else None,
+                "cost_micros": int(model[2] or 0) if priced_count > 0 else None,
+                "priced_count": priced_count,
                 "unpriced_count": unpriced_count,
             },
             "stages": stages,
@@ -491,11 +807,18 @@ class ObservabilityReporter:
             by_parent[parent].append(node)
         for children in by_parent.values():
             children.sort(key=lambda item: item.started_at)
+        now = datetime.now(UTC)
 
         def build(parent: UUID | None, level: int) -> list[dict[str, Any]]:
             result: list[dict[str, Any]] = []
             for node in by_parent.get(parent, []):
                 item = node.model_dump(mode="json")
+                if node.duration_ms is None:
+                    ended = node.ended_at or now
+                    item["duration_ms"] = max(
+                        0,
+                        round((ended - node.started_at).total_seconds() * 1000),
+                    )
                 descendants = by_parent.get(node.node_id, [])
                 if level < depth:
                     item["children"] = build(node.node_id, level + 1)
@@ -534,13 +857,11 @@ class ObservabilityReporter:
             left = (started - trace_start).total_seconds() * 1000 / total_ms * 100
             duration = max(0, (ended - started).total_seconds() * 1000)
             width = max(0.8, duration / total_ms * 100)
-            result.append(
-                {
-                    **self._safe_dict(row),
-                    "left_percent": min(100.0, max(0.0, left)),
-                    "width_percent": min(100.0 - left, width),
-                }
-            )
+            item = self._safe_dict(row)
+            item["duration_ms"] = round(duration)
+            item["left_percent"] = min(100.0, max(0.0, left))
+            item["width_percent"] = min(100.0 - left, width)
+            result.append(item)
         return result
 
     def _select_trace(
@@ -559,34 +880,6 @@ class ObservabilityReporter:
                 raise FileNotFoundError(f"Trace not found for project: {requested}")
             return requested
         return UUID(traces[0]["trace_id"]) if traces else None
-
-    @staticmethod
-    def _resolve_trace(connection: sqlite3.Connection, identifier: UUID) -> UUID:
-        value = str(identifier)
-        row = connection.execute(
-            "SELECT trace_id FROM pipeline_spans WHERE trace_id = ? LIMIT 1", (value,)
-        ).fetchone()
-        if row is None:
-            row = connection.execute(
-                """
-                SELECT trace_id FROM pipeline_spans
-                 WHERE workflow_run_id = ?
-                 ORDER BY started_at LIMIT 1
-                """,
-                (value,),
-            ).fetchone()
-        if row is None:
-            row = connection.execute(
-                """
-                SELECT pipeline_trace_id FROM model_calls
-                 WHERE workflow_run_id = ? AND pipeline_trace_id IS NOT NULL
-                 ORDER BY started_at LIMIT 1
-                """,
-                (value,),
-            ).fetchone()
-        if row is None or row[0] is None:
-            raise FileNotFoundError(f"Run or trace not found: {identifier}")
-        return UUID(row[0])
 
     @staticmethod
     def _delta(before: Any, after: Any) -> dict[str, Any]:
@@ -634,6 +927,17 @@ class ObservabilityReporter:
     def _trace_row(row: sqlite3.Row) -> dict[str, Any]:
         item = ObservabilityReporter._safe_dict(row)
         item["attributes"] = ObservabilityReporter._load_json(item.pop("attributes_json", "{}"))
+        if item.get("duration_ms") is None and item.get("started_at"):
+            started = ObservabilityReporter._parse_timestamp(str(item["started_at"]))
+            ended = (
+                ObservabilityReporter._parse_timestamp(str(item["ended_at"]))
+                if item.get("ended_at")
+                else datetime.now(UTC)
+            )
+            item["duration_ms"] = max(
+                0,
+                round((ended - started).total_seconds() * 1000),
+            )
         return item
 
     @staticmethod
@@ -643,34 +947,83 @@ class ObservabilityReporter:
         return item
 
     @staticmethod
-    def _export_row(row: sqlite3.Row) -> dict[str, Any]:
+    def _export_span_row(row: sqlite3.Row, fingerprint_key: bytes) -> dict[str, Any]:
         item = dict(row)
-        for key in list(item):
-            if key.endswith("_json"):
-                clean_key = key.removesuffix("_json")
-                item[clean_key] = ObservabilityReporter._load_json(item.pop(key))
-        if item.get("error_message"):
-            item["error_message"] = redact_text(str(item["error_message"]))
-        return ObservabilityReporter._redact_export_value(item)
+        item["subject_id"] = ObservabilityReporter._opaque_text(
+            item.get("subject_id"), fingerprint_key
+        )
+        item["error_message"] = ObservabilityReporter._opaque_text(
+            item.get("error_message"), fingerprint_key
+        )
+        item["attributes"] = ObservabilityReporter._safe_operational_mapping(
+            ObservabilityReporter._load_json(item.pop("attributes_json", "{}"))
+        )
+        item["metrics"] = ObservabilityReporter._safe_metrics(
+            ObservabilityReporter._load_json(item.pop("metrics_json", "{}"))
+        )
+        return redact_value(item)
 
     @staticmethod
-    def _redact_export_value(value: Any, *, key: str | None = None) -> Any:
-        normalized_key = key.casefold().replace("-", "_") if key else None
-        if normalized_key in _HASHED_EXPORT_KEYS and isinstance(value, str):
-            return {
-                "sha256": hashlib.sha256(value.encode("utf-8")).hexdigest(),
-                "length": len(value),
-            }
-        if isinstance(value, dict):
-            return {
-                str(item_key): ObservabilityReporter._redact_export_value(
-                    item_value, key=str(item_key)
-                )
-                for item_key, item_value in value.items()
-            }
-        if isinstance(value, list | tuple):
-            return [ObservabilityReporter._redact_export_value(item) for item in value]
-        return redact_value(value)
+    def _export_event_row(row: sqlite3.Row, fingerprint_key: bytes) -> dict[str, Any]:
+        item = dict(row)
+        item["subject_id"] = ObservabilityReporter._opaque_text(
+            item.get("subject_id"), fingerprint_key
+        )
+        item["attributes"] = ObservabilityReporter._safe_operational_mapping(
+            ObservabilityReporter._load_json(item.pop("attributes_json", "{}"))
+        )
+        return redact_value(item)
+
+    @staticmethod
+    def _export_model_call_row(row: sqlite3.Row, fingerprint_key: bytes) -> dict[str, Any]:
+        item = dict(row)
+        item["subject_id"] = ObservabilityReporter._opaque_text(
+            item.get("subject_id"), fingerprint_key
+        )
+        item["error_message"] = ObservabilityReporter._opaque_text(
+            item.get("error_message"), fingerprint_key
+        )
+        item["metadata"] = ObservabilityReporter._safe_operational_mapping(
+            ObservabilityReporter._load_json(item.pop("metadata_json", "{}"))
+        )
+        return redact_value(item)
+
+    @staticmethod
+    def _safe_operational_mapping(value: dict[str, Any]) -> dict[str, Any]:
+        safe: dict[str, Any] = {}
+        for raw_key, item in value.items():
+            key = str(raw_key).casefold().replace("-", "_")
+            if key in _SAFE_LITERAL_EXPORT_KEYS and isinstance(item, str):
+                cleaned = redact_value(item)
+                safe[str(raw_key)] = cleaned if len(str(cleaned)) <= 256 else "[OMITTED_LONG_VALUE]"
+            elif key in _SAFE_SCALAR_EXPORT_KEYS and (
+                item is None or isinstance(item, int | float | bool)
+            ):
+                safe[str(raw_key)] = item
+        return safe
+
+    @staticmethod
+    def _safe_metrics(value: dict[str, Any]) -> dict[str, int | float]:
+        return {
+            str(key): item
+            for key, item in value.items()
+            if str(key).casefold().replace("-", "_") in _SAFE_METRIC_KEYS
+            and isinstance(item, int | float)
+        }
+
+    @staticmethod
+    def _opaque_text(value: Any, fingerprint_key: bytes) -> Any:
+        if value is None:
+            return None
+        text = str(value)
+        return {
+            "fingerprint": hmac.new(
+                fingerprint_key,
+                text.encode("utf-8"),
+                hashlib.sha256,
+            ).hexdigest(),
+            "length": len(text),
+        }
 
     @staticmethod
     def _safe_dict(row: sqlite3.Row | None) -> dict[str, Any]:
@@ -691,18 +1044,68 @@ class ObservabilityReporter:
         parsed = datetime.fromisoformat(value)
         return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
 
+    @staticmethod
+    def _duration_from_values(started: Any, ended: Any, duration_ms: Any) -> int:
+        if duration_ms is not None:
+            return max(0, int(duration_ms))
+        if not started:
+            return 0
+        start = ObservabilityReporter._parse_timestamp(str(started))
+        end = (
+            ObservabilityReporter._parse_timestamp(str(ended))
+            if ended
+            else datetime.now(UTC)
+        )
+        return max(0, round((end - start).total_seconds() * 1000))
+
     def _connect(self) -> closing[sqlite3.Connection]:
         connection = sqlite3.connect(self.ledger.database_path, timeout=30)
         connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA journal_mode=WAL")
         connection.execute("PRAGMA busy_timeout=30000")
         connection.execute("PRAGMA query_only=ON")
         return closing(connection)
 
     @staticmethod
-    def _write_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> int:
-        temporary = path.with_suffix(path.suffix + ".tmp")
+    def _prepare_staging_directory(directory: Path) -> Path:
+        if directory == directory.parent:
+            raise ValueError("Observability export cannot target the filesystem root.")
+        directory.parent.mkdir(parents=True, exist_ok=True)
+        if directory.exists():
+            if not directory.is_dir():
+                raise ValueError(f"Observability export target is not a directory: {directory}")
+            unexpected = sorted(
+                item.name for item in directory.iterdir() if item.name not in _EXPORT_ARTIFACTS
+            )
+            if unexpected:
+                joined = ", ".join(unexpected[:5])
+                raise ValueError(
+                    "Observability export requires a dedicated directory; "
+                    f"unexpected existing entries: {joined}"
+                )
+        staging = directory.parent / f".{directory.name}.tmp-{uuid4().hex}"
+        staging.mkdir()
+        return staging
+
+    @staticmethod
+    def _publish_staging_directory(staging: Path, directory: Path) -> None:
+        if not directory.exists():
+            staging.replace(directory)
+            return
+        backup = directory.parent / f".{directory.name}.bak-{uuid4().hex}"
+        directory.replace(backup)
+        try:
+            staging.replace(directory)
+        except BaseException:
+            backup.replace(directory)
+            raise
+        else:
+            shutil.rmtree(backup, ignore_errors=True)
+
+    @staticmethod
+    def _write_jsonl(path: Path, rows: Any) -> int:
         count = 0
-        with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+        with path.open("w", encoding="utf-8", newline="\n") as handle:
             for row in rows:
                 handle.write(
                     json.dumps(
@@ -714,17 +1117,14 @@ class ObservabilityReporter:
                 )
                 handle.write("\n")
                 count += 1
-        temporary.replace(path)
         return count
 
     @staticmethod
     def _write_json(path: Path, value: Any) -> None:
-        temporary = path.with_suffix(path.suffix + ".tmp")
-        temporary.write_text(
+        path.write_text(
             json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, default=str) + "\n",
             encoding="utf-8",
         )
-        temporary.replace(path)
 
     @staticmethod
     def _sha256(path: Path) -> str:
