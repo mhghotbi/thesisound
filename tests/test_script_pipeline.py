@@ -665,3 +665,21 @@ def test_artifacts_without_a_decision_file_still_use_the_revision(
 
     assert store.has_revised_script(project_id) is True
     assert store.load_latest_script(project_id).turns[0].spoken_text_fa.startswith("اصلاح")
+
+
+def test_blocking_deterministic_issue_still_rejects(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    _approve(root, project_id)
+    runner = FakeScriptRunner(revision_text_prefix="system prompt")
+
+    with pytest.raises(ValueError):
+        _service(root, runner).run(
+            project_id,
+            glossary_model="fake",
+            writer_model="fake",
+            verifier_model="fake",
+            reviser_model="fake",
+        )
+
+    assert WorkspaceStore(root).load_project(project_id).state == ProjectState.FAILED_RETRYABLE

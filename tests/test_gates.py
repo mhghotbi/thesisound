@@ -50,3 +50,11 @@ def test_sop_document_lists_every_enforced_location() -> None:
     for gate in GATE_REGISTRY:
         expected = "Unenforced" if gate.enforced_at == "unenforced" else f"`{gate.enforced_at}`"
         assert expected in document, gate.code
+
+
+def test_sop_document_lists_every_registry_fact() -> None:
+    document = (ROOT / "docs/34-production-sop.md").read_text(encoding="utf-8")
+    for gate in GATE_REGISTRY:
+        assert gate.reads in document, f"{gate.code}: reads"
+        assert gate.writes in document, f"{gate.code}: writes"
+        assert gate.blocked_means in document, f"{gate.code}: blocked_means"
