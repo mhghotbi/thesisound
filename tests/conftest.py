@@ -13,6 +13,27 @@ from thesisound.tracing import EventRecord, SpanRecord, Tracer
 
 
 @pytest.fixture(autouse=True)
+def _isolate_from_local_env(monkeypatch: pytest.MonkeyPatch):
+    """Prevent a developer's local ``.env`` from leaking live credentials
+    into the test suite.
+
+    ``Settings`` loads ``.env`` on every instantiation. If a developer has
+    real Kavenegar SMS credentials configured there (needed to actually
+    send OTPs locally), tests that build ``Settings()`` without explicitly
+    overriding ``kavenegar_api_key``/``kavenegar_otp_template`` would pick
+    up those real values, causing the web app to construct a real
+    ``KavenegarOtpSender`` and hit the live API during OTP-login tests. An
+    empty-string env var takes precedence over a dotenv value in
+    pydantic-settings, so this forces every test back onto the null/test
+    sender unless a test explicitly overrides these fields itself (an
+    explicit keyword argument to ``Settings(...)`` still wins over both).
+    """
+
+    monkeypatch.setenv("KAVENEGAR_API_KEY", "")
+    monkeypatch.setenv("KAVENEGAR_TEMPLATE_NAME", "")
+
+
+@pytest.fixture(autouse=True)
 def _reset_ambient_tracer():
     """Isolate every test from the process-global ambient tracer.
 
