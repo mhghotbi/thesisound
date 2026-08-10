@@ -21,8 +21,17 @@ jobs:
           enable-cache: true
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - name: Apply fixes
-        run: python .github/apply-account-isolation-fixes.py
+      - name: Correct patch anchor and apply fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/apply-account-isolation-fixes.py')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace('old = dedent(', 'old = (', 1)
+          text = text.replace('new = dedent(', 'new = (', 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          python .github/apply-account-isolation-fixes.py
       - name: Install dependencies
         run: uv sync --extra dev --extra web-ui
       - name: Normalize changed Python
