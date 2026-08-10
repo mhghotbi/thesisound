@@ -62,6 +62,7 @@ jobs:
             src/thesisound/services/observability_rollup.py \
             src/thesisound/web/app.py \
             src/thesisound/web/observability_routes.py \
+            tests/test_ledger_spans_and_events.py \
             tests/test_observability.py \
             tests/test_logging_setup.py \
             tests/test_observability_rollups.py \
@@ -78,6 +79,7 @@ jobs:
             src/thesisound/services/observability_rollup.py \
             src/thesisound/web/app.py \
             src/thesisound/web/observability_routes.py \
+            tests/test_ledger_spans_and_events.py \
             tests/test_observability.py \
             tests/test_logging_setup.py \
             tests/test_observability_rollups.py \
