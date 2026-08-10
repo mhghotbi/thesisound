@@ -50,6 +50,7 @@ def create_corpus_builder(
             document_mapper=DocumentMapperService(
                 runner,
                 part_cache=DocumentMapPartCache(workspace.root),
+                max_workers=settings.document_map_workers,
             ),
             evidence_extractor=EvidenceExtractorService(
                 runner,

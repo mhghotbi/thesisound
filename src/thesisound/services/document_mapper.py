@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from typing import Any
 from uuid import UUID
 
@@ -23,6 +24,14 @@ from thesisound.source_analysis import (
     SourceDocumentBlock,
 )
 
+# Evidence extraction tolerates a failed block, so its breaker waits for three
+# consecutive failures. A failed partition is fatal here -- the document map must
+# cover every content block -- so the first failure already aborts the stage. The
+# breaker is therefore a single probe: prove the provider answers once before
+# paying for the fan-out. document_map_part is the largest call class in the
+# pipeline (60% of all input tokens on the 2026-08-09 run).
+_PROBE_PARTITIONS = 1
+
 
 class DocumentMapperService:
     """Build a complete map without sending an unbounded document in one prompt.
@@ -39,11 +48,14 @@ class DocumentMapperService:
         maximum_input_characters: int = 250_000,
         maximum_merge_payload_characters: int = 250_000,
         part_cache: DocumentMapPartCache | None = None,
+        max_workers: int = 1,
     ) -> None:
         if maximum_input_characters < 1:
             raise ValueError("maximum_input_characters must be positive.")
         if maximum_merge_payload_characters < 1:
             raise ValueError("maximum_merge_payload_characters must be positive.")
+        if max_workers < 1:
+            raise ValueError("max_workers must be at least 1.")
         self.model_runner = model_runner
         # Two separate budgets on purpose. maximum_input_characters bounds the
         # source text in one partition prompt, so lowering it makes partitions
@@ -55,6 +67,7 @@ class DocumentMapperService:
         # None means no caching. The service has no workspace root of its own, so
         # it must never construct a cache implicitly.
         self.part_cache = part_cache
+        self.max_workers = max_workers
 
     def map_document(
         self,
@@ -80,24 +93,18 @@ class DocumentMapperService:
             )
             return _materialize_document_map(source_id, blocks, draft), run
 
-        part_drafts: list[DocumentMapDraft] = []
-        last_part_record: ModelRunRecord | None = None
-        for part_number, partition in enumerate(partitions, start=1):
-            cached_draft = self._load_cached_partition(project_id, partition)
-            if cached_draft is not None:
-                part_drafts.append(_namespace_draft(cached_draft, part_number))
-                continue
-            draft, last_part_record = self._map_partition(
-                project_id=project_id,
-                source_id=source_id,
-                blocks=partition,
-                model=model,
-                prompt_version=prompt_version,
-                part_number=part_number,
-                require_complete_coverage=True,
-            )
-            self._save_cached_partition(partition, draft)
-            part_drafts.append(_namespace_draft(draft, part_number))
+        drafts, records = self._map_partitions(
+            project_id=project_id,
+            source_id=source_id,
+            partitions=partitions,
+            model=model,
+            prompt_version=prompt_version,
+        )
+        part_drafts = [_namespace_draft(draft, index + 1) for index, draft in enumerate(drafts)]
+        last_part_record = next(
+            (record for record in reversed(records) if record is not None),
+            None,
+        )
 
         sections = [section for draft in part_drafts for section in draft.sections]
         known_section_ids = {section.section_id for section in sections}
@@ -179,6 +186,106 @@ class DocumentMapperService:
             minimum_coverage=1.0,
         )
         return _materialize_document_map(source_id, blocks, merged), merge_record
+
+    def _map_partitions(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        partitions: list[list[SourceDocumentBlock]],
+        model: str,
+        prompt_version: str | None,
+    ) -> tuple[list[DocumentMapDraft], list[ModelRunRecord | None]]:
+        """One draft per partition, in partition order, reusing the cache.
+
+        Lookups stay on this thread and in order: they are local reads, a fully
+        cached document must not start a pool, and `cache.lookup` has to arrive in
+        a stable order. The cost is that two partitions with identical text are
+        both mapped instead of the second reading what the first just wrote --
+        rare, and cheaper than remapping block IDs for a second-chance lookup.
+        """
+
+        drafts: list[DocumentMapDraft | None] = [None] * len(partitions)
+        records: list[ModelRunRecord | None] = [None] * len(partitions)
+        pending: list[int] = []
+        for index, partition in enumerate(partitions):
+            cached = self._load_cached_partition(project_id, partition)
+            if cached is None:
+                pending.append(index)
+            else:
+                drafts[index] = cached
+
+        def work(index: int) -> tuple[int, DocumentMapDraft, ModelRunRecord]:
+            partition = partitions[index]
+            with tracing.span(
+                "corpus.map_partition",
+                component="corpus",
+                project_id=project_id,
+                subject_type="partition",
+                subject_id=f"part-{index + 1:04d}",
+            ):
+                draft, record = self._map_partition(
+                    project_id=project_id,
+                    source_id=source_id,
+                    blocks=partition,
+                    model=model,
+                    prompt_version=prompt_version,
+                    part_number=index + 1,
+                    require_complete_coverage=True,
+                )
+            # Inside the worker on purpose: when one partition fails, the ones
+            # still in flight were already paid for and must reach the cache.
+            self._save_cached_partition(partition, draft)
+            return index, draft, record
+
+        workers = min(self.max_workers, len(pending))
+        if workers <= 1:
+            for index in pending:
+                _, draft, record = work(index)
+                drafts[index] = draft
+                records[index] = record
+        else:
+            self._fan_out_partitions(work, pending, workers, drafts, records)
+
+        complete = [draft for draft in drafts if draft is not None]
+        if len(complete) != len(partitions):
+            raise AssertionError("A document-map partition finished without a draft.")
+        return complete, records
+
+    def _fan_out_partitions(
+        self,
+        work: Callable[[int], tuple[int, DocumentMapDraft, ModelRunRecord]],
+        pending: list[int],
+        workers: int,
+        drafts: list[DocumentMapDraft | None],
+        records: list[ModelRunRecord | None],
+    ) -> None:
+        """Probe one partition, then run the rest concurrently.
+
+        Never more futures in flight than the pool has threads, so nothing sits
+        queued and nothing is cancelled: leaving the `with` block on an exception
+        waits for the calls already running and keeps what they cached. The first
+        failure observed is the one that propagates, unwrapped -- a failed
+        partition aborts the whole map, so there is nothing to degrade to.
+        """
+
+        bound_work = tracing.bind_context(work)
+        position = 0
+        futures: set[Future[tuple[int, DocumentMapDraft, ModelRunRecord]]] = set()
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for _ in range(min(_PROBE_PARTITIONS, len(pending))):
+                futures.add(pool.submit(bound_work, pending[position]))
+                position += 1
+            while futures:
+                future = next(as_completed(futures))
+                futures.discard(future)
+                index, draft, record = future.result()
+                drafts[index] = draft
+                records[index] = record
+                # Reached only after a success, which is what releases the probe.
+                while len(futures) < workers and position < len(pending):
+                    futures.add(pool.submit(bound_work, pending[position]))
+                    position += 1
 
     def _map_partition(
         self,

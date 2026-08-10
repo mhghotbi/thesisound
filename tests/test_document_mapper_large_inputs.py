@@ -1,15 +1,21 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from threading import Barrier, Lock
+from time import perf_counter
 from uuid import UUID, uuid4
 
 import pytest
+from pydantic import ValidationError
 
-from thesisound import tracing
+from thesisound import source_cli, tracing
+from thesisound.config import Settings
 from thesisound.domain import Locator
 from thesisound.modeling import (
     DeterministicValidationError,
     ModelExecution,
+    ModelProviderError,
     ModelRunRecord,
 )
 from thesisound.pipeline import WorkspaceStore
@@ -17,7 +23,7 @@ from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.document_identity import partition_block_key
 from thesisound.services.document_map_part_cache import DocumentMapPartCache
-from thesisound.services.document_mapper import DocumentMapperService
+from thesisound.services.document_mapper import _PROBE_PARTITIONS, DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.source_analysis_service import SourceAnalysisService
 from thesisound.services.source_artifact_store import SourceArtifactStore
@@ -31,11 +37,17 @@ from thesisound.source_analysis import (
     SourceAnalysisManifest,
     SourceDocumentBlock,
 )
+from thesisound.web import corpus_runtime
 
 
 class HierarchicalRunner:
     def __init__(self) -> None:
         self.stages: list[str] = []
+        self._stages_lock = Lock()
+
+    def _record_stage(self, stage: str) -> None:
+        with self._stages_lock:
+            self.stages.append(stage)
 
     def run(
         self,
@@ -48,7 +60,7 @@ class HierarchicalRunner:
         validator=None,
         **_: object,
     ):
-        self.stages.append(stage)
+        self._record_stage(stage)
         if output_type is DocumentMapDraft:
             blocks = variables["blocks"]
             assert isinstance(blocks, list)
@@ -158,7 +170,7 @@ class FailingLastPartitionRunner(HierarchicalRunner):
             kwargs["stage"] == "document_map_part"
             and kwargs["variables"]["part_number"] == self.failing_part_number
         ):
-            self.stages.append("document_map_part")
+            self._record_stage("document_map_part")
             raise DeterministicValidationError("forced partition failure")
         return super().run(**kwargs)
 
@@ -475,8 +487,9 @@ def test_merge_payload_budget_must_be_positive() -> None:
         DocumentMapperService(HierarchicalRunner(), maximum_merge_payload_characters=0)
 
 
+@pytest.mark.parametrize("max_workers", [1, 4])
 def test_successful_partitions_are_not_remapped_after_a_later_partition_fails(
-    tmp_path: Path,
+    tmp_path: Path, max_workers: int
 ) -> None:
     blocks = _blocks()
     cache = DocumentMapPartCache(tmp_path)
@@ -485,6 +498,7 @@ def test_successful_partitions_are_not_remapped_after_a_later_partition_fails(
         first_runner,
         maximum_input_characters=900,
         part_cache=cache,
+        max_workers=max_workers,
     )
 
     with pytest.raises(DeterministicValidationError, match="forced partition failure"):
@@ -495,14 +509,16 @@ def test_successful_partitions_are_not_remapped_after_a_later_partition_fails(
         second_runner,
         maximum_input_characters=900,
         part_cache=cache,
+        max_workers=max_workers,
     )
     _map(second_mapper, blocks)
 
     assert second_runner.stages == ["document_map_part", "document_map_merge"]
 
 
+@pytest.mark.parametrize("max_workers", [1, 4])
 def test_successful_partitions_are_persisted_but_the_failed_partition_is_not(
-    tmp_path: Path,
+    tmp_path: Path, max_workers: int
 ) -> None:
     blocks = _blocks()
     cache = DocumentMapPartCache(tmp_path)
@@ -510,13 +526,14 @@ def test_successful_partitions_are_persisted_but_the_failed_partition_is_not(
         FailingLastPartitionRunner(failing_part_number=4),
         maximum_input_characters=900,
         part_cache=cache,
+        max_workers=max_workers,
     )
 
     with pytest.raises(DeterministicValidationError, match="forced partition failure"):
         _map(mapper, blocks)
 
     assert len(list(cache.root.glob("*.json"))) == 3
-    assert list(cache.root.glob("*.json.tmp")) == []
+    assert list(cache.root.glob("*.tmp")) == []
 
 
 def test_cache_hit_document_map_matches_the_cache_miss_map_field_for_field(
@@ -741,3 +758,361 @@ def test_partition_cache_emits_hit_and_miss_events(
         "hit",
         "hit",
     ]
+
+
+# --------------------------------------------------------------------------
+# R7: partition fan-out
+# --------------------------------------------------------------------------
+
+
+class BarrierPartitionRunner(HierarchicalRunner):
+    """Deadlocks unless the post-probe partitions really overlap."""
+
+    def __init__(self, parties: int, timeout: float = 5.0) -> None:
+        super().__init__()
+        self.barrier = Barrier(parties, timeout=timeout)
+        self._intervals_lock = Lock()
+        self.intervals: list[tuple[int, float, float]] = []
+
+    def run(self, **kwargs):
+        part_number = None
+        if kwargs["stage"] == "document_map_part":
+            part_number = int(kwargs["variables"]["part_number"])
+        started = perf_counter()
+        if part_number is not None and part_number > _PROBE_PARTITIONS:
+            self.barrier.wait()
+        execution = super().run(**kwargs)
+        if part_number is not None:
+            with self._intervals_lock:
+                self.intervals.append((part_number, started, perf_counter()))
+        return execution
+
+
+class DeadProviderRunner(HierarchicalRunner):
+    def run(self, **kwargs):
+        if kwargs["stage"] == "document_map_part":
+            self._record_stage("document_map_part")
+            raise ModelProviderError("provider is unreachable")
+        return super().run(**kwargs)
+
+
+class StampedPartitionRunner(HierarchicalRunner):
+    def run(self, **kwargs):
+        execution = super().run(**kwargs)
+        if kwargs["stage"] == "document_map_part":
+            execution.record.input_hash = f"part-{int(kwargs['variables']['part_number']):04d}"
+        return execution
+
+
+def test_fan_out_produces_the_same_document_map_as_the_serial_path() -> None:
+    blocks = _blocks()
+    serial, _ = _map(
+        DocumentMapperService(
+            HierarchicalRunner(), maximum_input_characters=500, max_workers=1
+        ),
+        blocks,
+    )
+    parallel, _ = _map(
+        DocumentMapperService(
+            HierarchicalRunner(), maximum_input_characters=500, max_workers=8
+        ),
+        blocks,
+    )
+    assert _document_map_signature(parallel) == _document_map_signature(serial)
+
+
+def test_section_and_block_ids_keep_partition_order_after_fan_out() -> None:
+    blocks = _blocks()
+    mapper = DocumentMapperService(
+        HierarchicalRunner(), maximum_input_characters=500, max_workers=8
+    )
+
+    document_map, _ = _map(mapper, blocks)
+
+    assert [section.section_id for section in document_map.sections] == [
+        f"part-{index:04d}:section" for index in range(1, 9)
+    ]
+    assert [
+        block_id for section in document_map.sections for block_id in section.source_block_ids
+    ] == [block.block_id for block in blocks]
+
+
+def test_partitions_after_the_probe_run_concurrently() -> None:
+    blocks = _blocks()
+    runner = BarrierPartitionRunner(parties=3)
+    mapper = DocumentMapperService(runner, maximum_input_characters=900, max_workers=4)
+
+    _map(mapper, blocks)
+
+    assert len(runner.intervals) == 4
+
+
+def test_the_probe_partition_finishes_before_any_other_partition_starts() -> None:
+    blocks = _blocks()
+    runner = BarrierPartitionRunner(parties=3)
+    mapper = DocumentMapperService(runner, maximum_input_characters=900, max_workers=4)
+
+    _map(mapper, blocks)
+
+    probe = next(item for item in runner.intervals if item[0] == 1)
+    others = [item for item in runner.intervals if item[0] != 1]
+    assert len(others) == 3
+    assert all(other[1] >= probe[2] for other in others)
+
+
+def test_a_dead_provider_is_paid_for_once_not_once_per_partition() -> None:
+    blocks = _blocks()
+    mapper = DocumentMapperService(
+        DeadProviderRunner(), maximum_input_characters=500, max_workers=8
+    )
+
+    runner = mapper.model_runner
+    with pytest.raises(ModelProviderError, match="provider is unreachable"):
+        _map(mapper, blocks)
+
+    assert runner.stages.count("document_map_part") == 1
+
+
+def test_the_original_exception_type_survives_the_pool() -> None:
+    mapper = DocumentMapperService(
+        FailingLastPartitionRunner(failing_part_number=4),
+        maximum_input_characters=900,
+        max_workers=4,
+    )
+
+    with pytest.raises(
+        DeterministicValidationError, match="forced partition failure"
+    ) as exc_info:
+        _map(mapper, _blocks())
+
+    assert not isinstance(exc_info.value, ModelProviderError)
+    assert "circuit breaker" not in str(exc_info.value).casefold()
+
+
+def test_the_returned_record_is_the_last_partition_in_partition_order() -> None:
+    mapper = DocumentMapperService(
+        StampedPartitionRunner(),
+        maximum_input_characters=900,
+        maximum_merge_payload_characters=1,
+        max_workers=4,
+    )
+
+    _, run = _map(mapper, _blocks())
+
+    assert run is not None
+    assert run.input_hash == "part-0004"
+
+
+def test_a_fully_cached_document_calls_no_partitions(tmp_path: Path) -> None:
+    blocks = _blocks()
+    cache = DocumentMapPartCache(tmp_path)
+    _map(
+        DocumentMapperService(
+            HierarchicalRunner(),
+            maximum_input_characters=900,
+            part_cache=cache,
+            max_workers=4,
+        ),
+        blocks,
+    )
+    second_runner = HierarchicalRunner()
+    second_mapper = DocumentMapperService(
+        second_runner,
+        maximum_input_characters=900,
+        part_cache=cache,
+        max_workers=8,
+    )
+
+    _map(second_mapper, blocks)
+
+    assert second_runner.stages == ["document_map_merge"]
+
+
+def test_a_mixed_cache_run_keeps_lookup_events_in_partition_order(
+    tmp_path: Path,
+    recording_tracer: tracing.Tracer,
+) -> None:
+    blocks = _blocks()
+    cache = DocumentMapPartCache(tmp_path)
+    _map(
+        DocumentMapperService(
+            HierarchicalRunner(),
+            maximum_input_characters=900,
+            part_cache=cache,
+            max_workers=4,
+        ),
+        blocks,
+    )
+    deleted_index = 2
+    partitions = [blocks[index : index + 2] for index in range(0, len(blocks), 2)]
+    cache.path(partition_block_key(partitions[deleted_index])).unlink()
+    event_count = len(recording_tracer.sink.events)
+
+    _map(
+        DocumentMapperService(
+            HierarchicalRunner(),
+            maximum_input_characters=900,
+            part_cache=cache,
+            max_workers=4,
+        ),
+        blocks,
+    )
+
+    results = [
+        event.attributes["result"]
+        for event in recording_tracer.sink.events[event_count:]
+        if event.name == "cache.lookup" and event.attributes.get("cache") == "document_map_part"
+    ]
+    assert len(results) == 4
+    assert results.count("miss") == 1
+    assert results[deleted_index] == "miss"
+
+
+def test_partition_spans_attach_to_the_calling_span(
+    tmp_path: Path,
+    recording_tracer: tracing.Tracer,
+) -> None:
+    blocks = _blocks()
+    mapper = DocumentMapperService(
+        HierarchicalRunner(),
+        maximum_input_characters=900,
+        part_cache=DocumentMapPartCache(tmp_path),
+        max_workers=4,
+    )
+
+    with tracing.span("corpus.map_document", component="corpus") as parent:
+        _map(mapper, blocks)
+
+    spans = recording_tracer.sink.find("corpus.map_partition")
+    assert len(spans) == 4
+    assert all(span.parent_span_id == parent.context.span_id for span in spans)
+    assert {span.subject_id for span in spans} == {
+        "part-0001",
+        "part-0002",
+        "part-0003",
+        "part-0004",
+    }
+
+    with tracing.span("corpus.map_document", component="corpus"):
+        _map(mapper, blocks)
+
+    assert len(recording_tracer.sink.find("corpus.map_partition")) == 4
+
+
+def test_concurrent_saves_of_one_content_key_leave_a_valid_file(tmp_path: Path) -> None:
+    cache = DocumentMapPartCache(tmp_path)
+    blocks = _blocks()[:2]
+    content_key = partition_block_key(blocks)
+    draft = DocumentMapDraft(
+        working_thesis="thesis",
+        sections=[
+            DocumentMapDraftSection(
+                section_id="section",
+                source_block_ids=[block.block_id for block in blocks],
+                title="Mapped partition",
+                function="argument",
+            )
+        ],
+    )
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for future in [
+            pool.submit(cache.save, content_key, blocks, draft) for _ in range(8)
+        ]:
+            future.result()
+
+    assert len(list(cache.root.glob("*.json"))) == 1
+    assert list(cache.root.glob("*.tmp")) == []
+    assert cache.load(content_key, blocks) is not None
+
+
+def test_cache_cleanup_failure_does_not_abort_the_document_map(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cache = DocumentMapPartCache(tmp_path)
+    blocks = _blocks()[:2]
+    content_key = partition_block_key(blocks)
+    draft = DocumentMapDraft(
+        working_thesis="thesis",
+        sections=[
+            DocumentMapDraftSection(
+                section_id="section",
+                source_block_ids=[block.block_id for block in blocks],
+                title="Mapped partition",
+                function="argument",
+            )
+        ],
+    )
+
+    def fail_replace(path: Path, target: Path) -> Path:
+        del path, target
+        raise OSError("replace blocked")
+
+    def fail_unlink(path: Path, missing_ok: bool = False) -> None:
+        del path, missing_ok
+        raise OSError("cleanup blocked")
+
+    monkeypatch.setattr(Path, "replace", fail_replace)
+    monkeypatch.setattr(Path, "unlink", fail_unlink)
+
+    assert cache.save(content_key, blocks, draft) is None
+
+
+# --------------------------------------------------------------------------
+# R7: composition roots and settings
+# --------------------------------------------------------------------------
+
+
+def test_corpus_runtime_wires_the_document_map_worker_setting(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(corpus_runtime, "GeminiStructuredModel", lambda **_: object())
+    settings = Settings(
+        environment="test",
+        workspace_root=tmp_path / "workspaces",
+        ingestion_artifact_root=tmp_path / "artifacts",
+        web_session_secret="test-secret-that-is-long-enough",
+        allow_test_otp=True,
+        ui_demo_mode=False,
+        document_map_workers=3,
+    )
+    builder = corpus_runtime.create_corpus_builder(
+        settings, WorkspaceStore(settings.workspace_root)
+    )
+
+    service = builder.analysis_service_factory()
+
+    assert service.document_mapper.max_workers == 3
+
+
+def test_source_cli_wires_the_document_map_worker_setting(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(source_cli, "GeminiStructuredModel", lambda **_: object())
+    root = tmp_path / "workspaces"
+    settings = Settings(
+        environment="test",
+        workspace_root=root,
+        ingestion_artifact_root=tmp_path / "artifacts",
+        web_session_secret="test-secret-that-is-long-enough",
+        allow_test_otp=True,
+        ui_demo_mode=False,
+        document_map_workers=3,
+    )
+
+    service = source_cli._model_service(settings, root)
+
+    assert service.document_mapper.max_workers == 3
+
+
+def test_document_map_workers_defaults_to_four_and_is_bounded() -> None:
+    assert Settings(environment="test").document_map_workers == 4
+    with pytest.raises(ValidationError):
+        Settings(environment="test", document_map_workers=0)
+    with pytest.raises(ValidationError):
+        Settings(environment="test", document_map_workers=17)
+
+
+def test_document_mapper_rejects_a_worker_count_below_one() -> None:
+    with pytest.raises(ValueError, match="max_workers"):
+        DocumentMapperService(HierarchicalRunner(), max_workers=0)

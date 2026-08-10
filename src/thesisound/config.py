@@ -71,6 +71,12 @@ class Settings(BaseSettings):
     # corpus-build wall clock. Kept modest so a build does not spend its time in the key
     # pool's quota cooldown; set to 1 to restore the fully sequential behaviour.
     evidence_extraction_workers: int = Field(default=4, ge=1, le=16)
+    # document_map_part is the largest call class in the pipeline (60% of input tokens,
+    # 28% of provider time on the 2026-08-09 run) and partitions are independent, so
+    # this is where fan-out buys the most wall clock. One partition is probed first: a
+    # partition failure aborts the whole map, so a dead provider must not be paid for
+    # once per partition. Set to 1 to restore the fully sequential behaviour.
+    document_map_workers: int = Field(default=4, ge=1, le=16)
     keep_rendered_prompts: bool = False
     gemini_google_search_enabled: bool = True
     gemini_url_context_enabled: bool = True

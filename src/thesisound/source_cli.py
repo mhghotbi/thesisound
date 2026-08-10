@@ -195,6 +195,7 @@ def _model_service(settings: Settings, root: Path) -> SourceAnalysisService:
         document_mapper=DocumentMapperService(
             runner,
             part_cache=DocumentMapPartCache(root),
+            max_workers=settings.document_map_workers,
         ),
         evidence_extractor=EvidenceExtractorService(
             runner,

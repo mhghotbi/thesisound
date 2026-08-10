@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import re
+from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
+from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
@@ -166,7 +168,16 @@ class DocumentMapPartCache:
         path = self.path(content_key)
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = json.dumps(cached.model_dump(mode="json"), ensure_ascii=False, indent=2)
-        temporary = path.with_suffix(".json.tmp")
-        temporary.write_text(payload + "\n", encoding="utf-8")
-        temporary.replace(path)
+        # Partitions are mapped concurrently and two partitions with identical text
+        # share a content key, so a fixed ".tmp" name would let two writers interleave
+        # into the same file. Caching is an optimisation: a write that loses the race
+        # must return None, never fail the document map that already paid for the call.
+        temporary = path.with_name(f"{path.name}.{uuid4().hex}.tmp")
+        try:
+            temporary.write_text(payload + "\n", encoding="utf-8")
+            temporary.replace(path)
+        except OSError:
+            with suppress(OSError):
+                temporary.unlink(missing_ok=True)
+            return None
         return path
