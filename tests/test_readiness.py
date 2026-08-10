@@ -13,11 +13,18 @@ from thesisound.domain import (
     Project,
     ProjectState,
     ResearchBrief,
+    Script,
+    ScriptTurn,
     TopicType,
 )
 from thesisound.episode import CoverageReport
 from thesisound.pipeline import WorkspaceStore
-from thesisound.script import ScriptCheckReport, ScriptReviewDecision, VerificationDraft
+from thesisound.script import (
+    ScriptCheckReport,
+    ScriptPipelineManifest,
+    ScriptReviewDecision,
+    VerificationDraft,
+)
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
@@ -185,6 +192,29 @@ def _save_reviewed_script_artifacts(root: Path, project: Project, *, stale: bool
         project.project_id,
         VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),
     )
+    store.save_script(
+        project.project_id,
+        Script(
+            title="Reviewed script",
+            turns=[
+                ScriptTurn(
+                    turn_id="turn-1",
+                    segment_id="seg-1",
+                    speaker="A",
+                    spoken_text_fa="متن بازبینی‌شده",
+                    editorial_only=True,
+                )
+            ],
+        ),
+    )
+    store.save_manifest(
+        ScriptPipelineManifest(
+            project_id=project.project_id,
+            status="verified",
+            segment_count=1,
+            turn_count=1,
+        )
+    )
     plan_hash = current_hash
     if stale:
         plan_hash = "0" * 64 if plan_hash != "0" * 64 else "1" * 64
@@ -257,3 +287,48 @@ def test_corrupt_review_decision_yields_unknown_not_a_crash(tmp_path: Path) -> N
 
     assert _result(results, "independent-verification").status == "unknown"
     assert _result(results, "script-review-decision").status == "unknown"
+
+
+def test_corrupt_project_artifact_yields_unknown_for_every_gate(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project = _project()
+    WorkspaceStore(root).save_project(project)
+    project_path = root / str(project.project_id) / "project.json"
+    project_path.write_text('{"project_id":', encoding="utf-8")
+
+    results = project_readiness(project_id=project.project_id, workspace_root=root)
+
+    assert results
+    assert all(result.status == "unknown" for result in results)
+    assert all(result.evidence == str(project_path) for result in results)
+
+
+def test_verified_state_requires_complete_verified_script_artifacts(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project = _project(ProjectState.SCRIPT_VERIFIED)
+    WorkspaceStore(root).save_project(project)
+    assert project.episode_plan is not None
+    store = ScriptArtifactStore(root)
+    current_hash = episode_plan_hash(project.episode_plan)
+    store.prepare_for_plan(project.project_id, current_hash)
+    store.save_checks(
+        ScriptCheckReport(
+            project_id=project.project_id,
+            verdict="pass",
+            word_count=100,
+            estimated_minutes=1,
+            substantive_turn_count=2,
+        )
+    )
+    store.save_verification(
+        project.project_id,
+        VerificationDraft(verdict="pass", unsupported_claim_ratio=0),
+    )
+    # Deliberately omit the script and manifest. The individual reports pass,
+    # but the plan requires readiness to verify the complete artifact set.
+
+    results = project_readiness(project_id=project.project_id, workspace_root=root)
+
+    assert _result(results, "script-checks").status == "blocked"
+    assert _result(results, "independent-verification").status == "blocked"
+    assert _result(results, "script-review-decision").status == "blocked"

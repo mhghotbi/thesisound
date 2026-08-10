@@ -43,8 +43,22 @@ def project_readiness(*, project_id: UUID, workspace_root: Path) -> list[GateRes
     project_path = root / str(project_id) / "project.json"
     if not project_path.exists():
         raise FileNotFoundError(f"Project not found: {project_id}")
-    project = Project.model_validate_json(project_path.read_text(encoding="utf-8"))
     definitions = {gate.code: gate for gate in GATE_REGISTRY}
+    try:
+        project = Project.model_validate_json(project_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        detail = f"Project artifact is unreadable: {exc}"
+        return [
+            GateResult(
+                code=gate.code,
+                label=gate.label_en,
+                actor=gate.actor,
+                status="unknown",
+                detail=detail,
+                evidence=str(project_path),
+            )
+            for gate in GATE_REGISTRY
+        ]
     if project.state == ProjectState.DRAFT:
         return [
             GateResult(
@@ -328,6 +342,40 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
                 code,
                 "unknown",
                 f"Script plan binding is unreadable: {exc}",
+                script_dir,
+            )
+        return
+
+    try:
+        verified_artifacts = store.has_verified_artifacts(project_id, plan_hash=current_hash)
+        reviewable_artifacts = (
+            project.state == ProjectState.SCRIPT_REVIEW_REQUIRED
+            and store.has_reviewable_artifacts(project_id, plan_hash=current_hash)
+        )
+    except (OSError, ValueError) as exc:
+        for code in script_codes:
+            set_result(
+                code,
+                "unknown",
+                f"Script artifact set is unreadable: {exc}",
+                script_dir,
+            )
+        return
+
+    script_artifacts_required = project.state in {
+        ProjectState.SCRIPT_REVIEW_REQUIRED,
+        ProjectState.SCRIPT_VERIFIED,
+        ProjectState.AUDIO_GENERATING,
+        ProjectState.AUDIO_READY,
+        ProjectState.AUDIO_VERIFYING,
+        ProjectState.COMPLETE,
+    }
+    if script_artifacts_required and not (verified_artifacts or reviewable_artifacts):
+        for code in script_codes:
+            set_result(
+                code,
+                "blocked",
+                "The current project state requires a complete current-plan script artifact set.",
                 script_dir,
             )
         return
