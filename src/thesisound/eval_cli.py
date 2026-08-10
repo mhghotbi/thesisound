@@ -101,5 +101,7 @@ def register_eval_command(app: typer.Typer) -> None:
         except typer.Exit:
             raise
         except (OSError, ValueError) as exc:
-            Console().print(f"[red]{exc}[/red]", stderr=True)
+            # stderr is a Console constructor argument, not a print keyword: passing
+            # it to print raises TypeError and hides the error it was reporting.
+            Console(stderr=True).print(f"[red]{exc}[/red]")
             raise typer.Exit(code=2) from exc
