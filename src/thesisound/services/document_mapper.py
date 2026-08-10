@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from typing import Any
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import (
     CrossSectionThread,
     DocumentMap,
@@ -12,6 +13,8 @@ from thesisound.domain import (
     Locator,
 )
 from thesisound.modeling import DeterministicValidationError, ModelError, ModelRunRecord
+from thesisound.services.document_identity import partition_block_key
+from thesisound.services.document_map_part_cache import DocumentMapPartCache
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
     DocumentMapDraft,
@@ -35,6 +38,7 @@ class DocumentMapperService:
         *,
         maximum_input_characters: int = 250_000,
         maximum_merge_payload_characters: int = 250_000,
+        part_cache: DocumentMapPartCache | None = None,
     ) -> None:
         if maximum_input_characters < 1:
             raise ValueError("maximum_input_characters must be positive.")
@@ -48,6 +52,9 @@ class DocumentMapperService:
         # against the text budget would make a smaller budget overflow sooner.
         self.maximum_input_characters = maximum_input_characters
         self.maximum_merge_payload_characters = maximum_merge_payload_characters
+        # None means no caching. The service has no workspace root of its own, so
+        # it must never construct a cache implicitly.
+        self.part_cache = part_cache
 
     def map_document(
         self,
@@ -57,7 +64,7 @@ class DocumentMapperService:
         blocks: list[SourceDocumentBlock],
         model: str,
         prompt_version: str | None = None,
-    ) -> tuple[DocumentMap, ModelRunRecord]:
+    ) -> tuple[DocumentMap, ModelRunRecord | None]:
         if not blocks:
             raise ValueError("Cannot map a document without semantic blocks.")
 
@@ -76,6 +83,10 @@ class DocumentMapperService:
         part_drafts: list[DocumentMapDraft] = []
         last_part_record: ModelRunRecord | None = None
         for part_number, partition in enumerate(partitions, start=1):
+            cached_draft = self._load_cached_partition(project_id, partition)
+            if cached_draft is not None:
+                part_drafts.append(_namespace_draft(cached_draft, part_number))
+                continue
             draft, last_part_record = self._map_partition(
                 project_id=project_id,
                 source_id=source_id,
@@ -85,6 +96,7 @@ class DocumentMapperService:
                 part_number=part_number,
                 require_complete_coverage=True,
             )
+            self._save_cached_partition(partition, draft)
             part_drafts.append(_namespace_draft(draft, part_number))
 
         sections = [section for draft in part_drafts for section in draft.sections]
@@ -208,6 +220,34 @@ class DocumentMapperService:
             validator=validate,
         )
         return execution.output, execution.record
+
+    def _load_cached_partition(
+        self,
+        project_id: UUID,
+        partition: list[SourceDocumentBlock],
+    ) -> DocumentMapDraft | None:
+        if self.part_cache is None:
+            return None
+        content_key = partition_block_key(partition)
+        draft = self.part_cache.load(content_key, partition)
+        tracing.event(
+            "cache.lookup",
+            component="cache",
+            project_id=project_id,
+            cache="document_map_part",
+            result="hit" if draft is not None else "miss",
+            content_key=content_key[:16],
+        )
+        return draft
+
+    def _save_cached_partition(
+        self,
+        partition: list[SourceDocumentBlock],
+        draft: DocumentMapDraft,
+    ) -> None:
+        if self.part_cache is None:
+            return
+        self.part_cache.save(partition_block_key(partition), partition, draft)
 
 
 def _partition_blocks(
@@ -450,9 +490,7 @@ def _normalize_map_draft(draft: DocumentMapDraft, *, known_ids: set[str]) -> Non
     cleaned_threads = []
     for thread in draft.cross_section_threads:
         section_ids = [
-            section_id
-            for section_id in thread.section_ids
-            if section_id not in removed_section_ids
+            section_id for section_id in thread.section_ids if section_id not in removed_section_ids
         ]
         if not section_ids:
             continue

@@ -122,7 +122,6 @@ class SourceAnalysisService:
             if reusable is not None:
                 span.set(source="project_reuse")
                 return self._mark_document_mapped(project_id, source_id)
-
             content_key = block_sequence_key(blocks)
             shared = self.document_map_cache.load(content_key, blocks, source_id=source_id)
             tracing.event(
@@ -139,7 +138,6 @@ class SourceAnalysisService:
                 self.artifact_store.save_document_map(project_id, source_id, shared)
                 span.set(source="shared_cache")
                 return self._mark_document_mapped(project_id, source_id)
-
             document_map, run = self.document_mapper.map_document(
                 project_id=project_id,
                 source_id=source_id,
@@ -151,7 +149,9 @@ class SourceAnalysisService:
             if is_shareable_document_map(document_map):
                 self.document_map_cache.save(content_key, blocks, document_map)
             span.set(source="model")
-            return self._mark_document_mapped(project_id, source_id, run_id=run.run_id)
+            return self._mark_document_mapped(
+                project_id, source_id, run_id=run.run_id if run is not None else None
+            )
 
     def has_reusable_document_map(self, project_id: UUID, source_id: UUID) -> bool:
         blocks = self.artifact_store.load_blocks(project_id, source_id)

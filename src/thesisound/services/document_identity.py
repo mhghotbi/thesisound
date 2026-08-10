@@ -12,8 +12,7 @@ _DIACRITICS = re.compile(r"[ً-ٰٟ]")
 _NON_WORD = re.compile(r"[^\w؀-ۿ]+", re.UNICODE)
 _ARABIC_LETTERS = str.maketrans({"ي": "ی", "ك": "ک", "ۀ": "ه"})
 _DIGITS = str.maketrans(
-    "۰۱۲۳۴۵۶۷۸۹"
-    "٠١٢٣٤٥٦٧٨٩",
+    "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩",
     "01234567890123456789",
 )
 
@@ -53,9 +52,7 @@ def parsed_document_key(parsed: ParsedDocument) -> str:
     """
 
     return content_key(
-        block.text
-        for block in parsed.blocks
-        if block.kind.casefold() not in FRONT_MATTER_KINDS
+        block.text for block in parsed.blocks if block.kind.casefold() not in FRONT_MATTER_KINDS
     )
 
 
@@ -72,3 +69,23 @@ def block_sequence_key(blocks: list[SourceDocumentBlock]) -> str:
         for block in blocks
         if block.block_type != "front_matter"
     )
+
+
+def partition_block_key(blocks: list[SourceDocumentBlock]) -> str:
+    """Identify one document-map partition by exactly the text the prompt saw.
+
+    Unlike block_sequence_key this keeps front matter: _map_partition sends every
+    block in the partition to the model and lets the draft reference any of them,
+    so two partitions that differ only in front matter must not share a cache
+    entry. Each heading item and block text are separate fields so their
+    boundaries cannot collide. Block IDs and locators stay out: they name the
+    source, not the text.
+    """
+
+    fields: list[str] = []
+    for block in blocks:
+        fields.append("partition block")
+        for index, heading in enumerate(block.heading_path):
+            fields.extend((f"heading {index}", heading))
+        fields.extend(("text", block.text))
+    return content_key(fields)

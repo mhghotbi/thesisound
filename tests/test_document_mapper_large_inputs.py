@@ -1,22 +1,34 @@
 from __future__ import annotations
 
+from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
 
+from thesisound import tracing
 from thesisound.domain import Locator
 from thesisound.modeling import (
     DeterministicValidationError,
     ModelExecution,
     ModelRunRecord,
 )
+from thesisound.pipeline import WorkspaceStore
+from thesisound.services.block_builder import BlockBuilder
+from thesisound.services.claim_reconciler import ClaimReconcilerService
+from thesisound.services.document_identity import partition_block_key
+from thesisound.services.document_map_part_cache import DocumentMapPartCache
 from thesisound.services.document_mapper import DocumentMapperService
+from thesisound.services.evidence_extractor import EvidenceExtractorService
+from thesisound.services.source_analysis_service import SourceAnalysisService
+from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
+    BlockBuildReport,
     CrossSectionThreadDraft,
     DocumentMapDraft,
     DocumentMapDraftSection,
     DocumentMapMergeDraft,
     DocumentMapSectionUpdateDraft,
+    SourceAnalysisManifest,
     SourceDocumentBlock,
 )
 
@@ -136,6 +148,21 @@ class FailingMergeRunner(HierarchicalRunner):
         return super().run(**kwargs)
 
 
+class FailingLastPartitionRunner(HierarchicalRunner):
+    def __init__(self, failing_part_number: int) -> None:
+        super().__init__()
+        self.failing_part_number = failing_part_number
+
+    def run(self, **kwargs):
+        if (
+            kwargs["stage"] == "document_map_part"
+            and kwargs["variables"]["part_number"] == self.failing_part_number
+        ):
+            self.stages.append("document_map_part")
+            raise DeterministicValidationError("forced partition failure")
+        return super().run(**kwargs)
+
+
 class ThesislessMergeRunner(HierarchicalRunner):
     def run(self, **kwargs):
         execution = super().run(**kwargs)
@@ -159,6 +186,43 @@ def _blocks() -> list[SourceDocumentBlock]:
         )
         for index in range(1, 9)
     ]
+
+
+def _map(
+    mapper: DocumentMapperService,
+    blocks: list[SourceDocumentBlock],
+):
+    return mapper.map_document(
+        project_id=uuid4(),
+        source_id=blocks[0].source_id,
+        blocks=blocks,
+        model="fake",
+    )
+
+
+def _document_map_signature(
+    document_map,
+) -> tuple[object, list[tuple[object, ...]], list[tuple[object, ...]]]:
+    return (
+        document_map.working_thesis,
+        [
+            (
+                section.section_id,
+                section.source_block_ids,
+                section.title,
+                section.function,
+                section.key_concepts,
+                section.depends_on_section_ids,
+                section.required_for_global_understanding,
+                section.unresolved_context,
+            )
+            for section in document_map.sections
+        ],
+        [
+            (thread.label, thread.section_ids, thread.description)
+            for thread in document_map.cross_section_threads
+        ],
+    )
 
 
 def test_large_document_is_mapped_without_omitting_or_duplicating_blocks() -> None:
@@ -307,9 +371,7 @@ def test_merge_variables_expose_the_trimmed_partition_payload() -> None:
     partitions = variables["partitions"]
     assert isinstance(partitions, list)
     assert len(partitions) == variables["partition_count"]
-    payload_sections = [
-        section for partition in partitions for section in partition["sections"]
-    ]
+    payload_sections = [section for partition in partitions for section in partition["sections"]]
     assert {section["section_id"] for section in payload_sections} == {
         section.section_id for section in document_map.sections
     }
@@ -385,9 +447,7 @@ def test_oversized_merge_payload_skips_the_merge_without_discarding_partitions()
     assert mapped == [block.block_id for block in blocks]
     assert "document_map_merge" not in runner.stages
     assert run.stage == "document_map_part"
-    assert any(
-        "Cross-partition merge was skipped" in warning for warning in document_map.warnings
-    )
+    assert any("Cross-partition merge was skipped" in warning for warning in document_map.warnings)
 
 
 def test_merge_payload_budget_is_independent_of_the_partition_text_budget() -> None:
@@ -413,3 +473,271 @@ def test_merge_payload_budget_is_independent_of_the_partition_text_budget() -> N
 def test_merge_payload_budget_must_be_positive() -> None:
     with pytest.raises(ValueError, match="maximum_merge_payload_characters"):
         DocumentMapperService(HierarchicalRunner(), maximum_merge_payload_characters=0)
+
+
+def test_successful_partitions_are_not_remapped_after_a_later_partition_fails(
+    tmp_path: Path,
+) -> None:
+    blocks = _blocks()
+    cache = DocumentMapPartCache(tmp_path)
+    first_runner = FailingLastPartitionRunner(failing_part_number=4)
+    first_mapper = DocumentMapperService(
+        first_runner,
+        maximum_input_characters=900,
+        part_cache=cache,
+    )
+
+    with pytest.raises(DeterministicValidationError, match="forced partition failure"):
+        _map(first_mapper, blocks)
+
+    second_runner = HierarchicalRunner()
+    second_mapper = DocumentMapperService(
+        second_runner,
+        maximum_input_characters=900,
+        part_cache=cache,
+    )
+    _map(second_mapper, blocks)
+
+    assert second_runner.stages == ["document_map_part", "document_map_merge"]
+
+
+def test_successful_partitions_are_persisted_but_the_failed_partition_is_not(
+    tmp_path: Path,
+) -> None:
+    blocks = _blocks()
+    cache = DocumentMapPartCache(tmp_path)
+    mapper = DocumentMapperService(
+        FailingLastPartitionRunner(failing_part_number=4),
+        maximum_input_characters=900,
+        part_cache=cache,
+    )
+
+    with pytest.raises(DeterministicValidationError, match="forced partition failure"):
+        _map(mapper, blocks)
+
+    assert len(list(cache.root.glob("*.json"))) == 3
+    assert list(cache.root.glob("*.json.tmp")) == []
+
+
+def test_cache_hit_document_map_matches_the_cache_miss_map_field_for_field(
+    tmp_path: Path,
+) -> None:
+    blocks = _blocks()
+    cache = DocumentMapPartCache(tmp_path)
+    first_map, _ = _map(
+        DocumentMapperService(
+            HierarchicalRunner(),
+            maximum_input_characters=900,
+            part_cache=cache,
+        ),
+        blocks,
+    )
+    second_map, _ = _map(
+        DocumentMapperService(
+            HierarchicalRunner(),
+            maximum_input_characters=900,
+            part_cache=cache,
+        ),
+        blocks,
+    )
+
+    assert _document_map_signature(second_map) == _document_map_signature(first_map)
+
+
+def test_partition_cache_reuses_content_across_sources_and_rebuilds_block_ids(
+    tmp_path: Path,
+) -> None:
+    first_blocks = _blocks()
+    second_source_id = uuid4()
+    second_blocks = [
+        block.model_copy(
+            update={
+                "block_id": f"rebuilt-{index}",
+                "source_id": second_source_id,
+                "source_block_keys": [f"rebuilt-source-{index}"],
+            }
+        )
+        for index, block in enumerate(first_blocks, start=1)
+    ]
+    cache = DocumentMapPartCache(tmp_path)
+    _map(
+        DocumentMapperService(
+            HierarchicalRunner(),
+            maximum_input_characters=900,
+            part_cache=cache,
+        ),
+        first_blocks,
+    )
+    second_runner = HierarchicalRunner()
+    second_map, _ = _map(
+        DocumentMapperService(
+            second_runner,
+            maximum_input_characters=900,
+            part_cache=cache,
+        ),
+        second_blocks,
+    )
+
+    mapped_ids = [
+        block_id for section in second_map.sections for block_id in section.source_block_ids
+    ]
+    assert "document_map_part" not in second_runner.stages
+    assert mapped_ids == [block.block_id for block in second_blocks]
+    assert not any(block_id.startswith("block-") for block_id in mapped_ids)
+
+
+def test_changing_partition_budget_produces_no_cache_hits(tmp_path: Path) -> None:
+    blocks = _blocks()
+    cache = DocumentMapPartCache(tmp_path)
+    _map(
+        DocumentMapperService(
+            HierarchicalRunner(),
+            maximum_input_characters=500,
+            part_cache=cache,
+        ),
+        blocks,
+    )
+    second_runner = HierarchicalRunner()
+    second_map, _ = _map(
+        DocumentMapperService(
+            second_runner,
+            maximum_input_characters=900,
+            part_cache=cache,
+        ),
+        blocks,
+    )
+
+    mapped_ids = [
+        block_id for section in second_map.sections for block_id in section.source_block_ids
+    ]
+    assert second_runner.stages.count("document_map_part") == 4
+    assert mapped_ids == [block.block_id for block in blocks]
+
+
+def test_partition_key_keeps_front_matter() -> None:
+    blocks = _blocks()
+    front_matter = blocks[0].model_copy(
+        update={"block_type": "front_matter", "text": "Edition one front matter."}
+    )
+    revised_front_matter = front_matter.model_copy(update={"text": "Edition two front matter."})
+
+    assert partition_block_key([front_matter, blocks[1]]) != partition_block_key(
+        [revised_front_matter, blocks[1]]
+    )
+
+
+def test_partition_key_preserves_heading_boundaries() -> None:
+    block = _blocks()[0]
+    first = block.model_copy(update={"heading_path": ["A"], "text": "B C"})
+    second = block.model_copy(update={"heading_path": ["A B"], "text": "C"})
+
+    assert partition_block_key([first]) != partition_block_key([second])
+
+
+def test_partition_cache_is_disabled_by_default(tmp_path: Path) -> None:
+    blocks = _blocks()
+    first_map, _ = _map(
+        DocumentMapperService(HierarchicalRunner(), maximum_input_characters=500),
+        blocks,
+    )
+    second_map, _ = _map(
+        DocumentMapperService(HierarchicalRunner(), maximum_input_characters=500),
+        blocks,
+    )
+
+    assert list(tmp_path.iterdir()) == []
+    assert _document_map_signature(second_map) == _document_map_signature(first_map)
+
+
+def test_all_cached_partitions_and_a_merge_failure_return_no_record_and_mark_the_source(
+    tmp_path: Path,
+) -> None:
+    blocks = _blocks()
+    project_id = uuid4()
+    source_id = blocks[0].source_id
+    root = tmp_path / "workspaces"
+    cache = DocumentMapPartCache(root)
+    _map(
+        DocumentMapperService(
+            HierarchicalRunner(),
+            maximum_input_characters=900,
+            part_cache=cache,
+        ),
+        blocks,
+    )
+    failing_mapper = DocumentMapperService(
+        FailingMergeRunner(),
+        maximum_input_characters=900,
+        part_cache=cache,
+    )
+
+    document_map, run = _map(failing_mapper, blocks)
+
+    assert run is None
+    assert any("Cross-partition merge failed" in warning for warning in document_map.warnings)
+
+    workspace = WorkspaceStore(root)
+    artifact_store = SourceArtifactStore(root)
+    artifact_store.save_blocks(
+        project_id,
+        source_id,
+        blocks,
+        BlockBuildReport(
+            source_id=source_id,
+            input_block_count=len(blocks),
+            output_block_count=len(blocks),
+        ),
+    )
+    artifact_store.save_manifest(
+        SourceAnalysisManifest(
+            project_id=project_id,
+            source_id=source_id,
+            source_sha256="test",
+            status="blocks_ready",
+            block_count=len(blocks),
+        )
+    )
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=artifact_store,
+        block_builder=BlockBuilder(),
+        document_mapper=failing_mapper,
+        evidence_extractor=EvidenceExtractorService(HierarchicalRunner()),
+        claim_reconciler=ClaimReconcilerService(HierarchicalRunner()),
+    )
+
+    manifest = service.map_document(project_id, source_id, model="fake")
+
+    assert manifest.status == "document_mapped"
+    assert manifest.model_run_ids == []
+
+
+def test_partition_cache_emits_hit_and_miss_events(
+    tmp_path: Path,
+    recording_tracer: tracing.Tracer,
+) -> None:
+    blocks = _blocks()
+    cache = DocumentMapPartCache(tmp_path)
+    mapper = DocumentMapperService(
+        HierarchicalRunner(),
+        maximum_input_characters=900,
+        part_cache=cache,
+    )
+    _map(mapper, blocks)
+    _map(mapper, blocks)
+
+    cache_events = [
+        event
+        for event in recording_tracer.sink.events
+        if event.name == "cache.lookup" and event.attributes.get("cache") == "document_map_part"
+    ]
+    assert [event.attributes["result"] for event in cache_events] == [
+        "miss",
+        "miss",
+        "miss",
+        "miss",
+        "hit",
+        "hit",
+        "hit",
+        "hit",
+    ]

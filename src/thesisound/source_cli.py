@@ -16,6 +16,7 @@ from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
+from thesisound.services.document_map_part_cache import DocumentMapPartCache
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
@@ -191,7 +192,10 @@ def _model_service(settings: Settings, root: Path) -> SourceAnalysisService:
         workspace_store=WorkspaceStore(root),
         artifact_store=SourceArtifactStore(root),
         block_builder=BlockBuilder(),
-        document_mapper=DocumentMapperService(runner),
+        document_mapper=DocumentMapperService(
+            runner,
+            part_cache=DocumentMapPartCache(root),
+        ),
         evidence_extractor=EvidenceExtractorService(
             runner,
             max_workers=settings.evidence_extraction_workers,

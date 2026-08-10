@@ -16,6 +16,7 @@ from thesisound.services.corpus_building import (
     CorpusBuildRunStore,
     CorpusSourceInput,
 )
+from thesisound.services.document_map_part_cache import DocumentMapPartCache
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
@@ -46,7 +47,10 @@ def create_corpus_builder(
             workspace_store=workspace,
             artifact_store=source_store,
             block_builder=BlockBuilder(),
-            document_mapper=DocumentMapperService(runner),
+            document_mapper=DocumentMapperService(
+                runner,
+                part_cache=DocumentMapPartCache(workspace.root),
+            ),
             evidence_extractor=EvidenceExtractorService(
                 runner,
                 max_workers=settings.evidence_extraction_workers,
