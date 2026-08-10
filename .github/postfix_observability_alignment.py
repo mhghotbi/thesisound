@@ -109,3 +109,27 @@ new = '''    private = _record(
 if text.count(old) != 1:
     raise RuntimeError(f"logging privacy test rewrite count={text.count(old)}")
 path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+path = Path("tests/test_ledger_spans_and_events.py")
+text = path.read_text(encoding="utf-8")
+import_marker = "from thesisound.tracing import EventRecord, SpanContext, SpanRecord, Tracer\n"
+import_line = "from thesisound.services.observability_rollup import ObservabilityRollup\n"
+if text.count(import_marker) != 1:
+    raise RuntimeError("ledger rollup test import marker did not match exactly once")
+text = text.replace(import_marker, import_line + import_marker, 1)
+
+stage_calls = text.count("ledger.stage_summary(project_id)")
+cache_calls = text.count("ledger.cache_hit_rates(project_id)")
+if stage_calls != 5 or cache_calls != 2:
+    raise RuntimeError(
+        f"unexpected stale rollup test calls: stage={stage_calls} cache={cache_calls}"
+    )
+text = text.replace(
+    "ledger.stage_summary(project_id)",
+    "ObservabilityRollup(ledger).stage_summary(project_id)",
+)
+text = text.replace(
+    "ledger.cache_hit_rates(project_id)",
+    "ObservabilityRollup(ledger).cache_hit_rates(project_id)",
+)
+path.write_text(text, encoding="utf-8")
