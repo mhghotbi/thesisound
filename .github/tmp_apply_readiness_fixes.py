@@ -18,6 +18,21 @@ readiness_path.write_text(text, encoding="utf-8")
 
 test_path = Path("tests/test_readiness.py")
 tests = test_path.read_text(encoding="utf-8")
+old_domain_import = '''    ResearchBrief,\n    TopicType,\n)\n'''
+new_domain_import = '''    ResearchBrief,\n    Script,\n    ScriptTurn,\n    TopicType,\n)\n'''
+if tests.count(old_domain_import) != 1:
+    raise SystemExit("domain import anchor did not match exactly once")
+tests = tests.replace(old_domain_import, new_domain_import)
+old_script_import = '''from thesisound.script import ScriptCheckReport, ScriptReviewDecision, VerificationDraft\n'''
+new_script_import = '''from thesisound.script import (\n    ScriptCheckReport,\n    ScriptPipelineManifest,\n    ScriptReviewDecision,\n    VerificationDraft,\n)\n'''
+if tests.count(old_script_import) != 1:
+    raise SystemExit("script import anchor did not match exactly once")
+tests = tests.replace(old_script_import, new_script_import)
+old_fixture = '''    store.save_verification(\n        project.project_id,\n        VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),\n    )\n    plan_hash = current_hash\n'''
+new_fixture = '''    store.save_verification(\n        project.project_id,\n        VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),\n    )\n    store.save_script(\n        project.project_id,\n        Script(\n            title="Reviewed script",\n            turns=[\n                ScriptTurn(\n                    turn_id="turn-1",\n                    segment_id="seg-1",\n                    speaker="A",\n                    spoken_text_fa="متن بازبینی‌شده",\n                    editorial_only=True,\n                )\n            ],\n        ),\n    )\n    store.save_manifest(\n        ScriptPipelineManifest(\n            project_id=project.project_id,\n            status="verified",\n            segment_count=1,\n            turn_count=1,\n        )\n    )\n    plan_hash = current_hash\n'''
+if tests.count(old_fixture) != 1:
+    raise SystemExit("reviewed fixture anchor did not match exactly once")
+tests = tests.replace(old_fixture, new_fixture)
 append = '''\n\ndef test_corrupt_project_artifact_yields_unknown_for_every_gate(tmp_path: Path) -> None:\n    root = tmp_path / "workspaces"\n    project = _project()\n    WorkspaceStore(root).save_project(project)\n    project_path = root / str(project.project_id) / "project.json"\n    project_path.write_text('{"project_id":', encoding="utf-8")\n\n    results = project_readiness(project_id=project.project_id, workspace_root=root)\n\n    assert results\n    assert all(result.status == "unknown" for result in results)\n    assert all(result.evidence == str(project_path) for result in results)\n\n\ndef test_verified_state_requires_complete_verified_script_artifacts(tmp_path: Path) -> None:\n    root = tmp_path / "workspaces"\n    project = _project(ProjectState.SCRIPT_VERIFIED)\n    WorkspaceStore(root).save_project(project)\n    assert project.episode_plan is not None\n    store = ScriptArtifactStore(root)\n    current_hash = episode_plan_hash(project.episode_plan)\n    store.prepare_for_plan(project.project_id, current_hash)\n    store.save_checks(\n        ScriptCheckReport(\n            project_id=project.project_id,\n            verdict="pass",\n            word_count=100,\n            estimated_minutes=1,\n            substantive_turn_count=2,\n        )\n    )\n    store.save_verification(\n        project.project_id,\n        VerificationDraft(verdict="pass", unsupported_claim_ratio=0),\n    )\n    # Deliberately omit the script and manifest. The individual reports pass,\n    # but the plan requires readiness to verify the complete artifact set.\n\n    results = project_readiness(project_id=project.project_id, workspace_root=root)\n\n    assert _result(results, "script-checks").status == "blocked"\n    assert _result(results, "independent-verification").status == "blocked"\n    assert _result(results, "script-review-decision").status == "blocked"\n'''
 if "test_corrupt_project_artifact_yields_unknown_for_every_gate" in tests:
     raise SystemExit("tests already appended")
