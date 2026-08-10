@@ -1,0 +1,60 @@
+# 06 — برنامه توسعه
+
+**وضعیت زندهٔ هر milestone در [`STATUS.md`](../../STATUS.md) است، نه اینجا.** این سند ترتیب و دلیل آن ترتیب را نگه می‌دارد؛ آنچه انجام شده در اسناد [`../02-pipeline/`](../02-pipeline/) و [`../03-web-ui/`](../03-web-ui/) به‌صورت as-built ثبت است.
+
+## راهبرد
+
+ترتیب توسعه بر اساس ریسک است، نه جذابیت UI:
+
+```text
+input fidelity → evidence fidelity → episode sufficiency → script fidelity
+→ audio fidelity → operator control and observability
+→ discovery and multi-source breadth → end-user UI → persistence and deployment
+```
+
+Operator UI و End-user UI دو milestone متفاوت‌اند: اولی ابزار محلی برای اجرای pipeline، مشاهدهٔ artifact و recovery است؛ دومی تجربهٔ ساده‌شده برای کاربر غیرمتخصص.
+
+## قواعد سراسری
+
+- parse، block ID و locator مستقل از duration هستند؛
+- breadth و depth شواهد و اپیزود به duration وابسته‌اند؛
+- مدل هیچ ID یا locator معتبری نمی‌سازد؛
+- متن اصلی source of truth است؛
+- corpus ناکافی با padding جبران نمی‌شود؛
+- writer تنها verifier خروجی خودش نیست؛
+- هر stage artifact، gate و failure state مستقل دارد؛
+- UI منطق orchestration یا state machine دوم نمی‌سازد.
+
+## نقشهٔ milestoneها
+
+| # | Milestone | سند مرجع |
+|---|---|---|
+| M0 | Scaffold و قراردادها | [`02-architecture.md`](02-architecture.md) |
+| M1 | Document ingestion | [`../02-pipeline/01-document-ingestion.md`](../02-pipeline/01-document-ingestion.md) |
+| M2 | Structured model execution | [`../02-pipeline/02-structured-model-execution.md`](../02-pipeline/02-structured-model-execution.md) |
+| M2.5 | مشاهده‌پذیری واحد فراخوانی مدل | [`../04-integrations/05-model-observability.md`](../04-integrations/05-model-observability.md) |
+| M3 | One-source evidence pipeline | [`../02-pipeline/03-one-source-evidence-pipeline.md`](../02-pipeline/03-one-source-evidence-pipeline.md) |
+| M4 | Episode preparation | [`../02-pipeline/05-episode-preparation.md`](../02-pipeline/05-episode-preparation.md) |
+| M5 | سناریوی فارسی verified | [`../02-pipeline/06-persian-script-pipeline.md`](../02-pipeline/06-persian-script-pipeline.md) |
+| M6 | TTS، ASR و Audio QA | [`../03-web-ui/09-audio-vertical-slice.md`](../03-web-ui/09-audio-vertical-slice.md) |
+| M6.5 | Operator UI | [`../03-web-ui/`](../03-web-ui/) |
+| M7 | Source Discovery | [`../04-integrations/02-source-discovery-large-docs-and-revision.md`](../04-integrations/02-source-discovery-large-docs-and-revision.md) |
+| M8–M10 | پایین | — |
+
+## Milestone 8 — Multi-source reconciliation
+
+reconciliation آگاه به نقش منبع؛ یال‌های اختلاف معنایی؛ synthesis آگاه به انتساب؛ تخصیص بودجه میان منابع؛ جست‌وجوی gap؛ ارتقای تدریجی profile؛ استفادهٔ دوباره از شواهد معتبر قبلی؛ جلوگیری از dominance یک منبع یا اجماع جعلی.
+
+Disagreement Graph فعلی فقط stanceهای صریح را نگه می‌دارد؛ رابطه‌های معنایی میان claimها در این milestone ساخته می‌شوند.
+
+## Milestone 9 — End-user product UI
+
+فقط پس از تثبیت workflow در Operator UI و اجرای موفق چند پروژهٔ واقعی: تجربهٔ ساده‌شدهٔ ساخت پروژه؛ upload و انتخاب منبع کاربرپسند؛ نمایش اثر duration بر هزینه، پوشش و omission **پیش از اجرا**؛ progress بدون جزئیات مهندسی؛ بازبینی طرح و متن متناسب با کاربر غیرمتخصص؛ player و transcript و trace تا منبع؛ کنترل‌های privacy و چرخهٔ عمر داده؛ onboarding و empty state؛ دسترس‌پذیری و responsive؛ telemetry با حفظ privacy.
+
+End-user UI نباید APIهای داخلی Operator UI را بدون boundary عمومی expose کند؛ اول use caseها و permission model مستقل تعریف شوند.
+
+## Milestone 10 — Persistence، jobs و deployment
+
+فقط وقتی usage واقعی نیاز را اثبات کرد: repository و job table روی SQLite؛ stage runner قابل resume؛ cache بلاک/مدل/صوت؛ cleanup و حذف پروژه؛ deployment خصوصی؛ object storage؛ access control؛ PostgreSQL/Redis فقط با نیاز واقعی concurrency.
+
+Operator UI می‌تواند روی artifact store فایل‌سیستمی و process محلی کار کند. مهاجرت به job queue یا database نباید پیش‌شرط ساخت UI شود، اما UI باید command boundary داشته باشد تا این مهاجرت بعداً بدون بازنویسی منطق صفحه‌ها ممکن باشد.
