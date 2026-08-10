@@ -21,9 +21,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
-
       - name: Set up uv
         uses: astral-sh/setup-uv@v9.0.0
         with:
@@ -81,10 +78,7 @@ jobs:
 
           path = Path('src/thesisound/observability.py')
           text = path.read_text(encoding='utf-8')
-          old = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
-              filename = str(value)
-          '''
-          old = '\n'.join(line[10:] if line.startswith('          ') else line for line in old.splitlines()) + '\n'
+          old = 'def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:\n    filename = str(value)\n'
           new = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
               if isinstance(value, Mapping):
                   digest = value.get("filename_sha256")
@@ -121,9 +115,7 @@ jobs:
               count=1,
           )
           if import_count != 1 or block_count != 1:
-              raise SystemExit(
-                  f'logging structural rewrite import={import_count} block={block_count}'
-              )
+              raise SystemExit(f'logging structural rewrite import={import_count} block={block_count}')
           path.write_text(text, encoding='utf-8')
 
           path = Path('tests/test_observability_rollups.py')
@@ -139,62 +131,9 @@ jobs:
           path.write_text(text, encoding='utf-8')
           PY
 
-      - name: Install dependencies
-        run: uv sync --extra dev --extra web-ui
-
-      - name: Format changed Python files
+      - name: Inspect generated syntax
         run: |
-          uv run ruff format \
-            src/thesisound/observability.py \
-            src/thesisound/logging_setup.py \
-            src/thesisound/observability_cli.py \
-            src/thesisound/services/eval_harness.py \
-            src/thesisound/services/observability_reporting.py \
-            src/thesisound/services/observability_rollup.py \
-            src/thesisound/web/app.py \
-            src/thesisound/web/observability_routes.py \
-            tests/test_observability.py \
-            tests/test_logging_setup.py \
-            tests/test_observability_rollups.py \
-            tests/test_observability_phase56.py
-
-      - name: Fix import ordering in generated files
-        run: |
-          uv run ruff check --fix \
-            src/thesisound/services/eval_harness.py \
-            tests/test_observability_rollups.py
-
-      - name: Lint repository changes
-        run: uv run ruff check . --exclude .github/align_observability_plan.py --output-format=github
-
-      - name: Focused observability tests
-        run: |
-          uv run pytest -q \
-            tests/test_observability.py \
-            tests/test_observability_rollups.py \
-            tests/test_logging_setup.py \
-            tests/test_observability_phase56.py \
-            tests/test_tracing.py \
-            tests/test_tracing_propagation.py
-
-      - name: Validate OCR lock without downloading models
-        run: uv run thesisound models verify --allow-missing
-
-      - name: Validate golden evaluation cases
-        run: uv run thesisound eval --dry-run
-
-      - name: Doctor
-        run: uv run thesisound doctor
-
-      - name: Full test suite
-        run: uv run pytest
-
-      - name: Remove temporary executor and publish corrections
-        run: |
-          rm .github/align_observability_plan.py .github/workflows/tmp-observability-plan-align.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git status --short
-          git commit -m "Align observability with original plan"
-          git push origin HEAD:agent/align-observability-plan
+          python -m py_compile src/thesisound/observability.py || {
+            nl -ba src/thesisound/observability.py | sed -n '1520,1550p'
+            exit 1
+          }
