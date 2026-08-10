@@ -131,6 +131,7 @@ class ModelRunner:
         ledger = getattr(self.model_port, "observability", None)
         for attempt_number in range(1, bundle.contract.max_attempts + 1):
             started = perf_counter()
+            attempt_started_at = datetime.now(UTC)
             metadata = RunMetadata(
                 stage=stage,
                 prompt_version=bundle.contract.version,
@@ -171,6 +172,7 @@ class ModelRunner:
                 record.attempts.append(
                     ModelAttemptRecord(
                         attempt=attempt_number,
+                        started_at=attempt_started_at,
                         latency_ms=response.latency_ms,
                         success=True,
                         usage=response.usage,
@@ -196,6 +198,10 @@ class ModelRunner:
                     base_delay_seconds=self.base_retry_delay_seconds,
                 )
                 call_id = response.call_id if response is not None else metadata.call_id
+                # P1: the response came back and our validator rejected it, so the
+                # usage is on the response. P2: the adapter rejected it and attached
+                # the usage to the error. P3: nothing was billed -- stays None.
+                attempt_usage = response.usage if response is not None else exc.usage
                 if response is not None and ledger is not None:
                     ledger.reject(call_id, exc)
                 if decision.should_retry and ledger is not None:
@@ -207,11 +213,13 @@ class ModelRunner:
                 record.attempts.append(
                     ModelAttemptRecord(
                         attempt=attempt_number,
+                        started_at=attempt_started_at,
                         latency_ms=latency_ms,
                         error_type=type(exc).__name__,
                         error_message=str(exc),
                         retryable=decision.should_retry,
                         retry_delay_ms=round(decision.delay_seconds * 1000),
+                        usage=attempt_usage,
                         call_id=call_id,
                     )
                 )
@@ -238,6 +246,7 @@ class ModelRunner:
                 record.attempts.append(
                     ModelAttemptRecord(
                         attempt=attempt_number,
+                        started_at=attempt_started_at,
                         latency_ms=max(0, round((perf_counter() - started) * 1000)),
                         error_type=type(exc).__name__,
                         error_message=str(exc),

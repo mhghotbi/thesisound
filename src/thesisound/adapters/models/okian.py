@@ -320,9 +320,11 @@ class OkianStructuredModel:
             raise mapped from exc
 
         response = observed.response
+        billed_usage = _usage(response)
         try:
             output = _coerce_output(response.payload, output_type)
         except ModelError as exc:
+            exc.usage = billed_usage
             self.observability.fail(spec.call_id, exc)
             raise
 
@@ -331,7 +333,7 @@ class OkianStructuredModel:
             output=output,
             provider=self.provider,
             model=_resolved_model(response.payload) or model,
-            usage=_usage(response),
+            usage=billed_usage,
             latency_ms=max(0, round((perf_counter() - started) * 1000)),
             finish_reason=_finish_reason(response.payload),
             grounding=GroundingMetadata(),

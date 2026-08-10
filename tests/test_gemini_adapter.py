@@ -8,7 +8,7 @@ import pytest
 from pydantic import BaseModel
 
 from thesisound.adapters.models.gemini import GeminiStructuredModel
-from thesisound.modeling import ModelRateLimitError, SchemaValidationError
+from thesisound.modeling import ModelRateLimitError, ModelSafetyError, SchemaValidationError
 from thesisound.ports import RunMetadata
 
 
@@ -121,6 +121,65 @@ def test_gemini_adapter_rejects_invalid_structured_output() -> None:
             model="gemini-test",
             metadata=_metadata(),
         )
+
+
+def test_gemini_adapter_attaches_billed_usage_to_schema_errors() -> None:
+    response = SimpleNamespace(
+        parsed={"wrong": "field"},
+        text='{"wrong":"field"}',
+        candidates=[SimpleNamespace(finish_reason="STOP")],
+        prompt_feedback=None,
+        usage_metadata=SimpleNamespace(
+            prompt_token_count=120,
+            candidates_token_count=8,
+            total_token_count=128,
+            thoughts_token_count=None,
+            cached_content_token_count=None,
+        ),
+    )
+    adapter = GeminiStructuredModel(client=FakeClient(FakeModels(response=response)))
+
+    with pytest.raises(SchemaValidationError) as exc_info:
+        adapter.generate_structured(
+            system_prompt="system",
+            user_prompt="user",
+            output_type=ExampleOutput,
+            model="gemini-test",
+            metadata=_metadata(),
+        )
+
+    assert exc_info.value.usage is not None
+    assert exc_info.value.usage.input_tokens == 120
+    assert exc_info.value.usage.output_tokens == 8
+
+
+def test_gemini_adapter_attaches_billed_usage_to_safety_errors() -> None:
+    response = SimpleNamespace(
+        parsed=None,
+        text=None,
+        candidates=[SimpleNamespace(finish_reason="SAFETY")],
+        prompt_feedback=None,
+        usage_metadata=SimpleNamespace(
+            prompt_token_count=120,
+            candidates_token_count=8,
+            total_token_count=128,
+            thoughts_token_count=None,
+            cached_content_token_count=None,
+        ),
+    )
+    adapter = GeminiStructuredModel(client=FakeClient(FakeModels(response=response)))
+
+    with pytest.raises(ModelSafetyError) as exc_info:
+        adapter.generate_structured(
+            system_prompt="system",
+            user_prompt="user",
+            output_type=ExampleOutput,
+            model="gemini-test",
+            metadata=_metadata(),
+        )
+
+    assert exc_info.value.usage is not None
+    assert exc_info.value.usage.input_tokens == 120
 
 
 def test_gemini_adapter_maps_rate_limit_errors() -> None:
