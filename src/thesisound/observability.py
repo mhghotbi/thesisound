@@ -2102,7 +2102,7 @@ CREATE INDEX IF NOT EXISTS idx_runs_kind_status
 # (meaning "one ModelRunRecord") before this migration and keeps that
 # meaning unchanged; `pipeline_trace_id` is the new, distinct concept of
 # "one pipeline_spans tree", added rather than repurposing the existing
-# column so historical queries and docs/29-model-observability.md stay
+# column so historical queries and docs/04-integrations/05-model-observability.md stay
 # correct on both sides of the migration boundary.
 _MODEL_CALLS_V2_COLUMNS: tuple[tuple[str, str], ...] = (
     ("pipeline_trace_id", "pipeline_trace_id TEXT"),

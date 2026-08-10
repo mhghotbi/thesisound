@@ -41,19 +41,19 @@ def test_human_only_gates_match_the_documented_set() -> None:
 
 
 def test_sop_document_lists_every_gate_code() -> None:
-    document = (ROOT / "docs/34-production-sop.md").read_text(encoding="utf-8")
+    document = (ROOT / "docs/06-operations/03-production-sop.md").read_text(encoding="utf-8")
     assert all(f"`{gate.code}`" in document for gate in GATE_REGISTRY)
 
 
 def test_sop_document_lists_every_enforced_location() -> None:
-    document = (ROOT / "docs/34-production-sop.md").read_text(encoding="utf-8")
+    document = (ROOT / "docs/06-operations/03-production-sop.md").read_text(encoding="utf-8")
     for gate in GATE_REGISTRY:
         expected = "Unenforced" if gate.enforced_at == "unenforced" else f"`{gate.enforced_at}`"
         assert expected in document, gate.code
 
 
 def test_sop_document_lists_every_registry_fact() -> None:
-    document = (ROOT / "docs/34-production-sop.md").read_text(encoding="utf-8")
+    document = (ROOT / "docs/06-operations/03-production-sop.md").read_text(encoding="utf-8")
     for gate in GATE_REGISTRY:
         assert gate.reads in document, f"{gate.code}: reads"
         assert gate.writes in document, f"{gate.code}: writes"

@@ -239,19 +239,21 @@ workspaces/<project-id>/
 
 ## اسناد مهم
 
+See [`docs/README.md`](docs/README.md) for the full documentation index.
+
 - [`STATUS.md`](STATUS.md)
-- [`docs/02-architecture.md`](docs/02-architecture.md)
-- [`docs/13-output-aware-analysis-budget.md`](docs/13-output-aware-analysis-budget.md)
-- [`docs/14-episode-preparation.md`](docs/14-episode-preparation.md)
-- [`docs/15-persian-script-pipeline.md`](docs/15-persian-script-pipeline.md)
-- [`docs/16-operator-user-workflow.md`](docs/16-operator-user-workflow.md)
-- [`docs/17-interface-state-model.md`](docs/17-interface-state-model.md)
-- [`docs/19-error-and-recovery-ux.md`](docs/19-error-and-recovery-ux.md)
-- [`docs/25-audio-vertical-slice.md`](docs/25-audio-vertical-slice.md)
-- [`docs/26-local-live-e2e-runbook.md`](docs/26-local-live-e2e-runbook.md)
-- [`docs/27-source-discovery-large-docs-and-revision.md`](docs/27-source-discovery-large-docs-and-revision.md)
-- [`docs/33-server-mono-process-adoption.md`](docs/33-server-mono-process-adoption.md)
-- [`docs/34-production-sop.md`](docs/34-production-sop.md) — production gates and human-only decisions
+- [`docs/01-foundations/02-architecture.md`](docs/01-foundations/02-architecture.md)
+- [`docs/02-pipeline/04-output-aware-analysis-budget.md`](docs/02-pipeline/04-output-aware-analysis-budget.md)
+- [`docs/02-pipeline/05-episode-preparation.md`](docs/02-pipeline/05-episode-preparation.md)
+- [`docs/02-pipeline/06-persian-script-pipeline.md`](docs/02-pipeline/06-persian-script-pipeline.md)
+- [`docs/03-web-ui/02-interface-state-model.md`](docs/03-web-ui/02-interface-state-model.md)
+- [`docs/03-web-ui/04-error-and-recovery-ux.md`](docs/03-web-ui/04-error-and-recovery-ux.md)
+- [`docs/03-web-ui/09-audio-vertical-slice.md`](docs/03-web-ui/09-audio-vertical-slice.md)
+- [`docs/03-web-ui/10-local-live-e2e-runbook.md`](docs/03-web-ui/10-local-live-e2e-runbook.md)
+- [`docs/04-integrations/02-source-discovery-large-docs-and-revision.md`](docs/04-integrations/02-source-discovery-large-docs-and-revision.md)
+- [`docs/05-ui-redesign/02-ui-redesign-spec.md`](docs/05-ui-redesign/02-ui-redesign-spec.md) — current UI target
+- [`docs/06-operations/01-server-mono-process-adoption.md`](docs/06-operations/01-server-mono-process-adoption.md)
+- [`docs/06-operations/03-production-sop.md`](docs/06-operations/03-production-sop.md) — production gates and human-only decisions
 - [`benchmarks/eval/README.md`](benchmarks/eval/README.md) — frozen machine-checkable golden evaluation
 
 ## Model routing and Okian provider
@@ -262,5 +264,5 @@ provider through `OKIAN_BASE_URL` and `OKIAN_API_KEY`, but credentials alone do 
 activate it. Define an Okian profile and assign a stage explicitly, or use
 `THESISOUND_MODEL_ROUTE_OVERRIDES` for a deployment-specific override.
 
-See `docs/30-okian-provider-and-model-routing.md`.
+See `docs/04-integrations/06-okian-provider-and-model-routing.md`.
 

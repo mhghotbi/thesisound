@@ -1,6 +1,6 @@
 # Frozen golden evaluation
 
-This directory implements the machine-checkable release-gate subset of [`docs/05-quality-evaluation.md`](../../docs/05-quality-evaluation.md). It runs committed markdown sources through the real ingestion, source-analysis, episode-planning, approval, and script pipeline, then stops before TTS, ASR, or audio assembly.
+This directory implements the machine-checkable release-gate subset of [`docs/01-foundations/05-quality-evaluation.md`](../../docs/01-foundations/05-quality-evaluation.md). It runs committed markdown sources through the real ingestion, source-analysis, episode-planning, approval, and script pipeline, then stops before TTS, ASR, or audio assembly.
 
 It does **not** automate the human evaluation protocol or the blind NotebookLM comparison described in doc 05. The `expectations.toml` files preserve must-cover points and distinctions for that human review, but the runner deliberately does not pretend to score them automatically.
 
