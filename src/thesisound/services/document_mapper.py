@@ -34,11 +34,20 @@ class DocumentMapperService:
         model_runner: ModelRunner,
         *,
         maximum_input_characters: int = 250_000,
+        maximum_merge_payload_characters: int = 250_000,
     ) -> None:
         if maximum_input_characters < 1:
             raise ValueError("maximum_input_characters must be positive.")
+        if maximum_merge_payload_characters < 1:
+            raise ValueError("maximum_merge_payload_characters must be positive.")
         self.model_runner = model_runner
+        # Two separate budgets on purpose. maximum_input_characters bounds the
+        # source text in one partition prompt, so lowering it makes partitions
+        # smaller and more numerous. The merge payload is section metadata, one
+        # entry per section, so it grows with the partition count: measuring it
+        # against the text budget would make a smaller budget overflow sooner.
         self.maximum_input_characters = maximum_input_characters
+        self.maximum_merge_payload_characters = maximum_merge_payload_characters
 
     def map_document(
         self,
@@ -100,43 +109,45 @@ class DocumentMapperService:
                 )
             ],
         }
-        payload_characters = len(
-            json.dumps(merge_variables["partitions"], ensure_ascii=False)
-        )
-        if payload_characters > self.maximum_input_characters:
-            raise ValueError(
-                "Document-map merge payload is larger than the mapping input budget: "
-                f"{payload_characters:,} characters across {len(partitions)} partitions "
-                f"exceeds {self.maximum_input_characters:,}. Raise "
-                "maximum_input_characters or reduce section granularity."
-            )
+        payload_characters = len(json.dumps(merge_variables["partitions"], ensure_ascii=False))
 
         def validate_merge(draft: DocumentMapMergeDraft) -> None:
             _validate_merge_draft(draft, known_section_ids)
 
         merge_draft = DocumentMapMergeDraft()
         merge_record = last_part_record
-        try:
-            merge_execution = self.model_runner.run(
-                project_id=project_id,
-                stage="document_map_merge",
-                prompt_name="document_map_merge",
-                variables=merge_variables,
-                output_type=DocumentMapMergeDraft,
-                model=model,
-                prompt_version=prompt_version,
-                validator=validate_merge,
-            )
-        except ModelError as exc:
+        merge_failure: str | None = None
+        if payload_characters > self.maximum_merge_payload_characters:
+            # Every partition call is already paid for at this point, so an
+            # oversized payload must not discard them. Skip the merge and say so.
             merge_failure = (
-                f"Cross-partition merge failed ({type(exc).__name__}: {exc}); the document "
-                f"map is the union of {len(partitions)} partition maps with no "
-                "cross-partition links."
+                "Cross-partition merge was skipped: the partition payload is "
+                f"{payload_characters:,} characters across {len(partitions)} partitions, "
+                f"over the {self.maximum_merge_payload_characters:,}-character merge budget. "
+                "The document map is the union of the partition maps with no cross-partition "
+                "links; raise maximum_merge_payload_characters to enable the merge."
             )
         else:
-            merge_draft = merge_execution.output
-            merge_record = merge_execution.record
-            merge_failure = None
+            try:
+                merge_execution = self.model_runner.run(
+                    project_id=project_id,
+                    stage="document_map_merge",
+                    prompt_name="document_map_merge",
+                    variables=merge_variables,
+                    output_type=DocumentMapMergeDraft,
+                    model=model,
+                    prompt_version=prompt_version,
+                    validator=validate_merge,
+                )
+            except ModelError as exc:
+                merge_failure = (
+                    f"Cross-partition merge failed ({type(exc).__name__}: {exc}); the document "
+                    f"map is the union of {len(partitions)} partition maps with no "
+                    "cross-partition links."
+                )
+            else:
+                merge_draft = merge_execution.output
+                merge_record = merge_execution.record
         merged = _merge_part_drafts(part_drafts, merge_draft)
         if merge_failure is not None:
             merged.warnings.append(merge_failure)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 from threading import Barrier, Lock
+from types import SimpleNamespace
 from uuid import UUID, uuid4
 
 import pytest
@@ -36,7 +37,14 @@ from thesisound.services.analysis_profile import (
 )
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
-from thesisound.services.document_mapper import DocumentMapperService
+from thesisound.services.document_identity import block_sequence_key
+from thesisound.services.document_map_cache import (
+    MAP_BUILDER_VERSION,
+    CachedDocumentMap,
+    CachedMapSection,
+    DocumentMapCache,
+)
+from thesisound.services.document_mapper import DocumentMapperService, scope_locator
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_validator import validate_evidence_extraction
 from thesisound.services.source_analysis_service import SourceAnalysisService
@@ -772,6 +780,87 @@ def test_shared_document_map_reuse_emits_a_cache_hit_event(
 
     map_document_spans = recording_tracer.sink.find("corpus.map_document")
     assert [span.attributes["source"] for span in map_document_spans] == ["model", "shared_cache"]
+
+
+def test_degraded_document_map_is_not_reused_or_shared(tmp_path: Path) -> None:
+    class Mapper:
+        def __init__(self, warnings: list[str]) -> None:
+            self.warnings = warnings
+            self.calls = 0
+
+        def map_document(self, *, source_id: UUID, blocks: list[SourceDocumentBlock], **_):
+            self.calls += 1
+            content_blocks = [block for block in blocks if block.block_type != "front_matter"]
+            return (
+                DocumentMap(
+                    source_id=source_id,
+                    scope_locator=scope_locator(blocks),
+                    working_thesis="Action differs from fabrication.",
+                    sections=[
+                        DocumentMapSection(
+                            section_id="section-1",
+                            source_block_ids=[block.block_id for block in content_blocks],
+                            title="Action",
+                            function="argument",
+                        )
+                    ],
+                    warnings=self.warnings,
+                ),
+                SimpleNamespace(run_id=uuid4()),
+            )
+
+    root = tmp_path / "workspaces"
+    workspace = WorkspaceStore(root)
+    project = _project()
+    workspace.save_project(project)
+    store = SourceArtifactStore(root)
+    warning = "Cross-partition merge was skipped: the partition payload exceeded the merge budget."
+    incomplete_mapper = Mapper([warning])
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=store,
+        block_builder=BlockBuilder(),
+        document_mapper=incomplete_mapper,
+        evidence_extractor=EvidenceExtractorService(FakeRunner()),
+        claim_reconciler=ClaimReconcilerService(FakeRunner()),
+    )
+    source_id, blocks, _ = service.build_blocks(project.project_id, _ingestion(Path("chapter.pdf")))
+    content_key = block_sequence_key(blocks)
+    cache = DocumentMapCache(root)
+
+    service.map_document(project.project_id, source_id, model="fake")
+
+    assert incomplete_mapper.calls == 1
+    assert not cache.path(content_key).exists()
+    assert not service.has_reusable_document_map(project.project_id, source_id)
+
+    # A cache entry written by the prior implementation is ignored for the same reason.
+    legacy_cache_entry = CachedDocumentMap(
+        content_key=content_key,
+        builder_version=MAP_BUILDER_VERSION,
+        content_block_count=1,
+        working_thesis="Action differs from fabrication.",
+        sections=[
+            CachedMapSection(
+                section_id="section-1",
+                content_block_indexes=[0],
+                title="Action",
+                function="argument",
+            )
+        ],
+        warnings=[warning],
+    )
+    cache.path(content_key).parent.mkdir(parents=True, exist_ok=True)
+    cache.path(content_key).write_text(legacy_cache_entry.model_dump_json(), encoding="utf-8")
+    assert cache.load(content_key, blocks, source_id=source_id) is None
+
+    complete_mapper = Mapper([])
+    service.document_mapper = complete_mapper
+    service.map_document(project.project_id, source_id, model="fake")
+
+    assert complete_mapper.calls == 1
+    assert cache.path(content_key).exists()
+    assert store.load_document_map(project.project_id, source_id).warnings == []
 
 
 def test_changed_body_text_does_not_reuse_a_shared_map(tmp_path: Path) -> None:

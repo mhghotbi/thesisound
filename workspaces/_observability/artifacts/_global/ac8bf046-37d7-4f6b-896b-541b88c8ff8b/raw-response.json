@@ -1,0 +1,16 @@
+{
+  "candidates": [
+    {
+      "content": null,
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": null,
+  "parsed": null,
+  "prompt_feedback": null,
+  "text": "{\"value\":\"from-text\"}",
+  "usage_metadata": null
+}

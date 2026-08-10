@@ -58,12 +58,11 @@ def create_audio_builder(
                 max_characters=settings.tts_chunk_max_characters,
                 words_per_minute=settings.tts_words_per_minute,
             ),
-            validator=AudioValidator(
-                expected_sample_rate_hz=settings.audio_sample_rate_hz
-            ),
+            validator=AudioValidator(expected_sample_rate_hz=settings.audio_sample_rate_hz),
             qa=AudioQaService(
                 pass_threshold=settings.audio_qa_pass_threshold,
                 review_threshold=settings.audio_qa_review_threshold,
+                missing_sentence_threshold=settings.audio_qa_missing_sentence_threshold,
             ),
             assembler=AudioAssembler(
                 ffmpeg_command=settings.ffmpeg_command,

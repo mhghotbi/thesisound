@@ -21,6 +21,22 @@ before prompt version 1.1.0, so every multi-partition map cached under version 1
 is missing its global layer.
 """
 
+_INCOMPLETE_CROSS_PARTITION_MERGE_PREFIXES = (
+    "Cross-partition merge was skipped:",
+    "Cross-partition merge failed (",
+)
+
+
+def is_shareable_document_map(document_map: DocumentMap) -> bool:
+    """Whether a map is complete enough to reuse across runs and sources."""
+    return _warnings_are_shareable(document_map.warnings)
+
+
+def _warnings_are_shareable(warnings: list[str]) -> bool:
+    return not any(
+        warning.startswith(_INCOMPLETE_CROSS_PARTITION_MERGE_PREFIXES) for warning in warnings
+    )
+
 
 class CachedMapSection(BaseModel):
     section_id: str
@@ -91,6 +107,8 @@ class DocumentMapCache:
             return None
         if cached.builder_version != MAP_BUILDER_VERSION:
             return None
+        if not _warnings_are_shareable(cached.warnings):
+            return None
         try:
             return DocumentMap(
                 source_id=source_id,
@@ -100,8 +118,7 @@ class DocumentMapCache:
                     DocumentMapSection(
                         section_id=section.section_id,
                         source_block_ids=[
-                            content[index].block_id
-                            for index in section.content_block_indexes
+                            content[index].block_id for index in section.content_block_indexes
                         ],
                         title=section.title,
                         function=section.function,
@@ -126,6 +143,8 @@ class DocumentMapCache:
         blocks: list[SourceDocumentBlock],
         document_map: DocumentMap,
     ) -> Path | None:
+        if not is_shareable_document_map(document_map):
+            return None
         content = _content_blocks(blocks)
         if not content:
             return None
@@ -147,9 +166,7 @@ class DocumentMapCache:
                     function=section.function,
                     key_concepts=section.key_concepts,
                     depends_on_section_ids=section.depends_on_section_ids,
-                    required_for_global_understanding=(
-                        section.required_for_global_understanding
-                    ),
+                    required_for_global_understanding=(section.required_for_global_understanding),
                     unresolved_context=section.unresolved_context,
                 )
                 for section in document_map.sections

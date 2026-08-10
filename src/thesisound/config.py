@@ -112,6 +112,9 @@ class Settings(BaseSettings):
     audio_sample_rate_hz: int = Field(default=24_000, ge=8_000, le=48_000)
     audio_qa_pass_threshold: float = Field(default=0.90, ge=0.5, le=1)
     audio_qa_review_threshold: float = Field(default=0.78, ge=0.4, le=1)
+    # Separation measured on the 2026-08-09 production run: genuine deletions
+    # score <= 0.79, correct reads >= 0.95. 0.85 sits in the gap.
+    audio_qa_missing_sentence_threshold: float = Field(default=0.85, ge=0.5, le=1)
     # Off until the frozen golden-set evaluation provides evidence for a threshold.
     script_quality_gate_enabled: bool = False
     script_quality_min_overall: float = Field(default=0.70, ge=0, le=1)

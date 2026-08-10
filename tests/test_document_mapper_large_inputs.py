@@ -164,7 +164,7 @@ def _blocks() -> list[SourceDocumentBlock]:
 def test_large_document_is_mapped_without_omitting_or_duplicating_blocks() -> None:
     blocks = _blocks()
     runner = HierarchicalRunner()
-    mapper = DocumentMapperService(runner, maximum_input_characters=2_000)
+    mapper = DocumentMapperService(runner, maximum_input_characters=500)
 
     document_map, run = mapper.map_document(
         project_id=uuid4(),
@@ -293,7 +293,7 @@ def test_large_document_rejects_any_omitted_content_block() -> None:
 def test_merge_variables_expose_the_trimmed_partition_payload() -> None:
     blocks = _blocks()
     runner = RecordingRunner()
-    mapper = DocumentMapperService(runner, maximum_input_characters=2_000)
+    mapper = DocumentMapperService(runner, maximum_input_characters=500)
 
     document_map, _ = mapper.map_document(
         project_id=uuid4(),
@@ -330,7 +330,7 @@ def test_merge_variables_expose_the_trimmed_partition_payload() -> None:
 
 def test_merge_failure_degrades_to_partition_union_with_a_warning() -> None:
     blocks = _blocks()
-    mapper = DocumentMapperService(FailingMergeRunner(), maximum_input_characters=2_000)
+    mapper = DocumentMapperService(FailingMergeRunner(), maximum_input_characters=500)
 
     document_map, run = mapper.map_document(
         project_id=uuid4(),
@@ -350,7 +350,7 @@ def test_merge_failure_degrades_to_partition_union_with_a_warning() -> None:
 
 def test_global_thesis_falls_back_to_the_first_partition_with_a_warning() -> None:
     blocks = _blocks()
-    mapper = DocumentMapperService(ThesislessMergeRunner(), maximum_input_characters=2_000)
+    mapper = DocumentMapperService(ThesislessMergeRunner(), maximum_input_characters=500)
 
     document_map, _ = mapper.map_document(
         project_id=uuid4(),
@@ -361,3 +361,55 @@ def test_global_thesis_falls_back_to_the_first_partition_with_a_warning() -> Non
 
     assert document_map.working_thesis == "Thesis for partition 1"
     assert any("no global thesis" in warning for warning in document_map.warnings)
+
+
+def test_oversized_merge_payload_skips_the_merge_without_discarding_partitions() -> None:
+    blocks = _blocks()
+    runner = HierarchicalRunner()
+    mapper = DocumentMapperService(
+        runner,
+        maximum_input_characters=500,
+        maximum_merge_payload_characters=100,
+    )
+
+    document_map, run = mapper.map_document(
+        project_id=uuid4(),
+        source_id=blocks[0].source_id,
+        blocks=blocks,
+        model="fake",
+    )
+
+    mapped = [
+        block_id for section in document_map.sections for block_id in section.source_block_ids
+    ]
+    assert mapped == [block.block_id for block in blocks]
+    assert "document_map_merge" not in runner.stages
+    assert run.stage == "document_map_part"
+    assert any(
+        "Cross-partition merge was skipped" in warning for warning in document_map.warnings
+    )
+
+
+def test_merge_payload_budget_is_independent_of_the_partition_text_budget() -> None:
+    """A smaller text budget makes more partitions, so it must not shrink the merge budget."""
+
+    blocks = _blocks()
+    runner = HierarchicalRunner()
+    mapper = DocumentMapperService(runner, maximum_input_characters=500)
+
+    document_map, run = mapper.map_document(
+        project_id=uuid4(),
+        source_id=blocks[0].source_id,
+        blocks=blocks,
+        model="fake",
+    )
+
+    assert runner.stages.count("document_map_part") == len(blocks)
+    assert runner.stages[-1] == "document_map_merge"
+    assert run.stage == "document_map_merge"
+    assert not any("merge was skipped" in warning for warning in document_map.warnings)
+
+
+def test_merge_payload_budget_must_be_positive() -> None:
+    with pytest.raises(ValueError, match="maximum_merge_payload_characters"):
+        DocumentMapperService(HierarchicalRunner(), maximum_merge_payload_characters=0)

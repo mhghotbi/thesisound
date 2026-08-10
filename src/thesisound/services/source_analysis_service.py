@@ -22,7 +22,7 @@ from thesisound.services.analysis_profile import plan_evidence_extraction
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.document_identity import block_sequence_key
-from thesisound.services.document_map_cache import DocumentMapCache
+from thesisound.services.document_map_cache import DocumentMapCache, is_shareable_document_map
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_validator import validate_evidence_collection
@@ -148,7 +148,8 @@ class SourceAnalysisService:
                 prompt_version=prompt_version,
             )
             self.artifact_store.save_document_map(project_id, source_id, document_map)
-            self.document_map_cache.save(content_key, blocks, document_map)
+            if is_shareable_document_map(document_map):
+                self.document_map_cache.save(content_key, blocks, document_map)
             span.set(source="model")
             return self._mark_document_mapped(project_id, source_id, run_id=run.run_id)
 
@@ -402,6 +403,8 @@ class SourceAnalysisService:
         except (FileNotFoundError, OSError):
             return None
         if document_map.source_id != source_id:
+            return None
+        if not is_shareable_document_map(document_map):
             return None
         known_ids = {block.block_id for block in blocks}
         content_ids = {block.block_id for block in blocks if block.block_type != "front_matter"}
