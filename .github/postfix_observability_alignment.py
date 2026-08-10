@@ -83,3 +83,29 @@ if span_count != 1 or event_count != 1:
         f"rollup record fixture fixes span={span_count} event={event_count}"
     )
 path.write_text(text, encoding="utf-8")
+
+path = Path("tests/test_logging_setup.py")
+text = path.read_text(encoding="utf-8")
+old = '''    private = _record(
+        "search",
+        extra={"query": "پرسش خصوصی", "filename": "نام شخصی.pdf", "size_bytes": 99},
+    )
+    RedactingFilter(store_payloads=False).filter(private)
+    assert private.query["sha256"]  # type: ignore[attr-defined]
+    assert private.query["length"] == len("پرسش خصوصی")  # type: ignore[attr-defined]
+    assert private.filename["extension"] == ".pdf"  # type: ignore[attr-defined]
+    assert private.filename["size_bytes"] == 99  # type: ignore[attr-defined]
+'''
+new = '''    private = _record(
+        "search",
+        extra={"query": "پرسش خصوصی", "topic": "موضوع خصوصی"},
+    )
+    RedactingFilter(store_payloads=False).filter(private)
+    assert private.query["sha256"]  # type: ignore[attr-defined]
+    assert private.query["length"] == len("پرسش خصوصی")  # type: ignore[attr-defined]
+    assert private.topic["sha256"]  # type: ignore[attr-defined]
+    assert private.topic["length"] == len("موضوع خصوصی")  # type: ignore[attr-defined]
+'''
+if text.count(old) != 1:
+    raise RuntimeError(f"logging privacy test rewrite count={text.count(old)}")
+path.write_text(text.replace(old, new, 1), encoding="utf-8")
