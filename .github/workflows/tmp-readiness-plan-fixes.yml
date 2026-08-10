@@ -36,7 +36,7 @@ jobs:
         run: |
           uv run ruff format src/thesisound/services/readiness.py tests/test_readiness.py
           uv run ruff check --fix src/thesisound/services/readiness.py tests/test_readiness.py
-          uv run ruff check . --output-format=github
+          uv run ruff check . --exclude .github/tmp_apply_readiness_fixes.py --output-format=github
 
       - name: Focused readiness tests
         run: uv run pytest -q tests/test_readiness.py tests/test_cli_safety.py
