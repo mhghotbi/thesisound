@@ -381,5 +381,5 @@ def test_evidence_retention_unknown_when_plan_references_missing_block(tmp_path:
 
     _evidence_results([source_dir], capture)
 
-    assert statuses["evidence-validation"] == "unknown"
+    assert statuses["evidence-validation"] == "pass"
     assert statuses["evidence-retention"] == "unknown"

@@ -250,6 +250,8 @@ def _parse_quality_results(source_dirs: list[Path], set_result) -> None:
 
 def _evidence_results(source_dirs: list[Path], set_result) -> None:
     validation_failures: list[str] = []
+    validated_sources = 0
+    retention_errors: list[str] = []
     planned_tokens = kept_tokens = 0
     plans = 0
     try:
@@ -257,14 +259,13 @@ def _evidence_results(source_dirs: list[Path], set_result) -> None:
             blocks_path = directory / "document-blocks.jsonl"
             plan_path = directory / "evidence-extraction-plan.json"
             extraction_dir = directory / "evidence" / "extractions"
-            if not (blocks_path.exists() and plan_path.exists() and extraction_dir.exists()):
+            if not (blocks_path.exists() and extraction_dir.exists()):
                 continue
             blocks = [
                 SourceDocumentBlock.model_validate_json(line)
                 for line in blocks_path.read_text(encoding="utf-8").splitlines()
                 if line
             ]
-            plan = EvidenceExtractionPlan.model_validate_json(plan_path.read_text(encoding="utf-8"))
             records = [
                 BlockEvidenceExtraction.model_validate_json(path.read_text(encoding="utf-8"))
                 for path in sorted(extraction_dir.glob("*.json"))
@@ -274,43 +275,66 @@ def _evidence_results(source_dirs: list[Path], set_result) -> None:
                 validate_evidence_collection(extracted, blocks)
             except DeterministicValidationError as exc:
                 validation_failures.append(f"{directory.name}: {exc}")
-            by_id = {block.block_id: block for block in blocks}
-            missing_block_ids = [
-                block_id for block_id in plan.selected_block_ids if block_id not in by_id
-            ]
-            if missing_block_ids:
-                missing = ", ".join(missing_block_ids[:4])
-                raise ValueError(f"Extraction plan references missing source block(s): {missing}")
-            planned = [by_id[block_id] for block_id in plan.selected_block_ids]
-            kept_ids = {record.block_id for record in extracted}
-            planned_tokens += sum(block.estimated_token_count for block in planned)
-            kept_tokens += sum(
-                block.estimated_token_count for block in planned if block.block_id in kept_ids
+            validated_sources += 1
+
+            if not plan_path.exists():
+                continue
+            try:
+                plan = EvidenceExtractionPlan.model_validate_json(
+                    plan_path.read_text(encoding="utf-8")
+                )
+                by_id = {block.block_id: block for block in blocks}
+                missing_block_ids = [
+                    block_id for block_id in plan.selected_block_ids if block_id not in by_id
+                ]
+                if missing_block_ids:
+                    missing = ", ".join(missing_block_ids[:4])
+                    raise ValueError(
+                        f"Extraction plan references missing source block(s): {missing}"
+                    )
+                planned = [by_id[block_id] for block_id in plan.selected_block_ids]
+                kept_ids = {record.block_id for record in extracted}
+                planned_tokens += sum(block.estimated_token_count for block in planned)
+                kept_tokens += sum(
+                    block.estimated_token_count for block in planned if block.block_id in kept_ids
+                )
+                plans += 1
+            except (OSError, ValueError, KeyError) as exc:
+                retention_errors.append(f"{directory.name}: {exc}")
+
+        if not validated_sources:
+            set_result("evidence-validation", "not_reached", "No extraction artifacts exist.")
+        else:
+            set_result(
+                "evidence-validation",
+                "blocked" if validation_failures else "pass",
+                "; ".join(validation_failures[:4])
+                if validation_failures
+                else f"Revalidated evidence for {validated_sources} source(s).",
             )
-            plans += 1
-        if not plans:
-            set_result("evidence-validation", "not_reached", "No completed extraction plan exists.")
+
+        if retention_errors:
+            set_result(
+                "evidence-retention",
+                "unknown",
+                f"Retention inputs are unreadable: {'; '.join(retention_errors[:4])}",
+            )
+        elif not plans:
             set_result("evidence-retention", "not_reached", "No completed extraction plan exists.")
-            return
-        set_result(
-            "evidence-validation",
-            "blocked" if validation_failures else "pass",
-            "; ".join(validation_failures[:4])
-            if validation_failures
-            else f"Revalidated evidence for {plans} source(s).",
-        )
-        retention = kept_tokens / planned_tokens if planned_tokens else 1.0
-        set_result(
-            "evidence-retention",
-            "pass" if retention >= _MIN_PLANNED_TOKEN_RETENTION else "blocked",
-            (
-                f"Kept {retention:.0%} of planned token mass; minimum is "
-                f"{_MIN_PLANNED_TOKEN_RETENTION:.0%}."
-            ),
-        )
+        else:
+            retention = kept_tokens / planned_tokens if planned_tokens else 1.0
+            set_result(
+                "evidence-retention",
+                "pass" if retention >= _MIN_PLANNED_TOKEN_RETENTION else "blocked",
+                (
+                    f"Kept {retention:.0%} of planned token mass; minimum is "
+                    f"{_MIN_PLANNED_TOKEN_RETENTION:.0%}."
+                ),
+            )
     except (OSError, ValueError, KeyError) as exc:
-        set_result("evidence-validation", "unknown", f"Evidence artifacts are unreadable: {exc}")
-        set_result("evidence-retention", "unknown", f"Evidence artifacts are unreadable: {exc}")
+        detail = f"Evidence artifacts are unreadable: {exc}"
+        set_result("evidence-validation", "unknown", detail)
+        set_result("evidence-retention", "unknown", detail)
 
 
 def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
