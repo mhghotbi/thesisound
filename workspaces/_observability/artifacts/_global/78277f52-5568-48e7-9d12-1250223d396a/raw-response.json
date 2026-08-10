@@ -1,0 +1,18 @@
+{
+  "candidates": [
+    {
+      "content": null,
+      "finish_reason": "STOP",
+      "grounding_metadata": null,
+      "safety_ratings": null,
+      "url_context_metadata": null
+    }
+  ],
+  "model_version": null,
+  "parsed": {
+    "wrong": "field"
+  },
+  "prompt_feedback": null,
+  "text": "{\"wrong\":\"field\"}",
+  "usage_metadata": "namespace(prompt_token_count=120, candidates_token_count=8, total_token_count=128, thoughts_token_count=None, cached_content_token_count=None)"
+}
