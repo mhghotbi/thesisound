@@ -22,7 +22,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from thesisound import tracing
-from thesisound.observability import is_sensitive_key, redact_text, redact_value
+from thesisound.observability import redact_text, redact_value
 
 if TYPE_CHECKING:
     from thesisound.config import Settings
@@ -32,9 +32,7 @@ if TYPE_CHECKING:
 # by our own TraceContextFilter, and is worth redacting / including in JSON
 # output. Computed rather than hardcoded so it stays correct across Python
 # versions (e.g. 3.12 added `taskName`).
-_STANDARD_LOG_RECORD_ATTRS = frozenset(
-    logging.LogRecord("", 0, "", 0, "", (), None).__dict__
-)
+_STANDARD_LOG_RECORD_ATTRS = frozenset(logging.LogRecord("", 0, "", 0, "", (), None).__dict__)
 
 
 class TraceContextFilter(logging.Filter):
@@ -45,9 +43,7 @@ class TraceContextFilter(logging.Filter):
         context = tracing.current_context()
         record.trace_id = str(context.trace_id) if context else None
         record.span_id = str(context.span_id) if context else None
-        record.project_id = (
-            str(context.project_id) if context and context.project_id else None
-        )
+        record.project_id = str(context.project_id) if context and context.project_id else None
         return True
 
 
@@ -60,18 +56,21 @@ class RedactingFilter(logging.Filter):
     caught too, not just literal text already in the format string.
     """
 
+    def __init__(self, *, store_payloads: bool = False) -> None:
+        super().__init__()
+        self.store_payloads = store_payloads
+
     def filter(self, record: logging.LogRecord) -> bool:
         record.msg = redact_text(record.getMessage())
         record.args = ()
-        for key, value in list(record.__dict__.items()):
-            if key in _STANDARD_LOG_RECORD_ATTRS:
-                continue
-            # Two independent checks, same as redact_value()'s dict branch:
-            # a sensitive *name* (password="hunter2") redacts regardless of
-            # what the value looks like; everything else still gets
-            # pattern-based redaction for values that merely contain a
-            # secret (a stack trace with a stray API key in it, say).
-            record.__dict__[key] = "[REDACTED]" if is_sensitive_key(key) else redact_value(value)
+        extras = {
+            key: value
+            for key, value in record.__dict__.items()
+            if key not in _STANDARD_LOG_RECORD_ATTRS
+        }
+        redacted_extras = redact_value(extras, store_payloads=self.store_payloads)
+        for key, value in redacted_extras.items():
+            record.__dict__[key] = value
         return True
 
 
@@ -94,7 +93,7 @@ class JsonFormatter(logging.Formatter):
                 continue
             payload[key] = value
         if record.exc_info:
-            payload["exception"] = self.formatException(record.exc_info)
+            payload["exception"] = redact_text(self.formatException(record.exc_info))
         return json.dumps(payload, ensure_ascii=False, default=str)
 
 
@@ -111,11 +110,10 @@ class ConsoleFormatter(logging.Formatter):
         trace_id = getattr(record, "trace_id", None)
         trace_marker = f"[{trace_id[:8]}] " if trace_id else ""
         line = (
-            f"{timestamp} {record.levelname:<8} {record.name} "
-            f"{trace_marker}{record.getMessage()}"
+            f"{timestamp} {record.levelname:<8} {record.name} {trace_marker}{record.getMessage()}"
         )
         if record.exc_info:
-            line = f"{line}\n{self.formatException(record.exc_info)}"
+            line = f"{line}\n{redact_text(self.formatException(record.exc_info))}"
         return line
 
 
@@ -170,7 +168,10 @@ def _build_config(settings: Settings, *, logger_names: tuple[str, ...] = ()) -> 
         "disable_existing_loggers": False,
         "filters": {
             "trace_context": {"()": TraceContextFilter},
-            "redact": {"()": RedactingFilter},
+            "redact": {
+                "()": RedactingFilter,
+                "store_payloads": settings.observability_store_payloads,
+            },
         },
         "formatters": {
             "console": {"()": ConsoleFormatter},

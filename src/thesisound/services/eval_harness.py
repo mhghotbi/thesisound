@@ -17,6 +17,7 @@ from thesisound.episode_cli import _service as build_episode_service
 from thesisound.observability import ObservabilityLedger, tracer_from_settings
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.script_cli import _service as build_script_service
+from thesisound.services.observability_rollup import ObservabilityRollup
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_outcome import script_outcome
@@ -293,7 +294,7 @@ def _run_case(case: EvalCase, root: Path, *, settings: Settings | None) -> CaseM
         configured.resolved_observability_database_path,
         configured.resolved_observability_artifact_root,
     )
-    usage = ledger.project_summary(project.project_id)
+    usage = ObservabilityRollup(ledger).project_summary(project.project_id)
     cost_partial = usage.unpriced_succeeded_count > 0
     cost = None if cost_partial else usage.total_cost_micros
     per_minute = (

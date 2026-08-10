@@ -188,3 +188,35 @@ def test_configure_logging_accepts_dictconfig_directly(reset_logging: None) -> N
     from thesisound.logging_setup import _build_config
 
     logging.config.dictConfig(_build_config(Settings(log_format="text")))
+
+
+def test_redacting_filter_applies_sensitive_attribute_payload_switch() -> None:
+    private = _record(
+        "search",
+        extra={"query": "پرسش خصوصی", "topic": "موضوع خصوصی"},
+    )
+    RedactingFilter(store_payloads=False).filter(private)
+    assert private.query["sha256"]  # type: ignore[attr-defined]
+    assert private.query["length"] == len("پرسش خصوصی")  # type: ignore[attr-defined]
+    assert private.topic["sha256"]  # type: ignore[attr-defined]
+    assert private.topic["length"] == len("موضوع خصوصی")  # type: ignore[attr-defined]
+
+    enabled = _record("search", extra={"query": "پرسش خصوصی"})
+    RedactingFilter(store_payloads=True).filter(enabled)
+    assert enabled.query == "پرسش خصوصی"  # type: ignore[attr-defined]
+
+
+def test_formatters_redact_exception_messages() -> None:
+    try:
+        raise ValueError("phone 09121234567 key sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ /home/alice/file")
+    except ValueError:
+        import sys
+
+        record = _record("failed", level=logging.ERROR, exc_info=sys.exc_info())
+
+    json_line = JsonFormatter().format(record)
+    console_line = ConsoleFormatter().format(record)
+    for rendered in (json_line, console_line):
+        assert "09121234567" not in rendered
+        assert "sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ" not in rendered
+        assert "/home/alice" not in rendered

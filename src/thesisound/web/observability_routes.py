@@ -43,10 +43,13 @@ def register_observability_routes(
         account = getattr(request.state, "account", None)
         return account is not None and getattr(account, "role", None) == "operator"
 
+    def operator_mode(request: Request) -> bool:
+        return request.session.get("ui_mode", "simple") == "operator"
+
     def require_operator(request: Request, project_id: UUID) -> Response | None:
         if redirect := login_redirect(request):
             return redirect
-        if not authenticated_operator(request):
+        if not authenticated_operator(request) or not operator_mode(request):
             return RedirectResponse(f"/projects/{project_id}", status_code=HTTP_303_SEE_OTHER)
         return None
 
@@ -98,7 +101,7 @@ def register_observability_routes(
     def observability_live(request: Request, project_id: UUID) -> Response:
         if redirect := login_redirect(request):
             return redirect
-        if not authenticated_operator(request):
+        if not authenticated_operator(request) or not operator_mode(request):
             return HTMLResponse("", status_code=403)
         try:
             workspace.load_project(project_id)

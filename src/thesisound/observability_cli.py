@@ -19,6 +19,7 @@ from thesisound.observability import (
     ledger_from_settings,
 )
 from thesisound.services.observability_reporting import ObservabilityReporter
+from thesisound.services.observability_rollup import ObservabilityRollup
 
 
 def _format_cost(micros: int | None) -> str:
@@ -39,7 +40,8 @@ def register_observability_commands(app: typer.Typer) -> None:
 
         settings = Settings()
         ledger = ledger_from_settings(settings)
-        summary = ledger.project_summary(project_id)
+        rollup = ObservabilityRollup(ledger)
+        summary = rollup.project_summary(project_id)
         console = Console()
         console.print(
             f"[bold]Project {project_id}[/bold] · calls={summary.call_count} · "
@@ -106,9 +108,7 @@ def register_observability_commands(app: typer.Typer) -> None:
         """Print the persisted aggregate for one pipeline workflow run."""
 
         summary = ledger_from_settings(Settings()).run_summary(run_id)
-        Console().print_json(
-            json.dumps(summary.model_dump(mode="json"), ensure_ascii=False)
-        )
+        Console().print_json(json.dumps(summary.model_dump(mode="json"), ensure_ascii=False))
 
     @app.command("model-call")
     def model_call(
@@ -248,8 +248,9 @@ def register_observability_commands(app: typer.Typer) -> None:
 
         settings = Settings()
         ledger = ledger_from_settings(settings)
+        rollup = ObservabilityRollup(ledger)
         console = Console()
-        rows = ledger.stage_summary(project_id)
+        rows = rollup.stage_summary(project_id)
         if not rows:
             console.print(f"[yellow]No recorded spans for project {project_id}.[/yellow]")
             return
@@ -273,7 +274,7 @@ def register_observability_commands(app: typer.Typer) -> None:
             )
         console.print(table)
 
-        cache_rows = ledger.cache_hit_rates(project_id)
+        cache_rows = rollup.cache_hit_rates(project_id)
         if cache_rows:
             cache_table = Table(title="Cache hit rates")
             cache_table.add_column("Cache")
@@ -297,8 +298,9 @@ def register_observability_commands(app: typer.Typer) -> None:
 
         settings = Settings()
         ledger = ledger_from_settings(settings)
+        rollup = ObservabilityRollup(ledger)
         console = Console()
-        summary = ledger.project_summary(project_id)
+        summary = rollup.project_summary(project_id)
         if summary.call_count == 0:
             console.print(f"[yellow]No recorded model calls for project {project_id}.[/yellow]")
             return
@@ -313,7 +315,7 @@ def register_observability_commands(app: typer.Typer) -> None:
         # vacuously 0 -- show "unknown" rather than a number that looks like a real $0.
         total_display = _format_cost(summary.total_cost_micros if priced_count else None)
         console.print(f"[bold]Project {project_id}[/bold] · total cost={total_display}{caveat}")
-        rows = ledger.cost_breakdown(project_id)
+        rows = rollup.cost_breakdown(project_id)
         if not rows:
             return
         table = Table(title="Cost breakdown")

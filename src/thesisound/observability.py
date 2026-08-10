@@ -60,6 +60,8 @@ _SENSITIVE_KEYS = {
     "token",
     "credential",
 }
+SENSITIVE_ATTRIBUTES = {"query", "text", "excerpt", "filename", "topic", "phone", "prompt"}
+
 _GEMINI_KEY_PATTERN = re.compile(r"AIza[0-9A-Za-z_-]{20,}")
 _GENERIC_SECRET_KEY_PATTERN = re.compile(r"sk-[A-Za-z0-9_-]{20,}")
 _IRAN_PHONE_PATTERN = re.compile(r"(?:\+98|0098|0)9\d{9}")
@@ -479,7 +481,7 @@ class ObservabilityLedger:
                     spec.grounding_mode,
                     request_path,
                     request_hash,
-                    _json(spec.metadata),
+                    _json(redact_value(spec.metadata, store_payloads=self.store_payloads)),
                 ),
             )
         return spec.call_id
@@ -523,7 +525,7 @@ class ObservabilityLedger:
                     retry_reason,
                     _optional_text(event.get("error_type")),
                     _optional_text(event.get("error_code")),
-                    _truncate(_optional_text(event.get("error_message"))),
+                    redact_exception_message(_optional_text(event.get("error_message"))),
                 ),
             )
             connection.execute(
@@ -655,8 +657,7 @@ class ObservabilityLedger:
                 if priced is None:
                     continue
                 connection.execute(
-                    "UPDATE model_calls SET cost_micros = ?, pricing_version = ? "
-                    "WHERE call_id = ?",
+                    "UPDATE model_calls SET cost_micros = ?, pricing_version = ? WHERE call_id = ?",
                     (priced.cost_micros, priced.pricing_version, row[0]),
                 )
                 updated += 1
@@ -674,7 +675,7 @@ class ObservabilityLedger:
             status="failed",
             error_type=type(error).__name__,
             error_code=error_code,
-            error_message=_truncate(str(error) or type(error).__name__),
+            error_message=redact_exception_message(str(error) or type(error).__name__),
         )
 
     def reject(self, call_id: UUID, error: Exception) -> None:
@@ -682,7 +683,7 @@ class ObservabilityLedger:
             call_id,
             status="rejected",
             error_type=type(error).__name__,
-            error_message=_truncate(str(error) or type(error).__name__),
+            error_message=redact_exception_message(str(error) or type(error).__name__),
         )
 
     def record_retry(
@@ -805,7 +806,7 @@ class ObservabilityLedger:
                     aggregate[6],
                     json.dumps(models, ensure_ascii=False),
                     json.dumps(prompt_versions, ensure_ascii=False),
-                    _truncate(error_message),
+                    redact_exception_message(error_message),
                     str(workflow_run_id),
                 ),
             )
@@ -813,17 +814,14 @@ class ObservabilityLedger:
     def run_summary(self, workflow_run_id: UUID) -> PipelineRunSummary:
         with self._lock, closing(self._connect()) as connection, connection:
             row = connection.execute(
-                "SELECT " + _PIPELINE_RUN_COLUMNS + " FROM pipeline_runs "
-                "WHERE workflow_run_id = ?",
+                "SELECT " + _PIPELINE_RUN_COLUMNS + " FROM pipeline_runs WHERE workflow_run_id = ?",
                 (str(workflow_run_id),),
             ).fetchone()
         if row is None:
             raise FileNotFoundError(f"Pipeline run not found: {workflow_run_id}")
         return _pipeline_run_from_row(row)
 
-    def list_runs(
-        self, project_id: UUID, *, limit: int = 50
-    ) -> list[PipelineRunSummary]:
+    def list_runs(self, project_id: UUID, *, limit: int = 50) -> list[PipelineRunSummary]:
         with self._lock, closing(self._connect()) as connection, connection:
             rows = connection.execute(
                 "SELECT " + _PIPELINE_RUN_COLUMNS + " FROM pipeline_runs "
@@ -860,7 +858,7 @@ class ObservabilityLedger:
                     _to_db_timestamp(record.started_at),
                     record.process,
                     record.pid,
-                    _json(redact_value(record.attributes)),
+                    _json(redact_value(record.attributes, store_payloads=self.store_payloads)),
                     _json(record.metrics),
                 ),
             )
@@ -883,8 +881,8 @@ class ObservabilityLedger:
                     _to_db_timestamp(record.ended_at) if record.ended_at else None,
                     record.duration_ms,
                     record.error_type,
-                    _truncate(record.error_message),
-                    _json(redact_value(record.attributes)),
+                    redact_exception_message(record.error_message),
+                    _json(redact_value(record.attributes, store_payloads=self.store_payloads)),
                     _json(record.metrics),
                     str(record.context.span_id),
                 ),
@@ -915,7 +913,7 @@ class ObservabilityLedger:
                     record.level,
                     record.subject_type,
                     record.subject_id,
-                    _json(redact_value(record.attributes)),
+                    _json(redact_value(record.attributes, store_payloads=self.store_payloads)),
                 ),
             )
 
@@ -950,8 +948,7 @@ class ObservabilityLedger:
                 return 0
             now = _now()
             connection.executemany(
-                "UPDATE pipeline_spans SET status = 'interrupted', ended_at = ? "
-                "WHERE span_id = ?",
+                "UPDATE pipeline_spans SET status = 'interrupted', ended_at = ? WHERE span_id = ?",
                 [(_to_db_timestamp(now), row[0]) for row in stale],
             )
             connection.executemany(
@@ -1016,46 +1013,6 @@ class ObservabilityLedger:
             ).fetchall()
         return [UUID(row[0]) for row in rows]
 
-    def stage_summary(self, project_id: UUID) -> list[StageSummary]:
-        """Per-span-name rollup across every trace recorded for a project,
-        ranked by self time -- see ``StageSummary`` for why."""
-
-        with self._lock, closing(self._connect()) as connection, connection:
-            rows = connection.execute(
-                """
-                WITH child_time AS (
-                    SELECT parent_span_id AS parent, SUM(duration_ms) AS ms
-                      FROM pipeline_spans
-                     WHERE project_id = ? AND parent_span_id IS NOT NULL
-                     GROUP BY parent_span_id
-                )
-                SELECT s.name, s.component,
-                       COUNT(*),
-                       COALESCE(SUM(s.duration_ms), 0),
-                       MAX(0, COALESCE(SUM(s.duration_ms - COALESCE(c.ms, 0)), 0)),
-                       COUNT(*) FILTER (WHERE s.status = 'error')
-                  FROM pipeline_spans s
-                  LEFT JOIN child_time c ON c.parent = s.span_id
-                 WHERE s.project_id = ?
-                 GROUP BY s.name, s.component
-                 ORDER BY 5 DESC
-                """,
-                (str(project_id), str(project_id)),
-            ).fetchall()
-        return [
-            StageSummary(
-                name=row[0],
-                component=row[1],
-                call_count=row[2],
-                total_ms=row[3],
-                avg_ms=round(row[3] / row[2]) if row[2] else 0,
-                self_total_ms=row[4],
-                self_avg_ms=round(row[4] / row[2]) if row[2] else 0,
-                error_count=row[5],
-            )
-            for row in rows
-        ]
-
     def list_events(self, trace_id: UUID) -> list[EventSummary]:
         with self._lock, closing(self._connect()) as connection, connection:
             rows = connection.execute(
@@ -1084,9 +1041,7 @@ class ObservabilityLedger:
             ).fetchall()
         return [_trace_node_from_row(row) for row in rows]
 
-    def list_events_by_project(
-        self, project_id: UUID, *, limit: int = 200
-    ) -> list[EventSummary]:
+    def list_events_by_project(self, project_id: UUID, *, limit: int = 200) -> list[EventSummary]:
         """Every event for a project, newest first, regardless of trace.
 
         Unlike ``list_events``, this also surfaces events recorded with no
@@ -1121,7 +1076,9 @@ class ObservabilityLedger:
             params.append(status)
         params.append(max(1, min(limit, 2_000)))
         query = (
-            "SELECT " + _CALL_SUMMARY_COLUMNS + " FROM model_calls WHERE "
+            "SELECT "
+            + _CALL_SUMMARY_COLUMNS
+            + " FROM model_calls WHERE "
             + " AND ".join(clauses)
             + " ORDER BY started_at DESC LIMIT ?"
         )
@@ -1171,104 +1128,6 @@ class ObservabilityLedger:
             parent_span_id=_optional_uuid(row[offset + 14]),
             attempts=[_attempt_from_row(item) for item in attempts],
         )
-
-    def project_summary(self, project_id: UUID) -> ProjectUsageSummary:
-        with self._lock, closing(self._connect()) as connection, connection:
-            row = connection.execute(
-                """
-                SELECT COUNT(*),
-                       COUNT(*) FILTER (WHERE status = 'succeeded'),
-                       COUNT(*) FILTER (WHERE status = 'failed'),
-                       COUNT(*) FILTER (WHERE status = 'rejected'),
-                       COALESCE(SUM(provider_attempt_count), 0),
-                       COALESCE(SUM(input_tokens), 0),
-                       COALESCE(SUM(output_tokens), 0),
-                       COALESCE(SUM(thinking_tokens), 0),
-                       COALESCE(SUM(cached_tokens), 0),
-                       COALESCE(SUM(total_tokens), 0),
-                       COALESCE(SUM(latency_ms), 0),
-                       COALESCE(SUM(cost_micros), 0),
-                       COUNT(*) FILTER (WHERE status = 'succeeded' AND cost_micros IS NULL)
-                FROM model_calls
-                WHERE project_id = ?
-                """,
-                (str(project_id),),
-            ).fetchone()
-        values = row or (0,) * 13
-        return ProjectUsageSummary(
-            project_id=project_id,
-            call_count=int(values[0] or 0),
-            succeeded_count=int(values[1] or 0),
-            failed_count=int(values[2] or 0),
-            rejected_count=int(values[3] or 0),
-            provider_attempt_count=int(values[4] or 0),
-            input_tokens=int(values[5] or 0),
-            output_tokens=int(values[6] or 0),
-            thinking_tokens=int(values[7] or 0),
-            cached_tokens=int(values[8] or 0),
-            total_tokens=int(values[9] or 0),
-            total_latency_ms=int(values[10] or 0),
-            total_cost_micros=int(values[11] or 0),
-            unpriced_succeeded_count=int(values[12] or 0),
-        )
-
-    def cost_breakdown(self, project_id: UUID) -> list[CostBreakdownRow]:
-        """Cost and token totals grouped by stage/provider/model, ranked by
-        total cost -- the natural drill-down under ``project_summary()``'s
-        single total for `thesisound cost`."""
-
-        with self._lock, closing(self._connect()) as connection, connection:
-            rows = connection.execute(
-                """
-                SELECT stage, provider, COALESCE(resolved_model, requested_model),
-                       COUNT(*),
-                       COUNT(*) FILTER (WHERE status = 'succeeded' AND cost_micros IS NULL),
-                       COALESCE(SUM(cost_micros), 0),
-                       COALESCE(SUM(total_tokens), 0)
-                FROM model_calls
-                WHERE project_id = ? AND status = 'succeeded'
-                GROUP BY stage, provider, COALESCE(resolved_model, requested_model)
-                ORDER BY SUM(cost_micros) DESC
-                """,
-                (str(project_id),),
-            ).fetchall()
-        return [
-            CostBreakdownRow(
-                stage=row[0],
-                provider=row[1],
-                model=row[2],
-                call_count=row[3],
-                unpriced_count=row[4],
-                total_cost_micros=row[5],
-                total_tokens=row[6],
-            )
-            for row in rows
-        ]
-
-    def cache_hit_rates(self, project_id: UUID) -> list[CacheHitRateSummary]:
-        """Hit/miss counts per ``cache`` attribute, across every ``cache.lookup``
-        event ever recorded for a project -- the single ``GROUP BY`` the
-        shared event-name-plus-attribute convention (see the plan's Phase 3.3)
-        was designed to make possible for every cache in the system at once."""
-
-        with self._lock, closing(self._connect()) as connection, connection:
-            rows = connection.execute(
-                """
-                SELECT json_extract(attributes_json, '$.cache') AS cache,
-                       COUNT(*) FILTER (WHERE json_extract(attributes_json, '$.result') = 'hit'),
-                       COUNT(*) FILTER (WHERE json_extract(attributes_json, '$.result') = 'miss')
-                FROM pipeline_events
-                WHERE project_id = ? AND name = 'cache.lookup'
-                GROUP BY cache
-                ORDER BY cache
-                """,
-                (str(project_id),),
-            ).fetchall()
-        return [
-            CacheHitRateSummary(cache=row[0], hits=row[1], misses=row[2])
-            for row in rows
-            if row[0] is not None
-        ]
 
     def read_artifact(self, relative_path: str, *, max_characters: int = 200_000) -> str:
         path = (self.artifact_root.parent / relative_path).resolve()
@@ -1345,7 +1204,9 @@ class ObservabilityLedger:
         directory = self.artifact_root / project_segment / str(spec.call_id)
         directory.mkdir(parents=True, exist_ok=True)
         path = directory / filename
-        serialized = _json(redact_value(_jsonable(payload))) + "\n"
+        serialized = (
+            _json(redact_value(_jsonable(payload), store_payloads=self.store_payloads)) + "\n"
+        )
         temporary = path.with_suffix(path.suffix + ".tmp")
         temporary.write_text(serialized, encoding="utf-8")
         temporary.replace(path)
@@ -1643,19 +1504,90 @@ def is_sensitive_key(name: str) -> bool:
     return str(name).casefold().replace("-", "_") in _SENSITIVE_KEYS
 
 
-def redact_value(value: Any) -> Any:
+def _sensitive_text(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    return json.dumps(
+        _jsonable(value),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    )
+
+
+def _hashed_sensitive_value(value: Any) -> dict[str, Any]:
+    text = _sensitive_text(value)
+    return {
+        "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "length": len(text),
+    }
+
+
+def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(value, Mapping):
+        digest = value.get("filename_sha256")
+        extension = value.get("extension")
+        if isinstance(digest, str) and isinstance(extension, str):
+            identity: dict[str, Any] = {
+                "filename_sha256": digest[:16],
+                "extension": extension,
+            }
+            size = value.get("size_bytes")
+            if isinstance(size, int | float) and size >= 0:
+                identity["size_bytes"] = int(size)
+            return identity
+
+    filename = str(value)
+    identity: dict[str, Any] = {
+        "filename_sha256": hashlib.sha256(filename.encode("utf-8")).hexdigest()[:16],
+        "extension": Path(filename).suffix.lower(),
+    }
+    for key in ("size_bytes", "file_size_bytes", "byte_count"):
+        size = container.get(key)
+        if isinstance(size, int | float) and size >= 0:
+            identity["size_bytes"] = int(size)
+            break
+    return identity
+
+
+def redact_value(value: Any, *, store_payloads: bool = False) -> Any:
+    """Apply the single observability privacy policy recursively.
+
+    Credential/identity carriers are always redacted. User-content attributes
+    are deterministic hash+length unless the one existing payload-storage
+    switch is enabled. Filenames are always represented by a deterministic
+    short hash plus extension (and file size when the caller supplied it), so
+    plaintext filenames remain confined to the project manifest.
+    """
+
     if isinstance(value, dict):
-        return {
-            str(key): "[REDACTED]" if is_sensitive_key(key) else redact_value(item)
-            for key, item in value.items()
-        }
+        redacted: dict[str, Any] = {}
+        for raw_key, item in value.items():
+            key = str(raw_key)
+            normalized = key.casefold().replace("-", "_")
+            if is_sensitive_key(key):
+                redacted[key] = "[REDACTED]"
+            elif normalized == "filename":
+                redacted[key] = _filename_identity(item, value)
+            elif normalized in SENSITIVE_ATTRIBUTES and not store_payloads:
+                redacted[key] = _hashed_sensitive_value(item)
+            else:
+                redacted[key] = redact_value(item, store_payloads=store_payloads)
+        return redacted
     if isinstance(value, list):
-        return [redact_value(item) for item in value]
+        return [redact_value(item, store_payloads=store_payloads) for item in value]
     if isinstance(value, tuple):
-        return [redact_value(item) for item in value]
+        return [redact_value(item, store_payloads=store_payloads) for item in value]
     if isinstance(value, str):
         return redact_text(value)
     return value
+
+
+def redact_exception_message(value: str | None) -> str | None:
+    if value is None:
+        return None
+    return redact_text(str(value))[:1_000]
 
 
 def _jsonable(value: Any) -> Any:
@@ -1710,7 +1642,7 @@ def _summary_from_row(row: tuple[Any, ...]) -> CallSummary:
         total_tokens=row[17],
         finish_reason=row[18],
         error_type=row[19],
-        error_message=row[20],
+        error_message=redact_exception_message(row[20]),
         subject_type=row[21],
         subject_id=row[22],
         cost_micros=row[23],
@@ -1736,7 +1668,7 @@ def _attempt_from_row(row: tuple[Any, ...]) -> AttemptRecord:
         retry_reason=row[13],
         error_type=row[14],
         error_code=row[15],
-        error_message=row[16],
+        error_message=redact_exception_message(row[16]),
     )
 
 
@@ -1770,7 +1702,7 @@ def _span_from_row(row: tuple[Any, ...]) -> SpanSummary:
         duration_ms=row[13],
         process=row[14],
         error_type=row[15],
-        error_message=row[16],
+        error_message=redact_exception_message(row[16]),
         attributes=json.loads(row[17] or "{}"),
         metrics=json.loads(row[18] or "{}"),
     )
@@ -1839,7 +1771,7 @@ def _pipeline_run_from_row(row: tuple[Any, ...]) -> PipelineRunSummary:
         total_tokens=row[14],
         models=json.loads(row[15] or "[]"),
         prompt_versions=json.loads(row[16] or "[]"),
-        error_message=row[17],
+        error_message=redact_exception_message(row[17]),
     )
 
 

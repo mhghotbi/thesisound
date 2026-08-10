@@ -100,10 +100,12 @@
     <small>خروجی‌های وابسته بایگانی و پس از اصلاح دوباره ساخته می‌شوند. فایل‌های خام حذف نمی‌شوند.</small>
   </div>
   {% endif %}
+  {% if is_operator and ui_mode == 'operator' %}
   <div class="workflow-rail__rewind operator-only">
     <span>عملیات:</span>
     <a href="/projects/{{ project.project_id }}/observability">ردیابی، هزینه و خطاها</a>
   </div>
+  {% endif %}
 </nav>
 {% if request.query_params.get('workflow_error') %}
 <div class="page-content page-content--wide"><div class="notice notice--danger" role="alert">{{ request.query_params.get('workflow_error') }}</div></div>
