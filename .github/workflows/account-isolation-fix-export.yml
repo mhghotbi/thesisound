@@ -1,0 +1,22 @@
+name: Account isolation fix export
+
+on:
+  push:
+    branches:
+      - agent/account-isolation-plan-fixes
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package source
+        run: tar --exclude=.git -czf /tmp/thesisound-source.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thesisound-account-fix-source
+          path: /tmp/thesisound-source.tar.gz
+          retention-days: 1
