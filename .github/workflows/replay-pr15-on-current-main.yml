@@ -1,0 +1,102 @@
+name: Replay PR15 fixes on current main
+
+on:
+  push:
+    branches:
+      - agent/fix-server-mono-review-findings
+
+permissions:
+  contents: write
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/fix-server-mono-review-findings
+          fetch-depth: 0
+      - name: Replay intended fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          FIX_COMMIT=a654713023bdcb2c02a23016b649ddc83dec2934
+          git fetch origin "$FIX_COMMIT"
+          git show "$FIX_COMMIT:src/thesisound/services/script_run.py" > src/thesisound/services/script_run.py
+          git show "$FIX_COMMIT:src/thesisound/services/url_probe.py" > src/thesisound/services/url_probe.py
+          git show "$FIX_COMMIT:tests/test_script_run.py" > tests/test_script_run.py
+          git show "$FIX_COMMIT:tests/test_url_probe.py" > tests/test_url_probe.py
+
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/thesisound/observability.py")
+          text = path.read_text(encoding="utf-8")
+
+          replacements = [
+              (
+                  '                "SELECT started_at FROM pipeline_runs WHERE workflow_run_id = ?",\n',
+                  '                "SELECT started_at, status, error_message FROM pipeline_runs "\n'
+                  '                "WHERE workflow_run_id = ?",\n',
+              ),
+              (
+                  '            started_at = _from_db_timestamp(existing[0])\n'
+                  '            connection.execute(\n',
+                  '            started_at = _from_db_timestamp(existing[0])\n'
+                  '            previous_status = existing[1]\n'
+                  '            effective_status = (\n'
+                  '                "failed" if "failed" in {previous_status, status} else status\n'
+                  '            )\n'
+                  '            effective_error = (\n'
+                  '                (error_message or existing[2])\n'
+                  '                if effective_status == "failed"\n'
+                  '                else None\n'
+                  '            )\n'
+                  '            connection.execute(\n',
+              ),
+              (
+                  '                    status,\n'
+                  '                    _to_db_timestamp(finished_at),\n',
+                  '                    effective_status,\n'
+                  '                    _to_db_timestamp(finished_at),\n',
+              ),
+              (
+                  '                    redact_exception_message(error_message),\n'
+                  '                    str(workflow_run_id),\n',
+                  '                    redact_exception_message(effective_error),\n'
+                  '                    str(workflow_run_id),\n',
+              ),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f"Expected observability block not found: {old!r}")
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding="utf-8")
+
+          test_path = Path("tests/test_pipeline_runs.py")
+          tests = test_path.read_text(encoding="utf-8")
+          marker = "def test_failed_run_status_is_monotonic_across_root_finishes("
+          if marker not in tests:
+              tests += '''\n\ndef test_failed_run_status_is_monotonic_across_root_finishes(\n    ledger: ObservabilityLedger,\n) -> None:\n    project_id = uuid4()\n    run_id = uuid4()\n    _begin_run(ledger, run_id, project_id)\n\n    ledger.finish_run(run_id, status="failed", error_message="first root failed")\n    first = ledger.run_summary(run_id)\n    ledger.finish_run(run_id, status="succeeded")\n    second = ledger.run_summary(run_id)\n\n    assert first.status == second.status == "failed"\n    assert second.error_message == "first root failed"\n    assert second.finished_at is not None\n    assert first.finished_at is not None\n    assert second.finished_at >= first.finished_at\n'''
+              test_path.write_text(tests, encoding="utf-8")
+          PY
+
+          python -m py_compile \
+            src/thesisound/observability.py \
+            src/thesisound/services/script_run.py \
+            src/thesisound/services/url_probe.py \
+            tests/test_pipeline_runs.py \
+            tests/test_script_run.py \
+            tests/test_url_probe.py
+          git diff --check
+
+      - name: Commit replayed fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/replay-pr15-on-current-main.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Replay server-mono fixes on current main"
+          git push origin HEAD:agent/fix-server-mono-review-findings
