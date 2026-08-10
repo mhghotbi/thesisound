@@ -76,24 +76,12 @@ jobs:
       - name: Make central privacy transformations idempotent
         run: |
           python - <<'PY'
+          import re
           from pathlib import Path
 
           path = Path('src/thesisound/observability.py')
           text = path.read_text(encoding='utf-8')
-          old = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
-              filename = str(value)
-              identity: dict[str, Any] = {
-                  "filename_sha256": hashlib.sha256(filename.encode("utf-8")).hexdigest()[:16],
-                  "extension": Path(filename).suffix.lower(),
-              }
-              for key in ("size_bytes", "file_size_bytes", "byte_count"):
-                  size = container.get(key)
-                  if isinstance(size, int | float) and size >= 0:
-                      identity["size_bytes"] = int(size)
-                      break
-              return identity
-          '''.replace('          ', '')
-          new = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
+          replacement = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
               if isinstance(value, Mapping):
                   digest = value.get("filename_sha256")
                   extension = value.get("extension")
@@ -118,45 +106,50 @@ jobs:
                       identity["size_bytes"] = int(size)
                       break
               return identity
-          '''.replace('          ', '')
-          if text.count(old) != 1:
-              raise SystemExit('filename identity function did not match exactly once')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          '''
+          replacement = '\n'.join(line[10:] if line.startswith('          ') else line for line in replacement.splitlines())
+          text, count = re.subn(
+              r'def _filename_identity\(value: Any, container: Mapping\[str, Any\]\) -> dict\[str, Any\]:\n.*?(?=\n\ndef redact_value)',
+              replacement,
+              text,
+              count=1,
+              flags=re.DOTALL,
+          )
+          if count != 1:
+              raise SystemExit(f'filename identity structural rewrite count={count}')
+          path.write_text(text, encoding='utf-8')
 
           path = Path('src/thesisound/logging_setup.py')
           text = path.read_text(encoding='utf-8')
-          old_import = 'from thesisound.observability import is_sensitive_key, redact_text, redact_value\n'
-          new_import = 'from thesisound.observability import redact_text, redact_value\n'
-          if text.count(old_import) != 1:
-              raise SystemExit('logging import did not match exactly once')
-          text = text.replace(old_import, new_import, 1)
-          old_block = '''            record.__dict__[key] = (
-                  "[REDACTED]"
-                  if is_sensitive_key(key)
-                  else redact_value(value, store_payloads=self.store_payloads)
+          text, import_count = re.subn(
+              r'from thesisound\.observability import is_sensitive_key, redact_text, redact_value',
+              'from thesisound.observability import redact_text, redact_value',
+              text,
+              count=1,
+          )
+          text, block_count = re.subn(
+              r'            record\.__dict__\[key\] = \(\n                "\[REDACTED\]"\n                if is_sensitive_key\(key\)\n                else redact_value\(value, store_payloads=self\.store_payloads\)\n            \)',
+              '            record.__dict__[key] = redact_value(\n                {key: value}, store_payloads=self.store_payloads\n            )[key]',
+              text,
+              count=1,
+          )
+          if import_count != 1 or block_count != 1:
+              raise SystemExit(
+                  f'logging structural rewrite import={import_count} block={block_count}'
               )
-          '''.replace('          ', '')
-          new_block = '''            record.__dict__[key] = redact_value(
-                  {key: value}, store_payloads=self.store_payloads
-              )[key]
-          '''.replace('          ', '')
-          if text.count(old_block) != 1:
-              raise SystemExit('logging redaction block did not match exactly once')
-          path.write_text(text.replace(old_block, new_block, 1), encoding='utf-8')
+          path.write_text(text, encoding='utf-8')
 
           path = Path('tests/test_observability_rollups.py')
           text = path.read_text(encoding='utf-8')
-          old = '''        kind="stage",
-              started_at=started,
-          '''.replace('          ', '')
-          new = '''        kind="stage",
-              subject_type=None,
-              subject_id=None,
-              started_at=started,
-          '''.replace('          ', '')
-          if text.count(old) != 1:
-              raise SystemExit('rollup SpanRecord fixture did not match exactly once')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          text, count = re.subn(
+              r'(        kind="stage",\n)(        started_at=started,)',
+              r'\1        subject_type=None,\n        subject_id=None,\n\2',
+              text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit(f'rollup SpanRecord structural rewrite count={count}')
+          path.write_text(text, encoding='utf-8')
           PY
 
       - name: Install dependencies
