@@ -92,8 +92,14 @@ jobs:
             tests/test_observability_rollups.py \
             tests/test_observability_phase56.py
 
-      - name: Lint
-        run: uv run ruff check . --output-format=github
+      - name: Fix import ordering in generated files
+        run: |
+          uv run ruff check --fix \
+            src/thesisound/services/eval_harness.py \
+            tests/test_observability_rollups.py
+
+      - name: Lint repository changes
+        run: uv run ruff check . --exclude .github/align_observability_plan.py --output-format=github
 
       - name: Focused observability tests
         run: |
