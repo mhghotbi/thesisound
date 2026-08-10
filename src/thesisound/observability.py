@@ -742,7 +742,8 @@ class ObservabilityLedger:
 
         with self._lock, closing(self._connect()) as connection, connection:
             existing = connection.execute(
-                "SELECT started_at FROM pipeline_runs WHERE workflow_run_id = ?",
+                "SELECT started_at, status, error_message FROM pipeline_runs "
+                "WHERE workflow_run_id = ?",
                 (str(workflow_run_id),),
             ).fetchone()
             if existing is None:
@@ -783,6 +784,15 @@ class ObservabilityLedger:
             # both its model calls and the actual run finish time.
             finished_at = _now()
             started_at = _from_db_timestamp(existing[0])
+            previous_status = existing[1]
+            effective_status = (
+                "failed" if "failed" in {previous_status, status} else status
+            )
+            effective_error = (
+                (error_message or existing[2])
+                if effective_status == "failed"
+                else None
+            )
             connection.execute(
                 """
                 UPDATE pipeline_runs
@@ -794,7 +804,7 @@ class ObservabilityLedger:
                 WHERE workflow_run_id = ?
                 """,
                 (
-                    status,
+                    effective_status,
                     _to_db_timestamp(finished_at),
                     _elapsed_ms(started_at, finished_at),
                     aggregate[0],
@@ -806,7 +816,7 @@ class ObservabilityLedger:
                     aggregate[6],
                     json.dumps(models, ensure_ascii=False),
                     json.dumps(prompt_versions, ensure_ascii=False),
-                    redact_exception_message(error_message),
+                    redact_exception_message(effective_error),
                     str(workflow_run_id),
                 ),
             )

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import socket
-from urllib.request import ProxyHandler, Request
+from urllib.request import Request
 
 import pytest
 
@@ -41,6 +41,22 @@ class FakeOpener:
         if isinstance(outcome, BaseException):
             raise outcome
         return FakeResponse(outcome)
+
+
+class FakeSocket:
+    def __init__(self) -> None:
+        self.timeout: int | None = None
+        self.connected_to: tuple[object, ...] | None = None
+        self.closed = False
+
+    def settimeout(self, timeout: int) -> None:
+        self.timeout = timeout
+
+    def connect(self, sockaddr: tuple[object, ...]) -> None:
+        self.connected_to = sockaddr
+
+    def close(self) -> None:
+        self.closed = True
 
 
 @pytest.fixture
@@ -151,43 +167,143 @@ def test_unsupported_schemes_are_dead(url: str) -> None:
     assert result.reason == "unsupported URL scheme"
 
 
-@pytest.mark.parametrize(
-    ("configured", "expected"),
-    [
-        (
-            "http://127.0.0.1:10809",
-            {
-                "http": "http://127.0.0.1:10809",
-                "https": "http://127.0.0.1:10809",
-            },
-        ),
-        ("none", {}),
-    ],
-)
-def test_opener_uses_only_the_configured_proxy(
+def test_direct_https_pins_validated_ip_and_preserves_original_sni(
     public_dns,
     monkeypatch,
-    configured: str,
-    expected: dict[str, str],
 ) -> None:
-    captured: list[ProxyHandler] = []
-    fake = FakeOpener([200])
+    sock = FakeSocket()
+    seen: dict[str, object] = {}
 
-    def build(*handlers: object):
-        proxy_handler = next(
-            handler for handler in handlers if isinstance(handler, ProxyHandler)
-        )
-        captured.append(proxy_handler)
-        assert any(
-            isinstance(handler, url_probe._NoRedirectHandler)
-            for handler in handlers
-        )
-        return fake
+    class FakeTlsContext:
+        def wrap_socket(self, raw_sock: FakeSocket, *, server_hostname: str):
+            seen["sni"] = server_hostname
+            return raw_sock
 
-    monkeypatch.setattr(url_probe, "build_opener", build)
+    monkeypatch.setattr(url_probe.socket, "socket", lambda *_args: sock)
+    monkeypatch.setattr(url_probe.ssl, "create_default_context", FakeTlsContext)
+
+    def exchange(_sock: FakeSocket, **kwargs: object) -> int:
+        seen.update(kwargs)
+        return 200
+
+    monkeypatch.setattr(url_probe, "_exchange", exchange)
+
+    result = probe_url("https://example.com/a?q=1", settings=_settings())
+
+    assert result.outcome == "reachable"
+    assert sock.connected_to == ("93.184.216.34", 443)
+    assert seen["sni"] == "example.com"
+    assert seen["request_target"] == "/a?q=1"
+    assert seen["host_header"] == "example.com"
+
+
+def test_https_proxy_tunnels_to_validated_ip_and_preserves_original_sni(
+    public_dns,
+    monkeypatch,
+) -> None:
+    proxy_sock = FakeSocket()
+    seen: dict[str, object] = {}
+
+    def create_connection(address: tuple[str, int], *, timeout: int):
+        seen["proxy_address"] = address
+        seen["proxy_timeout"] = timeout
+        return proxy_sock
+
+    class FakeTlsContext:
+        def wrap_socket(self, raw_sock: FakeSocket, *, server_hostname: str):
+            seen["sni"] = server_hostname
+            return raw_sock
+
+    def connect_tunnel(
+        _sock: FakeSocket,
+        authority: str,
+        proxy_authorization: str | None,
+    ) -> int:
+        seen["connect_authority"] = authority
+        seen["proxy_authorization"] = proxy_authorization
+        return 200
+
+    def exchange(_sock: FakeSocket, **kwargs: object) -> int:
+        seen.update(kwargs)
+        return 200
+
+    monkeypatch.setattr(url_probe.socket, "create_connection", create_connection)
+    monkeypatch.setattr(url_probe.ssl, "create_default_context", FakeTlsContext)
+    monkeypatch.setattr(url_probe, "_connect_tunnel", connect_tunnel)
+    monkeypatch.setattr(url_probe, "_exchange", exchange)
+
     result = probe_url(
         "https://example.com/a",
-        settings=_settings(http_proxy=configured),
+        settings=_settings(http_proxy="http://127.0.0.1:10809"),
     )
+
     assert result.outcome == "reachable"
-    assert captured[0].proxies == expected
+    assert seen["proxy_address"] == ("127.0.0.1", 10809)
+    assert seen["connect_authority"] == "93.184.216.34:443"
+    assert seen["sni"] == "example.com"
+    assert seen["host_header"] == "example.com"
+
+
+def test_http_proxy_absolute_target_uses_validated_ip_not_hostname(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        url_probe.socket,
+        "getaddrinfo",
+        lambda *_args, **_kwargs: [
+            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 80))
+        ],
+    )
+    proxy_sock = FakeSocket()
+    seen: dict[str, object] = {}
+    monkeypatch.setattr(
+        url_probe.socket,
+        "create_connection",
+        lambda *_args, **_kwargs: proxy_sock,
+    )
+
+    def exchange(_sock: FakeSocket, **kwargs: object) -> int:
+        seen.update(kwargs)
+        return 200
+
+    monkeypatch.setattr(url_probe, "_exchange", exchange)
+
+    result = probe_url(
+        "http://example.com/a",
+        settings=_settings(http_proxy="http://127.0.0.1:10809"),
+    )
+
+    assert result.outcome == "reachable"
+    assert seen["request_target"] == "http://93.184.216.34/a"
+    assert seen["host_header"] == "example.com"
+
+
+def test_resolver_output_is_the_only_target_input_for_direct_transport(
+    monkeypatch,
+) -> None:
+    dns_calls = 0
+    sock = FakeSocket()
+
+    def resolve(*_args, **_kwargs):
+        nonlocal dns_calls
+        dns_calls += 1
+        return [
+            (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 443))
+        ]
+
+    monkeypatch.setattr(url_probe.socket, "getaddrinfo", resolve)
+    monkeypatch.setattr(url_probe.socket, "socket", lambda *_args: sock)
+    monkeypatch.setattr(url_probe, "_exchange", lambda *_args, **_kwargs: 200)
+
+    class FakeTlsContext:
+        def wrap_socket(self, raw_sock: FakeSocket, *, server_hostname: str):
+            assert server_hostname == "example.com"
+            return raw_sock
+
+    monkeypatch.setattr(url_probe.ssl, "create_default_context", FakeTlsContext)
+
+    result = probe_url("https://example.com/", settings=_settings())
+
+    assert result.outcome == "reachable"
+    assert dns_calls == 1
+    assert sock.connected_to == ("93.184.216.34", 443)

@@ -155,3 +155,22 @@ def test_zero_call_run_and_finish_are_idempotent(ledger: ObservabilityLedger) ->
 
 def test_finish_unknown_run_is_a_no_op(ledger: ObservabilityLedger) -> None:
     ledger.finish_run(uuid4(), status="failed", error_message="missing")
+
+
+def test_failed_run_status_is_monotonic_across_root_finishes(
+    ledger: ObservabilityLedger,
+) -> None:
+    project_id = uuid4()
+    run_id = uuid4()
+    _begin_run(ledger, run_id, project_id)
+
+    ledger.finish_run(run_id, status="failed", error_message="first root failed")
+    first = ledger.run_summary(run_id)
+    ledger.finish_run(run_id, status="succeeded")
+    second = ledger.run_summary(run_id)
+
+    assert first.status == second.status == "failed"
+    assert second.error_message == "first root failed"
+    assert second.finished_at is not None
+    assert first.finished_at is not None
+    assert second.finished_at >= first.finished_at
