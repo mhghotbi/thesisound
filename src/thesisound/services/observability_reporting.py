@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import hashlib
-import hmac
 import json
 import math
-import secrets
 import shutil
 import sqlite3
 from collections import defaultdict
@@ -16,7 +14,8 @@ from statistics import mean, median
 from typing import Any
 from uuid import UUID, uuid4
 
-from thesisound.observability import ObservabilityLedger, redact_value
+from thesisound.observability import SENSITIVE_ATTRIBUTES, ObservabilityLedger, redact_value
+from thesisound.services.observability_rollup import ObservabilityRollup
 
 _EXPORT_FILES = ("spans.jsonl", "events.jsonl", "model_calls.jsonl")
 _EXPORT_ARTIFACTS = frozenset((*_EXPORT_FILES, "manifest.json"))
@@ -24,70 +23,6 @@ _TRACE_PAGE_SIZE = 10
 _EVENT_PAGE_SIZE = 50
 _MAX_TRACE_NODES = 1_000
 _MAX_WATERFALL_ROWS = 200
-
-# Export only code-controlled operational attributes. Unknown keys are omitted,
-# rather than trying to guess whether a newly-added free-text field contains
-# user content. This makes the export policy fail closed as the ledger evolves.
-_SAFE_LITERAL_EXPORT_KEYS = frozenset(
-    {
-        "pipeline_code_version",
-        "method",
-        "route",
-        "cache",
-        "result",
-        "verdict",
-        "provider",
-        "model",
-        "requested_model",
-        "resolved_model",
-        "operation",
-        "stage",
-        "finish_reason",
-        "grounding_mode",
-        "parser",
-        "mime_type",
-        "language",
-    }
-)
-_SAFE_SCALAR_EXPORT_KEYS = frozenset(
-    {
-        "status_code",
-        "http_status",
-        "retryable",
-        "retry_scheduled",
-        "logical_attempt",
-        "provider_attempt",
-        "provider_attempt_count",
-        "backoff_ms",
-        "attempt",
-        "source_count",
-        "page_count",
-        "block_count",
-        "claim_count",
-        "similarity_ratio",
-    }
-)
-_SAFE_METRIC_KEYS = frozenset(
-    {
-        "claim_count",
-        "similarity_ratio",
-        "input_tokens",
-        "output_tokens",
-        "thinking_tokens",
-        "cached_tokens",
-        "total_tokens",
-        "page_count",
-        "block_count",
-        "byte_count",
-        "source_count",
-        "duration_ms",
-        "cost_micros",
-        "hits",
-        "misses",
-        "count",
-        "attempt_count",
-    }
-)
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,11 +42,11 @@ class ObservabilityReporter:
 
     def __init__(self, ledger: ObservabilityLedger) -> None:
         self.ledger = ledger
+        self.rollup = ObservabilityRollup(ledger)
 
     def export_project(self, project_id: UUID, out_dir: Path) -> ExportResult:
         directory = out_dir.expanduser().resolve()
         staging = self._prepare_staging_directory(directory)
-        fingerprint_key = secrets.token_bytes(32)
         counts: dict[str, int] = {}
         digests: dict[str, str] = {}
         snapshot_started_at = datetime.now(UTC).isoformat()
@@ -138,10 +73,7 @@ class ObservabilityReporter:
                     )
                     counts["spans.jsonl"] = self._write_jsonl(
                         staging / "spans.jsonl",
-                        (
-                            self._export_span_row(row, fingerprint_key)
-                            for row in span_rows
-                        ),
+                        (self._export_span_row(row) for row in span_rows),
                     )
                     digests["spans.jsonl"] = self._sha256(staging / "spans.jsonl")
 
@@ -158,10 +90,7 @@ class ObservabilityReporter:
                     )
                     counts["events.jsonl"] = self._write_jsonl(
                         staging / "events.jsonl",
-                        (
-                            self._export_event_row(row, fingerprint_key)
-                            for row in event_rows
-                        ),
+                        (self._export_event_row(row) for row in event_rows),
                     )
                     digests["events.jsonl"] = self._sha256(staging / "events.jsonl")
 
@@ -189,14 +118,9 @@ class ObservabilityReporter:
                     )
                     counts["model_calls.jsonl"] = self._write_jsonl(
                         staging / "model_calls.jsonl",
-                        (
-                            self._export_model_call_row(row, fingerprint_key)
-                            for row in call_rows
-                        ),
+                        (self._export_model_call_row(row) for row in call_rows),
                     )
-                    digests["model_calls.jsonl"] = self._sha256(
-                        staging / "model_calls.jsonl"
-                    )
+                    digests["model_calls.jsonl"] = self._sha256(staging / "model_calls.jsonl")
 
                     prompt_versions = [
                         {"prompt_id": row[0], "prompt_version": row[1]}
@@ -239,14 +163,15 @@ class ObservabilityReporter:
                     raise
 
             manifest = {
-                "format_version": 2,
+                "format_version": 3,
                 "project_id": str(project_id),
                 "snapshot_started_at": snapshot_started_at,
                 "exported_at": datetime.now(UTC).isoformat(),
                 "schema_version": int(schema_row[0]) if schema_row else None,
                 "redaction": {
-                    "policy": "allowlisted operational fields; arbitrary free text omitted",
-                    "opaque_fields": "HMAC-SHA256 keyed per export; key is not persisted",
+                    "policy": "thesisound.observability.redact_value; payload storage forced off",
+                    "sensitive_attributes": sorted(SENSITIVE_ATTRIBUTES),
+                    "fingerprints": "deterministic SHA-256; filenames use a 16-hex SHA prefix",
                 },
                 "pipeline_code_versions": code_versions,
                 "prompt_versions": prompt_versions,
@@ -411,14 +336,14 @@ class ObservabilityReporter:
             trace_tree = self._trace_tree(selected_trace, depth=depth)
             waterfall = self._waterfall(selected_trace)
 
-        summary = self.ledger.project_summary(project_id)
+        summary = self.rollup.project_summary(project_id)
         model_call_count = int(retry_row[0] or 0)
         retry_count = int(retry_row[1] or 0)
         return {
             "summary": summary,
-            "cost_breakdown": self.ledger.cost_breakdown(project_id),
-            "stage_summary": self.ledger.stage_summary(project_id)[:20],
-            "cache_rates": self.ledger.cache_hit_rates(project_id),
+            "cost_breakdown": self.rollup.cost_breakdown(project_id),
+            "stage_summary": self.rollup.stage_summary(project_id)[:20],
+            "cache_rates": self.rollup.cache_hit_rates(project_id),
             "retry_count": retry_count,
             "retry_rate": retry_count / model_call_count if model_call_count else 0.0,
             "traces": traces,
@@ -501,42 +426,55 @@ class ObservabilityReporter:
             """,
             (value,),
         ).fetchone()
-        run_exists = run_row is not None or connection.execute(
-            """
+        run_exists = (
+            run_row is not None
+            or connection.execute(
+                """
             SELECT 1
               FROM pipeline_spans
              WHERE workflow_run_id = ?
              LIMIT 1
             """,
-            (value,),
-        ).fetchone() is not None
+                (value,),
+            ).fetchone()
+            is not None
+        )
         if not run_exists:
-            run_exists = connection.execute(
-                """
+            run_exists = (
+                connection.execute(
+                    """
                 SELECT 1
                   FROM model_calls
                  WHERE workflow_run_id = ?
                  LIMIT 1
                 """,
-                (value,),
-            ).fetchone() is not None
+                    (value,),
+                ).fetchone()
+                is not None
+            )
         if run_exists:
             return self._run_statistics(connection, identifier, run_row)
 
-        trace_exists = connection.execute(
-            "SELECT 1 FROM pipeline_spans WHERE trace_id = ? LIMIT 1",
-            (value,),
-        ).fetchone() is not None
+        trace_exists = (
+            connection.execute(
+                "SELECT 1 FROM pipeline_spans WHERE trace_id = ? LIMIT 1",
+                (value,),
+            ).fetchone()
+            is not None
+        )
         if not trace_exists:
-            trace_exists = connection.execute(
-                """
+            trace_exists = (
+                connection.execute(
+                    """
                 SELECT 1
                   FROM model_calls
                  WHERE pipeline_trace_id = ?
                  LIMIT 1
                 """,
-                (value,),
-            ).fetchone() is not None
+                    (value,),
+                ).fetchone()
+                is not None
+            )
         if trace_exists:
             return self._trace_statistics(connection, identifier)
         raise FileNotFoundError(f"Run or trace not found: {identifier}")
@@ -562,22 +500,17 @@ class ObservabilityReporter:
             {
                 version
                 for root in roots
-                if (
-                    version := self._load_json(root[5]).get("pipeline_code_version")
-                )
+                if (version := self._load_json(root[5]).get("pipeline_code_version"))
             }
         )
 
         if run_row is not None:
-            duration_ms = self._duration_from_values(
-                run_row[1], run_row[2], run_row[3]
-            )
+            duration_ms = self._duration_from_values(run_row[1], run_row[2], run_row[3])
             root_name = str(run_row[0])
         elif roots:
             starts = [self._parse_timestamp(root[2]) for root in roots]
             ends = [
-                self._parse_timestamp(root[3]) if root[3] else datetime.now(UTC)
-                for root in roots
+                self._parse_timestamp(root[3]) if root[3] else datetime.now(UTC) for root in roots
             ]
             duration_ms = max(
                 0,
@@ -947,83 +880,23 @@ class ObservabilityReporter:
         return item
 
     @staticmethod
-    def _export_span_row(row: sqlite3.Row, fingerprint_key: bytes) -> dict[str, Any]:
+    def _export_span_row(row: sqlite3.Row) -> dict[str, Any]:
         item = dict(row)
-        item["subject_id"] = ObservabilityReporter._opaque_text(
-            item.get("subject_id"), fingerprint_key
-        )
-        item["error_message"] = ObservabilityReporter._opaque_text(
-            item.get("error_message"), fingerprint_key
-        )
-        item["attributes"] = ObservabilityReporter._safe_operational_mapping(
-            ObservabilityReporter._load_json(item.pop("attributes_json", "{}"))
-        )
-        item["metrics"] = ObservabilityReporter._safe_metrics(
-            ObservabilityReporter._load_json(item.pop("metrics_json", "{}"))
-        )
-        return redact_value(item)
+        item["attributes"] = ObservabilityReporter._load_json(item.pop("attributes_json", "{}"))
+        item["metrics"] = ObservabilityReporter._load_json(item.pop("metrics_json", "{}"))
+        return redact_value(item, store_payloads=False)
 
     @staticmethod
-    def _export_event_row(row: sqlite3.Row, fingerprint_key: bytes) -> dict[str, Any]:
+    def _export_event_row(row: sqlite3.Row) -> dict[str, Any]:
         item = dict(row)
-        item["subject_id"] = ObservabilityReporter._opaque_text(
-            item.get("subject_id"), fingerprint_key
-        )
-        item["attributes"] = ObservabilityReporter._safe_operational_mapping(
-            ObservabilityReporter._load_json(item.pop("attributes_json", "{}"))
-        )
-        return redact_value(item)
+        item["attributes"] = ObservabilityReporter._load_json(item.pop("attributes_json", "{}"))
+        return redact_value(item, store_payloads=False)
 
     @staticmethod
-    def _export_model_call_row(row: sqlite3.Row, fingerprint_key: bytes) -> dict[str, Any]:
+    def _export_model_call_row(row: sqlite3.Row) -> dict[str, Any]:
         item = dict(row)
-        item["subject_id"] = ObservabilityReporter._opaque_text(
-            item.get("subject_id"), fingerprint_key
-        )
-        item["error_message"] = ObservabilityReporter._opaque_text(
-            item.get("error_message"), fingerprint_key
-        )
-        item["metadata"] = ObservabilityReporter._safe_operational_mapping(
-            ObservabilityReporter._load_json(item.pop("metadata_json", "{}"))
-        )
-        return redact_value(item)
-
-    @staticmethod
-    def _safe_operational_mapping(value: dict[str, Any]) -> dict[str, Any]:
-        safe: dict[str, Any] = {}
-        for raw_key, item in value.items():
-            key = str(raw_key).casefold().replace("-", "_")
-            if key in _SAFE_LITERAL_EXPORT_KEYS and isinstance(item, str):
-                cleaned = redact_value(item)
-                safe[str(raw_key)] = cleaned if len(str(cleaned)) <= 256 else "[OMITTED_LONG_VALUE]"
-            elif key in _SAFE_SCALAR_EXPORT_KEYS and (
-                item is None or isinstance(item, int | float | bool)
-            ):
-                safe[str(raw_key)] = item
-        return safe
-
-    @staticmethod
-    def _safe_metrics(value: dict[str, Any]) -> dict[str, int | float]:
-        return {
-            str(key): item
-            for key, item in value.items()
-            if str(key).casefold().replace("-", "_") in _SAFE_METRIC_KEYS
-            and isinstance(item, int | float)
-        }
-
-    @staticmethod
-    def _opaque_text(value: Any, fingerprint_key: bytes) -> Any:
-        if value is None:
-            return None
-        text = str(value)
-        return {
-            "fingerprint": hmac.new(
-                fingerprint_key,
-                text.encode("utf-8"),
-                hashlib.sha256,
-            ).hexdigest(),
-            "length": len(text),
-        }
+        item["metadata"] = ObservabilityReporter._load_json(item.pop("metadata_json", "{}"))
+        return redact_value(item, store_payloads=False)
 
     @staticmethod
     def _safe_dict(row: sqlite3.Row | None) -> dict[str, Any]:
@@ -1037,7 +910,7 @@ class ObservabilityReporter:
             loaded = json.loads(value)
         except (TypeError, json.JSONDecodeError):
             return {}
-        return redact_value(loaded) if isinstance(loaded, dict) else {}
+        return redact_value(loaded, store_payloads=True) if isinstance(loaded, dict) else {}
 
     @staticmethod
     def _parse_timestamp(value: str) -> datetime:
@@ -1051,17 +924,12 @@ class ObservabilityReporter:
         if not started:
             return 0
         start = ObservabilityReporter._parse_timestamp(str(started))
-        end = (
-            ObservabilityReporter._parse_timestamp(str(ended))
-            if ended
-            else datetime.now(UTC)
-        )
+        end = ObservabilityReporter._parse_timestamp(str(ended)) if ended else datetime.now(UTC)
         return max(0, round((end - start).total_seconds() * 1000))
 
     def _connect(self) -> closing[sqlite3.Connection]:
         connection = sqlite3.connect(self.ledger.database_path, timeout=30)
         connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA journal_mode=WAL")
         connection.execute("PRAGMA busy_timeout=30000")
         connection.execute("PRAGMA query_only=ON")
         return closing(connection)

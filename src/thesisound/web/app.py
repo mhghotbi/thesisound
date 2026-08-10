@@ -435,10 +435,12 @@ def create_app(
             theme = "olive"
         if mode not in _VALID_UI_MODES:
             mode = "simple"
+        account = _current_account(request)
         payload: dict[str, object] = {
             "request": request,
             "csrf_token": _ensure_csrf(request),
-            "current_user": (account.label if (account := _current_account(request)) else None),
+            "current_user": account.label if account else None,
+            "is_operator": account is not None and account.role == "operator",
             "environment": runtime.environment,
             "test_otp_enabled": runtime.allow_test_otp,
             "ui_theme": theme,

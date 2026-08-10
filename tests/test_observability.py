@@ -11,12 +11,15 @@ import pytest
 from thesisound import tracing
 from thesisound.modeling import ModelUsage
 from thesisound.observability import (
+    SENSITIVE_ATTRIBUTES,
     CostResult,
     ModelCallSpec,
     ObservabilityLedger,
     ObservedModelGateway,
     ProviderMetadata,
+    redact_value,
 )
+from thesisound.services.observability_rollup import ObservabilityRollup
 
 
 class FakePool:
@@ -124,7 +127,7 @@ def test_ledger_persists_redacted_payload_usage_and_attempts(tmp_path: Path) -> 
     assert "AIzaABCDEFGHIJKLMNOPQRSTUVWXY" not in request
     assert "[REDACTED]" in request
 
-    summary = ledger.project_summary(project_id)
+    summary = ObservabilityRollup(ledger).project_summary(project_id)
     assert summary.call_count == 1
     assert summary.total_tokens == 16
     assert summary.cached_tokens == 3
@@ -407,9 +410,7 @@ def test_reprice_skips_calls_the_pricer_still_does_not_know(tmp_path: Path) -> N
 
 def test_reprice_only_touches_calls_on_or_after_since(tmp_path: Path) -> None:
     ledger = _ledger(tmp_path)
-    old = _succeed_a_call(
-        ledger, model="priced-model", started_at=datetime(2025, 1, 1, tzinfo=UTC)
-    )
+    old = _succeed_a_call(ledger, model="priced-model", started_at=datetime(2025, 1, 1, tzinfo=UTC))
     recent = _succeed_a_call(
         ledger, model="priced-model", started_at=datetime(2026, 6, 1, tzinfo=UTC)
     )
@@ -444,7 +445,7 @@ def test_cost_breakdown_groups_by_stage_provider_and_model(tmp_path: Path) -> No
         )
         ledger.succeed(spec.call_id, {"value": "ok"})
 
-    rows = ledger.cost_breakdown(project_id)
+    rows = ObservabilityRollup(ledger).cost_breakdown(project_id)
 
     assert len(rows) == 1
     row = rows[0]
@@ -478,7 +479,113 @@ def test_project_summary_reports_cost_and_unpriced_count(tmp_path: Path) -> None
         )
         ledger.succeed(spec.call_id, {"value": "ok"})
 
-    summary = ledger.project_summary(project_id)
+    summary = ObservabilityRollup(ledger).project_summary(project_id)
 
     assert summary.total_cost_micros == 100 * 10 + 50 * 20  # only priced-model counted
     assert summary.unpriced_succeeded_count == 1
+
+
+def test_sensitive_attribute_policy_uses_one_payload_switch(tmp_path: Path) -> None:
+    project_id = uuid4()
+    metadata = {
+        "query": "پرسش خصوصی",
+        "topic": "موضوع خصوصی",
+        "filename": "نام شخصی.pdf",
+        "size_bytes": 1234,
+        "phone": "09121234567",
+    }
+
+    private = ObservabilityLedger(
+        tmp_path / "private.sqlite3",
+        tmp_path / "private-artifacts",
+        store_payloads=False,
+    )
+    spec = ModelCallSpec(
+        project_id=project_id,
+        stage="source_discovery",
+        operation="google_search",
+        provider="gemini",
+        requested_model="gemini-test",
+        metadata=metadata,
+    )
+    private.begin_call(spec, {"prompt": "متن خصوصی"})
+    stored = private.get_call(spec.call_id).metadata
+    assert stored["query"]["sha256"]
+    assert stored["query"]["length"] == len("پرسش خصوصی")
+    assert stored["topic"]["sha256"]
+    assert stored["filename"] == {
+        "filename_sha256": stored["filename"]["filename_sha256"],
+        "extension": ".pdf",
+        "size_bytes": 1234,
+    }
+    assert len(stored["filename"]["filename_sha256"]) == 16
+    assert stored["phone"] == "[REDACTED]"
+    assert set(SENSITIVE_ATTRIBUTES) == {
+        "query",
+        "text",
+        "excerpt",
+        "filename",
+        "topic",
+        "phone",
+        "prompt",
+    }
+
+    private_second = ObservabilityLedger(
+        tmp_path / "private-second.sqlite3",
+        tmp_path / "private-second-artifacts",
+        store_payloads=False,
+    )
+    second_spec = spec.model_copy(update={"call_id": uuid4()})
+    private_second.begin_call(second_spec, {"prompt": "متن خصوصی"})
+    second = private_second.get_call(second_spec.call_id).metadata
+    assert second["query"]["sha256"] == stored["query"]["sha256"]
+    assert second["filename"]["filename_sha256"] == stored["filename"]["filename_sha256"]
+    assert (
+        redact_value({"query": stored["query"]}, store_payloads=False)["query"] == stored["query"]
+    )
+
+    payloads = ObservabilityLedger(
+        tmp_path / "payloads.sqlite3",
+        tmp_path / "payload-artifacts",
+        store_payloads=True,
+    )
+    payload_spec = spec.model_copy(update={"call_id": uuid4()})
+    payloads.begin_call(payload_spec, {"prompt": "متن خصوصی"})
+    visible = payloads.get_call(payload_spec.call_id).metadata
+    assert visible["query"] == "پرسش خصوصی"
+    assert visible["topic"] == "موضوع خصوصی"
+    assert "نام شخصی.pdf" not in str(visible["filename"])
+    assert visible["phone"] == "[REDACTED]"
+
+
+def test_exception_messages_are_redacted_before_model_persistence(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)
+    spec = ModelCallSpec(
+        stage="document_map",
+        operation="structured_text",
+        provider="gemini",
+        requested_model="gemini-test",
+    )
+    ledger.begin_call(spec, {"prompt": "x"})
+    ledger.record_attempt(
+        spec.call_id,
+        logical_attempt=1,
+        provider_attempt=1,
+        event={
+            "status": "failed",
+            "error_message": "phone 09121234567 key sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ /home/alice/file",
+        },
+    )
+    ledger.fail(
+        spec.call_id,
+        RuntimeError("phone 09121234567 key sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ /home/alice/file"),
+    )
+
+    detail = ledger.get_call(spec.call_id)
+    rendered = f"{detail.call.error_message} {detail.attempts[0].error_message}"
+    assert "09121234567" not in rendered
+    assert "sk-ABCDEFGHIJKLMNOPQRSTUVWXYZ" not in rendered
+    assert "/home/alice" not in rendered
+    assert "[REDACTED_PHONE]" in rendered
+    assert "[REDACTED_SECRET]" in rendered
+    assert "[HOME]" in rendered

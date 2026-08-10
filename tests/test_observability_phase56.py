@@ -130,10 +130,11 @@ def _write_call(
         metadata={
             "provider": "test",
             "filename": "نام شخصی.pdf",
+            "size_bytes": 4321,
             "query": ["پرسش خصوصی کاربر"],
+            "topic": "موضوع خصوصی",
+            "excerpt": "گزیده خصوصی",
             "path": "/home/alice/private/source.pdf",
-            "central_question": "این پرسش نباید صادر شود",
-            "nested": {"description": "این توضیح هم خصوصی است"},
         },
     )
     call_id = ledger.begin_call(
@@ -212,7 +213,7 @@ def _write_run(
         duration_ms=duration_ms,
         attributes={
             "pipeline_code_version": code_version,
-            "private_title": "عنوان خصوصی که نباید صادر شود",
+            "topic": "عنوان خصوصی که نباید صادر شود",
         },
     )
     _write_span(
@@ -255,7 +256,7 @@ def _write_run(
         attributes={
             "cache": "document_map",
             "result": cache_result,
-            "private_note": "یادداشت خصوصی",
+            "excerpt": "یادداشت خصوصی",
         },
     )
     _write_call(
@@ -338,12 +339,12 @@ def test_export_is_allowlisted_and_uses_one_snapshot(
     assert len(ledger.list_events_by_project(project_id)) == 2
 
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
-    assert manifest["format_version"] == 2
+    assert manifest["format_version"] == 3
     assert manifest["pipeline_code_versions"] == ["commit-a"]
     assert manifest["prompt_versions"] == [
         {"prompt_id": "evidence-extraction", "prompt_version": "1"}
     ]
-    assert "allowlisted operational fields" in manifest["redaction"]["policy"]
+    assert "thesisound.observability.redact_value" in manifest["redaction"]["policy"]
     for filename in ("spans.jsonl", "events.jsonl", "model_calls.jsonl"):
         digest = hashlib.sha256((export_dir / filename).read_bytes()).hexdigest()
         assert manifest["files"][filename]["sha256"] == digest
@@ -357,21 +358,35 @@ def test_export_is_allowlisted_and_uses_one_snapshot(
         "پرسش خصوصی کاربر",
         "نام شخصی.pdf",
         "/home/alice",
-        "این پرسش نباید صادر شود",
-        "این توضیح هم خصوصی است",
+        "موضوع خصوصی",
+        "گزیده خصوصی",
         "عنوان خصوصی که نباید صادر شود",
         "یادداشت خصوصی",
-        "source-private-id",
         "نباید در snapshot باشد",
     ):
         assert private_value not in exported
 
     call_row = json.loads((export_dir / "model_calls.jsonl").read_text().splitlines()[0])
-    assert call_row["metadata"] == {"provider": "test"}
-    assert call_row["subject_id"]["fingerprint"]
-    assert call_row["subject_id"]["length"] == len("source-private-id")
+    assert call_row["subject_id"] == "source-private-id"
+    assert call_row["metadata"]["provider"] == "test"
+    assert call_row["metadata"]["query"]["sha256"]
+    assert call_row["metadata"]["topic"]["sha256"]
+    assert call_row["metadata"]["excerpt"]["sha256"]
+    assert call_row["metadata"]["filename"]["extension"] == ".pdf"
+    assert call_row["metadata"]["filename"]["size_bytes"] == 4321
     event_row = json.loads((export_dir / "events.jsonl").read_text().splitlines()[0])
-    assert event_row["attributes"] == {"cache": "document_map", "result": "hit"}
+    assert event_row["attributes"]["cache"] == "document_map"
+    assert event_row["attributes"]["result"] == "hit"
+    assert event_row["attributes"]["excerpt"]["sha256"]
+
+    second_dir = tmp_path / "export-second"
+    reporter.export_project(project_id, second_dir)
+    second_call = json.loads((second_dir / "model_calls.jsonl").read_text().splitlines()[0])
+    assert second_call["metadata"]["query"]["sha256"] == call_row["metadata"]["query"]["sha256"]
+    assert (
+        second_call["metadata"]["filename"]["filename_sha256"]
+        == call_row["metadata"]["filename"]["filename_sha256"]
+    )
 
 
 def test_export_refuses_to_replace_non_dedicated_directory(
@@ -522,9 +537,7 @@ def test_trace_ids_still_compare_as_single_traces(ledger: ObservabilityLedger) -
     assert comparison["summary"]["duration_ms"]["absolute"] == 1_000
     assert comparison["summary"]["total_tokens"]["absolute"] == 100
     assert comparison["summary"]["cost_micros"]["absolute"] == 2_000
-    cache = next(
-        row for row in comparison["cache_hit_rates"] if row["name"] == "document_map"
-    )
+    cache = next(row for row in comparison["cache_hit_rates"] if row["name"] == "document_map")
     assert cache["absolute"] == -1.0
     assert comparison["audio_qa"]["mean_similarity"]["absolute"] == pytest.approx(-0.2)
 
@@ -709,9 +722,21 @@ def test_observability_requires_real_operator_role_and_remains_read_only(
         assert denied.headers["location"] == f"/projects/{project.project_id}"
         assert client.get(f"/projects/{project.project_id}/observability/live").status_code == 403
 
-    # An actual operator is authorized regardless of the presentation mode.
+    # The real operator role authorizes the data, while the existing UI mode
+    # still gates whether the technical operator surface is presented.
     with TestClient(app) as client:
         _login_password(client, "operator-user", "operator-pass")
+        simple = client.get(f"/projects/{project.project_id}/observability", follow_redirects=False)
+        assert simple.status_code == 303
+        assert client.get(f"/projects/{project.project_id}/observability/live").status_code == 403
+
+        preferences = client.get("/projects")
+        changed = client.post(
+            "/ui/preferences",
+            data={"csrf_token": _csrf(preferences.text), "mode": "operator"},
+        )
+        assert changed.status_code == 204
+
         page = client.get(f"/projects/{project.project_id}/observability")
         assert page.status_code == 200
         assert "corpus.extract_evidence" in page.text
