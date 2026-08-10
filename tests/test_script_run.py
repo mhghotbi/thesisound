@@ -336,3 +336,62 @@ def test_review_required_artifacts_survive_interrupted_run_recovery(
     assert recovered == [project.project_id]
     assert service.run_store.load(project.project_id).status == "succeeded"
     assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_REVIEW_REQUIRED
+
+
+def test_failure_from_script_ready_is_recorded_and_retryable(tmp_path: Path) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+
+    class ReadyFailurePipeline(FakePipeline):
+        def run(self, project_id: UUID, *, on_stage, **_):
+            self.calls += 1
+            current = self.workspace.load_project(project_id)
+            assert current.state == ProjectState.SCRIPT_DRAFTING
+            transition(current, ProjectState.SCRIPT_READY)
+            self.workspace.save_project(current)
+            raise ValueError(
+                "Revised script failed deterministic checks; the original script was kept."
+            )
+
+    failing = ReadyFailurePipeline(workspace)
+    service = _service(tmp_path, project, failing)
+    queued = service.approve_and_queue(project.project_id, approved_by="operator")
+
+    failed = service.run(project.project_id)
+
+    assert failed.status == "failed"
+    assert failed.last_error == (
+        "Revised script failed deterministic checks; the original script was kept."
+    )
+    persisted = workspace.load_project(project.project_id)
+    assert persisted.state == ProjectState.SCRIPT_READY
+    assert persisted.last_error == failed.last_error
+
+    retry = service.retry(project.project_id)
+    assert retry.status == "queued"
+    assert retry.previous_run_id == queued.run_id
+
+
+def test_recovery_from_script_ready_preserves_retryable_state(tmp_path: Path) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    pipeline = FakePipeline(workspace)
+    service = _service(tmp_path, project, pipeline)
+    run = service.approve_and_queue(project.project_id, approved_by="operator")
+    run.status = "running"
+    run.stage = "checking_revision"
+    service.run_store.save(run)
+
+    active = workspace.load_project(project.project_id)
+    transition(active, ProjectState.SCRIPT_DRAFTING)
+    transition(active, ProjectState.SCRIPT_READY)
+    workspace.save_project(active)
+
+    recovered = service.recover_interrupted_runs()
+
+    assert recovered == [project.project_id]
+    assert service.run_store.load(project.project_id).status == "failed"
+    persisted = workspace.load_project(project.project_id)
+    assert persisted.state == ProjectState.SCRIPT_READY
+    assert "interrupted" in (persisted.last_error or "").lower()
+    assert service.retry(project.project_id).status == "queued"

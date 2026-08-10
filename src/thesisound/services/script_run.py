@@ -165,6 +165,7 @@ class ScriptBuildRunService:
             if project.state not in {
                 ProjectState.EPISODE_PLANNED,
                 ProjectState.FAILED_RETRYABLE,
+                ProjectState.SCRIPT_READY,
             }:
                 raise ValueError("This script failure is not retryable from the current state.")
             previous = self.run_store.load(project_id)
@@ -275,14 +276,19 @@ class ScriptBuildRunService:
                     return run
                 if project.state in {
                     ProjectState.SCRIPT_DRAFTING,
-                    ProjectState.SCRIPT_READY,
                     ProjectState.SCRIPT_VERIFYING,
                     ProjectState.SCRIPT_REVIEW_REQUIRED,
                     ProjectState.SCRIPT_VERIFIED,
                 }:
                     mark_failed(project, message)
                     self.workspace_store.save_project(project)
-                elif project.state == ProjectState.FAILED_RETRYABLE:
+                elif project.state in {
+                    ProjectState.FAILED_RETRYABLE,
+                    ProjectState.SCRIPT_READY,
+                }:
+                    # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE.
+                    # Preserve the failure on the current state; retry() explicitly
+                    # accepts SCRIPT_READY and the resumed pipeline restores drafting.
                     project.last_error = message
                     project.updated_at = datetime.now(UTC)
                     self.workspace_store.save_project(project)
@@ -347,10 +353,13 @@ class ScriptBuildRunService:
             self.run_store.save(run)
             if project is not None and project.state in {
                 ProjectState.SCRIPT_DRAFTING,
-                ProjectState.SCRIPT_READY,
                 ProjectState.SCRIPT_VERIFYING,
             }:
                 mark_failed(project, interrupted)
+                self.workspace_store.save_project(project)
+            elif project is not None and project.state == ProjectState.SCRIPT_READY:
+                project.last_error = interrupted
+                project.updated_at = datetime.now(UTC)
                 self.workspace_store.save_project(project)
             recovered.append(run.project_id)
         return recovered
