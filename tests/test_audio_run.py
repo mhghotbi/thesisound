@@ -87,7 +87,7 @@ def _service(tmp_path: Path):
         run_store=AudioBuildRunStore(workspace.root),
         script_store=scripts,  # type: ignore[arg-type]
         audio_store=audio,  # type: ignore[arg-type]
-        pipeline_factory=lambda _project_id, _direction: FakePipeline(  # type: ignore[return-value]
+        pipeline_factory=lambda _project_id, _direction, _workflow_run_id: FakePipeline(  # type: ignore[return-value]
             workspace,
             audio,
         ),

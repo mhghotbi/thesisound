@@ -145,7 +145,12 @@ def recording_tracer(frozen_clock: FrozenClock) -> Tracer:
     """
 
     sink = RecordingSpanSink()
-    test_tracer = Tracer(sink, clock=frozen_clock.now, monotonic=frozen_clock.perf_counter)
+    test_tracer = Tracer(
+        sink,
+        clock=frozen_clock.now,
+        monotonic=frozen_clock.perf_counter,
+        code_version="test",
+    )
     previous = tracing.tracer()
     tracing.install_tracer(test_tracer)
     try:

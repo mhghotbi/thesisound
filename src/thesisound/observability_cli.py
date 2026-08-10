@@ -107,7 +107,10 @@ def register_observability_commands(app: typer.Typer) -> None:
     def run_summary(run_id: UUID) -> None:
         """Print the persisted aggregate for one pipeline workflow run."""
 
-        summary = ledger_from_settings(Settings()).run_summary(run_id)
+        try:
+            summary = ledger_from_settings(Settings()).run_summary(run_id)
+        except FileNotFoundError as exc:
+            raise typer.BadParameter(str(exc)) from exc
         Console().print_json(json.dumps(summary.model_dump(mode="json"), ensure_ascii=False))
 
     @app.command("model-call")
@@ -146,7 +149,10 @@ def register_observability_commands(app: typer.Typer) -> None:
         """Export one project's fully redacted observability records."""
 
         reporter = ObservabilityReporter(ledger_from_settings(Settings()))
-        result = reporter.export_project(project_id, out)
+        try:
+            result = reporter.export_project(project_id, out)
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc)) from exc
         console = Console()
         table = Table(title=f"Observability export for {project_id}")
         table.add_column("File")

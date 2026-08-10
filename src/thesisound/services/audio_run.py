@@ -108,7 +108,7 @@ class AudioBuildRunService:
         run_store: AudioBuildRunStore,
         script_store: ScriptArtifactStore,
         audio_store: AudioArtifactStore,
-        pipeline_factory: Callable[[UUID, AudioDirectionSettings], AudioPipelineService],
+        pipeline_factory: Callable[[UUID, AudioDirectionSettings, UUID], AudioPipelineService],
         default_direction: AudioDirectionSettings,
         accept_manual_review: bool = False,
     ) -> None:
@@ -199,7 +199,7 @@ class AudioBuildRunService:
                 self.run_store.save(run)
                 # run.direction is only None for runs queued before this field existed.
                 direction = run.direction or self.default_direction
-                pipeline = self.pipeline_factory(project_id, direction)
+                pipeline = self.pipeline_factory(project_id, direction, run.run_id)
                 pipeline.run(project_id, on_stage=lambda value: self._set_stage(run, value))
                 project = self.workspace_store.load_project(project_id)
                 if project.state != ProjectState.COMPLETE:

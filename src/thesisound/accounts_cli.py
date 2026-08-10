@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, NoReturn
 
 import typer
 from rich.console import Console
@@ -86,6 +86,6 @@ def _adopt_orphan_projects(
     console.print(f"Adopted {adopted} orphan project(s) for [bold]{account.label}[/bold].")
 
 
-def _fail(exc: Exception) -> None:
+def _fail(exc: Exception) -> NoReturn:
     console.print(f"[red]{exc}[/red]", stderr=True)
     raise typer.Exit(code=1) from exc

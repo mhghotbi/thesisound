@@ -22,6 +22,11 @@ def _ambient_span_id() -> UUID | None:
     return context.span_id if context else None
 
 
+def _ambient_workflow_run_id() -> UUID | None:
+    context = tracing.current_context()
+    return context.workflow_run_id if context else None
+
+
 class RunMetadata(BaseModel):
     stage: str
     prompt_version: str | None = None
@@ -43,7 +48,14 @@ class RunMetadata(BaseModel):
     pipeline_trace_id: UUID | None = Field(default_factory=_ambient_trace_id)
     parent_span_id: UUID | None = Field(default_factory=_ambient_span_id)
     project_id: UUID | None = None
-    workflow_run_id: UUID | None = None
+    # Same ambient-default mechanism as pipeline_trace_id above. The four run
+    # services (script/corpus/episode/audio) each open their root span with
+    # workflow_run_id=run.run_id; every model call made anywhere inside that
+    # span tree inherits it here, which is what lets ObservabilityLedger's
+    # pipeline_runs rollup aggregate real model_calls rows instead of always
+    # seeing NULL. A caller that supplies its own workflow_run_id (e.g. a
+    # standalone search not tied to any run) still overrides this.
+    workflow_run_id: UUID | None = Field(default_factory=_ambient_workflow_run_id)
     operation: str = "structured_text"
     prompt_id: str | None = None
     subject_type: str | None = None

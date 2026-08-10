@@ -110,7 +110,7 @@ def test_disabled_tracer_never_calls_the_sink() -> None:
     sink.begin = lambda record: calls.append("begin")  # type: ignore[method-assign]
     sink.end = lambda record: calls.append("end")  # type: ignore[method-assign]
     sink.event = lambda record: calls.append("event")  # type: ignore[method-assign]
-    disabled = Tracer(sink, enabled=False)
+    disabled = Tracer(sink, enabled=False, code_version="test")
 
     with disabled.span("corpus.run") as span:
         span.set(anything="ignored")
@@ -120,7 +120,7 @@ def test_disabled_tracer_never_calls_the_sink() -> None:
 
 
 def test_disabled_tracer_span_handle_accepts_all_calls_harmlessly() -> None:
-    disabled = Tracer(NullSpanSink(), enabled=False)
+    disabled = Tracer(NullSpanSink(), enabled=False, code_version="test")
 
     with disabled.span("corpus.run") as span:
         span.set(foo="bar")

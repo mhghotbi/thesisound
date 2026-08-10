@@ -49,7 +49,7 @@ def seeded_ledger(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Observabil
 
 
 def _seed_trace(ledger: ObservabilityLedger, project_id):
-    tracer = Tracer(LedgerSpanSink(ledger))
+    tracer = Tracer(LedgerSpanSink(ledger), code_version="test")
     with (
         tracer.span("corpus.run", kind="stage", project_id=project_id) as root,
         tracer.span("corpus.map_document", project_id=project_id) as step,
@@ -189,7 +189,7 @@ def test_pipeline_summary_shows_self_time_and_cache_hit_rates(
 ) -> None:
     project_id = uuid4()
     _seed_trace(seeded_ledger, project_id)
-    tracer = Tracer(LedgerSpanSink(seeded_ledger))
+    tracer = Tracer(LedgerSpanSink(seeded_ledger), code_version="test")
     tracer.event(
         "cache.lookup", project_id=project_id, cache="shared_document_map", result="hit"
     )
@@ -280,3 +280,38 @@ def test_observability_reprice_recomputes_cost_and_reports_a_count(
     priced = seeded_ledger.get_call(call_summary.call_id)
     assert priced.call.cost_micros == 7_000
     assert priced.call.pricing_version == "reprice-test"
+
+
+def test_observability_export_rejects_non_dedicated_directory_cleanly(
+    cli_app: typer.Typer, seeded_ledger: ObservabilityLedger, tmp_path: Path
+) -> None:
+    """Regression test: export_project()'s directory-safety check already
+    refused and left the directory untouched, but the CLI let the resulting
+    ValueError escape as a raw traceback instead of a clean usage error."""
+
+    export_dir = tmp_path / "export"
+    export_dir.mkdir()
+    (export_dir / "unrelated.txt").write_text("keep", encoding="utf-8")
+
+    result = runner.invoke(
+        cli_app, ["observability-export", str(uuid4()), "--out", str(export_dir)]
+    )
+
+    assert result.exit_code == 2
+    assert not isinstance(result.exception, ValueError)
+    assert "dedicated directory" in result.output
+    assert (export_dir / "unrelated.txt").read_text(encoding="utf-8") == "keep"
+
+
+def test_run_summary_reports_a_missing_run_cleanly(
+    cli_app: typer.Typer, seeded_ledger: ObservabilityLedger
+) -> None:
+    """Regression test: ledger.run_summary() already raised FileNotFoundError
+    for an unknown run, but the CLI let it escape as a raw traceback instead
+    of a clean usage error."""
+
+    result = runner.invoke(cli_app, ["run-summary", str(uuid4())])
+
+    assert result.exit_code == 2
+    assert not isinstance(result.exception, FileNotFoundError)
+    assert "Pipeline run not found" in result.output

@@ -939,7 +939,11 @@ class ObservabilityLedger:
         ``recover_interrupted_runs()`` on each stage's run service. Marks
         every stale ``running`` span ``interrupted`` and records one
         ``run.recovered`` event per span, so crash recovery -- previously
-        silent -- becomes visible in the trace.
+        silent -- becomes visible in the trace. Also finalizes the
+        ``pipeline_runs`` rollup for any stale root run: the only other path
+        that finishes one is ``LedgerSpanSink.end()``, which a hard crash
+        never reaches, so without this a crashed run's rollup row would stay
+        ``status='running'`` forever.
         """
 
         cutoff = _to_db_timestamp(_now() - timedelta(minutes=older_than_minutes))
@@ -950,7 +954,8 @@ class ObservabilityLedger:
                 clauses.append("process = ?")
                 params.append(process)
             stale = connection.execute(
-                f"SELECT span_id, trace_id, project_id, workflow_run_id, name "  # noqa: S608
+                f"SELECT span_id, trace_id, project_id, workflow_run_id, name, "  # noqa: S608
+                f"kind, parent_span_id "
                 f"FROM pipeline_spans WHERE {' AND '.join(clauses)}",
                 params,
             ).fetchall()
@@ -980,6 +985,22 @@ class ObservabilityLedger:
                     )
                     for row in stale
                 ],
+            )
+            # Mirror LedgerSpanSink's own begin_run/finish_run trigger
+            # condition exactly (kind == "stage", workflow_run_id set, no
+            # parent) so this only finalizes genuine root runs, never a
+            # merely-orphaned child span whose run may have already finished
+            # normally on another thread.
+            stale_run_ids = {
+                UUID(row[3])
+                for row in stale
+                if row[3] is not None and row[5] == "stage" and row[6] is None
+            }
+        for workflow_run_id in stale_run_ids:
+            self.finish_run(
+                workflow_run_id,
+                status="failed",
+                error_message="Interrupted by a service restart before this run finished.",
             )
         return len(stale)
 

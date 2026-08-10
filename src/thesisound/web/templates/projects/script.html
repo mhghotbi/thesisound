@@ -13,7 +13,9 @@
     {{ status_label('در حال نگارش و راستی‌آزمایی', 'اقدامی از شما لازم نیست', 'running', script_run.stage if script_run else '') }}
   {% elif script_run and script_run.status == 'failed' %}
     {{ status_label('اجرا متوقف شد', 'قابل بررسی و ادامه', 'danger', script_run.status) }}
-  {% elif script %}
+  {% elif project.state.value == 'script_review_required' %}
+    {{ status_label('متن گفتار نیازمند بازبینی است', 'تصمیم شما لازم است', 'attention', project.state.value) }}
+  {% elif script and project.state.value == 'script_verified' %}
     {{ status_label('متن گفتار تأیید شد', 'آمادهٔ ساخت نسخهٔ شنیداری', 'success', project.state.value) }}
   {% else %}
     {{ status_label('منتظر تأیید طرح گفتار', 'تصمیم شما لازم است', 'attention', project.state.value) }}

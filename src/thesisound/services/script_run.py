@@ -185,6 +185,16 @@ class ScriptBuildRunService:
                 raise ValueError("A reviewed script must return to SCRIPT_DRAFTING first.")
             previous = self.run_store.load(project_id)
             approval = self.approval_store.require_current(project)
+            # Without this, run() just re-reads the same script-draft.json /
+            # checks.json / verification.json left over from the reviewed
+            # attempt and never calls the writer or verifier again -- a
+            # "send back for correction" would silently reproduce the exact
+            # script the reviewer just rejected. require_current() above
+            # already rewrote the plan-hash binding moments ago; clearing
+            # deletes it too, so re-establish it explicitly rather than
+            # relying on a second implicit call to do it.
+            self.script_store.clear_pipeline_artifacts(project_id)
+            self.script_store.prepare_for_plan(project_id, approval.plan_hash)
             run = self._new_run(project_id, approval, previous)
             self.run_store.save(run)
             return run

@@ -1,0 +1,24 @@
+{
+  "grounding": {
+    "mode": "google_search_and_url_context",
+    "sources": [
+      {
+        "domain": "example.org",
+        "title": "Arendt archive",
+        "uri": "https://example.org/arendt"
+      }
+    ],
+    "url_retrievals": [
+      {
+        "status": "URL_RETRIEVAL_STATUS_SUCCESS",
+        "url": "https://example.org/input.pdf"
+      }
+    ],
+    "web_search_queries": [
+      "Arendt action primary sources"
+    ]
+  },
+  "output": {
+    "value": "ok"
+  }
+}

@@ -24,6 +24,7 @@ from thesisound.tracing import EventRecord, SpanContext, SpanRecord, Tracer
 
 
 def _ledger_tracer(ledger: ObservabilityLedger, **kwargs: object) -> Tracer:
+    kwargs.setdefault("code_version", "test")
     return Tracer(LedgerSpanSink(ledger), **kwargs)
 
 

@@ -31,6 +31,7 @@ def create_audio_builder(
     def pipeline_factory(
         project_id: UUID,
         direction: AudioDirectionSettings,
+        workflow_run_id: UUID,
     ) -> AudioPipelineService:
         gemini_pool = shared_gemini_key_pool(settings.gemini_api_keys)
         style_prompts = {
@@ -44,11 +45,13 @@ def create_audio_builder(
             tts=GeminiTtsAdapter(
                 pool=gemini_pool,
                 project_id=project_id,
+                workflow_run_id=workflow_run_id,
                 settings=settings,
             ),
             asr=GeminiAsrAdapter(
                 pool=gemini_pool,
                 project_id=project_id,
+                workflow_run_id=workflow_run_id,
                 settings=settings,
             ),
             segmenter=TtsSegmenter(
