@@ -20,7 +20,7 @@ Each item was scored on two axes; the final tier is **the higher of the two**.
 
 | # | Item | Tier | Status |
 |---|---|---|---|
-| 1 | Reviewer route ≠ writer route | Light | **Done** — `gemini_reviewer` profile; `script_verifier` routed to it; `doctor` warns on self-grading |
+| 1 | Reviewer route ≠ writer route | Light | **Done** — `gemini_reviewer` profile; `script_verifier` routed to it; self-grading blocks the verifier and the script-scope preflight |
 | 2 | Pre-model gates in the discovery path | Light | **Done** — URL probe before capture; query-level search cache |
 | 3 | Graded quality score, not just a verdict | Light | **Done** — per-dimension weighted score on the script manifest |
 | 4 | Revision delta + keep-the-better | Light | **Done** — re-score after revision; accept only on improvement |

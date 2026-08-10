@@ -1,0 +1,47 @@
+{
+  "schema_version": "thesisound.semantic-fixture-scope-contract.v1",
+  "artifact_id": "C04-dubois-primary",
+  "declared_scope": "The Souls of Black Folk, Chapters I, III, and XIV, ending with the work's Afterthought; no Project Gutenberg back matter",
+  "required_markers_in_order": [
+    {
+      "label": "chapter_i",
+      "text": "I. Of Our Spiritual Strivings",
+      "expected_count": 1
+    },
+    {
+      "label": "chapter_iii",
+      "text": "III. Of Mr. Booker T. Washington and Others",
+      "expected_count": 1
+    },
+    {
+      "label": "chapter_xiv",
+      "text": "XIV. Of the Sorrow Songs",
+      "expected_count": 1
+    }
+  ],
+  "forbidden_markers": [
+    {"label": "chapter_ii", "text": "II. Of the Dawn of Freedom"},
+    {"label": "chapter_iv", "text": "IV. Of the Meaning of Progress"},
+    {"label": "chapter_v", "text": "V. Of the Wings of Atalanta"},
+    {"label": "chapter_vi", "text": "VI. Of the Training of Black Men"},
+    {"label": "chapter_vii", "text": "VII. Of the Black Belt"},
+    {"label": "chapter_viii", "text": "VIII. Of the Quest of the Golden Fleece"},
+    {"label": "chapter_ix", "text": "IX. Of the Sons of Master and Man"},
+    {"label": "chapter_x", "text": "X. Of the Faith of the Fathers"},
+    {"label": "chapter_xi", "text": "XI. Of the Passing of the First-Born"},
+    {"label": "chapter_xii", "text": "XII. Of Alexander Crummell"},
+    {"label": "chapter_xiii", "text": "XIII. Of the Coming of John"},
+    {"label": "gutenberg_end_marker", "text": "END OF THE PROJECT GUTENBERG EBOOK"},
+    {"label": "gutenberg_license", "text": "PROJECT GUTENBERG LICENSE"}
+  ],
+  "start_boundary": {
+    "text": "I. Of Our Spiritual Strivings",
+    "maximum_normalized_offset": 80
+  },
+  "end_boundary": {
+    "text": "THE END",
+    "maximum_trailing_normalized_characters": 0
+  },
+  "minimum_extractable_characters": 65000,
+  "maximum_extractable_characters": 67000
+}

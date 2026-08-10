@@ -1,0 +1,36 @@
+{
+  "schema_version": "thesisound.semantic-fixture-scope-contract.v1",
+  "artifact_id": "C09-darwin",
+  "declared_scope": "On the Origin of Species, 1859 first edition, Chapters I-IV, VI, and XIV exactly; no index, Gutenberg licence, or other chapters",
+  "required_markers_in_order": [
+    {"label": "chapter_i", "text": "CHAPTER I. VARIATION UNDER DOMESTICATION.", "expected_count": 1},
+    {"label": "chapter_ii", "text": "CHAPTER II. VARIATION UNDER NATURE.", "expected_count": 1},
+    {"label": "chapter_iii", "text": "CHAPTER III. STRUGGLE FOR EXISTENCE.", "expected_count": 1},
+    {"label": "chapter_iv", "text": "CHAPTER IV. NATURAL SELECTION.", "expected_count": 1},
+    {"label": "chapter_vi", "text": "CHAPTER VI. DIFFICULTIES ON THEORY.", "expected_count": 1},
+    {"label": "chapter_xiv", "text": "CHAPTER XIV. RECAPITULATION AND CONCLUSION.", "expected_count": 1}
+  ],
+  "forbidden_markers": [
+    {"label": "chapter_v", "text": "CHAPTER V. LAWS OF VARIATION."},
+    {"label": "chapter_vii", "text": "CHAPTER VII. INSTINCT."},
+    {"label": "chapter_viii", "text": "CHAPTER VIII. HYBRIDISM."},
+    {"label": "chapter_ix", "text": "CHAPTER IX. ON THE IMPERFECTION OF THE GEOLOGICAL RECORD."},
+    {"label": "chapter_x", "text": "CHAPTER X. ON THE GEOLOGICAL SUCCESSION OF ORGANIC BEINGS."},
+    {"label": "chapter_xi", "text": "CHAPTER XI. GEOGRAPHICAL DISTRIBUTION."},
+    {"label": "chapter_xii", "text": "CHAPTER XII. GEOGRAPHICAL DISTRIBUTION—continued."},
+    {"label": "chapter_xiii", "text": "CHAPTER XIII. MUTUAL AFFINITIES OF ORGANIC BEINGS"},
+    {"label": "index", "text": "INDEX."},
+    {"label": "gutenberg_end_marker", "text": "END OF THE PROJECT GUTENBERG EBOOK"},
+    {"label": "gutenberg_license", "text": "PROJECT GUTENBERG LICENSE"}
+  ],
+  "start_boundary": {
+    "text": "CHAPTER I. VARIATION UNDER DOMESTICATION.",
+    "maximum_normalized_offset": 80
+  },
+  "end_boundary": {
+    "text": "and are being, evolved.",
+    "maximum_trailing_normalized_characters": 0
+  },
+  "minimum_extractable_characters": 350000,
+  "maximum_extractable_characters": 356000
+}

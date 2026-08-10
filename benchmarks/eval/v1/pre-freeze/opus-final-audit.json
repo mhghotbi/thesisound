@@ -1,0 +1,350 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.opus-final-pre-freeze-audit.v1",
+  "auditor": "Opus 5",
+  "audited_on": "2026-08-11",
+  "audits_implementation_by": "GPT-5.6 Sol, Phase 2.5 source settlement",
+  "audited_against": "the reconciled design in OPUS-INDEPENDENT-REVIEW.md and opus-decisions.json, not Phase 1",
+  "global_verdict": "NOT_READY_FOR_SOURCE_FREEZE",
+  "freeze_records_created": 0,
+  "gold_authored": false,
+  "holdout_content_created": false,
+  "fixtures_overwritten": false,
+  "status_values": ["READY", "READY_WITH_DOCUMENTED_CAUTION", "BLOCKED"],
+
+  "freeze_gate_semantics": {
+    "separation_present_before_audit": false,
+    "severity": "BLOCKING",
+    "what_a_passing_settlement_check_meant": "Internal consistency of the settlement package only: the 12+2 case sets, seven pinned config fields per case, source-bound behaviour, the C10/C11 controlled pair recomputed from build_analysis_profile, no repeated logical source, no ingested fixture without a passing R13 report, offline references marked ingest=false, and three opaque holdout slots carrying no semantic keys.",
+    "what_it_did_not_mean": "Whether the release-gating core was ready to freeze. The checker printed an unqualified status 'pass' while C02, C06, C08 and V15 were blocked.",
+    "root_causes": [
+      "Blocked packages were skipped entirely: the readiness loop was guarded by case['readiness'].startswith('ready').",
+      "startswith('ready') silently admitted 'ready_with_recorded_budget_caution', the one value that exists to signal an unresolved concern.",
+      "The release_gating field is written on every package in source-package-manifest.json and was read by nothing."
+    ],
+    "no_freeze_workflow_exists_in_code": true,
+    "minimal_fix": "Emit settlement_consistent, release_gating_core_ready and freeze_permitted as separate fields; make FREEZE_READY_READINESS an explicit set rather than a string prefix; reject unknown readiness values; accumulate an itemised release_gating_freeze_blockers list from release_gating packages only; return exit code 3 when settlement is consistent but the gating core is not ready.",
+    "fix_applied": true,
+    "fix_location": "benchmarks/eval/v1/tools/check_pre_freeze_settlement.py",
+    "post_fix_observed": {
+      "settlement_consistent": true,
+      "release_gating_core_ready": false,
+      "freeze_permitted": false,
+      "exit_code": 3,
+      "release_gating_freeze_blocker_count": 13,
+      "v13_v14_present_in_blockers": false
+    }
+  },
+
+  "r13_policy_audit": {
+    "governing_question": "Can canonical text be derived by a general, deterministic, source-independent normalization that preserves semantic content, locators and exact-span reproducibility?",
+    "defect_found": "The validator asked a different question. no_private_use_characters and no_control_character_anomalies were flat zero-tolerance counts, so a symbol-font footnote marker and a subset font with no ToUnicode CMap produced the same verdict.",
+    "rule_adopted": "A Cc/Cs/Co code point -- excepting newline, carriage return, tab and ZWNJ -- is canonicalizable if and only if it is isolated: every neighbour is absent or whitespace. An isolated mark is its own whitespace-delimited token, so deleting it removes a token containing no letters and leaves every other word, page locator and excerpt span untouched. A code point adjacent to any non-space character is treated as semantic corruption, because it may stand for a letter whose identity is unknown and recovering it would require source-specific repair.",
+    "losslessness_is_asserted_not_assumed": "word_sequence_preserved compares the whitespace-delimited token sequence before and after canonicalization",
+    "class_policy": {
+      "private_use_Co": "canonicalizable if isolated; fatal otherwise",
+      "control_Cc_other_than_newline_return_tab": "same isolation rule; in practice always fatal, since a control between letters indicates a broken encoding",
+      "page_and_form_separators": "form feed and vertical tab already normalise to a space through normalize_for_match; isolated separators drop",
+      "zero_width_and_soft_hyphen_and_bom_and_bidi_marks": "already dropped symmetrically on source and excerpt by excerpt_matching.normalize_for_match, so span recovery is unaffected",
+      "persian_zwnj": "explicitly exempt from the anomaly scan; dropped symmetrically at match time",
+      "unicode_normalization": "NFC at fixture preparation only; NFKC is rejected because it would fold Arabic presentation forms and mask the exact defect Gate B exists to catch"
+    },
+    "validator_gaps_found": [
+      {
+        "id": "R13-GAP-LEXICAL",
+        "severity": "high",
+        "issue": "R13 has no lexical-plausibility check. It caught the C06 corruption only incidentally, through the U+0003 the broken font uses for a space. Had that font mapped space to U+0020, the corruption would have been invisible: language_sanity scores the shifted text as 100 percent Latin letters, the mojibake markers never fire on pure ASCII, and exact-span matching round-trips its own garbage at 20/20.",
+        "recommended_fix": "A dictionary hit-rate floor on the extracted text.",
+        "implemented": false
+      },
+      {
+        "id": "R13-GAP-GATE-E",
+        "severity": "blocking",
+        "issue": "Section 14 Gate E, the human reading-order spot-check, is mandatory for every Persian fixture and was never implemented. The suite's output language is always Persian and its only Persian fixture shows positive evidence of lossy extraction.",
+        "implemented": true,
+        "implementation": "human_collation_attested gate in semantic_fixture_validation.py; fail-closed for fa and mixed fixtures; requires artifact_id match, reviewer, reviewed_on, at least three pages checked, and three explicit attestations."
+      },
+      {
+        "id": "R13-GAP-ZWNJ",
+        "severity": "medium",
+        "issue": "Section 14 Gate C states that zero ZWNJ in a long Persian text is a red flag for lossy extraction. The implementation records it as a non-blocking warning.",
+        "implemented": false
+      },
+      {
+        "id": "R13-GAP-SCOPE",
+        "severity": "blocking",
+        "issue": "Nothing checks that a fixture contains what its manifest says it contains. Two fixtures declare exact chapter scopes and do not have them.",
+        "implemented": "partially -- the preparer now cuts Project Gutenberg back matter; a machine scope-fidelity check is recommended and not implemented"
+      },
+      {
+        "id": "R13-GAP-PROVENANCE",
+        "severity": "medium",
+        "issue": "Section 14 Step 7's provenance record lives in a separate manifest rather than in the report, so a fixture can pass R13 with no pinned revision.",
+        "implemented": false
+      }
+    ]
+  },
+
+  "c02_private_use_resolution": {
+    "verdict_category": "B",
+    "category_meaning": "Non-semantic decoration/font artifacts safely removable by a general canonicalization rule",
+    "original_blocker_withdrawn": "PF-C02-R13",
+    "occurrences": [
+      {"code_point": "U+F02A", "page": 1, "context": "Ahmad Ebadi <mark> Associate Professor of Islamic Philosophy and Theology", "preceding": "space", "following": "space", "isolated": true, "in_body_text": false},
+      {"code_point": "U+F02A", "page": 1, "context": "<mark> Corresponding Author: a.ebadi@ahl.ui.ac.ir", "preceding": "line start", "following": "space", "isolated": true, "in_body_text": false},
+      {"code_point": "U+F0AF", "page": 3, "context": "احمد عبادی <mark> دانشیار فلسفه و کلام اسلامی، دانشگاه اصفهان، اصفهان، ایران", "preceding": "space", "following": "space", "isolated": true, "in_body_text": false},
+      {"code_point": "U+F0AF", "page": 3, "context": "<mark> نویسنده مسئول: a.ebadi@ahl.ui.ac.ir", "preceding": "line start", "following": "space", "isolated": true, "in_body_text": false}
+    ],
+    "interpretation": "One corresponding-author footnote symbol used four times: twice in the English front matter on page 1 and twice in its Persian mirror on page 3. Both code points sit at the standard symbol-font private-use offset (U+F000 + 0x2A and U+F000 + 0xAF), the signature of a Symbol or Wingdings glyph emitted without a Unicode mapping. None occurs in body text and none is adjacent to a letter.",
+    "r13_rerun_under_corrected_policy": {
+      "dropped_character_count": 4,
+      "dropped_code_points": ["U+F02A x2", "U+F0AF x2"],
+      "residual_private_use_character_count": 0,
+      "residual_control_or_surrogate_count": 0,
+      "word_sequence_preserved": true,
+      "remaining_failed_gates": ["human_collation_attested"]
+    },
+    "case_still_blocked": true,
+    "remaining_blockers": [
+      "Gate E has no collation record, and there is positive evidence it would fail: of the eleven semantic blocks the pipeline builds, blocks 2-6, 8 and 9 each open with the article's Latin-script numbered footnote apparatus, and blocks 7 and 9 open with the running head '411 | فصلنامه علمی حكمت و فلسفه'. Every block is typed 'other' with an empty heading_path, matching the recorded lost_headings quality warning. Zero ZWNJ survive a 31-page Persian article.",
+      "Canonicalization parity: the fixture is the PDF itself, so the drop rule must be applied on the ingestion path or a canonicalized derivative delivered, or R13 certifies text the pipeline never sees.",
+      "Licence: license-readiness.json records ready=false for CC BY-NC 4.0 against repository redistribution."
+    ],
+    "bibliography_confirmed": "Hekmat va Falsafeh 17(68), 123-153, DOI 10.22054/wph.2021.53089.1867. The PDF masthead 'Vol. 16' survives in block 0 and remains the outlier."
+  },
+
+  "c06_resolution": {
+    "control_code_points": [
+      {"code_point": "U+0003", "count": 113, "decodes_to_at_shift_0x1D": "space", "context_class": "semantic_corruption", "isolated_occurrences": 0},
+      {"code_point": "U+0010", "count": 8, "decodes_to_at_shift_0x1D": "hyphen-minus", "context_class": "semantic_corruption", "isolated_occurrences": 0},
+      {"code_point": "U+0011", "count": 92, "decodes_to_at_shift_0x1D": "full stop", "context_class": "semantic_corruption", "isolated_occurrences": 0},
+      {"code_point": "U+0013", "count": 45, "decodes_to_at_shift_0x1D": "digit zero", "context_class": "semantic_corruption", "isolated_occurrences": 0},
+      {"code_point": "U+0014", "count": 6, "decodes_to_at_shift_0x1D": "digit one", "context_class": "semantic_corruption", "isolated_occurrences": 0},
+      {"code_point": "U+0015", "count": 22, "decodes_to_at_shift_0x1D": "digit two", "context_class": "semantic_corruption", "isolated_occurrences": 0},
+      {"code_point": "U+001A", "count": 1, "decodes_to_at_shift_0x1D": "digit seven", "context_class": "semantic_corruption", "isolated_occurrences": 0},
+      {"code_point": "U+001B", "count": 4, "decodes_to_at_shift_0x1D": "digit eight", "context_class": "semantic_corruption", "isolated_occurrences": 0}
+    ],
+    "true_diagnosis": "Not a control-character hygiene problem. These are the space, hyphen, period and digit glyphs of a subset font with no ToUnicode CMap whose glyph identifiers sit 0x1D below ASCII. Decoded evidence: '6RFLDO &RQQHFWLRQV' is 'Social Connections'; '(QYLURQPHQWDO 4XDOLW\\' is 'Environmental Quality'; '+RXVHKROG QHW DGMXVWHG GLVSRVDEOH LQFRPH SHU SHUVRQ' is 'Household net adjusted disposable income per person'; '$XVWUDOLD', '%HOJLXP', '9RWHU WXUQ-RXW'.",
+    "corrupted_material": "Roughly 1,600 characters on page 12 -- the chapter's country-by-indicator well-being dashboard -- extract as gibberish. This is substantive content, exactly the material a Beyond-GDP synthesis case would cite.",
+    "general_canonicalization_possible": false,
+    "why_not": "Zero of the 291 occurrences are isolated. Every one is letter- or digit-adjacent. A repair would have to detect which runs are corrupted -- the same page also contains correct ASCII prose -- and apply a fixed -0x1D shift only to those. That is source-specific run detection plus glyph guessing, which R13 forbids.",
+    "r13_rerun_under_corrected_policy": {"dropped_character_count": 0, "residual_control_or_surrogate_count": 291, "failed_gates": ["no_residual_control_character_anomalies"]},
+    "html_fallback_in_raw_tree_is_not_a_fallback": ".thesisound/eval-v1-prefreeze/raw/c06-oecd-ch1.html is a 5,813-byte Cloudflare challenge page, not the chapter. No clean OECD component was acquired.",
+    "case_status": "BLOCKED",
+
+    "multi_source_data_flow": {
+      "sol_claim_upheld": true,
+      "traced_at": "src/thesisound/services/episode_preparation_service.py::_load_corpus",
+      "mechanism": "Every confirmed source's claim ledger, evidence items, blocks and extraction plan are loaded in turn, then flattened into one pool by `claims = [claim for ledger in ledgers for claim in ledger.claims]`. That single pool feeds audit_coverage, prioritize_claims, estimate_budget, plan_episode and build_evidence_packs. Claims retain their source_id.",
+      "can_a_model_compose_from_both_ledgers_today": true,
+      "correct_description": "complementary multi-source composition at episode planning",
+      "explicitly_not": "cross-source reconciliation",
+      "m8_absence_confirmed": "ClaimReconcilerService.reconcile() remains per-source_id and DisagreementGraphBuilder emits nodes only from agreeing_source_ids, disagreeing_source_ids or CONTESTED, which per-source reconciliation cannot populate. Finding F1 stands; C06's design correctly does not depend on M8."
+    }
+  },
+
+  "c09_resolution": {
+    "fixture_scope_defect": {
+      "severity": "blocking",
+      "declared_scope": "exact Chapters I-IV, VI, XIV",
+      "actual_contents": "Chapters I-IV, VI, the real Chapter XIV, plus the book INDEX and the Project Gutenberg licence and boilerplate",
+      "cause": "_prepare_darwin slices each chapter from its marker to the next marker or end of file, so the last chapter swallowed everything after it",
+      "declared_total_tokens": 114328,
+      "index_tokens": 8248,
+      "gutenberg_licence_tokens": 5199,
+      "contamination_tokens": 13446,
+      "contamination_share": 0.118,
+      "clean_total_tokens": 100882,
+      "corrected_chapter_tokens": {"I": 19918, "II": 8402, "III": 10186, "IV": 26910, "VI": 18960, "XIV": 16492},
+      "note": "R13 passed it because R13 does not check scope, and nothing else checks scope either."
+    },
+    "selection_arithmetic": {
+      "pinned_duration_minutes": 40,
+      "computed_depth": "deep",
+      "block_coverage_target": 0.85,
+      "evidence_input_token_budget": 72000,
+      "sol_reported_selection": 0.6298,
+      "sol_reported_selection_is_wrong_because": "it uses the contaminated 114,328-token denominator",
+      "corrected_selection_against_clean_corpus": 0.7137,
+      "corpus_tokens_for_profile_target_to_bind": 77005,
+      "corpus_tokens_for_achieved_coverage_to_reach_0_85": 84705
+    },
+    "measurement_validity_findings": [
+      "The pinned mode set biases the selector against the chapter the brief requires. In analysis_profile._block_score, objection weighs 50 and response 55 against definition 80, argument 75 and conclusion 70, and the compensating +35 bonus fires only for critical or debate modes. C09's pinned modes are ['explanatory']. At roughly 71 percent selection the material most likely to be deferred is therefore Chapter VI, the 'major difficulties' the brief explicitly asks the model to trace -- 18,960 tokens, the lowest-weighted substantive chapter.",
+      "required_for_global_understanding does not guarantee coverage. Seeding takes only the first eligible block of each required section, capped at 60 percent of target, so a required chapter is represented by one block and the rest must win on rank.",
+      "A model regression is not separable from selector behaviour, because the section function and required_for_global_understanding flags that drive _block_score are themselves produced by the model-driven document_mapper. A mapping change moves the selection, which moves the evidence, which moves the episode."
+    ],
+    "option_chosen": "B",
+    "why_not_option_a": "For the profile's own 0.85 target to bind rather than the hard cap the corpus must be at most 77,005 tokens; for achieved coverage to reach 0.85, at most 84,705. The clean corpus is 100,882. Every available cut deletes a named link in the chain the brief specifies: Chapter I is the domestication analogy on which Chapter IV's argument for natural selection is explicitly built, II and III are 'variation and struggle', VI is 'major difficulties' and XIV is the synthesis. Sub-chapter excerpting is exactly what C03 was repaired to avoid. Option A is unavailable without damaging the dependency chain.",
+    "option_b_definition": {
+      "redefined_capability": "hierarchical reconstruction under budgeted evidence selection",
+      "must_not_be_called": "pure or full hierarchical reconstruction",
+      "scoring_change": "score against deferred_block_ids and budget-report.json -- reasoning within the covered span plus honest disclosure of deferral -- not against whole-corpus recall",
+      "mandatory_configuration_correction": "Add 'critical' to C09's pinned modes. It costs nothing, because the coverage target rises from 0.85 to 0.95 while the 72,000-token cap still binds, and it raises objection and response blocks to 85 and 90, above every other function, removing the one selector bias that would systematically hide Chapter VI. Without it, Option B measures an artefact."
+    },
+    "case_status": "BLOCKED"
+  },
+
+  "c08_resolution": {
+    "decoy_share_by_extractable_characters": 0.1442,
+    "decoy_characters": 10087,
+    "corpus_characters": 69975,
+    "approved_target": "0.25 to 0.30",
+    "partially_relevant_decoy_acquired": false,
+    "partially_relevant_decoy_obstacle": "Library of Congress automated-access challenge",
+    "target_lowered_to_make_it_pass": false,
+    "second_defect_not_previously_recorded": "Heading neutralization worked for structural labels -- both fixtures carry only '# Source A' / '# Source B' plus sequential 'Section NN' -- but the NPS decoy retains its institutional front matter as body text: 'NPS / FRDO 2169', 'Quick Facts', 'Significance:', and 'Former slave who became America's foremost abolitionist. Suffragist, publisher, author.' The decoy still announces its origin and genre through exactly the heading_path and front-matter vector the repair was meant to close.",
+    "case_status": "BLOCKED"
+  },
+
+  "v15_resolution": {
+    "provenance_chain": {
+      "textual_edition_editorial_basis": {"what": "Qazvini and Ghani critical edition, editio princeps 1320 SH / 1941", "evidence": "editors recorded as Wikidata Q5953296 and Q3318925"},
+      "physical_printing_behind_the_scan": {"what": "Sina, Tehran, 1989", "evidence": "Wikidata Q140377339 P577 = +1989 precision 9; Wikisource index Publisher=سینا, Address=تهران, Year field empty"},
+      "transcription": {"what": "Persian Wikisource index فهرست:حافظ قزوینی غنی.pdf", "revision": 290057, "revision_timestamp": "2026-06-29T09:23:36Z"}
+    },
+    "must_not_state": "that the scan is a 1941 printing",
+    "additional_findings_beyond_sol": [
+      "The pinned index carries Progress=T, not V. The earlier review's premise that the transcription is 'fully proofread and validated' is not supported by the pinned revision.",
+      "The pagelist shows two volumes and a غلطنامه (errata) at page 531, which directly affects verse-level collation."
+    ],
+    "rights_status": "unresolved; license-readiness.json records ready=false. The CC BY-SA transcription and the underlying 1989 printing are separate rights objects.",
+    "ghazals_selected_by_agreed_procedure": false,
+    "verses_human_collated": false,
+    "persian_fixture_exists": false,
+    "bounded_commentary_acquired": false,
+    "recorded_not_blocking": "V15 pins prior_knowledge=advanced, which adds one claim per block and one neighbour context block.",
+    "case_status": "BLOCKED"
+  },
+
+  "c05r_verification": {
+    "verified_from_the_artifact_not_a_metadata_record": true,
+    "doi": "10.1017/S0031819126101430",
+    "copyright": "The Author(s), 2026",
+    "publisher": "Cambridge University Press on behalf of The Royal Institute of Philosophy",
+    "journal": "Philosophy",
+    "licence": "CC BY 4.0",
+    "licence_evidence": "stated verbatim in the PDF front matter: 'distributed under the terms of the Creative Commons Attribution licence (http://creativecommons.org/licenses/by/4.0)'",
+    "machine_readable_text": "clean; 24 pages, 66,983 characters, 19,132 tokens, 20/20 exact spans, zero anomalies",
+    "objection_reply_structure_present": true,
+    "structure_detail": "Section 3 opens by naming two contrasting objections, with subsections 3.1 The Professional View Objection and 3.2 The Boundary Policing Objection, each voiced in free indirect style.",
+    "bounded_scope_is_answer_revealing": "partially",
+    "answer_revealing_detail": "The section-opening sentence states both objections and their content, and the subsection headings name them, reaching the extraction prompt through heading_path (finding F5). The identification half of the pinned brief is therefore cheap.",
+    "measures_attribution_not_heading_summary": true,
+    "attribution_evidence": "The article contains zero occurrences of 'reply'. Lin's replies are unlabelled prose, so separating the objector's claim from the reply is genuine voice-attribution work.",
+    "distinct_from_c03_and_c09": true,
+    "distinctness_detail": "C03 tests rhetorical and fictional typing across a monograph; C09 tests long-range prerequisite ordering; C05R tests dense local dialectical voice attribution.",
+    "replacement_approved": true,
+    "broader_search_reopened": false,
+    "cautions": [
+      "The artifact is not reproducible on re-acquisition: its text layer carries 'Downloaded from https://www.cambridge.org/core. 10 Aug 2026 at 20:10:43' on all 24 pages, so normalized_text_sha256, parsed_document_key and block_sequence_key will not reproduce. The pin must be the byte-level artifact. Ostrom, CMEPSP and Putnam are clean of this.",
+      "No retrieved bibliographic record backs the metadata: the only OpenAlex payload in the raw tree is for Basu, 'Bullshit philosophy', a different candidate.",
+      "No volume, issue or page range appears in the PDF. This is an advance-access copy and the pin must say so."
+    ],
+    "case_status": "READY_WITH_DOCUMENTED_CAUTION"
+  },
+
+  "c10_c11_verification": {
+    "controlled_variable_guarantee_is_machine_checked": true,
+    "how": "check_pre_freeze_settlement.py pops target_duration_minutes, asserts the two case objects are structurally identical in every other field, asserts the durations are exactly (20, 40), and recomputes both analysis profiles from build_analysis_profile against the manifest.",
+    "same_substantive_corpus": true,
+    "same_research_brief": true,
+    "same_modes": true,
+    "same_prior_knowledge": true,
+    "same_audience": true,
+    "same_output_language": true,
+    "only_duration_differs": true,
+    "ostrom_fixture_born_digital_and_passes_r13": true,
+    "ostrom_fixture_evidence": "37 pages, 112,153 characters, zero embedded images, extractable text on every page",
+    "profiles_compute_to_standard_and_deep": true,
+    "caution": "shared_fixture_token_estimate = 32032 is a hand-copied constant the checker trusts. It is not derived from the fixture or the R13 report, so a fixture change would silently invalidate the computed pair while the checker still reported pass.",
+    "rights": "private_fixture_or_manifest_based; a public CI run cannot acquire the source."
+  },
+
+  "spot_audit_claimed_ready": [
+    {"case_id": "C01", "r13": "pass", "r14": "one artifact; LoC 1897 scan offline only", "r15": "pinned", "scope_fidelity": "clean -- bounded by the next essay title", "brief_leakage": "none; the brief names James's own three axes, obtainable only from the text", "locator_stability": "unique source block keys", "licensing": "commit_safe with attribution", "status": "READY"},
+    {"case_id": "C03", "r13": "pass", "r14": "single Wikisource transcription", "r15": "pinned", "scope_fidelity": "clean -- complete essay", "brief_leakage": "none; typing brief with no answer key", "locator_stability": "unique source block keys", "licensing": "commit_safe with Wikisource revision", "status": "READY"},
+    {"case_id": "C04", "r13": "pass, but on a contaminated fixture", "r14": "three logical sources, one fixture each", "r15": "pinned", "scope_fidelity": "FAILS -- 21.7 percent of the primary fixture (5,190 of 23,929 tokens) is Project Gutenberg licence text", "brief_leakage": "repaired; SEP bounded to sections 2.3 and 3 at 3,801 tokens against 23,197 primary, inverting the dominance ratio", "locator_stability": "unique source block keys", "licensing": "mixed; SEP private_fixture", "status": "BLOCKED"},
+    {"case_id": "C07", "r13": "pass", "r14": "single artifact", "r15": "pinned", "scope_fidelity": "clean -- JATS article body and methods", "brief_leakage": "none; three objectives unanswerable by construction and the abstention is observable in coverage-report.json", "locator_stability": "unique source block keys", "licensing": "CC BY 4.0 verified", "status": "READY"}
+  ],
+
+  "c04_contamination_impact": "At 30 minutes with 'critical' in modes the profile selects 100 percent of the primary fixture (23,929 tokens against a 54,000-token budget), so 5,190 tokens of Project Gutenberg licence text are guaranteed to reach evidence extraction in the one case whose purpose is distinguishing an author's position from someone else's words.",
+
+  "challenge_tier": {
+    "v13_release_gating": false,
+    "v14_release_gating": false,
+    "accidentally_in_the_core_freeze_gate": false,
+    "verification": "Both carry release_gating=false in source-package-manifest.json, and the corrected checker accumulates freeze blockers only from release_gating packages. Neither appears among the 13 blockers.",
+    "blockers_remain_visible": "in source-package-manifest.json and unresolved-blockers.json, so they surface as challenge-execution warnings without touching the core freeze gate",
+    "bellprat_now_verified": "Nature Communications 10, 1732 (2019), DOI 10.1038/s41467-019-09729-2, CC BY 4.0",
+    "unesco_and_ipcc_rights": "ready=false"
+  },
+
+  "holdout_infrastructure": {
+    "result": "pass",
+    "public_manifest_exposes": ["three opaque identifiers", "null fixture and gold hashes", "status unprovisioned", "evaluator version", "null last_run"],
+    "public_manifest_does_not_expose": ["source identities", "authors", "topics", "briefs", "traps", "gold", "semantic case names"],
+    "opaque_ids": ["OH-7K2M9Q4X", "OH-B8R3T6WY", "OH-N5V2C7LP"],
+    "checker_enforcement": "exactly three slots; rejects the semantic key set {author, authors, brief, capability, failure_mode, gold, source, sources, topic}; rejects a non-null hash on an unprovisioned slot",
+    "runner_split_isolation": "resolve_eval_bundle_root makes core the default, rejects --private-bundle on a core run, requires an explicit bundle for --split holdout, and refuses any bundle equal to or beneath the public benchmarks/eval tree. An ordinary tuning run cannot enumerate private case names, briefs, sources or expectations even as a startup side effect. Missing bundles report skipped, never pass.",
+    "accidental_core_load_possible": false,
+    "hidden_holdout_content_created_in_this_audit": false
+  },
+
+  "tests": {
+    "command": "pytest",
+    "passed": 680,
+    "failed": 2,
+    "skipped": 1,
+    "failures_are_blocking": false,
+    "failure_reason": "Both failures are RuntimeError: FFmpeg is required to build the streamable MP3, in tests/test_audio_pipeline.py. Outside this audit and not blocking for semantic pre-freeze readiness.",
+    "semantic_fixture_manifest_holdout_and_readiness_gate_tests": "all pass",
+    "lint": "ruff clean on all touched files"
+  },
+
+  "changes_made_by_this_audit": [
+    {"file": "src/thesisound/services/semantic_fixture_validation.py", "change": "Canonicalization policy for code points with no Unicode identity (isolation rule, word-sequence-preservation assertion, itemised drop inventory, residual-only gates) and R13 Gate E human-collation gate, fail-closed for fa and mixed fixtures"},
+    {"file": "benchmarks/eval/v1/tools/validate_fixtures.py", "change": "--collation-record flag"},
+    {"file": "benchmarks/eval/v1/tools/check_pre_freeze_settlement.py", "change": "Freeze-gate separation, explicit readiness set, release-gating blocker list, exit code 3"},
+    {"file": "benchmarks/eval/v1/tools/prepare_visible_fixtures.py", "change": "Cut Project Gutenberg back matter and the Darwin index before chapter slicing"},
+    {"file": "tests/test_semantic_fixture_validation.py", "change": "Five new tests: the C02 isolated-marker shape, word-internal private-use rejection, the C06 glyph-offset shape, Gate E fail-closed, Gate E not required for English"}
+  ],
+  "sol_artifacts_left_untouched": "The corrected preparer was run to a scratch directory only. Sol's fixtures and R13 reports were not overwritten, so the audit trail stays intact. Rebuilding them is PF-C04-SCOPE and PF-C09-SCOPE.",
+
+  "cases": [
+    {"case_id": "C01", "tier": "core", "release_gating": true, "status": "READY", "why": "Clean UTF-8 transcription at 14,693 tokens, one ingested artifact with the LoC 1897 scan offline, output configuration pinned, commit_safe."},
+    {"case_id": "C02", "tier": "core", "release_gating": true, "status": "BLOCKED", "why": "The private-use blocker is withdrawn: all four characters are isolated non-semantic corresponding-author footnote marks and canonicalize losslessly. The case is blocked instead on an unattested Gate E with positive evidence of interleaved footnotes and running heads and zero surviving ZWNJ, on canonicalization parity for the ingestion path, and on unresolved CC BY-NC redistribution."},
+    {"case_id": "C03", "tier": "core", "release_gating": true, "status": "READY", "why": "Complete six-chapter essay at 60,040 tokens, clean, pinned, commit_safe."},
+    {"case_id": "C04", "tier": "core", "release_gating": true, "status": "BLOCKED", "why": "21.7 percent of the primary fixture is Project Gutenberg licence text, and the pinned profile selects 100 percent of the fixture, so that text is guaranteed to reach evidence extraction in an attribution case. Rebuild with the fixed preparer and rerun R13."},
+    {"case_id": "C05R", "tier": "core", "release_gating": true, "status": "READY_WITH_DOCUMENTED_CAUTION", "why": "CC BY 4.0, DOI, publisher and objection/reply structure verified from the artifact itself. Cautions: headings pre-announce both objections; the copy is advance-access with an embedded per-download timestamp so it will not reproduce on re-acquisition; no retrieved bibliographic record backs the metadata."},
+    {"case_id": "C06", "tier": "core", "release_gating": true, "status": "BLOCKED", "why": "All 291 anomalous code points are letter- or digit-adjacent glyphs of a subset font with no ToUnicode CMap; a whole dashboard page of substantive table content extracts as gibberish; zero are canonicalizable and no clean official component was acquired."},
+    {"case_id": "C07", "tier": "core", "release_gating": true, "status": "READY", "why": "CC BY 4.0 verified, clean JATS body at 13,728 tokens, three objectives unanswerable by construction with the abstention observable in coverage-report.json."},
+    {"case_id": "C08", "tier": "core", "release_gating": true, "status": "BLOCKED", "why": "Decoy share is 14.42 percent against the approved 25-30 percent, the partially relevant decoy was not acquired, and the NPS decoy still leaks its institutional origin through retained Quick Facts front matter."},
+    {"case_id": "C09", "tier": "core", "release_gating": true, "status": "BLOCKED", "why": "The fixture is 11.8 percent book index plus Project Gutenberg licence and its declared chapter scope is false; real selection is 71.37 percent, not 62.98 percent; the case must be relabelled under Option B; and 'critical' must be added to the pinned modes or the selector systematically defers Chapter VI, the very material the brief requires."},
+    {"case_id": "C10", "tier": "core", "release_gating": true, "status": "READY_WITH_DOCUMENTED_CAUTION", "why": "The controlled-variable guarantee is machine-checked and the Ostrom fixture is genuinely born-digital. Caution: shared_fixture_token_estimate is an untrusted hand-copied constant, and the source is private_fixture."},
+    {"case_id": "C11", "tier": "core", "release_gating": true, "status": "READY_WITH_DOCUMENTED_CAUTION", "why": "Same as C10; the 40-minute deep profile computes as claimed."},
+    {"case_id": "V15", "tier": "core", "release_gating": true, "status": "BLOCKED", "why": "The scan is a 1989 Sina Tehran printing, not a 1941 one; the pinned index reads Progress=T with an empty Year field, so the transcription is not validated; rights are unresolved; no ghazal selection, no human collation and no Persian fixture exist."},
+    {"case_id": "V13", "tier": "challenge", "release_gating": false, "status": "BLOCKED", "why": "Bounded fixtures unacquired and UNESCO rights unverified. Correctly outside the core freeze gate."},
+    {"case_id": "V14", "tier": "challenge", "release_gating": false, "status": "BLOCKED", "why": "Bounded fixtures unacquired and IPCC CC BY-NC-ND limits transformed storage. Correctly outside the core freeze gate."}
+  ],
+
+  "smallest_blocker_list_to_reach_freeze": [
+    {"id": "PF-C02-COLLATION", "cases": ["C02"], "action": "Human reading-order collation under R13 Gate E, resolving the footnote and running-head interleaving and the zero-ZWNJ finding."},
+    {"id": "PF-C02-PARITY", "cases": ["C02"], "action": "Apply the R13 canonicalization on the ingestion path, or deliver a canonicalized derivative, so R13 validates the text the pipeline sees."},
+    {"id": "PF-C02-LICENCE", "cases": ["C02"], "action": "Settle CC BY-NC 4.0 against repository redistribution."},
+    {"id": "PF-C04-SCOPE", "cases": ["C04"], "action": "Rebuild the Du Bois primary fixture with the fixed preparer (23,929 to 18,739 tokens) and rerun R13."},
+    {"id": "PF-C06-OECD", "cases": ["C06"], "action": "Acquire a clean born-digital OECD Chapter 1 component and rerun R13. Do not repair the existing file."},
+    {"id": "PF-C08-DECOY", "cases": ["C08"], "action": "Acquire the partially relevant decoy to reach the approved 25-30 percent mix. Do not lower the target."},
+    {"id": "PF-C08-NEUTRALIZE", "cases": ["C08"], "action": "Strip the NPS Quick Facts institutional infobox from the decoy fixture."},
+    {"id": "PF-C09-SCOPE", "cases": ["C09"], "action": "Rebuild the Darwin fixture with the fixed preparer (114,328 to 100,882 tokens) and rerun R13."},
+    {"id": "PF-C09-MEASUREMENT", "cases": ["C09"], "action": "Adopt Option B: relabel the capability as hierarchical reconstruction under budgeted evidence selection, score deferral disclosure explicitly, and add 'critical' to the pinned modes."},
+    {"id": "PF-C10-C11-DERIVE", "cases": ["C10", "C11"], "action": "Derive shared_fixture_token_estimate from the R13 report instead of trusting a hand-copied constant."},
+    {"id": "PF-C05R-PIN", "cases": ["C05R"], "action": "Pin the Lin artifact at byte level, record that it is an advance-access copy carrying an embedded download timestamp, and record a real bibliographic retrieval."},
+    {"id": "PF-V15-PROVENANCE", "cases": ["V15"], "action": "State the edition, printing and transcription layers exactly; settle rights; select ghazals by the agreed non-arbitrary procedure; human-collate every selected verse; produce and validate a clean Persian fixture."}
+  ],
+
+  "recommended_not_blocking": [
+    "Add a lexical-plausibility gate to R13 so glyph-offset corruption is caught directly rather than incidentally.",
+    "Add a machine scope-fidelity check so a manifest cannot declare a scope that no artifact enforces.",
+    "Promote the zero-ZWNJ signal on long Persian fixtures from a warning to a gate, per section 14 Gate C."
+  ]
+}

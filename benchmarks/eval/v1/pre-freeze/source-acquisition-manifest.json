@@ -20,10 +20,13 @@
       "title": "پاتنم؛ دوگانه واقعیت/ارزش و سازه‌گرایی واقعیت",
       "authority": "Peer-reviewed Hekmat va Falsafeh article",
       "acquisition_url": "https://wph.atu.ac.ir/article_13403_93fe9e041126e4ff9695a1115c56fef8.pdf",
-      "acquired_format": "publisher PDF",
+      "acquired_format": "publisher PDF retained offline; native-extracted canonical UTF-8 Markdown is the pending semantic artifact",
       "scope": "Complete article, 31 PDF pages",
       "pin": "DOI 10.22054/wph.2021.53089.1867; volume 17, issue 68, pages 123-153; Winter 1400/2022 PDF",
-      "status": "rejected_r13_failed"
+      "canonicalization": "Generic native extraction removes coordinate-confirmed repeated running heads, collects detected page-note apparatus after the body, and applies the shared R13 isolated-mark canonicalizer. It removes U+F02A x2 and U+F0AF x2 only because each is isolated by whitespace; no word is changed and no OCR is used.",
+      "production_parity": "The pending ingested Markdown and R13 production parse have the same normalized-text SHA-256 23dff599568173d3d5543617d48252f6e6167ae63bfee2cf4809f66093631c44.",
+      "review_packet": "${THESISOUND_EVAL_PRIVATE_REVIEW_ROOT}/C02-gate-e-review-packet.md",
+      "status": "prepared_r13_gate_e_pending"
     },
     {
       "source_id": "woolf_room_1929_complete",
@@ -45,7 +48,9 @@
       "acquired_format": "utf-8 text",
       "scope": "Chapters I, III, and XIV",
       "pin": "Project Gutenberg #408",
-      "status": "acquired_prepared_r13_pass"
+      "preparation": "The corrected preparer stops at the requested chapter boundary, retains Afterthought, and excludes the Project Gutenberg licence/back matter.",
+      "scope_contract": "scope-contracts/C04-dubois-primary.json",
+      "status": "acquired_rebuilt_r13_and_scope_pass"
     },
     {
       "source_id": "dubois_strivings_1897",
@@ -78,7 +83,10 @@
       "acquisition_url": "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/7284733070C4D0D9B5422EF014C97694/S0031819126101430a.pdf/philosophy_as_a_normative_discipline.pdf",
       "acquired_format": "publisher PDF",
       "scope": "Complete article, including sections 3.1 and 3.2",
-      "pin": "Yao Lin; DOI 10.1017/S0031819126101430; published online 2026-06-23",
+      "pin": "Yao Lin; DOI 10.1017/S0031819126101430; advance-access/First View article published online 2026-06-23; 197683 bytes; SHA-256 50BF7049864255E9412DCCE891F665AE60CA3AAA710E3D9691089ECE00C50EF9; embedded Cambridge ModDate 2026-08-10T20:10:43Z",
+      "publisher_record": "https://www.cambridge.org/core/journals/philosophy/article/philosophy-as-a-normative-discipline/7284733070C4D0D9B5422EF014C97694",
+      "bibliographic_record": ".thesisound/eval-v1-prefreeze/raw/c05r-crossref.json",
+      "bibliographic_status": "First View/advance access; no volume or issue assigned. The publisher record gives First View pages 1-24; no issue pagination is invented.",
       "status": "acquired_r13_pass"
     },
     {
@@ -98,10 +106,39 @@
       "title": "How's Life?: Measuring Well-being",
       "authority": "OECD institutional report",
       "acquisition_url": "https://www.oecd.org/en/publications/how-s-life_9789264121164-en.html",
-      "acquired_format": "official PDF sliced without text rewriting",
+      "official_pdf_url": "https://www.oecd.org/content/dam/oecd/en/publications/reports/2011/10/how-s-life_g1g14dc9/9789264121164-en.pdf",
+      "legacy_official_route": "https://www.oecd-ilibrary.org/how-s-life_5kg84wztsfmx.pdf?itemId=%2Fcontent%2Fpublication%2F9789264121164-en&mimeType=pdf",
+      "acquired_format": "official PDF candidate; rejected without repair",
       "scope": "Physical pages 16-34: complete overview/framework chapter",
-      "pin": "286-page official PDF; source page indices embedded in prepared PDF metadata",
-      "status": "rejected_r13_failed"
+      "pin": "Current official PDF is 4929748 bytes, SHA-256 F7594D4C5104190E93FDE9288CEA5548D1590C3320FB551DB10CDE5AE3959C23. It is byte-identical to the previously tested source.",
+      "search_result": "The current DAM PDF, official publication page, legacy iLibrary route, book DOI, and Chapter 1/Overview component DOI were checked. No clean official HTML, ePub, accessible PDF, or separately downloadable exact component was acquired; the country/indicator dashboard text remains glyph-shifted.",
+      "status": "rejected_r13_history_preserved",
+      "replacement_source_id": "oecd_hows_life_2020"
+    },
+    {
+      "source_id": "oecd_hows_life_2020",
+      "cases": ["C06"],
+      "title": "How's Life? 2020: Measuring Well-being",
+      "organization": "OECD",
+      "year": 2020,
+      "authority": "OECD institutional well-being report",
+      "stable_identifier": "DOI 10.1787/9870c393-en",
+      "isbn_pdf": "978-92-64-72844-8",
+      "publication_url": "https://www.oecd.org/en/publications/how-s-life/volume-/issue-_9870c393-en.html",
+      "acquisition_url": "https://www.oecd.org/content/dam/oecd/en/publications/reports/2020/03/how-s-life-2020_b547d82c/9870c393-en.pdf",
+      "official_html_component": "https://www.oecd.org/en/publications/2020/03/how-s-life-2020_b547d82c/full-report/component-4.html",
+      "acquired_format": "official born-digital PDF transformed to canonical UTF-8 Markdown without OCR",
+      "scope": "Chapter 1 complete printed pages 18-30 and 43-55 (source PDF pages 20-32 and 45-57): framework/current well-being and sustainability/resources sections",
+      "locators": "DOI plus explicit printed-page and source-PDF-page headings in the fixture",
+      "pin": "247-page official PDF; 7530615 bytes; SHA-256 66CC4C24A2BF59A5C26D042FC64A9B5EB2199DCAE25089EBFC63025BB181816E (pre-freeze acquisition identity only, not a freeze hash)",
+      "preparation": "Select whole source pages, extract through the production-native pypdf path, apply only the shared R13 isolation canonicalizer, verify unchanged word sequence, and add printed/PDF page headings. The source-independent rule removes 26 isolated U+F07C page separators and 3 isolated U+F0B7 bullets; no word substitution, glyph mapping, OCR, or source-specific character repair is used.",
+      "prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C06-oecd-hows-life-2020-focused.md",
+      "prepared_identity": "69849 bytes; SHA-256 C00AB2ACD464E4FCDE20233031472B56B436F54C7691459112A6E724F78B1040 (diagnostic pre-freeze identity only)",
+      "bounded_corpus": "68567 R13 extractable characters; 10922 words; 19536 estimated tokens",
+      "semantic_fit": "Operationalises a multidimensional Beyond-GDP dashboard across 11 current well-being dimensions, averages/inequalities/deprivations, and four resources for future well-being; it complements rather than disputes the Commission's conceptual diagnosis.",
+      "difficulty_check": "19536 R13 tokens versus 17834 for the rejected 2011 candidate (+9.54%); the capability and composition task are unchanged.",
+      "r13_report": "validation/r13/C06-oecd-hows-life-2020.json",
+      "status": "acquired_prepared_r13_pass_selected"
     },
     {
       "source_id": "bloom_han_liang_2024",
@@ -134,9 +171,9 @@
       "authority": "U.S. National Park Service contextual page",
       "acquisition_url": "https://www.nps.gov/people/frederick-douglass.htm",
       "acquired_format": "NPS HTML article body transformed to UTF-8 Markdown",
-      "scope": "Complete page body",
+      "scope": "Complete substantive page body, excluding the institutional facts infobox",
       "pin": "Retrieved 2026-08-10",
-      "neutralization": "Drop navigation, images, scripts, related items, and footer; replace HTML h1-h6 labels and NPS section_title spans in order with Section NN; retain every substantive paragraph and its order; outer title becomes Source B.",
+      "neutralization": "Generic HTML filtering drops navigation, images/figures, scripts, related items, footer, and nodes carrying the NPS Person__Facts class; replaces h1-h6 labels and section_title spans in order with Section NN; retains every remaining substantive paragraph and its order; outer title becomes Source B.",
       "status": "acquired_prepared_r13_pass"
     },
     {
@@ -145,10 +182,23 @@
       "title": "What to the American Slave Is Your 4th of July?",
       "authority": "Library of Congress contextual article; intended partially relevant decoy",
       "acquisition_url": "https://blogs.loc.gov/headlinesandheroes/2020/07/what-to-the-american-slave-is-your-4th-of-july/",
-      "acquired_format": null,
-      "scope": "Complete article body after the same heading/front-matter neutralization",
-      "pin": null,
-      "status": "blocked_automated_access_challenge"
+      "acquired_format": "official Library of Congress July 2020 RSS item transformed to UTF-8 Markdown",
+      "scope": "Complete substantive article body after generic figure/front-matter neutralization",
+      "pin": "Official RSS feed retrieved 2026-08-11; raw feed SHA-256 7597757890CF52213870E5286FF178E06062A27499B24BBDECE30C0BFE8ECCC2",
+      "neutralization": "Select the exact official RSS item by canonical URL, exclude figure/image nodes, replace structural headings in order, and retain substantive prose unchanged.",
+      "status": "acquired_prepared_r13_pass_partially_relevant"
+    },
+    {
+      "source_id": "nara_declaration_1776",
+      "cases": ["C08"],
+      "title": "Declaration of Independence: A Transcription",
+      "authority": "U.S. National Archives official transcription",
+      "acquisition_url": "https://www.archives.gov/founding-docs/declaration-transcript",
+      "acquired_format": "official HTML transcription transformed to UTF-8 Markdown",
+      "scope": "Complete declaration transcription including signatories",
+      "pin": "Retrieved 2026-08-11; raw HTML SHA-256 EAEBCFBFFA778C236F3574FBF29E41C120ECCED40DD983FDADB9B35B646C6CF4",
+      "neutralization": "Generic HTML filtering removes site chrome and replaces structural headings; substantive transcription and signatory text are retained.",
+      "status": "acquired_prepared_r13_pass_credible_related_decoy"
     },
     {
       "source_id": "darwin_origin_1859_scoped",
@@ -159,7 +209,9 @@
       "acquired_format": "utf-8 text transformed to scoped UTF-8 Markdown",
       "scope": "Chapters I-IV, VI, and XIV exactly",
       "pin": "Project Gutenberg #1228, 1859 first-edition text",
-      "status": "acquired_prepared_r13_pass"
+      "preparation": "Corrected chapter slicing excludes all non-selected chapters, index, Project Gutenberg licence, and back matter.",
+      "scope_contract": "scope-contracts/C09-darwin.json",
+      "status": "acquired_rebuilt_r13_and_scope_pass"
     },
     {
       "source_id": "ostrom_nobel_lecture_2009",
@@ -222,10 +274,12 @@
       "title": "دیوان حافظ, Qazvini-Ghani critical text route",
       "authority": "Scan-backed Persian Wikisource transcription",
       "acquisition_url": "https://fa.wikisource.org/wiki/%D9%81%D9%87%D8%B1%D8%B3%D8%AA:%D8%AD%D8%A7%D9%81%D8%B8_%D9%82%D8%B2%D9%88%DB%8C%D9%86%DB%8C_%D8%BA%D9%86%DB%8C.pdf",
-      "acquired_format": null,
-      "scope": "No poems selected until specialist-citation selection and human scan collation are complete",
-      "pin": "Index revision 290057, 2026-06-29T09:23:36Z; Wikidata Q140377339 says 1989; index says Sina, Tehran and supplies no year",
-      "status": "provenance_conflict_blocked"
+      "acquired_format": "pinned Wikisource index/main/Page revision records; no semantic fixture created",
+      "scope": "Two candidate ghazals derived from the overlap of Lewis/de Bruijn citations: Khanlari 344 and 347, mapped by incipit to Qazvini-Ghani numbers 352 and 355",
+      "pin": "Textual/editorial basis: Qazvini-Ghani first edition 1320 SH/1941. Physical scan printing: Sina, Tehran, 1989. Transcription route: Wikisource index revision 290057 (Progress=T, not claimed fully validated); main revisions 168472 and 168356; Page revisions 111788 and 109048; scan sequences 372/374, printed pages 242/244.",
+      "errata": "Scan sequence 531, Page revision 112904; no listed correction targets printed pages 242 or 244.",
+      "review_packet": "${THESISOUND_EVAL_PRIVATE_REVIEW_ROOT}/V15-verse-to-scan-collation-packet.md",
+      "status": "selection_pinned_human_collation_and_rights_pending"
     },
     {
       "source_id": "lewis_hafez_rendi_bounded",
@@ -233,10 +287,10 @@
       "title": "Hafez viii. Hafez and Rendi",
       "authority": "Encyclopaedia Iranica specialist entry",
       "acquisition_url": "https://www.iranicaonline.org/articles/hafez-viii/",
-      "acquired_format": null,
-      "scope": "Only passages that cite the selected ghazals and define the interpretive claim under test",
+      "acquired_format": "Official article is browser-verifiable; automated local retrieval currently returns an access challenge",
+      "scope": "Bound only the spectrum-of-readings introduction, the authority/authenticity passage containing the Khanlari 344/347 citations, and the immediate caveat against forcing a single symbolic or literal reading; exclude the later comprehensive rend taxonomy",
       "pin": "Updated 2015-07-31",
-      "status": "not_acquired_pending_primary_selection"
+      "status": "scope_defined_local_fixture_not_acquired"
     },
     {
       "source_id": "debruijn_hafez_poetic_art_bounded",
@@ -244,10 +298,10 @@
       "title": "Hafez iii. Hafez's Poetic Art",
       "authority": "Encyclopaedia Iranica specialist entry",
       "acquisition_url": "https://www.iranicaonline.org/articles/hafez-iii/",
-      "acquired_format": null,
-      "scope": "Only passages that cite the selected ghazals and discuss relevant ambiguity; no general answer-key taxonomy",
+      "acquired_format": "Official article is browser-verifiable; automated local retrieval currently returns an access challenge",
+      "scope": "Bound the textual-instability caution and the paragraphs on takhallos/piety-antinomianism that cite Khanlari 344/347, plus the general rhetoric paragraph defining ambiguity devices; exclude the broad thematic catalogue",
       "pin": "Updated 2013-06-05",
-      "status": "not_acquired_pending_primary_selection"
+      "status": "scope_defined_local_fixture_not_acquired"
     }
   ]
 }

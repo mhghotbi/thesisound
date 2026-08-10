@@ -80,7 +80,7 @@
     },
     "C09": {
       "target_duration_minutes": 40,
-      "modes": ["explanatory"],
+      "modes": ["explanatory", "critical"],
       "prior_knowledge": "introductory",
       "audience": "Persian-speaking graduate history-of-science student",
       "output_language": "fa",
@@ -133,11 +133,26 @@
       "research_brief": "Using only the eventual scholar-cited, edition-collated poem selection and the bounded Lewis and de Bruijn passages, explain how ambiguity supports and constrains readings of rend and related terms. Keep poem text, editorial evidence, and each scholar's interpretation distinct; do not force a final equivalence or resolve ambiguity by fiat."
     }
   },
+  "computed_profiles": {
+    "C09": {
+      "depth": "deep",
+      "block_coverage_target": 0.95,
+      "evidence_input_token_budget": 72000,
+      "max_claims_per_block": 5,
+      "neighbor_context_blocks": 1,
+      "include_examples": true,
+      "include_objections_and_responses": true,
+      "target_source_tokens": 72000,
+      "maximum_nominal_selected_coverage": 0.713712,
+      "fixture_token_estimate": 100881,
+      "fixture_token_source": "validation/r13/C09-darwin.json"
+    }
+  },
   "controlled_pair": {
     "case_ids": ["C10", "C11"],
     "equality_rule": "After removing target_duration_minutes, the two case objects must be structurally identical.",
     "computed_from": "src/thesisound/services/analysis_profile.py",
-    "shared_fixture_token_estimate": 32032,
+    "shared_fixture_token_source": "source-package-manifest C10/C11 -> validation/r13/C10-C11-ostrom.json -> metrics.token_estimate",
     "C10": {
       "depth": "standard",
       "block_coverage_target": 0.6,

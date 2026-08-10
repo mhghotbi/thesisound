@@ -10,8 +10,11 @@ import pytest
 from pydantic import BaseModel
 
 from thesisound import tracing
+from thesisound.config import Settings
+from thesisound.model_routing import load_model_router
 from thesisound.modeling import (
     DeterministicValidationError,
+    ModelConfigurationError,
     ModelSafetyError,
     ModelTimeoutError,
     ModelUsage,
@@ -79,6 +82,30 @@ def _prompt_root(tmp_path: Path) -> Path:
                 "model_tier": "fast",
                 "output_model": "ExampleOutput",
                 "max_attempts": 2,
+                "retry_schema_errors": True,
+                "system_file": "system.md",
+                "user_file": "user.md",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (version / "system.md").write_text("System {{ context }}", encoding="utf-8")
+    (version / "user.md").write_text("User {{ topic }}", encoding="utf-8")
+    return root
+
+
+def _script_verifier_prompt_root(tmp_path: Path) -> Path:
+    root = tmp_path / "script-verifier-prompts"
+    version = root / "script_verifier" / "1.0.0"
+    version.mkdir(parents=True)
+    (version / "contract.json").write_text(
+        json.dumps(
+            {
+                "id": "script_verifier",
+                "version": "1.0.0",
+                "model_tier": "strong",
+                "output_model": "ExampleOutput",
+                "max_attempts": 1,
                 "retry_schema_errors": True,
                 "system_file": "system.md",
                 "user_file": "user.md",
@@ -420,3 +447,58 @@ def test_model_runner_routes_by_prompt_contract_id_not_observability_stage(
     assert execution.record.provider == "okian"
     assert execution.record.model == "gemma-routed"
     assert execution.record.stage == "script_segment:seg-001"
+
+
+def test_verifier_run_raises_before_any_provider_call_when_the_reviewer_is_not_independent(
+    tmp_path: Path,
+) -> None:
+    settings = Settings(
+        _env_file=None,
+        model_routing_file=Path("config/model-routing.toml"),
+    )
+    router = load_model_router(settings)
+
+    class RoutingFakeModel(FakeModel):
+        def __init__(self) -> None:
+            super().__init__([])
+            self.provider_calls = 0
+
+        def resolve_route(
+            self,
+            *,
+            stage: str,
+            requested_model: str,
+            model_tier: str,
+        ):
+            return router.resolve(
+                stage=stage,
+                requested_model=requested_model,
+                model_tier=model_tier,  # type: ignore[arg-type]
+            )
+
+        def generate_structured(self, **kwargs: object) -> StructuredModelResponse[ExampleOutput]:
+            _ = kwargs
+            self.provider_calls += 1
+            raise AssertionError("The provider must not be called for a blocked verifier.")
+
+    model = RoutingFakeModel()
+    runner = ModelRunner(
+        model,
+        PromptLoader(_script_verifier_prompt_root(tmp_path)),
+        WorkspaceModelRunStore(tmp_path / "workspaces"),
+    )
+
+    with pytest.raises(ModelConfigurationError):
+        runner.run(
+            project_id=uuid4(),
+            stage="script_verifier",
+            prompt_name="script_verifier",
+            variables={"context": "safe", "topic": "Arendt"},
+            output_type=ExampleOutput,
+            model=settings.model_strong,
+        )
+
+    assert model.provider_calls == 0
+    # Route resolution precedes run_store.initialize(), so a blocked route must
+    # not leave even a model-run record behind.
+    assert list((tmp_path / "workspaces").rglob("record.json")) == []

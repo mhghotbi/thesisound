@@ -15,6 +15,7 @@ from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
     episode_plan_hash,
 )
+from thesisound.services.runtime_preflight import RuntimePreflight
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_run import ScriptBuildRunService
 from thesisound.services.source_artifact_store import SourceArtifactStore
@@ -36,6 +37,7 @@ def register_script_routes(
     login_redirect: LoginRedirect,
     project_redirect: ProjectRedirect,
     validate_csrf: ValidateCsrf,
+    preflight: RuntimePreflight,
 ) -> None:
     script_store = ScriptArtifactStore(workspace.root)
     approval_store = EpisodePlanApprovalStore(workspace.root)
@@ -134,6 +136,11 @@ def register_script_routes(
                 raise ValueError("A review reason is required.")
             if decision not in {"accept", "send_back"}:
                 raise ValueError("Unknown script review decision.")
+            if decision == "send_back":
+                # Queues a fresh build; /script/approve and /script/retry are
+                # gated by the preflight middleware, this branch is not.
+                # This must happen before persisting the review/state changes.
+                preflight.require("script")
             plan_hash = episode_plan_hash(project.episode_plan) if project.episode_plan else ""
             checks = script_store.load_latest_checks(project_id)
             verification = script_store.load_latest_verification(project_id)

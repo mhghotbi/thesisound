@@ -36,8 +36,9 @@ from thesisound.source_analysis import BlockEvidenceExtraction
 from thesisound.web.app import create_app
 
 
-def _settings(tmp_path: Path) -> Settings:
+def _settings(tmp_path: Path, *, model_reviewer: str = "gemini-reviewer-test") -> Settings:
     return Settings(
+        _env_file=None,
         environment="test",
         workspace_root=tmp_path / "workspaces",
         ingestion_artifact_root=tmp_path / "artifacts",
@@ -47,6 +48,8 @@ def _settings(tmp_path: Path) -> Settings:
         test_otp_code="999999",
         otp_resend_cooldown_seconds=5,
         ui_demo_mode=False,
+        gemini_api_key="test-api-key",
+        model_reviewer=model_reviewer,
     )
 
 
@@ -471,6 +474,60 @@ def test_send_back_returns_to_drafting_and_queues_retry(tmp_path: Path) -> None:
         == ProjectState.SCRIPT_DRAFTING
     )
     assert ScriptBuildRunStore(settings.workspace_root).load(project.project_id).status == "queued"
+
+
+def test_sending_a_script_back_is_refused_when_the_reviewer_is_not_independent(
+    tmp_path: Path,
+) -> None:
+    settings = _settings(tmp_path, model_reviewer="")
+    project = _seed_review_required(settings)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/script")
+        response = client.post(
+            f"/projects/{project.project_id}/script/review",
+            data={
+                "csrf_token": _csrf(page.text),
+                "decision": "send_back",
+                "reason": "Restore the missing qualification.",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 422
+        assert (
+            WorkspaceStore(settings.workspace_root).load_project(project.project_id).state
+            == ProjectState.SCRIPT_REVIEW_REQUIRED
+        )
+        assert (
+            ScriptBuildRunStore(settings.workspace_root).load(project.project_id).status
+            == "succeeded"
+        )
+
+        # Accepting an existing artifact does not spend provider calls, so it remains available.
+        page = client.get(f"/projects/{project.project_id}/script")
+        accepted = client.post(
+            f"/projects/{project.project_id}/script/review",
+            data={
+                "csrf_token": _csrf(page.text),
+                "decision": "accept",
+                "reason": "Residual qualification risk is acceptable.",
+            },
+            follow_redirects=False,
+        )
+
+    assert accepted.status_code == 303
+    assert (
+        WorkspaceStore(settings.workspace_root).load_project(project.project_id).state
+        == ProjectState.SCRIPT_VERIFIED
+    )
 
 
 def test_state_labels_and_steps_cover_every_project_state() -> None:

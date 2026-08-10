@@ -458,6 +458,8 @@ def _sentence_similarity(sentence, transcript):
 
 `Code-supported inference`: verifier در پیکربندی فعلی احتمالاً یک تأییدکننده‌ی گران است نه یک بازبین مستقل. اما با n=1 و بدون ground truth، **`Insufficient evidence`** برای اثبات اینکه verdictها بی‌ارزش‌اند.
 
+اکنون self-grading هم در route resolution و هم در preflight با scope `script` مسدود می‌شود؛ یافته‌های اندازه‌گیری‌شده‌ی بالا snapshot تاریخ‌دارِ پیش از این اصلاح‌اند.
+
 ### 6.4 کیفیت متن فارسی (اجرای واقعی، ۲۲ turn، ۱۱۱۲ کلمه)
 
 **قوت‌ها (مشاهده‌ی مستقیم).** فارسی طبیعی و شنیداری؛ اصطلاحات منسجم و مطابق glossary (حیات فعال، زحمت، کار، عمل، انسان زحمت‌کش، انسان سازنده، تکثر، امر اجتماعی) با معادل انگلیسی در اولین کاربرد؛ وفادار به آرنت؛ لحن مناسب دانشجوی علوم انسانی؛ بدون نثر عمومی AI.
@@ -589,7 +591,7 @@ def _sentence_similarity(sentence, transcript):
 | **R3** ⬛P0 | شکست یک partition کل map را دوباره می‌خرد | جدول `input_hash`؛ ۲۱۵٬۹۱۲ توکن | draft هر partition را با کلید `input_hash` (که از قبل محاسبه می‌شود) persist کن و در rerun بخوان | متوسط | **بالا** | **بالا** | متوسط | کم | **High** |
 | **R4** ⬛P0 | هزینه‌ی توکنی retry غیرقابل‌اندازه‌گیری است | `model_runner.py:207-217`; ۱۵۳/۴۸۱ attempt | وقتی `response is not None`، `usage=response.usage` را در `ModelAttemptRecord` شکست هم بگذار | ~۰ | ~۰ | ~۰ (فعال‌کننده) | خیلی کم | کم | **High** |
 | **R5** ✅ | بودجه‌ی تحلیل توسط seeding دور زده می‌شد — **fixed** | golden replay: ۴۰ → ۱۳ block، ۵۵٬۹۱۳ → ۱۸٬۳۰۷ token | seedهای section required رتبه‌بندی و به ۶۰٪ `target_tokens` capped شدند؛ artifact اکنون target/required/seed counterها را ذخیره می‌کند | متوسط | متوسط | **بالا** | کم | **متوسط** — پوشش به‌دلیل budget binding کم می‌شود؛ باید پایش شود | **High** |
-| **R6** 🟧P1 | writer و verifier یک مدل بودند | routing + رکوردهای اجرا (هر دو `gemini-3.6-flash`) | اگر `THESISOUND_MODEL_REVIEWER` تنظیم نیست، verifier را **مسدود** کن (نه warning در `doctor`) | **بالا** | ~۰ | کم | کم | کم | **High** |
+| **R6** ✅ | writer و verifier یک مدل بودند — **fixed** | routing + رکوردهای اجرا (هر دو `gemini-3.6-flash`) | `ModelRouter` برخورد resolved provider/model برای `script_verifier` را مسدود می‌کند؛ preflight در scopeهای `script` و `full` نیز پیش از queue شدن اجرا fail می‌شود | **بالا** | ~۰ | کم | کم | کم | **High** |
 | **R7** 🟧P1 | document map سریالی است و ۶۰٪ توکن را دارد | `document_mapper.py:65`; A3 | همان الگوی fan-out با circuit-breaker که در `evidence_extractor` هست را روی partitions ببر | ~۰ | **بالا** | ~۰ | متوسط | متوسط — سهمیه‌ی Gemini | **High** |
 | **R8** 🟧P1 | ۵۵.۳٪ توکن ورودی evidence، سربار تکراری است | A5؛ ۲٬۸۴۰ در برابر ۱٬۳۹۸ | چند بلوک را در یک فراخوانی batch کن، یا context ثابت را در cache مدل بگذار | ~۰ | متوسط | **بالا** | متوسط | متوسط — ممکن است دقت استخراج را کم کند؛ **نیاز به آزمایش** | **High** |
 | **R9** 🟨P2 | ۲۴٪ نرخ hallucination شاهد در مدل fast | ۷۷/۳۲۰ attempt | آزمایش tier: `evidence_extraction` روی مدل strong، مقایسه‌ی هزینه‌ی کل (اولیه + retry + claimهای ازدست‌رفته) | نامعلوم | نامعلوم | نامعلوم | کم (آزمایش) | کم | **Medium** |

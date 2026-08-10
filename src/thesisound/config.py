@@ -36,7 +36,9 @@ class Settings(BaseSettings):
     model_fast: str = "gemini-3.5-flash-lite"
     model_strong: str = "gemini-3.6-flash"
     # Independent reviewer model. Unset falls back to model_strong, which makes
-    # the writer grade its own work -- `doctor` warns when that happens.
+    # the writer grade its own script -- script_verifier then refuses to resolve
+    # a route at all (ModelRouter._require_reviewer_independence). The fallback
+    # is deliberate: a blank model id would reach the provider instead.
     model_reviewer: str = ""
     model_tts: str = "gemini-3.1-flash-tts-preview"
     model_asr: str = "gemini-3.6-flash"

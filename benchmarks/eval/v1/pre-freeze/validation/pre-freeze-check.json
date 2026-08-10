@@ -1,0 +1,60 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.pre-freeze-check.v2",
+  "settlement_consistent": true,
+  "release_gating_core_ready": false,
+  "freeze_permitted": false,
+  "status": "pass",
+  "status_meaning": "`status` reports settlement consistency ONLY. A freeze may proceed only when `freeze_permitted` is true.",
+  "visible_core_count": 12,
+  "visible_challenge_count": 2,
+  "computed_duration_pair": {
+    "C10": {
+      "depth": "standard",
+      "block_coverage_target": 0.6,
+      "evidence_input_token_budget": 36000,
+      "max_claims_per_block": 3,
+      "neighbor_context_blocks": 0,
+      "include_examples": true,
+      "include_objections_and_responses": false,
+      "target_source_tokens_with_10_percent_headroom": 21142
+    },
+    "C11": {
+      "depth": "deep",
+      "block_coverage_target": 0.85,
+      "evidence_input_token_budget": 72000,
+      "max_claims_per_block": 5,
+      "neighbor_context_blocks": 1,
+      "include_examples": true,
+      "include_objections_and_responses": true,
+      "target_source_tokens_with_10_percent_headroom": 29950
+    }
+  },
+  "computed_profiles": {
+    "C09": {
+      "depth": "deep",
+      "block_coverage_target": 0.95,
+      "evidence_input_token_budget": 72000,
+      "max_claims_per_block": 5,
+      "neighbor_context_blocks": 1,
+      "include_examples": true,
+      "include_objections_and_responses": true,
+      "target_source_tokens": 72000,
+      "maximum_nominal_selected_coverage": 0.713712,
+      "fixture_token_estimate": 100881,
+      "fixture_token_source": "validation/r13/C09-darwin.json"
+    }
+  },
+  "controlled_pair_fixture_tokens": 32032,
+  "controlled_pair_fixture_token_source": "validation/r13/C10-C11-ostrom.json",
+  "errors": [],
+  "release_gating_freeze_blockers": [
+    "C02: R13 Gate E is pending: a fluent human has not attested the six-page reading-order, apparatus separation, script rendering, and meaning preservation despite zero ZWNJ. The four isolated private-use marks are deterministically removed by the shared canonicalizer and are not a blocker.",
+    "C02: no ingested fixture for ebadi_emdadi_putnam_2021",
+    "V15: The underlying 1989 Sina printing/facsimile reuse status is unverified. The legally conservative strategy is private/offline scan use with no repository redistribution, while the Wikisource transcription is a separate CC BY-SA object.",
+    "V15: Scholar-derived candidates are pinned, but the 17-verse scan collation packet remains pending human attestation; no Persian fixture may be produced before it is completed.",
+    "V15: The official Lewis/de Bruijn pages and bounds are verified, but automated local acquisition is blocked by the publisher's access challenge; no bounded commentary fixture has passed R13.",
+    "V15: no ingested fixture for hafez_qazvini_ghani_selection",
+    "V15: no ingested fixture for lewis_hafez_rendi_bounded",
+    "V15: no ingested fixture for debruijn_hafez_poetic_art_bounded"
+  ]
+}

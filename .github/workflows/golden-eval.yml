@@ -16,6 +16,7 @@ jobs:
       - run: uv run thesisound eval
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          THESISOUND_MODEL_REVIEWER: ${{ vars.THESISOUND_MODEL_REVIEWER }}
           OKIAN_API_KEY: ${{ secrets.OKIAN_API_KEY }}
           OKIAN_BASE_URL: ${{ vars.OKIAN_BASE_URL }}
       - uses: actions/upload-artifact@v4

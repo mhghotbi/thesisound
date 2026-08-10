@@ -2,7 +2,7 @@
   "schema_version": "thesisound.semantic-fixture-validation.v1",
   "artifact_id": "C08-douglass-primary",
   "artifact_filename": "C08-douglass-speech-neutralized.md",
-  "intended_scope": "Complete speech with structural headings neutralized",
+  "intended_scope": "Complete substantive Douglass 1852 oration with structural headings neutralized",
   "expected_language": "en",
   "status": "pass",
   "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
@@ -25,6 +25,8 @@
     "control_character_anomaly_count": 0,
     "control_character_anomalies": [],
     "private_use_character_count": 0,
+    "residual_private_use_character_count": 0,
+    "canonicalizable_character_count": 0,
     "zwnj_count": 0,
     "bidi_control_count": 0,
     "mojibake_marker_count": 0,
@@ -99,6 +101,39 @@
     "zwnj_and_punctuation_compatible": true,
     "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
   },
+  "canonicalization": {
+    "rule": "Drop a Cc/Cs/Co code point only when it is isolated -- every neighbour is absent or whitespace. Isolated marks are page furniture (footnote symbols, separators, stray font glyphs): removing them changes no word, no locator and no excerpt span. A code point adjacent to any non-space character is semantic corruption, because it may stand for a letter whose identity is unknown, and recovering it would need source-specific repair, which R13 forbids.",
+    "applied_to": "text extracted through the production native parser",
+    "dropped_code_points": [],
+    "dropped_character_count": 0,
+    "word_sequence_preserved": true,
+    "residual_code_points": [],
+    "residual_control_or_surrogate_code_points": [],
+    "residual_control_or_surrogate_count": 0,
+    "residual_private_use_character_count": 0,
+    "canonicalization_required_before_ingestion": false,
+    "canonical_text_sha256": "48bf0189f4a2210fbf187af3bff137eb67fd7bd9204480d219a8a3d1824fd2a1"
+  },
+  "production_text_parity": {
+    "result": "pass",
+    "production_ingested_normalized_text_sha256": "48bf0189f4a2210fbf187af3bff137eb67fd7bd9204480d219a8a3d1824fd2a1",
+    "r13_canonical_normalized_text_sha256": "48bf0189f4a2210fbf187af3bff137eb67fd7bd9204480d219a8a3d1824fd2a1",
+    "reason": "the production-ingested artifact is already canonical"
+  },
+  "scope_fidelity": {
+    "declared": false,
+    "result": "pass",
+    "reason": "no bounded-scope contract declared",
+    "contract_filename": null,
+    "contract_sha256": null,
+    "checks": []
+  },
+  "human_collation": {
+    "required": false,
+    "result": "pass",
+    "reason": "not required for this fixture language",
+    "record": null
+  },
   "gates": [
     {
       "gate": "non_empty_bytes",
@@ -131,14 +166,24 @@
       "evidence": "count=0"
     },
     {
-      "gate": "no_control_character_anomalies",
+      "gate": "no_residual_control_character_anomalies",
       "status": "pass",
-      "evidence": "count=0"
+      "evidence": "distinct_code_points=0; occurrences=0"
     },
     {
-      "gate": "no_private_use_characters",
+      "gate": "no_residual_private_use_characters",
       "status": "pass",
-      "evidence": "count=0"
+      "evidence": "residual=0 of 0 total"
+    },
+    {
+      "gate": "canonicalization_preserves_words",
+      "status": "pass",
+      "evidence": "dropped=0; word_sequence_preserved=True"
+    },
+    {
+      "gate": "production_text_matches_r13_canonical_text",
+      "status": "pass",
+      "evidence": "the production-ingested artifact is already canonical"
     },
     {
       "gate": "presentation_forms_not_primary",
@@ -179,6 +224,16 @@
       "gate": "persian_normalization_compatible",
       "status": "pass",
       "evidence": "میرود، آیا؟ کی یک 123"
+    },
+    {
+      "gate": "declared_scope_fidelity",
+      "status": "pass",
+      "evidence": "no bounded-scope contract declared"
+    },
+    {
+      "gate": "human_collation_attested",
+      "status": "pass",
+      "evidence": "not required for this fixture language"
     }
   ],
   "warnings": []

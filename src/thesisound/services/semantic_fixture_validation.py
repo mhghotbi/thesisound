@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import unicodedata
 from pathlib import Path
@@ -31,6 +32,22 @@ _PERSIAN_SPECIFIC = frozenset("پچژگکییۀ")
 _ARABIC_VARIANTS = frozenset("يكۀةى")
 _MOJIBAKE_MARKERS = ("Ã", "Â", "Ø", "Ù", "â€", "ï¿½")
 _ALLOWED_CONTROLS = frozenset("\n\r\t")
+_NO_IDENTITY_CATEGORIES = frozenset({"Cc", "Cs", "Co"})
+_COLLATION_REQUIRED_LANGUAGES = frozenset({"fa", "mixed"})
+_COLLATION_ATTESTATIONS = (
+    "reading_order_correct",
+    "footnote_and_margin_separation_correct",
+    "script_rendering_correct",
+    "zwnj_loss_meaning_preserving",
+)
+_CANONICALIZATION_RULE = (
+    "Drop a Cc/Cs/Co code point only when it is isolated -- every neighbour is "
+    "absent or whitespace. Isolated marks are page furniture (footnote symbols, "
+    "separators, stray font glyphs): removing them changes no word, no locator "
+    "and no excerpt span. A code point adjacent to any non-space character is "
+    "semantic corruption, because it may stand for a letter whose identity is "
+    "unknown, and recovering it would need source-specific repair, which R13 forbids."
+)
 
 
 class SemanticFixtureValidationReport(BaseModel):
@@ -49,6 +66,10 @@ class SemanticFixtureValidationReport(BaseModel):
     locator_viability: dict[str, Any]
     exact_span_matching: dict[str, Any]
     normalization_checks: dict[str, Any]
+    canonicalization: dict[str, Any]
+    production_text_parity: dict[str, Any]
+    scope_fidelity: dict[str, Any]
+    human_collation: dict[str, Any]
     gates: list[dict[str, Any]]
     warnings: list[str] = Field(default_factory=list)
 
@@ -59,6 +80,8 @@ def validate_semantic_fixture(
     artifact_id: str,
     expected_language: str,
     intended_scope: str,
+    collation_record: Path | None = None,
+    scope_contract: Path | None = None,
 ) -> SemanticFixtureValidationReport:
     """Validate one prospective semantic fixture through Thesisound's native path.
 
@@ -66,6 +89,13 @@ def validate_semantic_fixture(
     therefore selects the production native parser explicitly and treats any unsafe
     result as a failure. Scans and facsimiles belong in offline references and must
     never be passed to this validator as semantic fixtures.
+
+    Not every nonstandard code point is fatal. Code points with no Unicode identity
+    are split by ``canonicalize_semantic_text`` into marks that a general, deterministic,
+    source-independent rule can drop without touching a word, and residue that would
+    need source-specific repair. Only the residue rejects the fixture. Every dropped
+    code point is itemised in the report so the same canonicalization can be applied
+    to the ingested artifact rather than assumed.
     """
 
     resolved = path.expanduser().resolve()
@@ -97,7 +127,9 @@ def validate_semantic_fixture(
         sequence_key = block_sequence_key(blocks)
 
     pdf_metrics = _pdf_metrics(resolved) if resolved.suffix.casefold() == ".pdf" else {}
-    control_anomalies = _control_anomalies(extracted_text)
+    canonical_text, canonicalization = canonicalize_semantic_text(extracted_text)
+    control_anomalies = canonicalization["residual_control_or_surrogate_code_points"]
+    residual_private_use = canonicalization["residual_private_use_character_count"]
     private_use_count = sum(unicodedata.category(char) == "Co" for char in extracted_text)
     presentation_count = _count_ranges(extracted_text, _ARABIC_PRESENTATION_RANGES)
     arabic_script_count = _count_ranges(extracted_text, _ARABIC_SCRIPT_RANGES)
@@ -113,6 +145,33 @@ def validate_semantic_fixture(
     locator = _locator_viability(parsed, page_count=ingestion.inspection.page_count)
     spans = _exact_span_check(extracted_text)
     normalization_checks = _normalization_checks()
+    production_text_hash = hashlib.sha256(normalized_text.encode("utf-8")).hexdigest()
+    canonical_text_hash = canonicalization["canonical_text_sha256"]
+    production_text_parity = {
+        "result": "pass" if production_text_hash == canonical_text_hash else "fail",
+        "production_ingested_normalized_text_sha256": production_text_hash,
+        "r13_canonical_normalized_text_sha256": canonical_text_hash,
+        "reason": (
+            "the production-ingested artifact is already canonical"
+            if production_text_hash == canonical_text_hash
+            else (
+                "R13 would drop characters that the production ingestion path still sees; "
+                "ingest a canonicalized derivative or apply the identical canonicalizer "
+                "before semantic ingestion"
+            )
+        ),
+    }
+    scope_fidelity = _scope_fidelity(
+        canonical_text,
+        scope_contract,
+        artifact_id=artifact_id,
+    )
+    collation = _human_collation(
+        collation_record,
+        artifact_id=artifact_id,
+        expected_language=expected_language,
+        normalized_text_sha256=canonical_text_hash,
+    )
 
     metrics: dict[str, Any] = {
         "byte_size": len(data),
@@ -133,6 +192,8 @@ def validate_semantic_fixture(
         "control_character_anomaly_count": len(control_anomalies),
         "control_character_anomalies": control_anomalies,
         "private_use_character_count": private_use_count,
+        "residual_private_use_character_count": residual_private_use,
+        "canonicalizable_character_count": canonicalization["dropped_character_count"],
         "zwnj_count": extracted_text.count("\u200c"),
         "bidi_control_count": sum(
             extracted_text.count(char) for char in ("\u061c", "\u200e", "\u200f")
@@ -195,14 +256,26 @@ def validate_semantic_fixture(
             f"count={replacement_count}",
         ),
         (
-            "no_control_character_anomalies",
+            "no_residual_control_character_anomalies",
             not control_anomalies,
-            f"count={len(control_anomalies)}",
+            f"distinct_code_points={len(control_anomalies)}; "
+            f"occurrences={canonicalization['residual_control_or_surrogate_count']}",
         ),
         (
-            "no_private_use_characters",
-            private_use_count == 0,
-            f"count={private_use_count}",
+            "no_residual_private_use_characters",
+            residual_private_use == 0,
+            f"residual={residual_private_use} of {private_use_count} total",
+        ),
+        (
+            "canonicalization_preserves_words",
+            canonicalization["word_sequence_preserved"],
+            f"dropped={canonicalization['dropped_character_count']}; "
+            f"word_sequence_preserved={canonicalization['word_sequence_preserved']}",
+        ),
+        (
+            "production_text_matches_r13_canonical_text",
+            production_text_parity["result"] == "pass",
+            production_text_parity["reason"],
         ),
         (
             "presentation_forms_not_primary",
@@ -228,6 +301,12 @@ def validate_semantic_fixture(
             normalization_checks["zwnj_and_punctuation_compatible"],
             normalization_checks["normalized_probe"],
         ),
+        (
+            "declared_scope_fidelity",
+            scope_fidelity["result"] == "pass",
+            scope_fidelity["reason"],
+        ),
+        ("human_collation_attested", collation["result"] == "pass", collation["reason"]),
     ]
     gates = [
         {"gate": name, "status": "pass" if passed else "fail", "evidence": evidence}
@@ -254,6 +333,10 @@ def validate_semantic_fixture(
         locator_viability=locator,
         exact_span_matching=spans,
         normalization_checks=normalization_checks,
+        canonicalization=canonicalization,
+        production_text_parity=production_text_parity,
+        scope_fidelity=scope_fidelity,
+        human_collation=collation,
         gates=gates,
         warnings=warnings,
     )
@@ -306,16 +389,290 @@ def _count_ranges(text: str, ranges: tuple[tuple[int, int], ...]) -> int:
     return sum(any(start <= ord(char) <= end for start, end in ranges) for char in text)
 
 
-def _control_anomalies(text: str) -> list[dict[str, Any]]:
-    counts: dict[str, int] = {}
-    for char in text:
+def canonicalize_semantic_text(text: str) -> tuple[str, dict[str, Any]]:
+    """Split code points with no Unicode identity into droppable and fatal residue.
+
+    The governing question R13 answers is not "is this code point standard?" but
+    "can canonical text be derived by a general, deterministic, source-independent
+    rule that preserves semantic content, locators and exact-span reproducibility?"
+    Isolation answers it: a mark with whitespace on both sides is its own token, so
+    deleting it removes a token that carried no letters and leaves every other word,
+    page and span untouched. A mark wedged against a letter or digit may *be* that
+    text, and guessing which is source-specific repair.
+    """
+
+    dropped: dict[str, int] = {}
+    residual: dict[str, dict[str, Any]] = {}
+    kept: list[str] = []
+    for index, char in enumerate(text):
         if char in _ALLOWED_CONTROLS or char == "\u200c":
+            kept.append(char)
             continue
         category = unicodedata.category(char)
-        if category in {"Cc", "Cs", "Co"}:
-            key = f"U+{ord(char):04X} {unicodedata.name(char, 'UNNAMED')}"
-            counts[key] = counts.get(key, 0) + 1
-    return [{"code_point": key, "count": counts[key]} for key in sorted(counts)]
+        if category not in _NO_IDENTITY_CATEGORIES:
+            kept.append(char)
+            continue
+        key = f"U+{ord(char):04X} {unicodedata.name(char, 'UNNAMED')}"
+        before = text[index - 1] if index else ""
+        after = text[index + 1] if index + 1 < len(text) else ""
+        if (not before or before.isspace()) and (not after or after.isspace()):
+            dropped[key] = dropped.get(key, 0) + 1
+            continue
+        record = residual.setdefault(
+            key,
+            {
+                "code_point": key,
+                "category": category,
+                "count": 0,
+                "sample_neighbours": f"{before!r} .. {after!r}",
+            },
+        )
+        record["count"] += 1
+        kept.append(char)
+
+    canonical = "".join(kept)
+    droppable = set(dropped)
+    expected_tokens = [
+        token
+        for token in re.findall(r"\S+", text)
+        if not all(
+            f"U+{ord(char):04X} {unicodedata.name(char, 'UNNAMED')}" in droppable
+            for char in token
+        )
+    ]
+    residual_records = [residual[key] for key in sorted(residual)]
+    report = {
+        "rule": _CANONICALIZATION_RULE,
+        "applied_to": "text extracted through the production native parser",
+        "dropped_code_points": [
+            {"code_point": key, "count": dropped[key], "disposition": "isolated_non_semantic_mark"}
+            for key in sorted(dropped)
+        ],
+        "dropped_character_count": sum(dropped.values()),
+        "word_sequence_preserved": re.findall(r"\S+", canonical) == expected_tokens,
+        "residual_code_points": residual_records,
+        "residual_control_or_surrogate_code_points": [
+            {"code_point": record["code_point"], "count": record["count"]}
+            for record in residual_records
+            if record["category"] in {"Cc", "Cs"}
+        ],
+        "residual_control_or_surrogate_count": sum(
+            record["count"] for record in residual_records if record["category"] in {"Cc", "Cs"}
+        ),
+        "residual_private_use_character_count": sum(
+            record["count"] for record in residual_records if record["category"] == "Co"
+        ),
+        "canonicalization_required_before_ingestion": bool(dropped),
+        "canonical_text_sha256": hashlib.sha256(
+            normalize_for_match(canonical)[0].encode("utf-8")
+        ).hexdigest(),
+    }
+    return canonical, report
+
+
+def _scope_fidelity(
+    text: str,
+    contract_path: Path | None,
+    *,
+    artifact_id: str,
+) -> dict[str, Any]:
+    """Evaluate a declarative bounded-source contract against extracted text.
+
+    R13 text-quality checks cannot prove that a preparer selected the intended
+    chapters. A scope contract makes that separate claim machine-checkable without
+    embedding source-specific logic in the validator. Markers use the evaluator's
+    exact normalization, so harmless typography differences do not mask a scope
+    error.
+    """
+
+    if contract_path is None:
+        return {
+            "declared": False,
+            "result": "pass",
+            "reason": "no bounded-scope contract declared",
+            "contract_filename": None,
+            "contract_sha256": None,
+            "checks": [],
+        }
+    try:
+        contract_bytes = contract_path.read_bytes()
+        contract = json.loads(contract_bytes.decode("utf-8"))
+    except (OSError, UnicodeError, ValueError) as error:
+        return {
+            "declared": True,
+            "result": "fail",
+            "reason": f"scope contract could not be read: {error}",
+            "contract_filename": contract_path.name,
+            "contract_sha256": None,
+            "checks": [],
+        }
+
+    checks: list[dict[str, Any]] = []
+
+    def add(name: str, passed: bool, evidence: str) -> None:
+        checks.append(
+            {"check": name, "status": "pass" if passed else "fail", "evidence": evidence}
+        )
+
+    add(
+        "artifact_id_matches",
+        contract.get("artifact_id") == artifact_id,
+        f"contract={contract.get('artifact_id')!r}; fixture={artifact_id!r}",
+    )
+    normalized, _ = normalize_for_match(text)
+    positions: list[int] = []
+    for index, marker in enumerate(contract.get("required_markers_in_order", []), start=1):
+        label = marker.get("label") or f"marker_{index}"
+        needle, _ = normalize_for_match(str(marker.get("text", "")))
+        count = normalized.count(needle) if needle else 0
+        expected_count = int(marker.get("expected_count", 1))
+        position = normalized.find(needle) if needle else -1
+        positions.append(position)
+        add(
+            f"required_marker:{label}",
+            bool(needle) and count == expected_count,
+            f"normalized_occurrences={count}; expected={expected_count}; offset={position}",
+        )
+    valid_positions = all(position >= 0 for position in positions)
+    add(
+        "required_markers_ordered",
+        valid_positions and positions == sorted(positions),
+        f"normalized_offsets={positions}",
+    )
+
+    for index, marker in enumerate(contract.get("forbidden_markers", []), start=1):
+        if isinstance(marker, str):
+            label = f"forbidden_{index}"
+            marker_text = marker
+        else:
+            label = marker.get("label") or f"forbidden_{index}"
+            marker_text = str(marker.get("text", ""))
+        needle, _ = normalize_for_match(marker_text)
+        count = normalized.count(needle) if needle else 0
+        add(
+            f"forbidden_marker:{label}",
+            bool(needle) and count == 0,
+            f"normalized_occurrences={count}",
+        )
+
+    start = contract.get("start_boundary")
+    if isinstance(start, dict):
+        needle, _ = normalize_for_match(str(start.get("text", "")))
+        offset = normalized.find(needle) if needle else -1
+        maximum = int(start.get("maximum_normalized_offset", 0))
+        add(
+            "start_boundary",
+            bool(needle) and 0 <= offset <= maximum,
+            f"offset={offset}; maximum={maximum}",
+        )
+
+    end = contract.get("end_boundary")
+    if isinstance(end, dict):
+        needle, _ = normalize_for_match(str(end.get("text", "")))
+        offset = normalized.rfind(needle) if needle else -1
+        trailing = len(normalized) - (offset + len(needle)) if offset >= 0 else len(normalized)
+        maximum = int(end.get("maximum_trailing_normalized_characters", 0))
+        add(
+            "end_boundary",
+            bool(needle) and offset >= 0 and trailing <= maximum,
+            f"trailing_normalized_characters={trailing}; maximum={maximum}",
+        )
+
+    minimum = contract.get("minimum_extractable_characters")
+    if minimum is not None:
+        add(
+            "minimum_extractable_characters",
+            len(text) >= int(minimum),
+            f"actual={len(text)}; minimum={int(minimum)}",
+        )
+    maximum = contract.get("maximum_extractable_characters")
+    if maximum is not None:
+        add(
+            "maximum_extractable_characters",
+            len(text) <= int(maximum),
+            f"actual={len(text)}; maximum={int(maximum)}",
+        )
+
+    failures = [item["check"] for item in checks if item["status"] == "fail"]
+    return {
+        "declared": True,
+        "result": "fail" if failures else "pass",
+        "reason": (
+            f"failed checks: {', '.join(failures)}"
+            if failures
+            else "all declared bounded-scope checks passed"
+        ),
+        "contract_filename": contract_path.name,
+        "contract_sha256": hashlib.sha256(contract_bytes).hexdigest(),
+        "checks": checks,
+    }
+
+
+def _human_collation(
+    record_path: Path | None,
+    *,
+    artifact_id: str,
+    expected_language: str,
+    normalized_text_sha256: str,
+) -> dict[str, Any]:
+    """R13 Gate E. Fail-closed: an unmeasured fixture is rejected, never assumed clean.
+
+    Required for every Persian and mixed-script fixture, where extraction can be
+    lossy in ways no counting gate sees -- reversed bidi runs, footnote apparatus
+    hoisted into body text, running heads spliced mid-argument.
+    """
+
+    required = expected_language in _COLLATION_REQUIRED_LANGUAGES
+    if record_path is None:
+        return {
+            "required": required,
+            "result": "fail" if required else "pass",
+            "reason": (
+                "no human collation record supplied for a fixture whose language "
+                "requires one"
+                if required
+                else "not required for this fixture language"
+            ),
+            "record": None,
+        }
+    try:
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return {
+            "required": required,
+            "result": "fail",
+            "reason": f"collation record could not be read: {error}",
+            "record": None,
+        }
+
+    problems: list[str] = []
+    if record.get("artifact_id") != artifact_id:
+        problems.append("artifact_id does not match the fixture under validation")
+    if record.get("fixture_normalized_text_sha256") != normalized_text_sha256:
+        problems.append("fixture_normalized_text_sha256 does not bind this exact fixture text")
+    for field in ("reviewer", "reviewed_on"):
+        if not record.get(field):
+            problems.append(f"missing {field}")
+    pages = record.get("pages_checked")
+    if not isinstance(pages, list) or len(pages) < 3:
+        problems.append("fewer than three pages recorded as checked")
+    for attestation in _COLLATION_ATTESTATIONS:
+        if record.get(attestation) is not True:
+            problems.append(f"{attestation} is not attested true")
+    return {
+        "required": required,
+        "result": "pass" if not problems else "fail",
+        "reason": "; ".join(problems) if problems else "human collation attested",
+        "record": {
+            "artifact_id": record.get("artifact_id"),
+            "reviewer": record.get("reviewer"),
+            "reviewed_on": record.get("reviewed_on"),
+            "pages_checked": pages if isinstance(pages, list) else None,
+            "fixture_normalized_text_sha256": record.get(
+                "fixture_normalized_text_sha256"
+            ),
+        },
+    }
 
 
 def _language_sanity(

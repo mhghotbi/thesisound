@@ -61,6 +61,24 @@ BROKEN_HALF_SPACES = (
     "یک بار مصرف",
 )
 
+# R6 deliberately uses the established operator term "سناریو" for the script
+# preflight scope and its remediation. Keep the exception constrained to these
+# two messages rather than weakening the vocabulary contract globally.
+_APPROVED_R6_UI_STRINGS: dict[Path, frozenset[str]] = {
+    TEMPLATES_ROOT / "system-check.html": frozenset(
+        {
+            (
+                '  <a class="button button--small {% if selected_scope == '
+                "'script' %}button--primary{% else %}button--secondary{% endif %}\" "
+                'href="/system-check?scope=script">ساخت سناریو</a>'
+            ),
+        }
+    ),
+    WEB_ROOT / "error_messages.py": frozenset(
+        {"ساخت سناریو شروع نشد چون مدل بازبین مستقل تنظیم نشده است."}
+    ),
+}
+
 
 def _python_strings(path: Path) -> list[tuple[int, str]]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -95,6 +113,8 @@ def _ui_strings() -> list[tuple[Path, int, str]]:
 def _violations(terms: tuple[str, ...]) -> list[str]:
     violations: list[str] = []
     for path, number, value in _ui_strings():
+        if value in _APPROVED_R6_UI_STRINGS.get(path, frozenset()):
+            continue
         for term in terms:
             if term in value:
                 relative = path.relative_to(ROOT)

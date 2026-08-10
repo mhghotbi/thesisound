@@ -7,17 +7,17 @@ This is the final v1 disposition of the Phase-1 proposal after Opus review/recon
 | Case | Settled source package | Intended observable behavior | Current-code fit | Pre-freeze package status |
 |---|---|---|---|---|
 | C01 | James, “The Will to Believe”; one clean Gutenberg transcription, LoC 1897 scan offline only | EN→FA conceptual distinctions and limits | Intra-source path exists | **READY** |
-| C02 | Ebadi & Emdadi Masouleh, Persian Putnam article | Native-Persian conceptual distinction fidelity | Intra-source path exists | **BLOCKED — R13 private-use glyphs** |
+| C02 | Ebadi & Emdadi Masouleh, Persian Putnam article; canonical private derivative | Native-Persian conceptual distinction fidelity | Intra-source path and canonicalization parity pass | **BLOCKED — human Gate E pending** |
 | C03 | Woolf, complete *A Room of One's Own* | Argument, qualification, historical/fictional/rhetorical typing | Intra-source mapping/extraction exists | **READY** |
-| C04 | Du Bois 1897 + enlarged 1903 primary scope; SEP §§2.3 and 3 only | Primary position versus scholarly interpretation attribution | Claim types and source IDs exist; no M8 required | **READY** |
-| C05R | Yao Lin, “Philosophy as a Normative Discipline” | Single-source objection/reply voice preservation | Objection/response section functions and claim types exist | **READY** |
-| C06 | Commission executive summary + quality-of-life chapter; OECD overview chapter | Complementary multi-source composition, explicitly not reconciliation | Episode preparation combines ledgers; M8 remains absent | **BLOCKED — OECD R13 failure** |
+| C04 | Du Bois 1897 + corrected 1903 Chapters I, III, XIV; SEP §§2.3 and 3 only | Primary position versus scholarly interpretation attribution | Claim types and source IDs exist; no M8 required | **READY — R13 and scope contract pass** |
+| C05R | Yao Lin, “Philosophy as a Normative Discipline,” pinned First View artifact | Single-source objection/reply voice preservation | Objection/response section functions and claim types exist | **READY** |
+| C06 | Commission executive summary + quality-of-life chapter; OECD *How's Life? 2020* Chapter 1, printed pp. 18–30 and 43–55 | Complementary multi-source composition, explicitly not reconciliation | Episode preparation combines ledgers; M8 remains absent | **READY — both sources pass R13** |
 | C07 | Bloom, Han & Liang hybrid-work RCT | Bounded inference and observable narrowing for unsupported populations/settings | Coverage audit and narrow-scope path exist | **READY** |
-| C08 | Douglass speech + neutralized NPS and intended LoC decoys | Claim-level relevance filtering, not source triage | Claims are prioritized after all sources are ingested | **BLOCKED — incomplete 25–30% decoy mix** |
-| C09 | Darwin 1859 Chapters I–IV, VI, XIV; one clean Gutenberg text | Long hierarchical dependency reconstruction | Document mapping and budget-bounded planner exist | **READY WITH RECORDED BUDGET CAUTION** |
+| C08 | Douglass speech + neutralized NPS, LoC, and National Archives material | Claim-level relevance filtering, not source triage | Claims are prioritized after all sources are ingested | **READY — 28.62% decoy share** |
+| C09 | Darwin 1859 Chapters I–IV, VI, XIV; one clean Gutenberg text | Hierarchical reconstruction under budgeted evidence selection | Critical-mode document mapping and budget-bounded planner exist | **READY — R13 and scope contract pass** |
 | C10 | Ostrom Nobel lecture, 20 minutes | Controlled standard-profile compression | Standard profile computed | **READY** |
 | C11 | Exact same Ostrom corpus/brief/config, 40 minutes | Controlled deep-profile expansion without padding | Deep profile computed | **READY** |
-| V15 | Qazvini–Ghani Hafez route + bounded Lewis/de Bruijn | Persian primary, cross-language attribution, constitutive ambiguity | Attribution/composition paths exist; no cross-source disagreement claim | **BLOCKED — edition, rights, selection, human collation, R13** |
+| V15 | Qazvini–Ghani textual basis; 1989 Sina scan witness; Wikisource revision 290057; bounded Lewis/de Bruijn | Persian primary, cross-language attribution, constitutive ambiguity | Attribution/composition paths exist; no cross-source disagreement claim | **BLOCKED — 1989 rights, human collation, commentary acquisition, R13** |
 
 ## Visible non-gating challenge tier
 

@@ -1,119 +1,112 @@
-# Phase 2.5 pre-freeze readiness report
+# Phase 2.6 final blocker-closure readiness
 
-Date: 2026-08-11 (Asia/Tehran)  
-Overall verdict: **NOT READY TO FREEZE**  
-Freeze records created: **none**  
+Date: 2026-08-11 (Asia/Tehran)
+
+Overall verdict: **NOT READY TO FREEZE**
+
+Source/package freeze hashes created: **none**
+
 Gold or expected answers created: **none**
 
-## Settled visible set
+The source settlement is internally consistent, but two release-gating core packages remain blocked. The corrected checker reports `settlement_consistent: true`, `release_gating_core_ready: false`, and `freeze_permitted: false`. V13 and V14 remain visible non-gating challenges and do not enter this blocker list.
 
-The 12 visible release-gating cases are C01, C02, C03, C04, C05R, C06, C07, C08, C09, C10, C11, and V15. V13 and V14 are visible non-gating challenges. H13/H14/H15 are burned as hidden holdouts. Original C05 is deferred until M8; C12 is deferred to v1.1 without force-filling. Three future hidden holdouts exist only as opaque public records plus a private-bundle interface.
+## Core status
 
-Fully pre-freeze-ready cases: **C01, C03, C04, C05R, C07, C09, C10, C11**. C09 is ready under the stated gate definition but carries a material coverage caution below. Blocked core cases: **C02, C06, C08, V15**. Both visible challenges remain blocked for acquisition/rights work.
+| Case | Status | Phase 2.6 result |
+|---|---|---|
+| C01 | **READY** | Unchanged: one clean James transcription; LoC witness stays offline. |
+| C02 | **BLOCKED** | Canonicalization parity passes; CC BY-NC storage strategy is private; R13 fails only pending human Gate E. |
+| C03 | **READY** | Unchanged complete six-chapter Woolf essay. |
+| C04 | **READY** | Rebuilt to 18,738 R13 tokens; Chapters I, III, XIV and Afterthought only; scope contract passes; no Project Gutenberg boilerplate. |
+| C05R | **READY** | Lin remains approved; the 197,683-byte First View artifact and real publisher/Crossref records are pinned without inventing volume or issue. |
+| C06 | **READY** | The Commission source is unchanged. OECD *How's Life? 2020* Chapter 1 is the selected complementary framework; its bounded UTF-8 fixture passes R13 without OCR or source-specific repair. |
+| C07 | **READY** | Unchanged observable narrowing case. |
+| C08 | **READY** | Four clean sources pass R13; the LoC item is partially relevant; final R13-character decoy share is 28.62%; institutional leakage is generically removed. |
+| C09 | **READY** | Correct scope and scope contract pass; `critical` is pinned; capability and later scoring contract now disclose budgeted deferral. |
+| C10 | **READY** | Approved 20-minute standard-profile member; fixture tokens are read from R13 at check time. |
+| C11 | **READY** | Approved 40-minute deep-profile member; fixture tokens are read from the same R13 report. |
+| V15 | **BLOCKED** | Three provenance layers and scholar-derived candidates are pinned, but 1989 rights, human collation, commentary acquisition, fixture creation, and R13 remain open. |
 
-## R13 results
+## C02: canonicalization, Gate E, and rights
 
-Every accepted ingested artifact passed the deterministic validator through the production native parser with OCR disabled. Reports record bytes, format, pages, text characters, word/token estimates, images, Unicode/controls, normalized diagnostic hash, language sanity, locators, and 20 deterministic exact-span recoveries.
+The production artifact is the canonical UTF-8 Markdown derivative, not the publisher PDF. The same shared function canonicalizes preparation and R13. Its production-ingested and R13-canonical normalized hashes are both `23dff599568173d3d5543617d48252f6e6167ae63bfee2cf4809f66093631c44`. The original four isolated marks (`U+F02A` ×2, `U+F0AF` ×2) are recorded in the private transformation packet and are no longer a blocker. No OCR or source-specific word substitution is used.
 
-| Artifact | Result | Pages | Extractable chars | Token estimate | Images | Exact spans | Key finding |
-|---|---:|---:|---:|---:|---:|---:|---|
-| C01 James | pass | — | 51,490 | 14,693 | — | 20/20 | clean UTF-8 |
-| C02 Putnam Persian PDF | **fail** | 31 | 51,575 | 14,663 | 8 | 20/20 | 4 private-use chars: U+F02A ×2, U+F0AF ×2 |
-| C03 Woolf complete essay | pass | — | 210,359 | 60,034 | — | 20/20 | complete six chapters |
-| C04 Du Bois 1903 primary scope | pass | — | 83,918 | 23,928 | — | 20/20 | enlarged primary scope |
-| C04 Du Bois 1897 primary | pass | — | 15,622 | 4,458 | — | 20/20 | complete article body |
-| C04 SEP §§2.3, 3 | pass | — | 13,327 | 3,801 | — | 20/20 | commentary strictly bounded |
-| C05R Lin | pass | 24 | 66,983 | 19,132 | 1 | 20/20 | named objections/replies |
-| C06 Commission scope | pass | 32 | 106,980 | 30,510 | 0 | 20/20 | fixed source-page map |
-| C06 OECD scope | **fail** | 19 | 62,474 | 17,834 | 556 | 20/20 | 291 control-code occurrences across 8 code points |
-| C07 Bloom RCT | pass | — | 48,050 | 13,688 | — | 20/20 | JATS article body/methods |
-| C08 Douglass primary | pass | — | 59,888 | 17,073 | — | 20/20 | neutralized headings/front matter |
-| C08 NPS decoy | pass | — | 10,087 | 2,869 | — | 20/20 | neutralized headings/front matter |
-| C09 Darwin scope | pass | — | 401,050 | 114,328 | — | 20/20 | exact Chapters I-IV, VI, XIV |
-| C10/C11 Ostrom | pass | 37 | 112,153 | 32,032 | 0 | 20/20 | born-digital InDesign PDF, text on all pages |
+Generic preprocessing removes coordinate-confirmed repeated running heads and collects detected page-note apparatus after the body so it does not interrupt a page-spanning paragraph. R13 now passes Unicode, language sanity, exact-span, locator, production-ingestion, canonicalization-parity, and normalization gates. It still fails Gate E because the pending record has no human reviewer.
 
-The Persian C02 extraction otherwise looks healthy: 33,897 normal Arabic/Persian-script code points, zero Arabic Presentation Forms, zero replacement characters, zero mojibake markers, viable page locators, and complete exact-span recovery. R13 is conjunctive, so the private-use characters still reject it. No OCR or repaired derivative was created.
+The private packet binds pages 1, 3, 4, 12, 18, and 31 to the exact fixture. A fluent reviewer must attest reading order, apparatus separation, script rendering, and meaning preservation despite zero ZWNJ. Approval has not been fabricated.
 
-## R14 one-artifact rule
+CC BY-NC 4.0 is handled conservatively: neither publisher PDF nor derivative is committed publicly. The derivative belongs in `THESISOUND_EVAL_FIXTURE_ROOT`; the public repository stores only acquisition, transformation, validation, and review metadata. Any future public distribution needs explicit noncommercial/attribution/change-notice review.
 
-- C01 ingests only the clean James transcription. The LoC 1897 scan and its OCR remain offline collation evidence.
-- C09 ingests only the scoped Gutenberg first-edition transcription. Darwin Online and page scans remain offline witnesses.
-- C04 has three logical sources and exactly one candidate fixture for each: two primary works and one bounded commentary source.
-- C06 has two logical sources, but the failed OECD candidate is explicitly not accepted as `ingested_fixture`.
-- V15 scans are offline future collation witnesses only. No Persian semantic fixture exists yet.
+## C04 and C09 scope-fidelity closure
 
-## R15 and the controlled duration pair
+R13 now accepts an optional declarative scope contract and checks required markers, order/count, forbidden markers, normalized start/end boundaries, and character bounds against the production-extracted text. The settlement checker requires the recorded contract result for bounded fixtures.
 
-All 14 visible cases explicitly pin duration, modes, prior knowledge, audience, output language, Research Brief, and source-bound behavior. The settlement checker proves that C10 and C11 are structurally identical after deleting `target_duration_minutes`.
+- C04: 65,703 extractable characters, 18,738 estimated tokens. Chapters I, III, XIV and Afterthought are present; Project Gutenberg licence/back matter is absent.
+- C09: 353,372 extractable characters, 100,881 estimated tokens. Exactly Chapters I–IV, VI and XIV are present; other chapters, index, Project Gutenberg licence, and back matter are absent.
 
-The actual accepted Ostrom PDF produces a Thesisound token estimate of 32,032, so the current-code calculations are:
+C09's current-code profile is deep + critical: coverage target `0.95`, input cap `72,000`, five claims per block, one neighbour block, examples and objections/responses enabled. The cap gives a maximum nominal selected coverage of `0.713712`. The capability is therefore **hierarchical reconstruction under budgeted evidence selection**, not full whole-corpus reconstruction. Later scoring must consider reasoning within selected evidence, dependency preservation, `deferred_block_ids`, disclosure of important deferrals, and absence of whole-corpus claims. No gold was authored.
 
-| Field | C10: 20 min | C11: 40 min |
-|---|---:|---:|
-| Analysis depth | standard | deep |
-| Coverage target | 0.60 | 0.85 |
-| Input budget | 36,000 | 72,000 |
-| Target source tokens including planner headroom | 21,142 | 29,950 |
-| Nominal selected coverage | 66.0% | 93.5% |
-| Claims per block | 3 | 5 |
-| Neighbor context | 0 | 1 |
-| Include examples | yes | yes |
-| Include objections/responses | no | yes |
-| Supported-duration gate | 16 min | 32 min |
-| Persian script target | 2,600 words | 5,200 words |
+## C05R pin
 
-This verifies the intended standard/deep profile transition in the current implementation. The source is independently clean: the official Nobel-hosted PDF reports Adobe InDesign/Adobe PDF Library metadata, contains no embedded raster images, has extractable text on all 37 pages, and passes R13.
+The approved source remains Yao Lin, “Philosophy as a Normative Discipline.” It is explicitly First View/advance access. The acquired PDF is 197,683 bytes and has diagnostic pre-freeze SHA-256 `50BF7049864255E9412DCCE891F665AE60CA3AAA710E3D9691089ECE00C50EF9`; its embedded Cambridge modification timestamp is `2026-08-10T20:10:43Z`. Cambridge and Crossref records identify the DOI and publication date. No volume or issue is assigned; First View pages 1–24 are not represented as issue pagination. This byte identity is not a source/package freeze record.
 
-## Case-specific settlement
+## C06 acquisition result
 
-### C01
+The rejected 2011 OECD candidate remains preserved: its current official DAM PDF is 4,929,748 bytes with SHA-256 `F7594D4C5104190E93FDE9288CEA5548D1590C3320FB551DB10CDE5AE3959C23`, byte-identical to the failed source, and its dashboard text remains glyph-shifted. It was not repaired, OCRed, or accepted.
 
-The Gutenberg 1912-impression transcription is the sole semantic artifact. A word-level comparison against the LoC 1897 witness aligned 8,794 of 9,177 ingested words (sequence-match ratio 0.827904). Targeted checks found no confirmed substantive change in benchmark-critical formulations. Unmatched material was dominated by scan-OCR corruption, running headers/page numbers, hyphenation, and footnote/front matter. The fixture remains honestly labelled as the 1912-impression transcription; the 1897 scan is not ingested.
+The narrow replacement search evaluated one serious candidate: OECD (2020), *How's Life? 2020: Measuring Well-being*, OECD Publishing, DOI `10.1787/9870c393-en`, PDF ISBN `978-92-64-72844-8`. The official 247-page born-digital PDF was acquired directly from OECD (7,530,615 bytes; diagnostic pre-freeze SHA-256 `66CC4C24A2BF59A5C26D042FC64A9B5EB2199DCAE25089EBFC63025BB181816E`). The fixture contains complete printed pages 18–30 and 43–55: the framework/current-well-being section and the sustainability/resources section. It has 19,536 R13 tokens, 9.54% more than the rejected candidate's 17,834, so corpus scale and intended difficulty are materially unchanged.
 
-### C02
+The clean fixture is canonical UTF-8 Markdown with explicit printed-page and source-PDF-page headings. Preparation selects whole pages, uses the production-native PDF extraction path, and applies only R13's shared isolation rule. That rule removes 26 isolated `U+F07C` page separators and three isolated `U+F0B7` bullets while preserving the complete source-word sequence; it performs no glyph mapping, word substitution, OCR, or source-specific character repair. Final R13 results are 68,567 extractable characters, 10,922 words, zero control/private-use/replacement/mojibake characters, 100% locator coverage, production parity pass, and 20/20 exact-span recovery.
 
-**Blocked.** The actual publisher PDF was acquired and failed R13 as described above. The publisher page corrects the Phase-1 rights uncertainty: it states CC BY-NC 4.0, and the bibliographic record is Hekmat va Falsafeh 17(68), pages 123–153, DOI `10.22054/wph.2021.53089.1867`; the PDF carries the Winter 1400/2022 issue notation. The bounded same-article search found only the same publisher file/metadata route. C02-B (Akbarian, Saeedimehr & Sadeghi 2021, DOI `10.22054/wph.2021.48451.1788`) is proposed as the first replacement to validate, not silently substituted.
+The fixture contains the 11 current well-being dimensions; average, inequality, and deprivation treatment; the four future resource categories; the headline/full-dashboard distinction; and the GDP-growth comparison. It therefore operationalises the Commission's conceptual diagnosis without introducing disagreement adjudication or another capability.
 
-### C03
+OECD's current Terms & Conditions permit use, copying, distribution, and adaptation of OECD-owned written content published before 1 July 2024 with citation and an adaptation disclaimer, subject to third-party-content checks. The benchmark uses the conservative known strategy: keep the text-only derivative in `THESISOUND_EVAL_FIXTURE_ROOT`, retain the official PDF as a private/offline witness, and commit only provenance and validation metadata. Public redistribution would additionally require the OECD attribution/adaptation notice and third-party review.
 
-The complete six-chapter essay is used. The earlier non-contiguous-chapter design remains in history but is not the final fixture.
+Current-code compatibility remains the already-audited **complementary multi-source composition** at episode preparation. No M8/cross-source-reconciliation claim is made.
 
-### C04
+## C08 final mix
 
-The primary evidence is load-bearing: the brief asks which formulations in Du Bois's 1897 and 1903 texts support or resist the stated reading. SEP is limited to §§2.3 and 3 and cannot perform that primary comparison by itself. The behavior is author-position versus scholarly-interpretation attribution; no gold was authored.
+All percentages use R13 `extractable_character_count`:
 
-### C05R
+| Fixture | Role | Characters | R13 |
+|---|---|---:|---|
+| Douglass speech | Primary | 59,888 | pass |
+| NPS biography | Decoy | 9,711 | pass |
+| LoC July 2020 article | Partially relevant decoy | 4,767 | pass |
+| National Archives Declaration transcript | Credible related decoy | 9,530 | pass |
 
-Lin replaces Mill. The bounded comparison evaluated Mill plus three real modern candidates. Lin is clearly better for the visible set because it keeps explicit single-source objection/reply structure while removing another older-English source, has peer-reviewed primary authority, CC BY 4.0 full text, stable DOI/provenance, and an actual R13 pass. Details are in `C05R-BOUNDED-ALTERNATIVE-SEARCH.md`.
+The decoys total 24,008 of 83,896 characters: **28.62%**. Generic filtering drops figures/site chrome and NPS `Person__Facts` infobox nodes, replaces structural headings with neutral sequence labels, and preserves substantive text. The tested behavior remains claim-level relevance filtering rather than source triage.
 
-### C06
+## C10/C11 stale-metadata closure
 
-Code compatibility is **confirmed only for complementary composition**: episode preparation loads claims from each source ledger into the shared corpus and planner. There is no cross-source reconciliation or disagreement graph because M8 is absent, and no artifact claims otherwise. The Commission scope passes R13; OECD fails, so C06 is blocked.
+The checker joins C10 and C11 through their one shared `r13_report` and reads `metrics.token_estimate` at runtime. The value is 32,032. A test changes that report value and proves the derivation changes with it; no copied `shared_fixture_token_estimate` remains in configuration.
 
-### C07
+## V15 status
 
-The revised brief deliberately asks about hourly/frontline workers, workers without university education, and organizations outside China. Those objectives are unsupported by construction in the supplied single study, making correct narrowing observable.
+The provenance chain is recorded without conflation:
 
-### C08
+1. textual/editorial basis — Qazvini–Ghani critical edition, first edition 1320 SH / 1941;
+2. physical printing behind the scan — Sina, Tehran, 1989;
+3. transcription — Persian Wikisource index revision 290057, `Progress=T`, not claimed fully validated.
 
-The transformation removes web UI/front matter and replaces only recognized structural labels with sequential `Section NN` labels and neutral outer source labels: HTML `h1`–`h6`, NPS `section_title` spans, and short uppercase Wikisource `wst-center` labels (plus the initial document-form label). Centered quotations, paragraphs, order, punctuation, and substantive sentences are retained. This is metadata/heading neutralization, not a synthetic fixture. The primary and NPS decoy pass R13, but their decoy share is only 14.42%; the LoC partially relevant decoy could not be acquired through its automated-access challenge. The case is blocked until the approved 25–30% mix is complete.
+The non-arbitrary selection is the overlap of examples cited by both Franklin Lewis and J. T. P. de Bruijn: Khanlari 344 and 347. Mapping by incipit yields Qazvini–Ghani 352 and 355, main revisions 168472/168356, Page revisions 111788/109048, scan sequences 372/374, and printed pages 242/244. The errata at scan sequence 531 has no entry for printed page 242 or 244.
 
-### C09
+A private packet contains all 17 verse rows and exact locators. Human collation is **pending**; no clean Persian fixture was created and R13 was not run. The 1989 scan's reuse status remains unresolved and it is restricted to private/offline collation with no repository redistribution. Wikisource transcription rights are separately CC BY-SA. Lewis/de Bruijn official pages and narrow bounds are verified, but automated local acquisition currently returns the publisher's access challenge, so no commentary fixture exists.
 
-The exact reconciled chapter scope passes R13. Under the pinned 40-minute explanatory configuration, current code computes a deep 0.85 profile and 72,000-token budget. Because the current estimator counts 114,328 source tokens, the budget caps selection at 62.98%, not the roughly 80% anticipated by Opus. This ratio does not itself trigger a deterministic gate, and the R5 planner repair bounds required-section seeding, so source size no longer guarantees a gate failure. The lower-than-anticipated coverage is nevertheless a recorded confound and must be checked during later non-gold dry runs before any freeze.
+## Validator hardening
 
-### V13 and V14
-
-The briefs are repaired and pinned. V13 explicitly permits non-mappings and requires typed relations. V14 is heat-only. They remain visible, non-gating, and unready until bounded fixtures pass R13 and storage/licence strategies are executed. Bellprat metadata is verified as *Nature Communications* 10, 1732 (2019), DOI `10.1038/s41467-019-09729-2`, CC BY 4.0; IPCC remains CC BY-NC-ND 4.0.
-
-### V15
-
-**Blocked.** The Qazvini–Ghani route did not verify as assumed. The Persian Wikisource index is pinned at revision `290057` (2026-06-29), says publisher Sina/Tehran but no year, and links to Wikidata Q140377339, which records 1989. Exact printing and underlying rights therefore remain unresolved. No poem was selected, no verse was represented as human-collated, and no clean Persian fixture or bounded commentary was accepted. Ganjoor, generic web Hafez, Khanlari, and OCR were not substituted.
-
-## Holdout separation
-
-The public repository contains only three opaque IDs, null future fixture/gold hash slots, schema/evaluator versions, and optional aggregate run metadata. A holdout run requires an explicit private bundle path outside the public evaluation tree. Core is the default split. The public files contain no source names, authors, topics, briefs, failure descriptions, texts, or gold for future holdouts.
+Machine scope fidelity is implemented and tested. Zero ZWNJ remains a strong warning that forces Persian Gate E review. A lexical-plausibility gate was not added because no low-false-positive multilingual method was identified; a naive English dictionary would be brittle for technical, philosophical, and Persian academic text.
 
 ## Gate conclusion
 
-The source set is structurally settled but cannot be frozen. Resolve PF-C02-R13, PF-C06-OECD-R13, PF-C08-DECOY, and PF-V15-PROVENANCE-COLLATION before all 12 core packages can pass. V13/V14 may remain non-gating but must have runnable, validated packages before they can be reported as challenge results. After any replacement or acquisition, rerun R13 and the settlement checker. Do not create package freeze hashes until then.
+Current checker output:
+
+```json
+{
+  "settlement_consistent": true,
+  "release_gating_core_ready": false,
+  "freeze_permitted": false
+}
+```
+
+Open core blockers are C02 human Gate E and V15 1989-printing rights determination, human verse collation, lawful bounded commentary acquisition, Persian fixture creation, and R13. No freeze is permitted.

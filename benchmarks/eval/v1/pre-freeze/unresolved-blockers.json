@@ -1,34 +1,29 @@
 {
   "schema_version": "thesisound.semantic-golden-set.blockers.v1",
   "freeze_status": "not_frozen",
-  "blocking": [
+  "core_blocking": [
     {
-      "id": "PF-C02-R13",
+      "id": "PF-C02-GATE-E",
       "cases": ["C02"],
-      "kind": "machine_usable_text",
+      "kind": "human_reading_order_and_script_attestation",
       "evidence": "validation/r13/C02-putnam.json",
-      "issue": "The actual 31-page publisher PDF extracts 51,575 characters and otherwise has normal Persian Unicode, zero Presentation Forms, zero replacement characters, no mojibake markers, viable locators, and 20/20 exact-span recovery, but it contains U+F02A x2 and U+F0AF x2. This fails the zero-private-use/control-character gate.",
-      "search_result": "The journal landing page, direct publisher PDF, DOI, and DOAJ record all lead to the same file; no clean copy of the same article was found in the bounded same-article search.",
-      "resolution": "Acquire an independently clean edition of the same article and rerun R13. If unavailable, evaluate C02-B: Akbarian, Saeedimehr, and Sadeghi (2021), DOI 10.22054/wph.2021.48451.1788, a 22-page native-Persian peer-reviewed conceptual article. It remains only a proposal until its real PDF passes R13 and its rights are settled.",
-      "prohibited_resolution": "Do not OCR, clean, remap, or hand-repair the failed PDF."
+      "issue": "The canonical derivative now passes every deterministic R13 gate: the four isolated private-use marks are safely dropped by the shared canonicalizer, production ingestion has the identical normalized-text hash, repeated running heads are removed, and page-note apparatus is collected without word substitution or OCR. Gate E remains failed because no fluent human has attested body reading order, apparatus separation, script rendering, and meaning preservation despite zero ZWNJ.",
+      "review_packet": "${THESISOUND_EVAL_PRIVATE_REVIEW_ROOT}/C02-gate-e-review-packet.md",
+      "required_pages": [1, 3, 4, 12, 18, 31],
+      "resolution": "A qualified fluent-Persian reviewer must complete the artifact-bound attestation. Rerun R13 with that completed record; do not change readiness merely from the existence of the packet.",
+      "prohibited_resolution": "Do not fabricate approval, OCR the source, or substitute source-specific word repair."
     },
     {
-      "id": "PF-C06-OECD-R13",
-      "cases": ["C06"],
-      "kind": "machine_usable_text",
-      "evidence": "validation/r13/C06-oecd.json",
-      "issue": "The scoped official OECD PDF contains 291 extracted control-code occurrences across U+0003, U+0010, U+0011, U+0013, U+0014, U+0015, U+001A, and U+001B. The official component HTML endpoint returned a challenge page and no clean official component was acquired.",
-      "resolution": "Acquire a clean official HTML/ePub/born-digital component of the same Chapter 1 scope, or select a clean legally practical OECD copy with the same framework content, then rerun R13.",
-      "prohibited_resolution": "Do not OCR or clean the failed PDF extraction."
-    },
-    {
-      "id": "PF-C08-DECOY",
-      "cases": ["C08"],
-      "kind": "fixture_completeness",
-      "issue": "The neutralized primary (59,888 extractable characters) and NPS decoy (10,087) both pass R13, but the LoC partial-relevance article rejects automated acquisition. The current decoy share is 14.42% by extractable characters, below the approved 25-30%, and no partially relevant artifact is accepted.",
-      "resolution": "Acquire the LoC article lawfully, apply the documented heading/front-matter-only neutralization, verify the final 25-30% decoy share, and run R13 on it.",
-      "prohibited_resolution": "Do not synthesize or paraphrase a decoy."
-    },
+      "id": "PF-V15-PROVENANCE-COLLATION",
+      "cases": ["V15"],
+      "kind": "edition_provenance_rights_and_human_collation",
+      "issue": "The three-layer provenance is now explicit: Qazvini-Ghani textual basis first issued 1320 SH/1941; physical scan printing Sina, Tehran, 1989; Wikisource transcription index revision 290057 (Progress=T, not claimed fully validated). The overlap of Lewis/de Bruijn examples selects Khanlari 344 and 347, mapped by incipit to Qazvini-Ghani 352/355 and pinned to main/Page revisions and printed pages 242/244. However, the 1989 printing/facsimile reuse status is unverified, the 17-verse human collation is pending, no Persian fixture exists, and the bounded official Iranica pages could not be acquired locally through their automated-access challenge.",
+      "review_packet": "${THESISOUND_EVAL_PRIVATE_REVIEW_ROOT}/V15-verse-to-scan-collation-packet.md",
+      "resolution": "Obtain an accepted rights determination for the selected text, have a qualified human complete every verse/errata row, lawfully acquire the bounded Lewis/de Bruijn passages, then create the clean Unicode fixture and run R13 including Gate E.",
+      "prohibited_resolution": "Do not substitute Ganjoor, generic Hafez web text, Khanlari, OCR, or reviewer-selected poems."
+    }
+  ],
+  "non_gating_challenge_open": [
     {
       "id": "PF-V13-ACQUISITION",
       "cases": ["V13"],
@@ -42,21 +37,13 @@
       "kind": "challenge_fixture_and_rights",
       "issue": "The heat-only IPCC scope and Bellprat article have not been prepared or R13-validated. Bellprat metadata and CC BY 4.0 are verified; IPCC is CC BY-NC-ND 4.0 and transformed public storage is not approved.",
       "resolution": "Use an unmodified/private IPCC fixture or manifest strategy and prepare the CC BY Bellprat article; run R13. Keep the case visible and non-gating."
-    },
-    {
-      "id": "PF-V15-PROVENANCE-COLLATION",
-      "cases": ["V15"],
-      "kind": "edition_provenance_rights_and_human_collation",
-      "issue": "Persian Wikisource index revision 290057 is pinned, but its wikitext identifies only Sina, Tehran, with no year, while linked Wikidata Q140377339 identifies a 1989 work. This does not verify that the scans are the 1320 SH/1941 printing assumed by the reconciliation. Underlying printing rights remain unresolved. No scholar-cited ghazals have been selected, no verse has been human-collated against scans, and no bounded commentary fixture has passed R13.",
-      "resolution": "Identify the exact scanned printing from title/copyright pages, settle rights, derive poem selection solely from Lewis/de Bruijn citations, have a qualified human collate every selected verse against scans, pin every selected transcription-page revision, then run R13 on the clean Unicode fixture and bounded commentaries.",
-      "prohibited_resolution": "Do not substitute Ganjoor, generic Hafez web text, Khanlari, OCR, or reviewer-selected poems."
     }
   ],
   "recorded_cautions_not_currently_classified_as_deterministic_blockers": [
     {
-      "id": "PF-C09-BUDGET",
-      "cases": ["C09"],
-      "issue": "The current character/3.5 estimator counts 114,328 tokens for the authoritative chapter scope. A 40-minute deep profile has a 72,000-token cap, so its maximum nominal selection is 62.98%, below the 85% profile target. No current release gate fails solely from this ratio, and the R5 seed-budget repair prevents required-section seeds from unboundedly overrunning the planner, but this is weaker coverage than Opus estimated."
+      "id": "R13-LEXICAL-PLAUSIBILITY-FOLLOWUP",
+      "cases": [],
+      "issue": "No lexical-plausibility gate was added. A low-false-positive multilingual method was not identified, and a naive English dictionary would be brittle for technical, philosophical, and Persian academic vocabulary. Scope fidelity is now machine-checked; zero ZWNJ remains a strong Gate E warning."
     }
   ],
   "deferred_not_to_be_force_filled": [

@@ -12,8 +12,14 @@ from thesisound.config import Settings
 from thesisound.model_routing import load_model_router
 from thesisound.modeling import ModelConfigurationError
 
-PreflightScope = Literal["model", "audio", "full"]
+PreflightScope = Literal["model", "script", "audio", "full"]
 PreflightStatus = Literal["pass", "warning", "fail"]
+
+# Scopes in which an enforced self-grading collision blocks instead of warning.
+# "model" deliberately stays a warning: corpus analysis, source capture and
+# episode planning never call script_verifier and must not be held hostage by a
+# script-stage misconfiguration (audit R6, decision D5).
+_REVIEWER_BLOCKING_SCOPES: frozenset[str] = frozenset({"script", "full"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,7 +54,7 @@ class RuntimePreflight:
             ),
             self._gemini_key(),
             self._model_routing(),
-            self._reviewer_independence(),
+            self._reviewer_independence(scope),
             self._okian_provider(),
             self._python_module(
                 "google-genai",
@@ -146,7 +152,7 @@ class RuntimePreflight:
             ),
         )
 
-    def _reviewer_independence(self) -> RuntimeCheck:
+    def _reviewer_independence(self, scope: PreflightScope) -> RuntimeCheck:
         try:
             router = load_model_router(self.settings)
         except ModelConfigurationError:
@@ -158,6 +164,8 @@ class RuntimePreflight:
             )
         collisions = router.self_grading_pairs()
         if not collisions:
+            # Safe: resolve() only raises on an enforced collision, and there is
+            # none here -- both use the same (provider, model) comparison.
             route = router.resolve(
                 stage="script_verifier",
                 requested_model=self.settings.model_strong,
@@ -175,11 +183,20 @@ class RuntimePreflight:
             f"{reviewer} and {reviewed} both resolve to `{resolved}`."
             for reviewer, reviewed, resolved in collisions
         )
+        blocking = (
+            bool(router.blocked_self_grading_pairs())
+            and scope in _REVIEWER_BLOCKING_SCOPES
+        )
+        remedy = (
+            f" Set THESISOUND_MODEL_REVIEWER to a model other than `{self.settings.model_strong}`."
+        )
+        if blocking:
+            remedy += " Script building will not start until it is set."
         return RuntimeCheck(
             code="reviewer-independence",
             label="Reviewer independence",
-            status="warning",
-            detail=detail + " Set THESISOUND_MODEL_REVIEWER.",
+            status="fail" if blocking else "warning",
+            detail=detail + remedy,
         )
 
     def _okian_provider(self) -> RuntimeCheck:

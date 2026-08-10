@@ -1,83 +1,69 @@
 {
   "schema_version": "thesisound.semantic-fixture-validation.v1",
-  "artifact_id": "C02-putnam",
-  "artifact_filename": "c02-putnam.pdf",
-  "intended_scope": "Complete Persian article, 31 PDF pages",
+  "artifact_id": "C02-putnam-canonical",
+  "artifact_filename": "C02-putnam-canonical.md",
+  "intended_scope": "Complete Putnam article; canonical derivative with 31 source-page locators and collected page notes",
   "expected_language": "fa",
   "status": "fail",
   "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
   "metrics": {
-    "byte_size": 1188578,
-    "file_format": "pdf",
-    "mime_type": "application/pdf",
-    "text_encoding": null,
-    "page_count": 31,
-    "extractable_character_count": 51575,
-    "word_estimate": 9128,
-    "token_estimate": 14663,
-    "embedded_image_count": 8,
-    "pages_with_extractable_text": 31,
+    "byte_size": 83153,
+    "file_format": "md",
+    "mime_type": "text/markdown",
+    "text_encoding": "utf-8-sig",
+    "page_count": null,
+    "extractable_character_count": 50455,
+    "word_estimate": 8996,
+    "token_estimate": 14382,
+    "embedded_image_count": null,
+    "pages_with_extractable_text": null,
     "unicode_decode_success": true,
-    "nul_byte_count": 3298,
+    "nul_byte_count": 0,
     "extracted_nul_character_count": 0,
     "arabic_presentation_forms_count": 0,
     "replacement_character_count": 0,
-    "control_character_anomaly_count": 2,
-    "control_character_anomalies": [
-      {
-        "code_point": "U+F02A UNNAMED",
-        "count": 2
-      },
-      {
-        "code_point": "U+F0AF UNNAMED",
-        "count": 2
-      }
-    ],
-    "private_use_character_count": 4,
+    "control_character_anomaly_count": 0,
+    "control_character_anomalies": [],
+    "private_use_character_count": 0,
+    "residual_private_use_character_count": 0,
+    "canonicalizable_character_count": 0,
     "zwnj_count": 0,
     "bidi_control_count": 0,
     "mojibake_marker_count": 0,
-    "normalized_text_sha256": "b8c5cda72101fe8399320a74beda7f746e69dad130bd58e97ae0199a8c19cfb9",
-    "parsed_document_key": "00da6ea93ace0d70e737f180d9ab3ffd1237957d2dc21a26372e63dda1daf5b1",
-    "block_sequence_key": "f33890ec1e0732b22ab6a73847da1997b6a138e1eac6b549fcc43d2daf00cf7b",
-    "semantic_block_count": 11
+    "normalized_text_sha256": "23dff599568173d3d5543617d48252f6e6167ae63bfee2cf4809f66093631c44",
+    "parsed_document_key": "0512682549af4d4e963eb7ba672a426164e4745e4f8df3c2366d3dcb0aedf4d9",
+    "block_sequence_key": "2788800832728cbc98fecab36a5fe045b3027d55d21b33d6214f33f38a6b9589",
+    "semantic_block_count": 54
   },
   "production_ingestion": {
     "requested_parser": "native",
     "selected_parser": "native",
     "ocr_used": false,
     "safe_for_claim_extraction": true,
-    "quality_verdict": "warning",
-    "quality_issues": [
-      {
-        "issue_type": "lost_headings",
-        "severity": "medium",
-        "affected_locators": [],
-        "evidence": "No heading hierarchy survived in a document with at least 12 blocks."
-      }
-    ],
+    "quality_verdict": "pass",
+    "quality_issues": [],
     "parser_warnings": []
   },
   "language_sanity": {
     "expected_language": "fa",
     "result": "pass",
-    "reason": "normal Arabic/Persian script=33897; presentation ratio=0.0000%; mojibake markers=0",
-    "normal_arabic_persian_script_count": 33897,
-    "persian_specific_letter_count": 5330,
-    "arabic_variant_letter_count": 231,
+    "reason": "normal Arabic/Persian script=32365; presentation ratio=0.0000%; mojibake markers=0",
+    "normal_arabic_persian_script_count": 32365,
+    "persian_specific_letter_count": 5188,
+    "arabic_variant_letter_count": 215,
     "presentation_forms_count": 0,
     "presentation_forms_ratio": 0.0,
     "normal_script_ratio": 1.0,
-    "latin_letter_count": 5435,
+    "latin_letter_count": 6306,
     "mojibake_marker_count": 0,
     "glyph_only_pdf_text_layer": false
   },
   "locator_viability": {
     "result": "pass",
-    "reason": "block locator coverage=100.00%; page coverage=100.00%",
-    "locator_type": "page",
+    "reason": "stable unique source-block keys=117/117",
+    "locator_type": "source_block_key",
     "coverage": 1.0,
-    "page_coverage": 1.0
+    "page_coverage": null
   },
   "exact_span_matching": {
     "requested_span_count": 20,
@@ -86,25 +72,25 @@
     "recovery_ratio": 1.0,
     "can_operate_reliably": true,
     "sample_normalized_hashes": [
-      "f35818665a132a47b3775ddb4127a9ffaaec634dd8baa7a5efab5afd438ae9bf",
-      "e9bc3cc9a07824309496e46a8bf76e426524bc29227344b8cb16a7ecec387220",
-      "83adac4f37ad99303a9dd46e593217be1c6bfb9e68918de8409f8d3dc3ec016b",
-      "3e08418a07794d761b9b854e91de95b2133295878a3e5dcaf5f099ce43f7e37a",
-      "909bd52160e7a5da124f6a3e496d1a34c78eb7bec23f00ba420fa7b3b5af6360",
-      "20e8e4561079889e05306a30ef2fc225876676dd4f3cce3b28c70fb3f0e347ad",
-      "bb3dfbea4744ea3441ad03cb99f28a07592551c3030ac565040bc751cdcf6d58",
-      "49a01a872f7db5bbf1b4b52878acc2058a489aca8c323880e4f712b6b25e4c29",
-      "d20ce4472778899871ed4153422baa9ba546f65d25a8ec4239b14560cee2e307",
-      "b7db0e95cdb11df225021308467fb4b5acb32b080404dd0a6ff84e7481220b2b",
-      "ffd26ba70b9314246cc64b559ecc183542eddc01143a93300e015364313d6898",
-      "4044ee53ac69ebaa68a93700126098a45d65ba823d1bf59be5ed4880b4d562fc",
-      "44266a6291824d56283dd5b5554a194f09d15058ccf3490e535f62a47b3bf682",
-      "d6d37982f8f9fa3543520da96fa232cc0766ee7ca8981cceb1ee63280a91cbb2",
-      "35f3f59edd793fb108b2fc4b40535d301ecee4bd886e46675d089029209fff39",
-      "d462e8e5314c0527e2e80df157fd964e68c3660cb7e900f05468d0d18dc3bb8e",
-      "3f17f6d91edac355d97bc9e89b5d7b9812cbe99ef702e7e7af3361c6d7dc916e",
-      "7a1a5451e2b29faacdab6b9bdfb66e605a78897b62c5ec83a5a46f3d8b95a7f5",
-      "e5413966e884edb9a1ba4d7ed5ba923334ee717b49cc463358a1a2360002e106",
+      "2765c6254e52e89672129516887089fb15d0f5fb6de2f4776e2af7023c0e8c40",
+      "75f974555bdfc43a09daafba4985a7b4913c5b282ee1fc30c2c0fc11e7a6887b",
+      "4ea9745fdc748e08f436dacbe10be49529439d76efef6c345c501fdb90c6b7e3",
+      "4e1e8d930ba34bccebead78797696488dcd7a8d83463ae77e93627381c27fc08",
+      "5c2d728bb49a6c2fb27765c186fa49dbe77e43bf0d40202fcb9e817158628268",
+      "86a311f22efb2ab9601c835f2259db266062ab2d64bda13afb85fce31825dc7d",
+      "f48694dad73e16276765505b7c39abb381b0fa291addffbb954522a8483d8bf2",
+      "58b894acb9a2a418a58ee9b8e90d2549c4d708214ae893875a4156c89aac5dc9",
+      "44dc996643c82a20018dbbce0b7511594ddaf2981fa7b2346e75040ad623feb8",
+      "7273e4b20b4f56c71dcddc92ace0de297661f341564a688f7102175afd82fd45",
+      "b9cb326b5db910ee67133a9e5a3a883ba0a622cbead5b9531688d471ea907725",
+      "ce534b62bf04c87e255777f758255495ef370312a78bdc7c1e8af346a1af0df6",
+      "e6582f0531e26d68ed387183bbe9d77567fe8fe42a074c51c2fbb6967f3b9b12",
+      "226ffa28f27360ed879f8e29cb152bccaa7a3b3d8d390c99ea3dd8efc23b8cdd",
+      "4c41d840d5c839170b3fac27d0591613ed9bcea58b57c5cab24218efbe4a1d26",
+      "94ad7760429d22cb87dd1320d0997ec09a26647b9e6d4c1c7a560a0781f42c43",
+      "81d3bfbeeaefd59228cb26a4a1e000c2a98cd0b23cea3a5275c26d79b7192f85",
+      "418c797e3f37efb1266e63dc59a7f354ba4a04973d99b66db7125ca6d3f86fc2",
+      "9e8b30f6a0c52243e223a411c16352819ef5c25f7bfae5ee48b682e2eb4a2358",
       "10b173ff50902158b4f8eea7f72fa4f7af4ffaabaedafe33ea825a2d71e7d215"
     ]
   },
@@ -115,26 +101,65 @@
     "zwnj_and_punctuation_compatible": true,
     "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
   },
+  "canonicalization": {
+    "rule": "Drop a Cc/Cs/Co code point only when it is isolated -- every neighbour is absent or whitespace. Isolated marks are page furniture (footnote symbols, separators, stray font glyphs): removing them changes no word, no locator and no excerpt span. A code point adjacent to any non-space character is semantic corruption, because it may stand for a letter whose identity is unknown, and recovering it would need source-specific repair, which R13 forbids.",
+    "applied_to": "text extracted through the production native parser",
+    "dropped_code_points": [],
+    "dropped_character_count": 0,
+    "word_sequence_preserved": true,
+    "residual_code_points": [],
+    "residual_control_or_surrogate_code_points": [],
+    "residual_control_or_surrogate_count": 0,
+    "residual_private_use_character_count": 0,
+    "canonicalization_required_before_ingestion": false,
+    "canonical_text_sha256": "23dff599568173d3d5543617d48252f6e6167ae63bfee2cf4809f66093631c44"
+  },
+  "production_text_parity": {
+    "result": "pass",
+    "production_ingested_normalized_text_sha256": "23dff599568173d3d5543617d48252f6e6167ae63bfee2cf4809f66093631c44",
+    "r13_canonical_normalized_text_sha256": "23dff599568173d3d5543617d48252f6e6167ae63bfee2cf4809f66093631c44",
+    "reason": "the production-ingested artifact is already canonical"
+  },
+  "scope_fidelity": {
+    "declared": false,
+    "result": "pass",
+    "reason": "no bounded-scope contract declared",
+    "contract_filename": null,
+    "contract_sha256": null,
+    "checks": []
+  },
+  "human_collation": {
+    "required": true,
+    "result": "fail",
+    "reason": "missing reviewer; missing reviewed_on; fewer than three pages recorded as checked; reading_order_correct is not attested true; footnote_and_margin_separation_correct is not attested true; script_rendering_correct is not attested true; zwnj_loss_meaning_preserving is not attested true",
+    "record": {
+      "artifact_id": "C02-putnam-canonical",
+      "reviewer": null,
+      "reviewed_on": null,
+      "pages_checked": [],
+      "fixture_normalized_text_sha256": "23dff599568173d3d5543617d48252f6e6167ae63bfee2cf4809f66093631c44"
+    }
+  },
   "gates": [
     {
       "gate": "non_empty_bytes",
       "status": "pass",
-      "evidence": "1188578 bytes"
+      "evidence": "83153 bytes"
     },
     {
       "gate": "substantive_text_present",
       "status": "pass",
-      "evidence": "51575 extractable characters"
+      "evidence": "50455 extractable characters"
     },
     {
       "gate": "unicode_decode",
       "status": "pass",
-      "evidence": "encoding=None"
+      "evidence": "encoding=utf-8-sig"
     },
     {
       "gate": "no_nul_bytes_in_decoded_text_format",
       "status": "pass",
-      "evidence": "not applicable to binary container; raw count recorded"
+      "evidence": "count=0"
     },
     {
       "gate": "no_extracted_nul_characters",
@@ -147,14 +172,24 @@
       "evidence": "count=0"
     },
     {
-      "gate": "no_control_character_anomalies",
-      "status": "fail",
-      "evidence": "count=2"
+      "gate": "no_residual_control_character_anomalies",
+      "status": "pass",
+      "evidence": "distinct_code_points=0; occurrences=0"
     },
     {
-      "gate": "no_private_use_characters",
-      "status": "fail",
-      "evidence": "count=4"
+      "gate": "no_residual_private_use_characters",
+      "status": "pass",
+      "evidence": "residual=0 of 0 total"
+    },
+    {
+      "gate": "canonicalization_preserves_words",
+      "status": "pass",
+      "evidence": "dropped=0; word_sequence_preserved=True"
+    },
+    {
+      "gate": "production_text_matches_r13_canonical_text",
+      "status": "pass",
+      "evidence": "the production-ingested artifact is already canonical"
     },
     {
       "gate": "presentation_forms_not_primary",
@@ -164,7 +199,7 @@
     {
       "gate": "language_sanity",
       "status": "pass",
-      "evidence": "normal Arabic/Persian script=33897; presentation ratio=0.0000%; mojibake markers=0"
+      "evidence": "normal Arabic/Persian script=32365; presentation ratio=0.0000%; mojibake markers=0"
     },
     {
       "gate": "not_glyph_only_pdf",
@@ -174,7 +209,7 @@
     {
       "gate": "production_ingestion_safe",
       "status": "pass",
-      "evidence": "verdict=warning"
+      "evidence": "verdict=pass"
     },
     {
       "gate": "no_ocr",
@@ -184,7 +219,7 @@
     {
       "gate": "locators_viable",
       "status": "pass",
-      "evidence": "block locator coverage=100.00%; page coverage=100.00%"
+      "evidence": "stable unique source-block keys=117/117"
     },
     {
       "gate": "exact_span_matching_reliable",
@@ -195,6 +230,16 @@
       "gate": "persian_normalization_compatible",
       "status": "pass",
       "evidence": "میرود، آیا؟ کی یک 123"
+    },
+    {
+      "gate": "declared_scope_fidelity",
+      "status": "pass",
+      "evidence": "no bounded-scope contract declared"
+    },
+    {
+      "gate": "human_collation_attested",
+      "status": "fail",
+      "evidence": "missing reviewer; missing reviewed_on; fewer than three pages recorded as checked; reading_order_correct is not attested true; footnote_and_margin_separation_correct is not attested true; script_rendering_correct is not attested true; zwnj_loss_meaning_preserving is not attested true"
     }
   ],
   "warnings": [

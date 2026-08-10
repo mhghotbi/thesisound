@@ -12,11 +12,14 @@ from thesisound.modeling import ModelConfigurationError
 ProviderName = Literal["gemini", "okian"]
 ModelSettingName = Literal["model_fast", "model_strong", "model_reviewer"]
 
-# (reviewer route key, reviewed route key, tier). Route keys are prompt
-# contract ids -- see model_runner.py.
-REVIEWER_PAIRS: tuple[tuple[str, str, Literal["fast", "strong"]], ...] = (
-    ("script_verifier", "persian_script_segment", "strong"),
-    ("coverage_audit", "claim_reconciliation", "strong"),
+# (reviewer route key, reviewed route key, tier, enforced). Route keys are prompt
+# contract ids -- see model_runner.py. An enforced pair refuses to resolve when
+# both sides land on one model: the writer would be grading its own output, so
+# the stage must not run at all (audit R6). A non-enforced pair only warns in
+# preflight.
+REVIEWER_PAIRS: tuple[tuple[str, str, Literal["fast", "strong"], bool], ...] = (
+    ("script_verifier", "persian_script_segment", "strong", True),
+    ("coverage_audit", "claim_reconciliation", "strong", False),
 )
 
 
@@ -79,6 +82,26 @@ class ModelRouter:
         requested_model: str,
         model_tier: Literal["fast", "strong"],
     ) -> ResolvedModelRoute:
+        route = self._resolve_unchecked(
+            stage=stage,
+            requested_model=requested_model,
+            model_tier=model_tier,
+        )
+        self._require_reviewer_independence(
+            stage=stage,
+            requested_model=requested_model,
+            model_tier=model_tier,
+            route=route,
+        )
+        return route
+
+    def _resolve_unchecked(
+        self,
+        *,
+        stage: str,
+        requested_model: str,
+        model_tier: Literal["fast", "strong"],
+    ) -> ResolvedModelRoute:
         default_model = (
             self.settings.model_fast if model_tier == "fast" else self.settings.model_strong
         )
@@ -102,6 +125,54 @@ class ModelRouter:
             profile=profile_name,
         )
 
+    def _default_model(self, tier: Literal["fast", "strong"]) -> str:
+        return self.settings.model_fast if tier == "fast" else self.settings.model_strong
+
+    def _require_reviewer_independence(
+        self,
+        *,
+        stage: str,
+        requested_model: str,
+        model_tier: Literal["fast", "strong"],
+        route: ResolvedModelRoute,
+    ) -> None:
+        """Refuse to resolve an enforced reviewer stage onto the model it reviews.
+
+        Checked on the resolved (provider, model), not on whether
+        THESISOUND_MODEL_REVIEWER happens to be set: an explicit reviewer model
+        equal to the writer's, and two profiles pointing at one model, are the
+        same defect. Raised at route resolution -- before ModelRunner touches
+        the provider or writes a run record -- so a misconfigured reviewer costs
+        nothing. Per-run overrides for either side of an enforced pair are
+        rejected because independent resolve() calls cannot safely compare two
+        arbitrary overrides from one script build.
+        """
+
+        for reviewer, reviewed, tier, enforced in REVIEWER_PAIRS:
+            if not enforced or stage not in {reviewer, reviewed}:
+                continue
+            if requested_model != self._default_model(tier) or model_tier != tier:
+                raise ModelConfigurationError(
+                    f"{stage} will not accept a per-run model override: {reviewer} "
+                    f"and {reviewed} are an enforced independent reviewer pair. "
+                    "Configure THESISOUND_MODEL_REVIEWER instead."
+                )
+            other_stage = reviewed if stage == reviewer else reviewer
+            other_route = self._resolve_unchecked(
+                stage=other_stage,
+                requested_model=self._default_model(tier),
+                model_tier=tier,
+            )
+            if (route.provider, route.model) != (other_route.provider, other_route.model):
+                continue
+            raise ModelConfigurationError(
+                f"{reviewer} will not run on `{route.provider}/{route.model}`: "
+                f"{reviewed} resolves to the same provider and model, so the writer "
+                "would grade its own script. Set THESISOUND_MODEL_REVIEWER to a "
+                f"different model, or route {reviewer} to a profile that is not "
+                "the writer's."
+            )
+
     def self_grading_pairs(self) -> list[tuple[str, str, str]]:
         """Reviewer/reviewed pairs that resolve to the same provider and model.
 
@@ -111,18 +182,14 @@ class ModelRouter:
         """
 
         collisions: list[tuple[str, str, str]] = []
-        for reviewer, reviewed, tier in REVIEWER_PAIRS:
-            requested_model = (
-                self.settings.model_fast
-                if tier == "fast"
-                else self.settings.model_strong
-            )
-            reviewer_route = self.resolve(
+        for reviewer, reviewed, tier, _ in REVIEWER_PAIRS:
+            requested_model = self._default_model(tier)
+            reviewer_route = self._resolve_unchecked(
                 stage=reviewer,
                 requested_model=requested_model,
                 model_tier=tier,
             )
-            reviewed_route = self.resolve(
+            reviewed_route = self._resolve_unchecked(
                 stage=reviewed,
                 requested_model=requested_model,
                 model_tier=tier,
@@ -139,6 +206,17 @@ class ModelRouter:
                     )
                 )
         return collisions
+
+    def blocked_self_grading_pairs(self) -> list[tuple[str, str, str]]:
+        """The subset of self_grading_pairs() that refuses to run at all.
+
+        Preflight reports every collision but only blocks on these; see R6.
+        """
+
+        enforced = {
+            reviewer for reviewer, _, _, is_enforced in REVIEWER_PAIRS if is_enforced
+        }
+        return [pair for pair in self.self_grading_pairs() if pair[0] in enforced]
 
     def uses_provider(self, provider: ProviderName) -> bool:
         profile_names = set(self.document.routes.values()) | set(

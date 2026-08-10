@@ -69,6 +69,7 @@ def _classify(raw: str) -> str:
             "gemini-api-key",
             "see `/system-check`",
             "not set in the environment",
+            "thesisound_model_reviewer",
         )
     ):
         return "preflight"
@@ -203,6 +204,7 @@ def _message_for(kind: str, *, action: str) -> str:
         "script": {
             "rate_limit": "نگارش متن گفتار به‌خاطر اتمام سهمیه مدل متوقف شد.",
             "auth": "نگارش متن گفتار به‌خاطر مشکل احراز هویت مدل متوقف شد.",
+            "preflight": "ساخت سناریو شروع نشد چون مدل بازبین مستقل تنظیم نشده است.",
             "network": "نگارش متن گفتار به‌خاطر قطع ارتباط یا زمان‌پاسخ متوقف شد.",
             "locked": "تأیید یا ادامهٔ نگارش در وضعیت فعلی ممکن نیست.",
             "unknown": "نگارش یا راستی‌آزمایی متن گفتار متوقف شد.",

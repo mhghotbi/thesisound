@@ -2,19 +2,19 @@
   "schema_version": "thesisound.semantic-fixture-validation.v1",
   "artifact_id": "C04-dubois-primary",
   "artifact_filename": "C04-dubois-primary.md",
-  "intended_scope": "The Souls of Black Folk, Chapters I, III and XIV",
+  "intended_scope": "The Souls of Black Folk Chapters I, III, XIV and Afterthought; no Project Gutenberg back matter",
   "expected_language": "en",
   "status": "pass",
   "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
   "metrics": {
-    "byte_size": 84638,
+    "byte_size": 66319,
     "file_format": "md",
     "mime_type": "text/markdown",
     "text_encoding": "utf-8-sig",
     "page_count": null,
-    "extractable_character_count": 83918,
-    "word_estimate": 14078,
-    "token_estimate": 23928,
+    "extractable_character_count": 65703,
+    "word_estimate": 11170,
+    "token_estimate": 18738,
     "embedded_image_count": null,
     "pages_with_extractable_text": null,
     "unicode_decode_success": true,
@@ -25,13 +25,15 @@
     "control_character_anomaly_count": 0,
     "control_character_anomalies": [],
     "private_use_character_count": 0,
+    "residual_private_use_character_count": 0,
+    "canonicalizable_character_count": 0,
     "zwnj_count": 0,
     "bidi_control_count": 0,
     "mojibake_marker_count": 0,
-    "normalized_text_sha256": "07e02594ada2ab8fef10f1967cfa6350a054b70a53f5ab5b1e099c08a615a457",
-    "parsed_document_key": "99731994272dcb80ac8a7d8ff84dad3888c2287233d9788d1db00995be283b7e",
-    "block_sequence_key": "210f33e677844a756d83f157e1dede344987ecd93b4997353cbd3bffcddd7422",
-    "semantic_block_count": 18
+    "normalized_text_sha256": "c707cb4a621324e69531cf27dccced386e0cbfaeea4379946f361c116f67ab67",
+    "parsed_document_key": "9a01a7276f747dccb7e76491360a60bd34bf502639b3abf2c63a0880acafe246",
+    "block_sequence_key": "ce7885cc79794b811ec4bfd59e38b991bf1772cdcc8d211d0b0afdfdae9a0e69",
+    "semantic_block_count": 14
   },
   "production_ingestion": {
     "requested_parser": "native",
@@ -45,20 +47,20 @@
   "language_sanity": {
     "expected_language": "en",
     "result": "pass",
-    "reason": "Latin letters=67081; letter ratio=100.0000%",
+    "reason": "Latin letters=52436; letter ratio=100.0000%",
     "normal_arabic_persian_script_count": 0,
     "persian_specific_letter_count": 0,
     "arabic_variant_letter_count": 0,
     "presentation_forms_count": 0,
     "presentation_forms_ratio": 0.0,
     "normal_script_ratio": 0.0,
-    "latin_letter_count": 67081,
+    "latin_letter_count": 52436,
     "mojibake_marker_count": 0,
     "glyph_only_pdf_text_layer": false
   },
   "locator_viability": {
     "result": "pass",
-    "reason": "stable unique source-block keys=172/172",
+    "reason": "stable unique source-block keys=121/121",
     "locator_type": "source_block_key",
     "coverage": 1.0,
     "page_coverage": null
@@ -71,25 +73,25 @@
     "can_operate_reliably": true,
     "sample_normalized_hashes": [
       "8634bd6abd3531f5be551a5412ec9caae8355d8dd7c2c05661fb5f3a0754832f",
-      "63a9f064cdbe36d65829ace32f6a91760590d34397e7cba602dbbb8d4dfe67d6",
-      "ad00a35a841ed91bcf47d9dff0f8a315cd110f1c8c872ff101f29b8e8407b65b",
-      "247f46a291545c39405c264713378ceafa043becfb4875e2258c963b8f6dd28a",
-      "0c315a54bd445d4512fa6ed9d5cdc95f1bff01beaa5e2e58b5f9b57e0c89b4bf",
-      "9536d807367adb58572d0559e530d57b6dfc673d6c8953234f997e3cfb6c832f",
-      "a4618439b23b7bcd2d2133a64974645b1b64972e1107203ca416b03fe8a8f696",
-      "a6f9975533177de0f8dbdff0570ec54bd2a83be161f4feef7f78c889f2c2ef47",
-      "1cfeedb678579dbd56f0c8abab7298b9c27c3959d532c16f8e20a3186cb7666e",
-      "fbf0a9209ccee7403f67aa09b44b619179d044ea0f9ebcee8922a06b73a039af",
-      "0a4c8412c5b804e5cdbea92a90b6be337232290469aa4c5f03679a11c016cbe3",
-      "8f7302a1bea39c555111dfafdc61e1046004341226615a1ac9d4cef3256b31d9",
-      "0c9b3226c088755b706d3afebc2324418565d2fc7f3712601db0a0ab18d1a964",
-      "b6f048d7c441685ad30e53f1c129fac1e6c41f7b212a2a611faec8f78a421cb3",
-      "07b92beca2fece2a713660476563e0958bd1d1b058a3a2126adf4d640c200ec6",
-      "0aed3272eddf020463b612784ced8dd8a1258977ed6cb28615b5534d71733c93",
-      "b1e96d8d52691ee8cc088489fb571f1f63220eba637936f3bcbdb0b8d09aab57",
-      "c1c726bd2d8ed97ac0bf1c3cf9ce844f70d10025cbd5c9868ac3b0c6fc1bd777",
-      "19bdb1dee039a4fdcb1176339d0949bd72a8cb04151baf291ee02c4cba4e10d0",
-      "637929e7346b0829affcb7e4d3973f76eb808e431cbeb08398be1a04abfdba2d"
+      "d0093b770d01beaf4d62accfcf96e4b1656e9d8b7af7cb6a4d7a3896667064c4",
+      "7295c3b326614f1280b3d106e325440f481c2f7d7362566d55c4dd171d6a49bb",
+      "1121180428102e50f2523fc5cde49ebb408b3ded3e1f090b6db020bcdc3f718e",
+      "20f4d28dd39dcb94ec23dbbab2b80ec11c91e42946fd239e016fc469130c26a1",
+      "9c5b017cfe7a484cc9a4620c59d2de61cb376df9a919c8b606ab453920761f3b",
+      "a94fa3eb9d4f1316d52ea752055191555b1f7ed0a99b5da84169e46cd0610c35",
+      "0b56d731c9a04b527ef0c7ebffa52ba17361bcee8f4fb218c81f4c9eadf442f1",
+      "c7dbb4e786206d21e47785df0de64a0d678ccc7f2dc66a2305ef94e5fde663dc",
+      "1cfde3a9003fe91f5df4a92334902c9ee96036830fe6818564b5955abdc38431",
+      "7d9fcf27ed2ee1de020c223e8af4f4623f358233def19c041673045ef7d59922",
+      "ffba009a30bb620b43af3b05d63006fd8b2be70d21569aec94684edad997aa7a",
+      "b7b33a9aa6ccdad53cd528ea60aa4d9bac75a7ed3e4120ebd4644cbec9c3adc2",
+      "21fda42dee8e00a051f7e1d1c8959e1bf470a988867a77f8f7c7003a026bab00",
+      "ecbd6ff2fdf1b2cc825d0842d3d20ade4faa31f37188f30590982c86592561fd",
+      "0778db4e337f07c8577062880b431292e58b7ce7a99ff7439e54e558ba9f5358",
+      "022759afd11a95c5802c82e6a4a23a9711885a4f9c9109159951cc521e6b45bf",
+      "33c4247489a54bfb97e8fc59b294fee33b4bc20036e37162dbff164c7e73efec",
+      "41d255dee0ca7257df1d92ba4993bddbae61add3d8b82532f2ab8d21a5b91970",
+      "2dee0303d9d677b5e1636573a81731dabff3c71931e96f672cd35b8ce8a66da3"
     ]
   },
   "normalization_checks": {
@@ -99,16 +101,160 @@
     "zwnj_and_punctuation_compatible": true,
     "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
   },
+  "canonicalization": {
+    "rule": "Drop a Cc/Cs/Co code point only when it is isolated -- every neighbour is absent or whitespace. Isolated marks are page furniture (footnote symbols, separators, stray font glyphs): removing them changes no word, no locator and no excerpt span. A code point adjacent to any non-space character is semantic corruption, because it may stand for a letter whose identity is unknown, and recovering it would need source-specific repair, which R13 forbids.",
+    "applied_to": "text extracted through the production native parser",
+    "dropped_code_points": [],
+    "dropped_character_count": 0,
+    "word_sequence_preserved": true,
+    "residual_code_points": [],
+    "residual_control_or_surrogate_code_points": [],
+    "residual_control_or_surrogate_count": 0,
+    "residual_private_use_character_count": 0,
+    "canonicalization_required_before_ingestion": false,
+    "canonical_text_sha256": "c707cb4a621324e69531cf27dccced386e0cbfaeea4379946f361c116f67ab67"
+  },
+  "production_text_parity": {
+    "result": "pass",
+    "production_ingested_normalized_text_sha256": "c707cb4a621324e69531cf27dccced386e0cbfaeea4379946f361c116f67ab67",
+    "r13_canonical_normalized_text_sha256": "c707cb4a621324e69531cf27dccced386e0cbfaeea4379946f361c116f67ab67",
+    "reason": "the production-ingested artifact is already canonical"
+  },
+  "scope_fidelity": {
+    "declared": true,
+    "result": "pass",
+    "reason": "all declared bounded-scope checks passed",
+    "contract_filename": "C04-dubois-primary.json",
+    "contract_sha256": "cedcfc6d8ab208366ebd9970b9f5a87895ed7face8b7ddaa44003fc71ef690f8",
+    "checks": [
+      {
+        "check": "artifact_id_matches",
+        "status": "pass",
+        "evidence": "contract='C04-dubois-primary'; fixture='C04-dubois-primary'"
+      },
+      {
+        "check": "required_marker:chapter_i",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=40"
+      },
+      {
+        "check": "required_marker:chapter_iii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=17887"
+      },
+      {
+        "check": "required_marker:chapter_xiv",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=46307"
+      },
+      {
+        "check": "required_markers_ordered",
+        "status": "pass",
+        "evidence": "normalized_offsets=[40, 17887, 46307]"
+      },
+      {
+        "check": "forbidden_marker:chapter_ii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_iv",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_v",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_vi",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_vii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_viii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_ix",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_x",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_xi",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_xii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_xiii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:gutenberg_end_marker",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:gutenberg_license",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "start_boundary",
+        "status": "pass",
+        "evidence": "offset=40; maximum=80"
+      },
+      {
+        "check": "end_boundary",
+        "status": "pass",
+        "evidence": "trailing_normalized_characters=0; maximum=0"
+      },
+      {
+        "check": "minimum_extractable_characters",
+        "status": "pass",
+        "evidence": "actual=65703; minimum=65000"
+      },
+      {
+        "check": "maximum_extractable_characters",
+        "status": "pass",
+        "evidence": "actual=65703; maximum=67000"
+      }
+    ]
+  },
+  "human_collation": {
+    "required": false,
+    "result": "pass",
+    "reason": "not required for this fixture language",
+    "record": null
+  },
   "gates": [
     {
       "gate": "non_empty_bytes",
       "status": "pass",
-      "evidence": "84638 bytes"
+      "evidence": "66319 bytes"
     },
     {
       "gate": "substantive_text_present",
       "status": "pass",
-      "evidence": "83918 extractable characters"
+      "evidence": "65703 extractable characters"
     },
     {
       "gate": "unicode_decode",
@@ -131,14 +277,24 @@
       "evidence": "count=0"
     },
     {
-      "gate": "no_control_character_anomalies",
+      "gate": "no_residual_control_character_anomalies",
       "status": "pass",
-      "evidence": "count=0"
+      "evidence": "distinct_code_points=0; occurrences=0"
     },
     {
-      "gate": "no_private_use_characters",
+      "gate": "no_residual_private_use_characters",
       "status": "pass",
-      "evidence": "count=0"
+      "evidence": "residual=0 of 0 total"
+    },
+    {
+      "gate": "canonicalization_preserves_words",
+      "status": "pass",
+      "evidence": "dropped=0; word_sequence_preserved=True"
+    },
+    {
+      "gate": "production_text_matches_r13_canonical_text",
+      "status": "pass",
+      "evidence": "the production-ingested artifact is already canonical"
     },
     {
       "gate": "presentation_forms_not_primary",
@@ -148,7 +304,7 @@
     {
       "gate": "language_sanity",
       "status": "pass",
-      "evidence": "Latin letters=67081; letter ratio=100.0000%"
+      "evidence": "Latin letters=52436; letter ratio=100.0000%"
     },
     {
       "gate": "not_glyph_only_pdf",
@@ -168,7 +324,7 @@
     {
       "gate": "locators_viable",
       "status": "pass",
-      "evidence": "stable unique source-block keys=172/172"
+      "evidence": "stable unique source-block keys=121/121"
     },
     {
       "gate": "exact_span_matching_reliable",
@@ -179,6 +335,16 @@
       "gate": "persian_normalization_compatible",
       "status": "pass",
       "evidence": "میرود، آیا؟ کی یک 123"
+    },
+    {
+      "gate": "declared_scope_fidelity",
+      "status": "pass",
+      "evidence": "all declared bounded-scope checks passed"
+    },
+    {
+      "gate": "human_collation_attested",
+      "status": "pass",
+      "evidence": "not required for this fixture language"
     }
   ],
   "warnings": []

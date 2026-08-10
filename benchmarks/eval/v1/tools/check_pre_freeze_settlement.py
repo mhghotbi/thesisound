@@ -29,6 +29,13 @@ SEMANTIC_HOLDOUT_KEYS = {
     "sources",
     "topic",
 }
+# Two questions, two answers. "The settlement package is internally consistent" is
+# not "every release-gating core case is safe to freeze", and a checker that returns
+# one verdict for both invites reading the first as the second. Only FREEZE_READY
+# permits a freeze; every other value is a package that still has work to do, and
+# `ready_with_...` variants are deliberately not freeze-ready by prefix accident.
+FREEZE_READY_READINESS = {"ready"}
+KNOWN_READINESS = {"ready", "ready_with_recorded_budget_caution", "blocked"}
 
 
 def main() -> int:
@@ -42,6 +49,12 @@ def main() -> int:
         "--holdout-manifest",
         type=Path,
         default=Path("benchmarks/eval/holdouts/public-manifest.json"),
+    )
+    parser.add_argument(
+        "--report",
+        type=Path,
+        default=None,
+        help="Optional machine-readable output path for the current checker result",
     )
     args = parser.parse_args()
 
@@ -86,7 +99,15 @@ def main() -> int:
         errors.append("C10/C11 differ in fields other than target_duration_minutes")
 
     computed_pair: dict[str, Any] = {}
-    fixture_tokens = configs["controlled_pair"]["shared_fixture_token_estimate"]
+    try:
+        fixture_tokens, fixture_token_source = derive_controlled_pair_fixture_tokens(
+            root,
+            package,
+        )
+    except (KeyError, OSError, TypeError, ValueError) as error:
+        errors.append(f"C10/C11 fixture token estimate cannot be derived from R13: {error}")
+        fixture_tokens = 0
+        fixture_token_source = None
     for case_id in ("C10", "C11"):
         config = configs["cases"][case_id]
         brief = ResearchBrief(
@@ -124,8 +145,51 @@ def main() -> int:
                     f"manifest has {expected.get(key)!r}"
                 )
 
+    c09_config = configs["cases"]["C09"]
+    c09_report_path = package["packages"]["C09"]["sources"][0]["r13_report"]
+    c09_tokens = _read(root / c09_report_path)["metrics"]["token_estimate"]
+    c09_brief = ResearchBrief(
+        normalized_topic="Darwin hierarchical reconstruction",
+        topic_type=TopicType.CONCEPT,
+        central_question=c09_config["research_brief"],
+        audience=c09_config["audience"],
+        prior_knowledge=c09_config["prior_knowledge"],
+        target_duration_minutes=c09_config["target_duration_minutes"],
+        output_language=c09_config["output_language"],
+        modes=c09_config["modes"],
+    )
+    c09_profile = build_analysis_profile(c09_brief)
+    c09_target_tokens = min(
+        c09_tokens,
+        math.ceil(c09_tokens * c09_profile.block_coverage_target * 1.10),
+        c09_profile.evidence_input_token_budget,
+    )
+    computed_c09 = {
+        "depth": c09_profile.depth,
+        "block_coverage_target": c09_profile.block_coverage_target,
+        "evidence_input_token_budget": c09_profile.evidence_input_token_budget,
+        "max_claims_per_block": c09_profile.max_claims_per_block,
+        "neighbor_context_blocks": c09_profile.neighbor_context_blocks,
+        "include_examples": c09_profile.include_examples,
+        "include_objections_and_responses": c09_profile.include_objections_and_responses,
+        "target_source_tokens": c09_target_tokens,
+        "maximum_nominal_selected_coverage": round(c09_target_tokens / c09_tokens, 6),
+        "fixture_token_estimate": c09_tokens,
+        "fixture_token_source": c09_report_path,
+    }
+    for key, value in computed_c09.items():
+        expected = configs["computed_profiles"]["C09"].get(key)
+        if expected != value:
+            errors.append(
+                f"C09 computed {key}={value!r}, manifest has {expected!r}"
+            )
+
+    freeze_blockers: list[str] = []
     for case_id, case in package["packages"].items():
         seen: set[str] = set()
+        readiness = case["readiness"]
+        if readiness not in KNOWN_READINESS:
+            errors.append(f"{case_id} has an unrecognised readiness value {readiness!r}")
         for source in case["sources"]:
             logical_id = source["logical_source_id"]
             if logical_id in seen:
@@ -140,13 +204,35 @@ def main() -> int:
                 report = _read(root / report_path)
                 if report.get("status") != "pass":
                     errors.append(f"{case_id}/{logical_id} ingested fixture does not pass R13")
-        if case["readiness"].startswith("ready"):
+                scope_contract = source.get("scope_contract")
+                if scope_contract is not None:
+                    scope = report.get("scope_fidelity", {})
+                    if scope.get("result") != "pass":
+                        errors.append(
+                            f"{case_id}/{logical_id} declared bounded scope does not pass"
+                        )
+                    expected_name = Path(scope_contract).name
+                    if scope.get("contract_filename") != expected_name:
+                        errors.append(
+                            f"{case_id}/{logical_id} R13 scope contract does not match manifest"
+                        )
+        if readiness in FREEZE_READY_READINESS:
             for source in case["sources"]:
                 if source.get("ingested_fixture") is None:
                     errors.append(
                         f"ready package {case_id} has no ingested fixture for "
                         f"{source['logical_source_id']}"
                     )
+        if not case.get("release_gating"):
+            continue
+        if readiness not in FREEZE_READY_READINESS:
+            reasons = case.get("blockers") or [f"readiness is {readiness!r}"]
+            freeze_blockers.extend(f"{case_id}: {reason}" for reason in reasons)
+        for source in case["sources"]:
+            if source.get("ingested_fixture") is None:
+                freeze_blockers.append(
+                    f"{case_id}: no ingested fixture for {source['logical_source_id']}"
+                )
 
     if any(reference.get("ingest") is not False for reference in offline["references"]):
         errors.append("an offline reference is not explicitly marked ingest=false")
@@ -163,19 +249,66 @@ def main() -> int:
                 errors.append(f"unprovisioned opaque holdout has a non-null {field}")
 
     result = {
-        "schema_version": "thesisound.semantic-golden-set.pre-freeze-check.v1",
+        "schema_version": "thesisound.semantic-golden-set.pre-freeze-check.v2",
+        "settlement_consistent": not errors,
+        "release_gating_core_ready": not freeze_blockers,
+        "freeze_permitted": not errors and not freeze_blockers,
         "status": "pass" if not errors else "fail",
+        "status_meaning": (
+            "`status` reports settlement consistency ONLY. A freeze may proceed only "
+            "when `freeze_permitted` is true."
+        ),
         "visible_core_count": len(expected_core),
         "visible_challenge_count": len(expected_challenge),
         "computed_duration_pair": computed_pair,
+        "computed_profiles": {"C09": computed_c09},
+        "controlled_pair_fixture_tokens": fixture_tokens,
+        "controlled_pair_fixture_token_source": fixture_token_source,
         "errors": errors,
+        "release_gating_freeze_blockers": freeze_blockers,
     }
-    print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0 if not errors else 1
+    rendered = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    print(rendered, end="")
+    if args.report is not None:
+        report_path = args.report.resolve()
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(rendered, encoding="utf-8")
+    if errors:
+        return 1
+    return 0 if not freeze_blockers else 3
 
 
 def _read(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def derive_controlled_pair_fixture_tokens(
+    root: Path,
+    package: dict[str, Any],
+) -> tuple[int, str]:
+    """Read the C10/C11 shared token count from their actual R13 report.
+
+    The source-package manifest is the join between case and report. Keeping this
+    derivation here prevents a copied configuration constant from surviving a fixture
+    replacement or a token-estimator change.
+    """
+
+    report_paths = {
+        source["r13_report"]
+        for case_id in ("C10", "C11")
+        for source in package["packages"][case_id]["sources"]
+        if source.get("ingested_fixture") is not None
+    }
+    if len(report_paths) != 1:
+        raise ValueError(
+            f"controlled pair must resolve to one shared R13 report, got {sorted(report_paths)}"
+        )
+    report_path = report_paths.pop()
+    report = _read(root / report_path)
+    token_estimate = report.get("metrics", {}).get("token_estimate")
+    if not isinstance(token_estimate, int) or token_estimate <= 0:
+        raise ValueError(f"invalid token_estimate in {report_path}: {token_estimate!r}")
+    return token_estimate, report_path
 
 
 if __name__ == "__main__":

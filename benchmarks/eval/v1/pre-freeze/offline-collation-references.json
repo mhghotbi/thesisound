@@ -29,6 +29,15 @@
       "ingest": false
     },
     {
+      "reference_id": "C02-PUBLISHER-PDF",
+      "cases": ["C02"],
+      "title": "Putnam article publisher PDF",
+      "url": "https://wph.atu.ac.ir/article_13403_93fe9e041126e4ff9695a1115c56fef8.pdf",
+      "local_private_path": ".thesisound/eval-v1-prefreeze/raw/c02-putnam.pdf",
+      "role": "rendered-page and structural-collation witness for the canonical text derivative; CC BY-NC 4.0 private/offline storage",
+      "ingest": false
+    },
+    {
       "reference_id": "C04-ATLANTIC-1897-PDF",
       "cases": ["C04"],
       "title": "The Atlantic Monthly, August 1897 archival PDF",
@@ -50,6 +59,15 @@
       "title": "Full How's Life? report",
       "url": "https://www.oecd.org/en/publications/how-s-life_9789264121164-en.html",
       "role": "scope_and_page_map_witness_only; current scoped derivative failed R13",
+      "ingest": false
+    },
+    {
+      "reference_id": "C06-OECD-2020-FULL",
+      "cases": ["C06"],
+      "title": "How's Life? 2020: Measuring Well-being — full official PDF",
+      "url": "https://www.oecd.org/content/dam/oecd/en/publications/reports/2020/03/how-s-life-2020_b547d82c/9870c393-en.pdf",
+      "local_private_path": ".thesisound/eval-v1-prefreeze/raw/c06-oecd-hows-life-2020.pdf",
+      "role": "source_identity_page_map_and_native_text_witness_only; selected semantic fixture is the R13-clean canonical Markdown derivative",
       "ingest": false
     },
     {
@@ -98,9 +116,25 @@
       "title": "Hafez Qazvini-Ghani route page scans",
       "url": "https://fa.wikisource.org/wiki/%D9%81%D9%87%D8%B1%D8%B3%D8%AA:%D8%AD%D8%A7%D9%81%D8%B8_%D9%82%D8%B2%D9%88%DB%8C%D9%86%DB%8C_%D8%BA%D9%86%DB%8C.pdf",
       "pinned_index_revision": 290057,
-      "role": "future_human_collation_reference_only",
+      "physical_printing": "Sina, Tehran, 1989",
+      "textual_editorial_basis": "Qazvini-Ghani critical edition, first edition 1320 SH / 1941",
+      "transcription_status": "Progress=T; not represented as fully validated",
+      "selected_scan_sequences": [372, 374],
+      "selected_printed_pages": [242, 244],
+      "role": "pending human collation reference only; private/offline scan use and no repository redistribution",
       "ingest": false,
-      "note": "No poem or verse has been selected or collated in Phase 2.5."
+      "note": "Two scholar-derived candidates are pinned; the 17-verse human collation remains pending and no Persian fixture exists."
+    },
+    {
+      "reference_id": "V15-WIKISOURCE-ERRATA",
+      "cases": ["V15"],
+      "title": "Qazvini-Ghani scan errata page",
+      "url": "https://fa.wikisource.org/wiki/%D8%A8%D8%B1%DA%AF%D9%87:%D8%AD%D8%A7%D9%81%D8%B8_%D9%82%D8%B2%D9%88%DB%8C%D9%86%DB%8C_%D8%BA%D9%86%DB%8C.pdf/%DB%B5%DB%B3%DB%B1",
+      "scan_sequence": 531,
+      "page_revision": 112904,
+      "role": "errata witness for every V15 verse collation",
+      "ingest": false,
+      "note": "No listed erratum targets printed pages 242 or 244; this does not replace human inspection."
     }
   ]
 }

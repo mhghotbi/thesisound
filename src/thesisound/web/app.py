@@ -65,8 +65,8 @@ _PREFLIGHT_POST_SCOPES: tuple[tuple[str, PreflightScope], ...] = (
     ("/episode/prepare", "model"),
     ("/episode/retry", "model"),
     ("/episode/duration", "model"),
-    ("/script/approve", "model"),
-    ("/script/retry", "model"),
+    ("/script/approve", "script"),
+    ("/script/retry", "script"),
     ("/audio/generate", "audio"),
     ("/audio/retry", "audio"),
 )
@@ -608,7 +608,9 @@ def create_app(
     def system_check(request: Request, scope: str = "full") -> Response:
         if redirect := _login_redirect(request):
             return redirect
-        selected_scope: PreflightScope = scope if scope in {"model", "audio", "full"} else "full"
+        selected_scope: PreflightScope = (
+            scope if scope in {"model", "script", "audio", "full"} else "full"
+        )
         checks = preflight.run(selected_scope)
         return render(
             request,
@@ -849,6 +851,7 @@ def create_app(
         login_redirect=_login_redirect,
         project_redirect=_project_redirect,
         validate_csrf=_validate_csrf,
+        preflight=preflight,
     )
     register_audio_routes(
         app,

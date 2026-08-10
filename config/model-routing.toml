@@ -12,7 +12,8 @@ provider = "gemini"
 model_setting = "model_strong"
 
 # Independent reviewer. Reads THESISOUND_MODEL_REVIEWER; when that is unset it
-# falls back to THESISOUND_MODEL_STRONG and `doctor` warns about self-grading.
+# falls back to THESISOUND_MODEL_STRONG, and script_verifier then refuses to run
+# rather than let the writer grade its own script.
 [profiles.gemini_reviewer]
 provider = "gemini"
 model_setting = "model_reviewer"

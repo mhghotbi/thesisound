@@ -1,0 +1,73 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.v15-selection.v1",
+  "status": "candidate_selection_pinned_human_collation_pending",
+  "provenance_layers": {
+    "textual_editorial_basis": {
+      "work": "Qazvini-Ghani critical edition of the Divan of Hafez",
+      "first_edition": "1320 SH / 1941"
+    },
+    "physical_printing_behind_scan": {
+      "publisher": "Sina",
+      "place": "Tehran",
+      "year": 1989,
+      "reuse_status": "unverified",
+      "storage": "private/offline collation reference only; no repository redistribution"
+    },
+    "transcription": {
+      "host": "Persian Wikisource",
+      "index": "فهرست:حافظ قزوینی غنی.pdf",
+      "index_revision": 290057,
+      "index_revision_timestamp": "2026-06-29T09:23:36Z",
+      "progress": "T",
+      "status_claim": "not represented as fully proofread or validated",
+      "licence": "CC BY-SA"
+    }
+  },
+  "selection_rule": "Take the overlap of ghazal examples explicitly cited by both selected specialist commentaries, then map from Khanlari numbering to the Qazvini-Ghani route by incipit. Do not choose poems for interpretive convenience.",
+  "selections": [
+    {
+      "scholar_reference_number": 344,
+      "cited_by": ["Franklin Lewis, Hafez viii", "J. T. P. de Bruijn, Hafez iii"],
+      "incipit": "روزگاری شد که در میخانه خدمت می‌کنم",
+      "qazvini_ghani_number": 352,
+      "main_revision": 168472,
+      "main_revision_timestamp": "2022-06-28T23:59:32Z",
+      "page_revision": 111788,
+      "page_revision_timestamp": "2020-12-23T21:01:26Z",
+      "scan_sequence": 372,
+      "printed_page": 242,
+      "transcluded_section": "p242-1",
+      "verse_count": 8
+    },
+    {
+      "scholar_reference_number": 347,
+      "cited_by": ["Franklin Lewis, Hafez viii", "J. T. P. de Bruijn, Hafez iii"],
+      "incipit": "حالیا مصلحت وقت در آن می‌بینم",
+      "qazvini_ghani_number": 355,
+      "main_revision": 168356,
+      "main_revision_timestamp": "2022-06-28T23:29:57Z",
+      "page_revision": 109048,
+      "page_revision_timestamp": "2020-08-22T17:56:01Z",
+      "scan_sequence": 374,
+      "printed_page": 244,
+      "transcluded_section": "p244-1",
+      "verse_count": 9
+    }
+  ],
+  "errata": {
+    "scan_sequence": 531,
+    "page_revision": 112904,
+    "finding": "No listed erratum targets printed page 242 or 244; human review must still inspect page notes and visible variants."
+  },
+  "commentary_bounds": {
+    "lewis_hafez_viii": "Spectrum-of-readings introduction; authority/authenticity passage containing citations 344/347; immediate caveat against forcing one symbolic or literal reading. Exclude the later comprehensive rend taxonomy.",
+    "debruijn_hafez_iii": "Textual-instability caution; paragraphs on takhallos and piety/antinomianism containing citations 344/347; general rhetoric paragraph defining ambiguity devices. Exclude the broad thematic catalogue.",
+    "answer_key_control": "The primary poems remain load-bearing; commentary supplies attributed interpretations and constraints, not a complete taxonomy or forced resolution."
+  },
+  "fixture_status": {
+    "persian_fixture_created": false,
+    "r13_run": false,
+    "human_collation": "pending",
+    "rights": "underlying 1989 printing unresolved; Wikisource transcription CC BY-SA resolved"
+  }
+}

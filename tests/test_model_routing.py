@@ -2,13 +2,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from thesisound.config import Settings
 from thesisound.model_routing import load_model_router
+from thesisound.modeling import ModelConfigurationError
 
 
 def test_checked_in_routing_file_resolves_script_and_map_prompt_ids() -> None:
     settings = Settings(
         _env_file=None,
+        model_reviewer="gemini-reviewer-test",
         model_routing_file=Path("config/model-routing.toml"),
     )
     router = load_model_router(settings)
@@ -204,3 +208,158 @@ coverage_audit = "reviewer"
     )
 
     assert load_model_router(settings).self_grading_pairs() == []
+
+
+def test_verifier_route_is_blocked_when_the_reviewer_model_is_unset() -> None:
+    settings = Settings(
+        _env_file=None,
+        model_routing_file=Path("config/model-routing.toml"),
+    )
+
+    with pytest.raises(ModelConfigurationError) as excinfo:
+        load_model_router(settings).resolve(
+            stage="script_verifier",
+            requested_model=settings.model_strong,
+            model_tier="strong",
+        )
+
+    error = str(excinfo.value)
+    assert "script_verifier" in error
+    assert "persian_script_segment" in error
+    assert "THESISOUND_MODEL_REVIEWER" in error
+
+
+def test_verifier_route_is_blocked_when_the_reviewer_is_explicitly_set_to_the_writer_model(
+) -> None:
+    # Model identity, not the presence of an environment variable, is the predicate.
+    settings = Settings(
+        _env_file=None,
+        model_reviewer="gemini-3.6-flash",
+        model_routing_file=Path("config/model-routing.toml"),
+    )
+
+    with pytest.raises(ModelConfigurationError):
+        load_model_router(settings).resolve(
+            stage="script_verifier",
+            requested_model=settings.model_strong,
+            model_tier="strong",
+        )
+
+
+def test_verifier_route_is_blocked_when_two_profiles_resolve_to_one_model(
+    tmp_path: Path,
+) -> None:
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.writer]
+provider = "gemini"
+model_setting = "model_strong"
+
+[profiles.reviewer]
+provider = "gemini"
+model_setting = "model_strong"
+
+[routes]
+persian_script_segment = "writer"
+script_verifier = "reviewer"
+""".strip(),
+        encoding="utf-8",
+    )
+    settings = Settings(_env_file=None, model_routing_file=routing_file)
+
+    with pytest.raises(ModelConfigurationError):
+        load_model_router(settings).resolve(
+            stage="script_verifier",
+            requested_model=settings.model_strong,
+            model_tier="strong",
+        )
+
+
+def test_verifier_route_resolves_when_the_reviewer_model_differs() -> None:
+    settings = Settings(
+        _env_file=None,
+        model_reviewer="gemini-reviewer-test",
+        model_routing_file=Path("config/model-routing.toml"),
+    )
+
+    route = load_model_router(settings).resolve(
+        stage="script_verifier",
+        requested_model=settings.model_strong,
+        model_tier="strong",
+    )
+
+    assert route.model == "gemini-reviewer-test"
+    assert route.profile == "gemini_reviewer"
+
+
+def test_writer_route_blocks_a_per_run_override_to_the_configured_reviewer_model() -> None:
+    settings = Settings(
+        _env_file=None,
+        model_reviewer="gemini-reviewer-test",
+        model_routing_file=Path("config/model-routing.toml"),
+    )
+
+    with pytest.raises(ModelConfigurationError) as excinfo:
+        load_model_router(settings).resolve(
+            stage="persian_script_segment",
+            requested_model=settings.model_reviewer,
+            model_tier="strong",
+        )
+
+    assert "per-run model override" in str(excinfo.value)
+    assert "THESISOUND_MODEL_REVIEWER" in str(excinfo.value)
+
+
+def test_coverage_audit_self_grading_warns_but_still_resolves(tmp_path: Path) -> None:
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.shared]
+provider = "gemini"
+model_setting = "model_strong"
+
+[profiles.reviewer]
+provider = "gemini"
+model_setting = "model_reviewer"
+
+[routes]
+persian_script_segment = "shared"
+script_verifier = "reviewer"
+claim_reconciliation = "shared"
+coverage_audit = "shared"
+""".strip(),
+        encoding="utf-8",
+    )
+    settings = Settings(
+        _env_file=None,
+        model_reviewer="gemini-reviewer-test",
+        model_routing_file=routing_file,
+    )
+    router = load_model_router(settings)
+
+    route = router.resolve(
+        stage="coverage_audit",
+        requested_model=settings.model_strong,
+        model_tier="strong",
+    )
+
+    assert route.model == settings.model_strong
+    assert router.self_grading_pairs()
+    assert router.blocked_self_grading_pairs() == []
+
+
+def test_blocked_self_grading_pairs_reports_only_the_script_verifier() -> None:
+    settings = Settings(
+        _env_file=None,
+        model_routing_file=Path("config/model-routing.toml"),
+    )
+
+    blocked = load_model_router(settings).blocked_self_grading_pairs()
+
+    assert len(blocked) == 1
+    assert blocked[0][0] == "script_verifier"

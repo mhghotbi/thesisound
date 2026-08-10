@@ -1,20 +1,20 @@
 {
   "schema_version": "thesisound.semantic-fixture-validation.v1",
-  "artifact_id": "C08-nps-decoy",
-  "artifact_filename": "C08-nps-decoy-neutralized.md",
-  "intended_scope": "Complete substantive NPS biography body with headings and institutional infobox neutralized",
+  "artifact_id": "C08-loc-context",
+  "artifact_filename": "C08-loc-context-neutralized.md",
+  "intended_scope": "Complete substantive LoC July 15 2020 contextual article body from official RSS",
   "expected_language": "en",
   "status": "pass",
   "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
   "metrics": {
-    "byte_size": 9747,
+    "byte_size": 4845,
     "file_format": "md",
     "mime_type": "text/markdown",
     "text_encoding": "utf-8-sig",
     "page_count": null,
-    "extractable_character_count": 9711,
-    "word_estimate": 1564,
-    "token_estimate": 2766,
+    "extractable_character_count": 4767,
+    "word_estimate": 770,
+    "token_estimate": 1359,
     "embedded_image_count": null,
     "pages_with_extractable_text": null,
     "unicode_decode_success": true,
@@ -30,9 +30,9 @@
     "zwnj_count": 0,
     "bidi_control_count": 0,
     "mojibake_marker_count": 0,
-    "normalized_text_sha256": "1e83c1dd6bb74f2718e86274fd8349f6c85ad3f7d6ae6ec6e66d4d24e4584f34",
-    "parsed_document_key": "167232fb703fc46c30ef4116937fe615743afb2319ec26976e03c6136c655b2b",
-    "block_sequence_key": "201d7cfb57c56fc385a6ae1620bdc10add7961c0e814a4d12ba86128aa2b1057",
+    "normalized_text_sha256": "3dde5e696b6484b4d38a4c75fb8cc2435ad45a57aa9ef9e43ae7e0692244d7c5",
+    "parsed_document_key": "25a248b0cc9e1554f5591394e9015d23bf6c56b344bad2987b0bbbb6401c7cf9",
+    "block_sequence_key": "6b401b0aa8e9fa3cac4b2d513010f624d2b31724f35f6a7fe1eaa2a6bd73e50b",
     "semantic_block_count": 2
   },
   "production_ingestion": {
@@ -47,20 +47,20 @@
   "language_sanity": {
     "expected_language": "en",
     "result": "pass",
-    "reason": "Latin letters=7657; letter ratio=100.0000%",
+    "reason": "Latin letters=3767; letter ratio=100.0000%",
     "normal_arabic_persian_script_count": 0,
     "persian_specific_letter_count": 0,
     "arabic_variant_letter_count": 0,
     "presentation_forms_count": 0,
     "presentation_forms_ratio": 0.0,
     "normal_script_ratio": 0.0,
-    "latin_letter_count": 7657,
+    "latin_letter_count": 3767,
     "mojibake_marker_count": 0,
     "glyph_only_pdf_text_layer": false
   },
   "locator_viability": {
     "result": "pass",
-    "reason": "stable unique source-block keys=31/31",
+    "reason": "stable unique source-block keys=14/14",
     "locator_type": "source_block_key",
     "coverage": 1.0,
     "page_coverage": null
@@ -72,26 +72,26 @@
     "recovery_ratio": 1.0,
     "can_operate_reliably": true,
     "sample_normalized_hashes": [
-      "f61cdb191546abd960b0073c683e3a4a6e2f8ba34484aaea15bcf5f7ba0ba8dc",
-      "9e650f00c7d6b253cddf8b15246198948bc1396625cc476a8ad066a3df9dfe93",
-      "b428f305317dcba0e585be3ed0779994999ebf2687e6d7be4920fa39df42f401",
-      "8e13b39f7140cd7e3be608dec9e56336a94d0a6643585ca74657d5a4609e105e",
-      "09c0b3acaf88413c8144f66c5c159c0fd95b4d6b23e2a2d9b824f5e601d95632",
-      "97d9a34203f68f0f43c01fb8115af640bf05ef059937011c0f4deff7302aefa6",
-      "da62f793014dd0d9df41845945baba49491af260a7d9fe5cbad7d955099ec613",
-      "52790cf87ac1622b45e6ace0135efc0df330c143febea25568c8772d7ac25b60",
-      "47cfc0b2660c12cf764cb0b35ebfc969a7ffd0c0f9e50bd99ba1ce237b54ce96",
-      "5e64330e8db51be7b05ad05088a910a993e45e59f3e03dda0baeb72fb1d1725f",
-      "ec89ae9617b30e19660315236580bf889c197c703043600af1c29524fd9727cc",
-      "5dd15400b9cb32fc4aba0724ba730f5b83c17f8604ec6ba980274b12494a1d92",
-      "1b4e8291458e2606a1a1df83265af00588b262da8eef402c3d20dc96dfa5e277",
-      "582e27eba16fd9ec161860a43a6bdaeb030142c11cfc29793cf2bdcbbfaffa35",
-      "545c78456d05b43cea098c181873d6df421c4afdfc820937ce550ab322d26430",
-      "dbbe0bd83feab2276ec4fa5381622b43f380082f9d5253fe0377d5b1311f57d9",
-      "b10a3fd7e9ec6d1e62b259fcaa5198d37d23ab7db4a2f2538e3b309504973b05",
-      "95efabe194ef5d6df4888173f33ddc7a96dfa0f08d18daf9174260aae5e68a55",
-      "dc3ce1434cb9524f222e413362f18da9f620fe8d36f8a379b92d8f4f8b193871",
-      "12e96eb107a52e8cdf8e44bddffedb26bbb7093fadfaae9c77291b6b520cc44a"
+      "48d2688022f7f2922c2e77b6419dcc9f2459a495cc1dce305f2f9705c03a9d98",
+      "95f0f1e4e94fb7b06bc92b4d716f19b77fc12c2a1e23c6e038f6dd116a2bcfde",
+      "cccce5fa555f77e7e47f7abe4bd88cc859c9345e23d6aae4bc23df77428d7215",
+      "b1222f1589d9db3f87c5daff7b39c47e8785e6a47eb44aee6074d9d49e1f49c5",
+      "02af1df93a3e49a74fad9797c2e514a80d80263523f99b0897ac07d95ed2f250",
+      "de23bff915af9465714e19ac013070772a0533482bd8bbcd1f751081524c6bd3",
+      "d4ebaef05870d7350672d8cebcdfe727b17f7d6ee370fe18abd459a8fa4a67de",
+      "b908044cdce1607304c6383b351888cc7ef72c63361a519e915e57a48dfb3b79",
+      "9c64976b1acc1b3b17fc668ee06c54a5fb3e04774238548b4f87d24cb4e27ed0",
+      "21beb0fe63893c428d9421fec6e36b7d9b1699725526366275fc7b702e411f11",
+      "e2f8c641ca1f91dd508a972d899e1fbe46e94434510d0dc98c4d7e9835e0a98f",
+      "61dc540a129a23dcefab5a02be7610f659840399c53f0209e9deadab7fb11044",
+      "822ad9bd2e9792c617bc244af3cdee876e59e27a28f793c1c32aa8001ce8aa5c",
+      "f9a808c981adf3784f1d2a65aa0c177a1a70bd3a34b081cd80c8356478c94f02",
+      "3c47766dbe48e789ae076e3d4fcaa3bda5b9aecfae7a84f2b7362c6e569d872d",
+      "e7438fdd93e58b03bf2c3bd4e5afb4c4a895d4b7edcf44754aa9ee4f7b28d19d",
+      "fc1fadc712f138448bb9ce063443e830331e50910eb742f91716f970bef616c0",
+      "6caa74b90a7c7261d2943754ba2ba0d56624203b3736dc8056602cf77a3643b9",
+      "5d7b9af8b079505cb2300f69545ee835d71a6579513c2bb5031cdfcd9567951d",
+      "6f15127919a09d35a9e9b985f324563271c94457bebc8b2408a0a7b6b1807fe5"
     ]
   },
   "normalization_checks": {
@@ -112,12 +112,12 @@
     "residual_control_or_surrogate_count": 0,
     "residual_private_use_character_count": 0,
     "canonicalization_required_before_ingestion": false,
-    "canonical_text_sha256": "1e83c1dd6bb74f2718e86274fd8349f6c85ad3f7d6ae6ec6e66d4d24e4584f34"
+    "canonical_text_sha256": "3dde5e696b6484b4d38a4c75fb8cc2435ad45a57aa9ef9e43ae7e0692244d7c5"
   },
   "production_text_parity": {
     "result": "pass",
-    "production_ingested_normalized_text_sha256": "1e83c1dd6bb74f2718e86274fd8349f6c85ad3f7d6ae6ec6e66d4d24e4584f34",
-    "r13_canonical_normalized_text_sha256": "1e83c1dd6bb74f2718e86274fd8349f6c85ad3f7d6ae6ec6e66d4d24e4584f34",
+    "production_ingested_normalized_text_sha256": "3dde5e696b6484b4d38a4c75fb8cc2435ad45a57aa9ef9e43ae7e0692244d7c5",
+    "r13_canonical_normalized_text_sha256": "3dde5e696b6484b4d38a4c75fb8cc2435ad45a57aa9ef9e43ae7e0692244d7c5",
     "reason": "the production-ingested artifact is already canonical"
   },
   "scope_fidelity": {
@@ -138,12 +138,12 @@
     {
       "gate": "non_empty_bytes",
       "status": "pass",
-      "evidence": "9747 bytes"
+      "evidence": "4845 bytes"
     },
     {
       "gate": "substantive_text_present",
       "status": "pass",
-      "evidence": "9711 extractable characters"
+      "evidence": "4767 extractable characters"
     },
     {
       "gate": "unicode_decode",
@@ -193,7 +193,7 @@
     {
       "gate": "language_sanity",
       "status": "pass",
-      "evidence": "Latin letters=7657; letter ratio=100.0000%"
+      "evidence": "Latin letters=3767; letter ratio=100.0000%"
     },
     {
       "gate": "not_glyph_only_pdf",
@@ -213,7 +213,7 @@
     {
       "gate": "locators_viable",
       "status": "pass",
-      "evidence": "stable unique source-block keys=31/31"
+      "evidence": "stable unique source-block keys=14/14"
     },
     {
       "gate": "exact_span_matching_reliable",

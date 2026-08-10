@@ -1,6 +1,6 @@
 {
   "schema_version": "thesisound.semantic-golden-set.source-package.v1",
-  "phase": "2.5-source-settlement",
+  "phase": "2.6-final-blocker-closure",
   "freeze_status": "not_frozen",
   "hash_policy": "R13 normalized-text hashes are diagnostics only; no package freeze hashes exist.",
   "visible_core": ["C01", "C02", "C03", "C04", "C05R", "C06", "C07", "C08", "C09", "C10", "C11", "V15"],
@@ -32,11 +32,15 @@
       "sources": [{
         "logical_source_id": "ebadi_emdadi_putnam_2021",
         "ingested_fixture": null,
-        "rejected_candidate_artifact": ".thesisound/eval-v1-prefreeze/raw/c02-putnam.pdf",
+        "pending_ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C02/C02-putnam-canonical.md",
+        "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C02-putnam-canonical.md",
+        "offline_source_pdf": ".thesisound/eval-v1-prefreeze/raw/c02-putnam.pdf",
         "r13_report": "validation/r13/C02-putnam.json",
-        "offline_verification_reference_ids": []
+        "offline_verification_reference_ids": ["C02-PUBLISHER-PDF"],
+        "production_parity": "pass_exact_normalized_text_hash",
+        "human_review_requirement": "human-review-requirements.json#C02"
       }],
-      "blockers": ["R13 fails: four Unicode private-use characters (U+F02A x2, U+F0AF x2). No OCR or text repair is permitted."]
+      "blockers": ["R13 Gate E is pending: a fluent human has not attested the six-page reading-order, apparatus separation, script rendering, and meaning preservation despite zero ZWNJ. The four isolated private-use marks are deterministically removed by the shared canonicalizer and are not a blocker."]
     },
     "C03": {
       "tier": "core",
@@ -65,6 +69,7 @@
           "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C04/C04-dubois-primary.md",
           "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C04-dubois-primary.md",
           "r13_report": "validation/r13/C04-dubois-primary.json",
+          "scope_contract": "scope-contracts/C04-dubois-primary.json",
           "offline_verification_reference_ids": []
         },
         {
@@ -95,16 +100,25 @@
         "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C05R/C05R-lin.pdf",
         "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/raw/c05r-lin.pdf",
         "r13_report": "validation/r13/C05R-lin.json",
-        "offline_verification_reference_ids": []
+        "offline_verification_reference_ids": [],
+        "artifact_identity": {
+          "status": "advance_access_first_view",
+          "byte_size": 197683,
+          "sha256_pre_freeze_identity_only": "50bf7049864255e9412dcce891f665ae60ca3aaa710e3d9691089ece00c50ef9",
+          "embedded_cambridge_modification_timestamp_utc": "2026-08-10T20:10:43Z",
+          "publisher_record": "https://www.cambridge.org/core/journals/philosophy/article/philosophy-as-a-normative-discipline/7284733070C4D0D9B5422EF014C97694",
+          "bibliographic_record": ".thesisound/eval-v1-prefreeze/raw/c05r-crossref.json",
+          "freeze_hash": false
+        }
       }],
       "blockers": []
     },
     "C06": {
       "tier": "core",
       "release_gating": true,
-      "capability": "Complementary multi-source composition at episode planning",
+      "capability": "complementary multi-source composition",
       "current_code_compatibility": "pass_composition_only_m8_reconciliation_absent",
-      "readiness": "blocked",
+      "readiness": "ready",
       "sources": [
         {
           "logical_source_id": "stiglitz_sen_fitoussi_2009",
@@ -114,14 +128,23 @@
           "offline_verification_reference_ids": ["C06-CMEPSP-FULL"]
         },
         {
-          "logical_source_id": "oecd_hows_life_2011",
-          "ingested_fixture": null,
-          "rejected_candidate_artifact": ".thesisound/eval-v1-prefreeze/prepared/C06-oecd-focused.pdf",
-          "r13_report": "validation/r13/C06-oecd.json",
-          "offline_verification_reference_ids": ["C06-OECD-FULL"]
+          "logical_source_id": "oecd_hows_life_2020",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C06/C06-oecd-hows-life-2020-focused.md",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C06-oecd-hows-life-2020-focused.md",
+          "offline_source_pdf": ".thesisound/eval-v1-prefreeze/raw/c06-oecd-hows-life-2020.pdf",
+          "r13_report": "validation/r13/C06-oecd-hows-life-2020.json",
+          "offline_verification_reference_ids": ["C06-OECD-2020-FULL"],
+          "source_locator": "DOI 10.1787/9870c393-en; Chapter 1, printed pages 18-30 and 43-55"
         }
       ],
-      "blockers": ["The official OECD PDF extraction contains 291 control-code occurrences across eight anomalous code points; no clean official semantic copy was acquired."]
+      "blockers": [],
+      "replacement_audit": {
+        "rejected_logical_source_id": "oecd_hows_life_2011",
+        "rejected_candidate_artifact": ".thesisound/eval-v1-prefreeze/prepared/C06-oecd-focused.pdf",
+        "rejected_r13_report": "validation/r13/C06-oecd.json",
+        "reason": "The official 2011 PDF remains glyph-shifted; it was not OCRed, repaired, or accepted.",
+        "replacement_scope_comparison": "The selected 2020 fixture has 19536 R13 tokens versus 17834 in the rejected 2011 candidate (+9.54%); capability remains complementary multi-source composition."
+      }
     },
     "C07": {
       "tier": "core",
@@ -143,7 +166,7 @@
       "release_gating": true,
       "capability": "Claim-level relevance filtering and purposeful omission",
       "current_code_compatibility": "pass_claim_prioritization_not_source_triage",
-      "readiness": "blocked",
+      "readiness": "ready",
       "sources": [
         {
           "logical_source_id": "douglass_oration_1852",
@@ -161,29 +184,57 @@
         },
         {
           "logical_source_id": "loc_douglass_july4_context",
-          "ingested_fixture": null,
-          "candidate_or_prepared_artifact": null,
-          "r13_report": null,
+          "role": "partially_relevant_decoy",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C08/C08-source-c.md",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C08-loc-context-neutralized.md",
+          "r13_report": "validation/r13/C08-loc-context.json",
+          "offline_verification_reference_ids": []
+        },
+        {
+          "logical_source_id": "nara_declaration_1776",
+          "role": "credible_related_decoy",
+          "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C08/C08-source-d.md",
+          "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C08-nara-declaration-neutralized.md",
+          "r13_report": "validation/r13/C08-nara-declaration.json",
           "offline_verification_reference_ids": []
         }
       ],
-      "blockers": ["The LoC partial-relevance decoy is protected by an automated-access challenge; current validated decoy share is only 14.42% by extractable characters instead of the approved 25-30%."]
+      "blockers": [],
+      "final_mix": {
+        "basis": "R13 extractable_character_count",
+        "primary_characters": 59888,
+        "decoy_characters": 24008,
+        "total_characters": 83896,
+        "decoy_share": 0.286164,
+        "decoy_percent": 28.62
+      }
     },
     "C09": {
       "tier": "core",
       "release_gating": true,
-      "capability": "Long hierarchical dependencies across bounded chapters",
+      "capability": "hierarchical reconstruction under budgeted evidence selection",
       "current_code_compatibility": "pass_document_mapping_and_budget_bounded_planning",
-      "readiness": "ready_with_recorded_budget_caution",
+      "readiness": "ready",
       "sources": [{
         "logical_source_id": "darwin_origin_1859_scoped",
         "ingested_fixture": "${THESISOUND_EVAL_FIXTURE_ROOT}/v1/C09/C09-darwin-scoped.md",
         "candidate_or_prepared_artifact": ".thesisound/eval-v1-prefreeze/prepared/C09-darwin-scoped.md",
         "r13_report": "validation/r13/C09-darwin.json",
+        "scope_contract": "scope-contracts/C09-darwin.json",
         "offline_verification_reference_ids": ["C09-DARWIN-ONLINE-1859", "C09-1859-SCAN"]
       }],
       "blockers": [],
-      "budget_observation": "Current estimator counts 114328 source tokens. The 40-minute 72000-token cap permits at most 62.98% selection, below the deep profile's 85% target. This does not itself trip a deterministic release gate, but the limitation must remain visible."
+      "budget_observation": "The corrected scoped fixture has 100881 R13 tokens. Critical mode raises the deep profile target from 0.85 to 0.95, while the 40-minute 72000-token cap permits at most 71.3712% nominal selection. The capability and later scoring contract explicitly measure reconstruction within selected evidence, dependency preservation, and disclosure of deferral rather than whole-corpus coverage.",
+      "future_scoring_contract": {
+        "gold_authored": false,
+        "requirements_for_later_evaluation": [
+          "reasoning quality within selected evidence",
+          "required dependency preservation among selected blocks",
+          "evaluate deferred_block_ids",
+          "disclose important deferred content",
+          "make no claim of whole-corpus coverage"
+        ]
+      }
     },
     "C10": {
       "tier": "core",
@@ -246,14 +297,14 @@
       "current_code_compatibility": "pass_attribution_and_composition_without_m8_reconciliation",
       "readiness": "blocked",
       "sources": [
-        {"logical_source_id": "hafez_qazvini_ghani_selection", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": ["V15-WIKISOURCE-SCANS"]},
+        {"logical_source_id": "hafez_qazvini_ghani_selection", "ingested_fixture": null, "r13_report": null, "selection_provenance": "v15-selection-provenance.json", "human_review_requirement": "human-review-requirements.json#V15", "offline_verification_reference_ids": ["V15-WIKISOURCE-SCANS", "V15-WIKISOURCE-ERRATA"]},
         {"logical_source_id": "lewis_hafez_rendi_bounded", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": []},
         {"logical_source_id": "debruijn_hafez_poetic_art_bounded", "ingested_fixture": null, "r13_report": null, "offline_verification_reference_ids": []}
       ],
       "blockers": [
-        "Wikisource index revision 290057 is pinned, but linked Wikidata identifies a 1989 Sina printing rather than the assumed 1941 printing; exact printing and underlying-edition rights are unresolved.",
-        "No poems were selected from the scholars' citations and no human verse-to-scan collation has been performed.",
-        "Bounded Lewis/de Bruijn passages have not been acquired or R13-validated."
+        "The underlying 1989 Sina printing/facsimile reuse status is unverified. The legally conservative strategy is private/offline scan use with no repository redistribution, while the Wikisource transcription is a separate CC BY-SA object.",
+        "Scholar-derived candidates are pinned, but the 17-verse scan collation packet remains pending human attestation; no Persian fixture may be produced before it is completed.",
+        "The official Lewis/de Bruijn pages and bounds are verified, but automated local acquisition is blocked by the publisher's access challenge; no bounded commentary fixture has passed R13."
       ]
     }
   }

@@ -1,0 +1,40 @@
+{
+  "schema_version": "thesisound.semantic-golden-set.human-review.v1",
+  "freeze_status": "not_frozen",
+  "hash_notice": "Packet and normalized-text hashes bind human review to exact pre-freeze artifacts; they are not source/package freeze hashes.",
+  "reviews": {
+    "C02": {
+      "gate": "R13 Gate E",
+      "status": "pending_human_review",
+      "private_packet": "${THESISOUND_EVAL_PRIVATE_REVIEW_ROOT}/C02-gate-e-review-packet.md",
+      "pending_attestation": "${THESISOUND_EVAL_PRIVATE_REVIEW_ROOT}/C02-gate-e-attestation.pending.json",
+      "packet_sha256": "053ffa195b555cf3e149015a0b0557f8d4ba6f024faa3c72da39a2e77a5bbd23",
+      "fixture_normalized_text_sha256": "23dff599568173d3d5543617d48252f6e6167ae63bfee2cf4809f66093631c44",
+      "minimum_pages": [1, 3, 4, 12, 18, 31],
+      "required_attestations": [
+        "body reading order is preserved",
+        "footnotes and repeated running heads do not alter semantic interpretation",
+        "Persian script rendering is meaning-preserving",
+        "zero-ZWNJ extraction remains meaning-preserving"
+      ],
+      "approval_fabricated": false
+    },
+    "V15": {
+      "gate": "verse-to-scan collation before Persian fixture creation and R13 Gate E",
+      "status": "pending_human_review",
+      "private_packet": "${THESISOUND_EVAL_PRIVATE_REVIEW_ROOT}/V15-verse-to-scan-collation-packet.md",
+      "pending_attestation": "${THESISOUND_EVAL_PRIVATE_REVIEW_ROOT}/V15-collation-attestation.pending.json",
+      "packet_sha256": "caf7b5936db0c5b956e7ad7d901e735f343f106d018d0863180136fa85886c65",
+      "selected_ghazal_count": 2,
+      "selected_verse_count": 17,
+      "required_attestations": [
+        "every selected verse was compared with the corresponding rendered scan page",
+        "the errata page was checked",
+        "every discrepancy was recorded",
+        "no substantive variant was silently normalized"
+      ],
+      "source_fixture_created": false,
+      "approval_fabricated": false
+    }
+  }
+}

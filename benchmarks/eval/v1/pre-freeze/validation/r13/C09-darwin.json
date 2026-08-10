@@ -2,19 +2,19 @@
   "schema_version": "thesisound.semantic-fixture-validation.v1",
   "artifact_id": "C09-darwin",
   "artifact_filename": "C09-darwin-scoped.md",
-  "intended_scope": "1859 first edition Chapters I-IV, VI and XIV",
+  "intended_scope": "1859 first-edition Chapters I-IV, VI, XIV exactly; no index, licence, or back matter",
   "expected_language": "en",
   "status": "pass",
   "diagnostic_hash_notice": "normalized_text_sha256 is an R13 diagnostic, not a source-package freeze record",
   "metrics": {
-    "byte_size": 401696,
+    "byte_size": 353879,
     "file_format": "md",
     "mime_type": "text/markdown",
     "text_encoding": "utf-8-sig",
     "page_count": null,
-    "extractable_character_count": 401050,
-    "word_estimate": 66512,
-    "token_estimate": 114328,
+    "extractable_character_count": 353372,
+    "word_estimate": 59239,
+    "token_estimate": 100881,
     "embedded_image_count": null,
     "pages_with_extractable_text": null,
     "unicode_decode_success": true,
@@ -25,13 +25,15 @@
     "control_character_anomaly_count": 0,
     "control_character_anomalies": [],
     "private_use_character_count": 0,
+    "residual_private_use_character_count": 0,
+    "canonicalizable_character_count": 0,
     "zwnj_count": 0,
     "bidi_control_count": 0,
     "mojibake_marker_count": 0,
-    "normalized_text_sha256": "f25ff91295199002006a371be22f929402065d05afe018ee69c6290517e936be",
-    "parsed_document_key": "6abe78bbc5c5855befdc0fd24657144b508bbabb6e17708f8f1a62ea997d563d",
-    "block_sequence_key": "7148b42f700421d544e53df7751fed08ad018ebef90df3181837dabae784a88e",
-    "semantic_block_count": 83
+    "normalized_text_sha256": "ab8fe39ee967a473e2ddd54add0ef4e48b343d2102f14e9d9dc4242a50ce085f",
+    "parsed_document_key": "373266238bb3c8ea0c87d6bfacf81f89a120c68ecd6ead8975d2f22ac958cd75",
+    "block_sequence_key": "130b93b03daeaae82304ef76e01f4c7f4ffd8a4cc2d275eb1f18a363d1dc274b",
+    "semantic_block_count": 72
   },
   "production_ingestion": {
     "requested_parser": "native",
@@ -45,20 +47,20 @@
   "language_sanity": {
     "expected_language": "en",
     "result": "pass",
-    "reason": "Latin letters=319928; letter ratio=100.0000%",
+    "reason": "Latin letters=285918; letter ratio=100.0000%",
     "normal_arabic_persian_script_count": 0,
     "persian_specific_letter_count": 0,
     "arabic_variant_letter_count": 0,
     "presentation_forms_count": 0,
     "presentation_forms_ratio": 0.0,
     "normal_script_ratio": 0.0,
-    "latin_letter_count": 319928,
+    "latin_letter_count": 285918,
     "mojibake_marker_count": 0,
     "glyph_only_pdf_text_layer": false
   },
   "locator_viability": {
     "result": "pass",
-    "reason": "stable unique source-block keys=906/906",
+    "reason": "stable unique source-block keys=290/290",
     "locator_type": "source_block_key",
     "coverage": 1.0,
     "page_coverage": null
@@ -71,25 +73,25 @@
     "can_operate_reliably": true,
     "sample_normalized_hashes": [
       "1b43fffdfeaae1b9b83bdbf72766c2d192379929f27ba63678fb9d48e0de1be8",
-      "86dbe7eb4261fdfe8ef879d7cae8cde61d2687853e26c63c505a1ac0329c0e76",
-      "262b0f9ac74fd932d21e936b7c5d33f041c2a2a5f6b7e0f41de33eb911a92a0e",
-      "f6c7896d31d7a155ae9491879f4ecd91887f841ec95c9e24aae8c909d15af3a7",
-      "b9fc499709bee37ce500d023dadf32333cbe50a998a1add1910423f0542fac09",
-      "7bb2dbc677e34efa47b2c178289a0c872bb20dec6aeb48e6f3154254df6828c2",
-      "768c55459db6b098171fb9b323fd4d6f8289641e751c8943bc159470d11cc503",
-      "7b619a5f0c974074b547f317b3c0e261b9ff7901428e4c4558af7ff94cd1e441",
-      "6744b04cbf42f1731693cc0d840fbb8245c243b51e19b3f004781f63de83dfa2",
-      "ca66d100b1e9634a648a19119620010a066d1b82252d39d166dc6c1f07d8daae",
-      "3918b5a37a24193d240423f1b8cd253eff42dc6369b1151c595dd6bdfc71c151",
-      "be1203c1a6927a9fb7eaa35657d19e42b900db7a6233224ac75a900cdcec78d7",
-      "3799e05b2d07f1ad54e9bf210b164ce55589cd7b3bbf62ff601431b132b1bcbf",
-      "f6f34420c1fdf37ae1f28b87726bc354f8c8c49e5030e2c3b7f5efc7f8753f9a",
-      "0c10312a712f50a29f24ef7f002319e61237942425fb3efeb92d9404df3efa9d",
-      "c425e1af25c0da7ec93200adf477d1dbffca9973dec22f838626cba365bb983a",
-      "b7d92dfca8037e1950dbd44d0f1d4bdb825c60e14f0096dc52cd93c0da2c2e4c",
-      "76d982834c1dc9e904c09001fd7cb5b76c74144ae80cfbbfee6899e2bb98a617",
-      "d9905b44c6b7783bb649547ef94ed8d6940502ff48313aa72f37e20261e5d29f",
-      "637929e7346b0829affcb7e4d3973f76eb808e431cbeb08398be1a04abfdba2d"
+      "e1d17b1453fa679603f16cc34b3b9d242688061c896edaf6473ff8d6c17398ee",
+      "52a62a1c385011510cc7ceabdd2e3caee740731bfad384bb31c53b356b1b45d9",
+      "41c5b558c8d2479f8937e37cc68a79a00dca2d6d5bb52369ce86c5d91f6bb1fd",
+      "7a0b47b43160609ce1f3e1d02762fc1d20334b158e6549e71b3e43612b347633",
+      "e44b7debcc1818a155a9ad5a06837bab5f4cca87f2ddc5debff569a4b6945e5b",
+      "6b05cce21d3edbab43c80cf6a6e7e803eaeae1680ec821c4c1095c60a570caf7",
+      "31c58245509a47dd262328ecdaf123c80d99cdc3c4c98b1d50e1e0d705035a60",
+      "baf93a78c17671ddd08429a8cd7092b06154748c816e043fe474b4c20c5c24f9",
+      "3e70d2515188fb6c4c7c472a847c2d9b3e41fa91a59391bdc0cc6ddb8efeed6b",
+      "71444356479953995b86c716fa45b3a68b96acc511697a72edfc4f8310db2435",
+      "544a18764e310e1bd50f3e657c5648032668f783e8f093de8c57342206d237b7",
+      "772843d2ac0462f2eca3d2a115eeedcef1aad9caf43f447671069f26525f5a0a",
+      "8cbe1d1ec3daaf66c9f6f4c4032840264edc2bf4990dcdebc9227a2d5ee0d345",
+      "8bb853757cd022f1c923430c2a8b5f380b6fa5ab5722a857d5a83388705862b8",
+      "40ef51c6255db906566e7d4b703c3c88b9b19acdc95e1af0a477cff2d9afeeea",
+      "18c9109e7fe9e6346b201e80424c091e7998b7b7e932688ff3af187a127271a1",
+      "9de45e92906113e283b47802692893acf16ad937255bb9562f4e8733ff578f48",
+      "861f4d5c3fa0933fe287e204faef953f4482a221096347c594327246f7530b2a",
+      "6e17ccd327e98235583c2470de2065e8c02fe19b20822e19de8976fdb5d0b5a9"
     ]
   },
   "normalization_checks": {
@@ -99,16 +101,165 @@
     "zwnj_and_punctuation_compatible": true,
     "normalizer": "thesisound.services.excerpt_matching.normalize_for_match"
   },
+  "canonicalization": {
+    "rule": "Drop a Cc/Cs/Co code point only when it is isolated -- every neighbour is absent or whitespace. Isolated marks are page furniture (footnote symbols, separators, stray font glyphs): removing them changes no word, no locator and no excerpt span. A code point adjacent to any non-space character is semantic corruption, because it may stand for a letter whose identity is unknown, and recovering it would need source-specific repair, which R13 forbids.",
+    "applied_to": "text extracted through the production native parser",
+    "dropped_code_points": [],
+    "dropped_character_count": 0,
+    "word_sequence_preserved": true,
+    "residual_code_points": [],
+    "residual_control_or_surrogate_code_points": [],
+    "residual_control_or_surrogate_count": 0,
+    "residual_private_use_character_count": 0,
+    "canonicalization_required_before_ingestion": false,
+    "canonical_text_sha256": "ab8fe39ee967a473e2ddd54add0ef4e48b343d2102f14e9d9dc4242a50ce085f"
+  },
+  "production_text_parity": {
+    "result": "pass",
+    "production_ingested_normalized_text_sha256": "ab8fe39ee967a473e2ddd54add0ef4e48b343d2102f14e9d9dc4242a50ce085f",
+    "r13_canonical_normalized_text_sha256": "ab8fe39ee967a473e2ddd54add0ef4e48b343d2102f14e9d9dc4242a50ce085f",
+    "reason": "the production-ingested artifact is already canonical"
+  },
+  "scope_fidelity": {
+    "declared": true,
+    "result": "pass",
+    "reason": "all declared bounded-scope checks passed",
+    "contract_filename": "C09-darwin.json",
+    "contract_sha256": "12494987a6c84b9bce794ec181bfc0e6947191830c441d2dfb81ee470de28d84",
+    "checks": [
+      {
+        "check": "artifact_id_matches",
+        "status": "pass",
+        "evidence": "contract='C09-darwin'; fixture='C09-darwin'"
+      },
+      {
+        "check": "required_marker:chapter_i",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=48"
+      },
+      {
+        "check": "required_marker:chapter_ii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=69760"
+      },
+      {
+        "check": "required_marker:chapter_iii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=99168"
+      },
+      {
+        "check": "required_marker:chapter_iv",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=134817"
+      },
+      {
+        "check": "required_marker:chapter_vi",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=229002"
+      },
+      {
+        "check": "required_marker:chapter_xiv",
+        "status": "pass",
+        "evidence": "normalized_occurrences=1; expected=1; offset=295363"
+      },
+      {
+        "check": "required_markers_ordered",
+        "status": "pass",
+        "evidence": "normalized_offsets=[48, 69760, 99168, 134817, 229002, 295363]"
+      },
+      {
+        "check": "forbidden_marker:chapter_v",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_vii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_viii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_ix",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_x",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_xi",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_xii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:chapter_xiii",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:index",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:gutenberg_end_marker",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "forbidden_marker:gutenberg_license",
+        "status": "pass",
+        "evidence": "normalized_occurrences=0"
+      },
+      {
+        "check": "start_boundary",
+        "status": "pass",
+        "evidence": "offset=48; maximum=80"
+      },
+      {
+        "check": "end_boundary",
+        "status": "pass",
+        "evidence": "trailing_normalized_characters=0; maximum=0"
+      },
+      {
+        "check": "minimum_extractable_characters",
+        "status": "pass",
+        "evidence": "actual=353372; minimum=350000"
+      },
+      {
+        "check": "maximum_extractable_characters",
+        "status": "pass",
+        "evidence": "actual=353372; maximum=356000"
+      }
+    ]
+  },
+  "human_collation": {
+    "required": false,
+    "result": "pass",
+    "reason": "not required for this fixture language",
+    "record": null
+  },
   "gates": [
     {
       "gate": "non_empty_bytes",
       "status": "pass",
-      "evidence": "401696 bytes"
+      "evidence": "353879 bytes"
     },
     {
       "gate": "substantive_text_present",
       "status": "pass",
-      "evidence": "401050 extractable characters"
+      "evidence": "353372 extractable characters"
     },
     {
       "gate": "unicode_decode",
@@ -131,14 +282,24 @@
       "evidence": "count=0"
     },
     {
-      "gate": "no_control_character_anomalies",
+      "gate": "no_residual_control_character_anomalies",
       "status": "pass",
-      "evidence": "count=0"
+      "evidence": "distinct_code_points=0; occurrences=0"
     },
     {
-      "gate": "no_private_use_characters",
+      "gate": "no_residual_private_use_characters",
       "status": "pass",
-      "evidence": "count=0"
+      "evidence": "residual=0 of 0 total"
+    },
+    {
+      "gate": "canonicalization_preserves_words",
+      "status": "pass",
+      "evidence": "dropped=0; word_sequence_preserved=True"
+    },
+    {
+      "gate": "production_text_matches_r13_canonical_text",
+      "status": "pass",
+      "evidence": "the production-ingested artifact is already canonical"
     },
     {
       "gate": "presentation_forms_not_primary",
@@ -148,7 +309,7 @@
     {
       "gate": "language_sanity",
       "status": "pass",
-      "evidence": "Latin letters=319928; letter ratio=100.0000%"
+      "evidence": "Latin letters=285918; letter ratio=100.0000%"
     },
     {
       "gate": "not_glyph_only_pdf",
@@ -168,7 +329,7 @@
     {
       "gate": "locators_viable",
       "status": "pass",
-      "evidence": "stable unique source-block keys=906/906"
+      "evidence": "stable unique source-block keys=290/290"
     },
     {
       "gate": "exact_span_matching_reliable",
@@ -179,6 +340,16 @@
       "gate": "persian_normalization_compatible",
       "status": "pass",
       "evidence": "میرود، آیا؟ کی یک 123"
+    },
+    {
+      "gate": "declared_scope_fidelity",
+      "status": "pass",
+      "evidence": "all declared bounded-scope checks passed"
+    },
+    {
+      "gate": "human_collation_attested",
+      "status": "pass",
+      "evidence": "not required for this fixture language"
     }
   ],
   "warnings": []
