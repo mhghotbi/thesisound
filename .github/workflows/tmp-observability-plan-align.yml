@@ -81,7 +81,11 @@ jobs:
 
           path = Path('src/thesisound/observability.py')
           text = path.read_text(encoding='utf-8')
-          replacement = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
+          old = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
+              filename = str(value)
+          '''
+          old = '\n'.join(line[10:] if line.startswith('          ') else line for line in old.splitlines()) + '\n'
+          new = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
               if isinstance(value, Mapping):
                   digest = value.get("filename_sha256")
                   extension = value.get("extension")
@@ -96,28 +100,11 @@ jobs:
                       return identity
 
               filename = str(value)
-              identity = {
-                  "filename_sha256": hashlib.sha256(filename.encode("utf-8")).hexdigest()[:16],
-                  "extension": Path(filename).suffix.lower(),
-              }
-              for key in ("size_bytes", "file_size_bytes", "byte_count"):
-                  size = container.get(key)
-                  if isinstance(size, int | float) and size >= 0:
-                      identity["size_bytes"] = int(size)
-                      break
-              return identity
           '''
-          replacement = '\n'.join(line[10:] if line.startswith('          ') else line for line in replacement.splitlines())
-          text, count = re.subn(
-              r'def _filename_identity\(value: Any, container: Mapping\[str, Any\]\) -> dict\[str, Any\]:\n.*?(?=\n\ndef redact_value)',
-              replacement,
-              text,
-              count=1,
-              flags=re.DOTALL,
-          )
-          if count != 1:
-              raise SystemExit(f'filename identity structural rewrite count={count}')
-          path.write_text(text, encoding='utf-8')
+          new = '\n'.join(line[10:] if line.startswith('          ') else line for line in new.splitlines()) + '\n'
+          if text.count(old) != 1:
+              raise SystemExit(f'filename identity insertion exact-match count={text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
 
           path = Path('src/thesisound/logging_setup.py')
           text = path.read_text(encoding='utf-8')
