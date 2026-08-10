@@ -55,6 +55,8 @@ class HierarchicalRunner:
         elif output_type is DocumentMapMergeDraft:
             partitions = variables["partitions"]
             assert isinstance(partitions, list)
+            for partition in partitions:
+                assert "source_block_ids" not in partition["sections"][0]
             section_ids = [str(partition["sections"][0]["section_id"]) for partition in partitions]
             output = DocumentMapMergeDraft(
                 working_thesis="One thesis across the complete document.",
@@ -116,6 +118,32 @@ class OmittingPartitionRunner(HierarchicalRunner):
         return super().run(**kwargs)
 
 
+class RecordingRunner(HierarchicalRunner):
+    def __init__(self) -> None:
+        super().__init__()
+        self.merge_variables: dict[str, object] | None = None
+
+    def run(self, **kwargs):
+        if kwargs["output_type"] is DocumentMapMergeDraft:
+            self.merge_variables = kwargs["variables"]
+        return super().run(**kwargs)
+
+
+class FailingMergeRunner(HierarchicalRunner):
+    def run(self, **kwargs):
+        if kwargs["output_type"] is DocumentMapMergeDraft:
+            raise DeterministicValidationError("forced merge failure")
+        return super().run(**kwargs)
+
+
+class ThesislessMergeRunner(HierarchicalRunner):
+    def run(self, **kwargs):
+        execution = super().run(**kwargs)
+        if kwargs["output_type"] is DocumentMapMergeDraft:
+            execution.output.working_thesis = None
+        return execution
+
+
 def _blocks() -> list[SourceDocumentBlock]:
     source_id = uuid4()
     return [
@@ -136,7 +164,7 @@ def _blocks() -> list[SourceDocumentBlock]:
 def test_large_document_is_mapped_without_omitting_or_duplicating_blocks() -> None:
     blocks = _blocks()
     runner = HierarchicalRunner()
-    mapper = DocumentMapperService(runner, maximum_input_characters=500)
+    mapper = DocumentMapperService(runner, maximum_input_characters=2_000)
 
     document_map, run = mapper.map_document(
         project_id=uuid4(),
@@ -260,3 +288,76 @@ def test_large_document_rejects_any_omitted_content_block() -> None:
             blocks=blocks,
             model="fake",
         )
+
+
+def test_merge_variables_expose_the_trimmed_partition_payload() -> None:
+    blocks = _blocks()
+    runner = RecordingRunner()
+    mapper = DocumentMapperService(runner, maximum_input_characters=2_000)
+
+    document_map, _ = mapper.map_document(
+        project_id=uuid4(),
+        source_id=blocks[0].source_id,
+        blocks=blocks,
+        model="fake",
+    )
+
+    assert runner.merge_variables is not None
+    variables = runner.merge_variables
+    partitions = variables["partitions"]
+    assert isinstance(partitions, list)
+    assert len(partitions) == variables["partition_count"]
+    payload_sections = [
+        section for partition in partitions for section in partition["sections"]
+    ]
+    assert {section["section_id"] for section in payload_sections} == {
+        section.section_id for section in document_map.sections
+    }
+    expected_keys = {
+        "section_id",
+        "title",
+        "function",
+        "key_concepts",
+        "depends_on_section_ids",
+        "required_for_global_understanding",
+        "unresolved_context",
+        "block_count",
+    }
+    assert all(set(section) == expected_keys for section in payload_sections)
+    assert all("source_block_ids" not in section for section in payload_sections)
+    assert all(section["block_count"] >= 1 for section in payload_sections)
+
+
+def test_merge_failure_degrades_to_partition_union_with_a_warning() -> None:
+    blocks = _blocks()
+    mapper = DocumentMapperService(FailingMergeRunner(), maximum_input_characters=2_000)
+
+    document_map, run = mapper.map_document(
+        project_id=uuid4(),
+        source_id=blocks[0].source_id,
+        blocks=blocks,
+        model="fake",
+    )
+
+    mapped = [
+        block_id for section in document_map.sections for block_id in section.source_block_ids
+    ]
+    assert mapped == [block.block_id for block in blocks]
+    assert len(mapped) == len(set(mapped))
+    assert any("Cross-partition merge failed" in warning for warning in document_map.warnings)
+    assert run.stage == "document_map_part"
+
+
+def test_global_thesis_falls_back_to_the_first_partition_with_a_warning() -> None:
+    blocks = _blocks()
+    mapper = DocumentMapperService(ThesislessMergeRunner(), maximum_input_characters=2_000)
+
+    document_map, _ = mapper.map_document(
+        project_id=uuid4(),
+        source_id=blocks[0].source_id,
+        blocks=blocks,
+        model="fake",
+    )
+
+    assert document_map.working_thesis == "Thesis for partition 1"
+    assert any("no global thesis" in warning for warning in document_map.warnings)

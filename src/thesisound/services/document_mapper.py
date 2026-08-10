@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Iterable
+from typing import Any
 from uuid import UUID
 
 from thesisound.domain import (
@@ -9,10 +11,11 @@ from thesisound.domain import (
     DocumentMapSection,
     Locator,
 )
-from thesisound.modeling import DeterministicValidationError, ModelRunRecord
+from thesisound.modeling import DeterministicValidationError, ModelError, ModelRunRecord
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
     DocumentMapDraft,
+    DocumentMapDraftSection,
     DocumentMapMergeDraft,
     SourceDocumentBlock,
 )
@@ -62,8 +65,9 @@ class DocumentMapperService:
             return _materialize_document_map(source_id, blocks, draft), run
 
         part_drafts: list[DocumentMapDraft] = []
+        last_part_record: ModelRunRecord | None = None
         for part_number, partition in enumerate(partitions, start=1):
-            draft, _ = self._map_partition(
+            draft, last_part_record = self._map_partition(
                 project_id=project_id,
                 source_id=source_id,
                 blocks=partition,
@@ -84,7 +88,7 @@ class DocumentMapperService:
                     "part_number": index,
                     "scope": scope_locator(partition).model_dump(mode="json"),
                     "working_thesis": draft.working_thesis,
-                    "sections": [section.model_dump(mode="json") for section in draft.sections],
+                    "sections": [_merge_section_payload(section) for section in draft.sections],
                     "cross_section_threads": [
                         thread.model_dump(mode="json") for thread in draft.cross_section_threads
                     ],
@@ -96,21 +100,46 @@ class DocumentMapperService:
                 )
             ],
         }
+        payload_characters = len(
+            json.dumps(merge_variables["partitions"], ensure_ascii=False)
+        )
+        if payload_characters > self.maximum_input_characters:
+            raise ValueError(
+                "Document-map merge payload is larger than the mapping input budget: "
+                f"{payload_characters:,} characters across {len(partitions)} partitions "
+                f"exceeds {self.maximum_input_characters:,}. Raise "
+                "maximum_input_characters or reduce section granularity."
+            )
 
         def validate_merge(draft: DocumentMapMergeDraft) -> None:
             _validate_merge_draft(draft, known_section_ids)
 
-        merge_execution = self.model_runner.run(
-            project_id=project_id,
-            stage="document_map_merge",
-            prompt_name="document_map_merge",
-            variables=merge_variables,
-            output_type=DocumentMapMergeDraft,
-            model=model,
-            prompt_version=prompt_version,
-            validator=validate_merge,
-        )
-        merged = _merge_part_drafts(part_drafts, merge_execution.output)
+        merge_draft = DocumentMapMergeDraft()
+        merge_record = last_part_record
+        try:
+            merge_execution = self.model_runner.run(
+                project_id=project_id,
+                stage="document_map_merge",
+                prompt_name="document_map_merge",
+                variables=merge_variables,
+                output_type=DocumentMapMergeDraft,
+                model=model,
+                prompt_version=prompt_version,
+                validator=validate_merge,
+            )
+        except ModelError as exc:
+            merge_failure = (
+                f"Cross-partition merge failed ({type(exc).__name__}: {exc}); the document "
+                f"map is the union of {len(partitions)} partition maps with no "
+                "cross-partition links."
+            )
+        else:
+            merge_draft = merge_execution.output
+            merge_record = merge_execution.record
+            merge_failure = None
+        merged = _merge_part_drafts(part_drafts, merge_draft)
+        if merge_failure is not None:
+            merged.warnings.append(merge_failure)
         merged.warnings.append(
             "Document was mapped hierarchically across "
             f"{len(partitions)} complete semantic partitions; no blocks were omitted."
@@ -126,7 +155,7 @@ class DocumentMapperService:
             content_ids=content_block_ids,
             minimum_coverage=1.0,
         )
-        return _materialize_document_map(source_id, blocks, merged), merge_execution.record
+        return _materialize_document_map(source_id, blocks, merged), merge_record
 
     def _map_partition(
         self,
@@ -272,6 +301,26 @@ def _split_at_block_boundaries(
     return result
 
 
+def _merge_section_payload(section: DocumentMapDraftSection) -> dict[str, Any]:
+    """The section fields the merge pass is allowed to reason about.
+
+    Block IDs are omitted on purpose: the merge prompt may only reference section
+    IDs, block IDs are the largest field in the payload, and a model that never
+    sees a block ID cannot emit one.
+    """
+
+    return {
+        "section_id": section.section_id,
+        "title": section.title,
+        "function": section.function,
+        "key_concepts": section.key_concepts,
+        "depends_on_section_ids": section.depends_on_section_ids,
+        "required_for_global_understanding": section.required_for_global_understanding,
+        "unresolved_context": section.unresolved_context,
+        "block_count": len(section.source_block_ids),
+    }
+
+
 def _namespace_draft(draft: DocumentMapDraft, part_number: int) -> DocumentMapDraft:
     prefix = f"part-{part_number:04d}:"
     id_map = {section.section_id: prefix + section.section_id for section in draft.sections}
@@ -325,9 +374,19 @@ def _merge_part_drafts(
             *merge.warnings,
         ]
     )
+    working_thesis = merge.working_thesis
+    if not working_thesis:
+        working_thesis = next(
+            (draft.working_thesis for draft in part_drafts if draft.working_thesis), None
+        )
+        if working_thesis:
+            warnings = [
+                *warnings,
+                "The merge pass returned no global thesis; the first partition's thesis is "
+                "used for the whole document.",
+            ]
     return DocumentMapDraft(
-        working_thesis=merge.working_thesis
-        or next((draft.working_thesis for draft in part_drafts if draft.working_thesis), None),
+        working_thesis=working_thesis,
         sections=sections,
         cross_section_threads=threads,
         warnings=warnings,

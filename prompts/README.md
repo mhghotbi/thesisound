@@ -16,6 +16,8 @@ Promptهای اجرایی فعلی:
 ```text
 prompts/research_brief/1.0.0/
 prompts/document_map/1.0.0/
+prompts/document_map_merge/1.0.0/
+prompts/document_map_merge/1.1.0/
 prompts/evidence_extraction/1.1.0/
 prompts/evidence_extraction/1.2.0/
 prompts/claim_reconciliation/1.0.0/
@@ -27,6 +29,7 @@ prompts/persian_script_segment/1.0.0/
 prompts/script_verifier/1.0.0/
 prompts/script_verifier/1.1.0/
 prompts/script_reviser/1.0.0/
+prompts/web_source_capture/1.0.0/
 ```
 
 `episode_plan/1.1.0` به Budget Report و Disagreement Graph وابسته است. نسخه `1.0.0` بدون تغییر حفظ شده تا runهای قدیمی reproducible بمانند.
@@ -34,6 +37,10 @@ prompts/script_reviser/1.0.0/
 `evidence_extraction/1.2.0` سقف attempt را به ۳ می‌رساند تا repair برای excerpt/block validation یک دور بیشتر فرصت داشته باشد. نسخه `1.1.0` بدون تغییر حفظ شده تا runهای قدیمی reproducible بمانند.
 
 `script_verifier/1.1.0` امتیازهای کیفیت درجه‌بندی‌شده و بازخورد عملی اضافه می‌کند. نسخه `1.0.0` بدون تغییر حفظ شده تا runهای قدیمی reproducible بمانند.
+
+`document_map_merge/1.1.0` تنها نسخه‌ی قابل‌اجراست. در نسخه `1.0.0` توکن
+`{{ partitions | tojson }}` هرگز جایگزین نمی‌شد و مدل هیچ‌وقت partitionها را نمی‌دید؛
+آن نسخه فقط به‌عنوان سابقه نگه داشته شده و اکنون هنگام render خطا می‌دهد.
 
 ## Contract
 

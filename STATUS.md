@@ -1,6 +1,6 @@
 # Thesisound — Current Implementation Status
 
-Last updated: 2026-08-08
+Last updated: 2026-08-10
 
 The operating procedure is [`docs/06-operations/03-production-sop.md`](docs/06-operations/03-production-sop.md). The `thesisound readiness` command and matching web view re-run stored-input gate logic without model calls. The frozen machine-checkable evaluation is under [`benchmarks/eval/`](benchmarks/eval/); human scoring and the blind NotebookLM comparison remain separate work.
 
@@ -68,6 +68,13 @@ All Gemini text, Google Search, URL Context, TTS, and ASR calls now pass through
 ## What is not yet claimed
 
 The local application is ready for live-path validation, but no claim is made yet about real Persian output quality, URL retrieval completeness, source authority ranking, latency, cost, or reliability. Those require recorded runs with actual providers and real source corpora. Pricing-versioned cost calculation is not implemented yet; the ledger records provider token usage needed to add it later.
+
+Every document map built before prompt version `document_map_merge/1.1.0` is missing its
+cross-partition layer: the merge template's `partitions` placeholder was never substituted, so
+the model received no partition maps and returned an empty merge. Affected maps show zero
+cross-partition dependencies and a global thesis copied from the first partition. Maps in the
+shared cache are invalidated automatically; project artifacts written before the fix are not
+rewritten.
 
 Next empirical work:
 
