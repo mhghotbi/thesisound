@@ -29,117 +29,24 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Normalize temporary patcher
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path('.github/align_observability_plan.py')
-          text = path.read_text(encoding='utf-8')
-          old = '''replace_once(OBS, "        error_message=row[16],", "        error_message=redact_exception_message(row[16]),")
-          # The span row has another error_message at index 16; replace the remaining occurrence.
-          replace_once(OBS, "        error_message=row[16],", "        error_message=redact_exception_message(row[16]),")'''
-          new = '''replace_all(
-              OBS,
-              "        error_message=row[16],",
-              "        error_message=redact_exception_message(row[16]),",
-              expected=2,
-          )'''
-          if text.count(old) != 1:
-              raise SystemExit('temporary error-message patcher guard did not match exactly once')
-          text = text.replace(old, new, 1)
-
-          marker = '''# Ensure the old rollup API is gone from the ledger and all source callers use
-          # the dedicated service.'''
-          addition = '''EVAL_HARNESS = "src/thesisound/services/eval_harness.py"
-          replace_once(
-              EVAL_HARNESS,
-              "from thesisound.observability import ObservabilityLedger, tracer_from_settings\\n",
-              "from thesisound.observability import ObservabilityLedger, tracer_from_settings\\nfrom thesisound.services.observability_rollup import ObservabilityRollup\\n",
-          )
-          replace_once(
-              EVAL_HARNESS,
-              "    usage = ledger.project_summary(project.project_id)\\n",
-              "    usage = ObservabilityRollup(ledger).project_summary(project.project_id)\\n",
-          )
-
-          '''
-          if text.count(marker) != 1:
-              raise SystemExit('rollup caller insertion marker did not match exactly once')
-          text = text.replace(marker, addition + marker, 1)
-          path.write_text(text, encoding='utf-8')
-          PY
-
       - name: Apply precise plan corrections
-        run: python .github/align_observability_plan.py
-
-      - name: Make central privacy transformations idempotent
         run: |
-          python - <<'PY'
-          import re
-          from pathlib import Path
-
-          path = Path('src/thesisound/observability.py')
-          text = path.read_text(encoding='utf-8')
-          old = 'def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:\n    filename = str(value)\n'
-          new = '''def _filename_identity(value: Any, container: Mapping[str, Any]) -> dict[str, Any]:
-    if isinstance(value, Mapping):
-        digest = value.get("filename_sha256")
-        extension = value.get("extension")
-        if isinstance(digest, str) and isinstance(extension, str):
-            identity: dict[str, Any] = {
-                "filename_sha256": digest[:16],
-                "extension": extension,
-            }
-            size = value.get("size_bytes")
-            if isinstance(size, int | float) and size >= 0:
-                identity["size_bytes"] = int(size)
-            return identity
-
-    filename = str(value)
-'''
-          if text.count(old) != 1:
-              raise SystemExit(f'filename identity insertion exact-match count={text.count(old)}')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
-
-          path = Path('src/thesisound/logging_setup.py')
-          text = path.read_text(encoding='utf-8')
-          text, import_count = re.subn(
-              r'from thesisound\.observability import is_sensitive_key, redact_text, redact_value',
-              'from thesisound.observability import redact_text, redact_value',
-              text,
-              count=1,
-          )
-          text, block_count = re.subn(
-              r'            record\.__dict__\[key\] = \(\n                "\[REDACTED\]"\n                if is_sensitive_key\(key\)\n                else redact_value\(value, store_payloads=self\.store_payloads\)\n            \)',
-              '            record.__dict__[key] = redact_value(\n                {key: value}, store_payloads=self.store_payloads\n            )[key]',
-              text,
-              count=1,
-          )
-          if import_count != 1 or block_count != 1:
-              raise SystemExit(f'logging structural rewrite import={import_count} block={block_count}')
-          path.write_text(text, encoding='utf-8')
-
-          path = Path('tests/test_observability_rollups.py')
-          text = path.read_text(encoding='utf-8')
-          text, count = re.subn(
-              r'(        kind="stage",\n)(        started_at=started,)',
-              r'\1        subject_type=None,\n        subject_id=None,\n\2',
-              text,
-              count=1,
-          )
-          if count != 1:
-              raise SystemExit(f'rollup SpanRecord structural rewrite count={count}')
-          path.write_text(text, encoding='utf-8')
-          PY
-
-      - name: Compile generated source
-        run: |
+          python .github/prepare_observability_patcher.py
+          python .github/align_observability_plan.py
+          python .github/postfix_observability_alignment.py
           python -m py_compile \
             src/thesisound/observability.py \
             src/thesisound/logging_setup.py \
             src/thesisound/services/observability_rollup.py \
             src/thesisound/services/observability_reporting.py
+
+      - name: Remove temporary implementation helpers
+        run: |
+          rm \
+            .github/prepare_observability_patcher.py \
+            .github/align_observability_plan.py \
+            .github/postfix_observability_alignment.py \
+            .github/workflows/tmp-observability-plan-align.yml
 
       - name: Install dependencies
         run: uv sync --extra dev --extra web-ui
@@ -160,14 +67,24 @@ jobs:
             tests/test_observability_rollups.py \
             tests/test_observability_phase56.py
 
-      - name: Fix import ordering in generated files
+      - name: Fix import ordering in changed files
         run: |
           uv run ruff check --fix \
+            src/thesisound/observability.py \
+            src/thesisound/logging_setup.py \
+            src/thesisound/observability_cli.py \
             src/thesisound/services/eval_harness.py \
-            tests/test_observability_rollups.py
+            src/thesisound/services/observability_reporting.py \
+            src/thesisound/services/observability_rollup.py \
+            src/thesisound/web/app.py \
+            src/thesisound/web/observability_routes.py \
+            tests/test_observability.py \
+            tests/test_logging_setup.py \
+            tests/test_observability_rollups.py \
+            tests/test_observability_phase56.py
 
-      - name: Lint repository changes
-        run: uv run ruff check . --exclude .github/align_observability_plan.py --output-format=github
+      - name: Lint
+        run: uv run ruff check . --output-format=github
 
       - name: Focused observability tests
         run: |
@@ -191,9 +108,8 @@ jobs:
       - name: Full test suite
         run: uv run pytest
 
-      - name: Remove temporary executor and publish corrections
+      - name: Publish validated corrections
         run: |
-          rm .github/align_observability_plan.py .github/workflows/tmp-observability-plan-align.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
