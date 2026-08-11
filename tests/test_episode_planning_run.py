@@ -135,13 +135,22 @@ def _service(
 ) -> EpisodePlanningRunService:
     workspace = fake.workspace
     workspace.save_project(project)
+
+    class _NoopAnalysis:
+        def sync_to_current_profile(self, project_id, source_id, *, fast_model, strong_model):
+            del project_id, source_id, fast_model, strong_model
+            return False
+
     return EpisodePlanningRunService(
         workspace_store=workspace,
         run_store=EpisodePlanningRunStore(workspace.root),
         episode_store=EpisodeArtifactStore(workspace.root),
         preparation_service_factory=lambda _: fake,  # type: ignore[return-value]
+        source_analysis_service_factory=lambda: _NoopAnalysis(),  # type: ignore[return-value]
         coverage_model="fake",
         planning_model="fake",
+        fast_model="fake-fast",
+        strong_model="fake-strong",
     )
 
 
@@ -194,6 +203,7 @@ def test_successful_run_produces_a_stage_span_per_step(
     assert root.parent_span_id is None  # new_root: no ambient HTTP span was open
 
     step_names = [
+        "episode.refresh_evidence_scope",
         "episode.audit_coverage",
         "episode.prioritize_claims",
         "episode.estimate_budget",
@@ -213,6 +223,7 @@ def test_successful_run_produces_a_stage_span_per_step(
         if event.name == "run.stage_changed"
     ]
     assert stage_events == [
+        "refreshing_evidence_scope",
         "auditing_coverage",
         "prioritizing_claims",
         "estimating_budget",

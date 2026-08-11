@@ -19,10 +19,13 @@ from thesisound.product_metrics.events import GateBlocked, GateResolved
 from thesisound.product_metrics.store import ProductEventStore
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.episode_preparation_service import EpisodePreparationService
+from thesisound.services.source_analysis_service import SourceAnalysisService
+from thesisound.services.source_artifact_store import SourceArtifactStore
 
 EpisodePlanningStatus = Literal["queued", "running", "blocked", "succeeded", "failed"]
 EpisodePlanningStage = Literal[
     "queued",
+    "refreshing_evidence_scope",
     "auditing_coverage",
     "prioritizing_claims",
     "estimating_budget",
@@ -141,15 +144,21 @@ class EpisodePlanningRunService:
         run_store: EpisodePlanningRunStore,
         episode_store: EpisodeArtifactStore,
         preparation_service_factory: Callable[[UUID], EpisodePreparationService],
+        source_analysis_service_factory: Callable[[], SourceAnalysisService],
         coverage_model: str,
         planning_model: str,
+        fast_model: str,
+        strong_model: str,
     ) -> None:
         self.workspace_store = workspace_store
         self.run_store = run_store
         self.episode_store = episode_store
         self.preparation_service_factory = preparation_service_factory
+        self.source_analysis_service_factory = source_analysis_service_factory
         self.coverage_model = coverage_model
         self.planning_model = planning_model
+        self.fast_model = fast_model
+        self.strong_model = strong_model
 
     def recover_interrupted_runs(self) -> list[UUID]:
         message = "Episode planning was interrupted by a service restart. Retry to continue."
@@ -215,8 +224,9 @@ class EpisodePlanningRunService:
         project = self.workspace_store.load_project(project_id)
         previous = self.run_store.load(project_id)
         # Both ceilings are recorded before the run can block, so a finished plan knows
-        # its supported duration just as well as a blocked one does. The episode plan is
-        # the only artifact duration has reached by either point, and it is rebuilt here.
+        # its supported duration just as well as a blocked one does. Changing duration
+        # updates the brief here; run() then syncs corpus evidence to the new profile
+        # before coverage and planning so deferred-block claims cannot leak in.
         if (project.state, previous.status) not in {
             (ProjectState.EPISODE_PLANNING, "blocked"),
             (ProjectState.EPISODE_PLANNED, "succeeded"),
@@ -315,6 +325,10 @@ class EpisodePlanningRunService:
             try:
                 service = self.preparation_service_factory(project_id)
 
+                self._set_stage(run, "refreshing_evidence_scope")
+                with tracing.span("episode.refresh_evidence_scope", component="episode"):
+                    self._sync_evidence_scope(project_id)
+
                 self._set_stage(run, "auditing_coverage")
                 with tracing.span("episode.audit_coverage", component="episode") as span:
                     coverage = service.audit_coverage(project_id, model=self.coverage_model)
@@ -383,6 +397,26 @@ class EpisodePlanningRunService:
                 run.finished_at = datetime.now(UTC)
                 self.run_store.save(run)
                 return run
+
+    def _sync_evidence_scope(self, project_id: UUID) -> None:
+        project = self.workspace_store.load_project(project_id)
+        source_store = SourceArtifactStore(self.workspace_store.root)
+        claim_ready = set(source_store.list_claim_ready_source_ids(project_id))
+        source_ids = [
+            source.source_id for source in project.sources if source.usable_as_evidence
+        ]
+        if not source_ids:
+            source_ids = list(claim_ready)
+        analysis = self.source_analysis_service_factory()
+        for source_id in source_ids:
+            if source_id not in claim_ready:
+                continue
+            analysis.sync_to_current_profile(
+                project_id,
+                source_id,
+                fast_model=self.fast_model,
+                strong_model=self.strong_model,
+            )
 
     def _block(self, run: EpisodePlanningRun, reason: str) -> EpisodePlanningRun:
         run.status = "blocked"
