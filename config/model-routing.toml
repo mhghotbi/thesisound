@@ -30,6 +30,18 @@ model = "qwen3.6-35"
 provider = "okian"
 model = "gemma4-31"
 
+[profiles.okian_gemini_strong]
+provider = "okian"
+model = "gemini-3.6-flash"
+
+[profiles.okian_gemini_fast]
+provider = "okian"
+model = "gemini-3.5-flash-lite"
+
+[profiles.okian_luna]
+provider = "okian"
+model = "gpt-5.6-luna"
+
 [routes]
 # Grounded: keep on Gemini
 research_brief = "gemini_fast"
@@ -42,8 +54,8 @@ document_map_merge = "gemini_fast"
 evidence_extraction = "gemini_fast"
 evidence_extraction_batch = "gemini_fast"
 claim_reconciliation = "gemini_strong"
-coverage_audit = "gemini_strong"
+coverage_audit = "gemini_reviewer"
 episode_plan = "gemini_strong"
 persian_script_segment = "gemini_strong"
-script_verifier = "gemini_reviewer"
+script_verifier = "gemini_fast"
 script_reviser = "gemini_strong"

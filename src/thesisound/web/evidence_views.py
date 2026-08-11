@@ -6,7 +6,7 @@ from uuid import UUID
 
 from markupsafe import Markup, escape
 
-from thesisound.domain import ClaimRecord, Locator, Project, Script, SupportStatus
+from thesisound.domain import ClaimRecord, EvidenceItem, Locator, Project, Script, SupportStatus
 from thesisound.services.excerpt_matching import locate_excerpt_span
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.source_manifest import UiSourceManifestStore
@@ -311,24 +311,10 @@ def load_evidence_context(
     evidence_id: str,
 ) -> dict[str, object] | None:
     """Build lazy context view for one evidence item, or None if not found."""
-    usable_ids, known_ids = resolve_source_ids(project, source_store)
-    search_ids = usable_ids or known_ids
-    item = None
-    source_id: UUID | None = None
-    for candidate_id in search_ids:
-        try:
-            items = source_store.load_evidence_items(project.project_id, candidate_id)
-        except FileNotFoundError:
-            continue
-        for candidate in items:
-            if candidate.evidence_id == evidence_id:
-                item = candidate
-                source_id = candidate_id
-                break
-        if item is not None:
-            break
-    if item is None or source_id is None:
+    found = find_evidence_item(project, source_store, evidence_id)
+    if found is None:
         return None
+    item, source_id = found
 
     try:
         blocks = source_store.load_blocks(project.project_id, source_id)
@@ -348,4 +334,70 @@ def load_evidence_context(
         "current_html": highlighted,
         "previous_text": previous.text if previous is not None else None,
         "next_text": next_block.text if next_block is not None else None,
+    }
+
+
+def find_evidence_item(
+    project: Project,
+    source_store: SourceArtifactStore,
+    evidence_id: str,
+) -> tuple[EvidenceItem, UUID] | None:
+    usable_ids, known_ids = resolve_source_ids(project, source_store)
+    search_ids = usable_ids or known_ids
+    for candidate_id in search_ids:
+        try:
+            items = source_store.load_evidence_items(project.project_id, candidate_id)
+        except FileNotFoundError:
+            continue
+        for candidate in items:
+            if candidate.evidence_id == evidence_id:
+                return candidate, candidate_id
+    return None
+
+
+def resolve_judgement_snapshot(
+    project: Project,
+    source_store: SourceArtifactStore,
+    *,
+    evidence_id: str,
+    claim_id: str,
+) -> dict[str, object] | None:
+    """Build the durable snapshot for a judgement, or None if evidence is unknown."""
+    found = find_evidence_item(project, source_store, evidence_id)
+    if found is None:
+        return None
+    item, source_id = found
+    claims = load_claim_index(project, source_store)
+    claim = claims.get(claim_id)
+    titles = source_titles_for_project(project, source_store)
+    extraction_identity = None
+    try:
+        for extraction in source_store.load_extractions(project.project_id, source_id):
+            if any(
+                claim_item.evidence_id == evidence_id
+                for claim_item in extraction.extraction.claims
+            ):
+                extraction_identity = extraction.extraction_identity
+                break
+    except FileNotFoundError:
+        extraction_identity = None
+    reconciler_identity = None
+    try:
+        ledger = source_store.load_claim_ledger(project.project_id, source_id)
+        reconciler_identity = ledger.reconciler_identity
+    except FileNotFoundError:
+        reconciler_identity = None
+    return {
+        "source_id": source_id,
+        "block_id": item.block_id,
+        "page_start": item.locator.page_start,
+        "page_end": item.locator.page_end,
+        "chapter": item.locator.chapter,
+        "section": item.locator.section,
+        "excerpt": item.supporting_excerpt,
+        "claim_text": claim.claim if claim is not None else None,
+        "source_title": titles.get(source_id, "منبع بدون عنوان"),
+        "locator_label": locator_label(item.locator),
+        "extraction_identity": extraction_identity,
+        "reconciler_identity": reconciler_identity,
     }

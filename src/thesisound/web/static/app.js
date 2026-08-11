@@ -240,6 +240,73 @@
     });
   });
 
+  const applyJudgementState = (root, verdict) => {
+    root.dataset.verdict = verdict || "";
+    root.querySelectorAll("[data-verdict='correct'], [data-verdict='incorrect']").forEach((button) => {
+      button.classList.toggle("is-selected", Boolean(verdict) && button.dataset.verdict === verdict);
+    });
+    const clearBtn = root.querySelector("[data-verdict='cleared']");
+    if (clearBtn) clearBtn.hidden = !verdict || verdict === "cleared";
+    const reasonPanel = root.querySelector(".evidence-judgement__reason");
+    if (reasonPanel) reasonPanel.hidden = true;
+  };
+
+  const postJudgement = (root, verdict, reason = "", note = "") => {
+    const projectId = root.dataset.projectId;
+    const evidenceId = root.dataset.evidenceId;
+    const claimId = root.dataset.claimId;
+    const turnId = root.dataset.turnId;
+    if (!projectId || !evidenceId || !claimId || !turnId) return;
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+    const body = new URLSearchParams({
+      csrf_token: csrf,
+      turn_id: turnId,
+      claim_id: claimId,
+      verdict,
+      reason,
+      note,
+    });
+    fetch(`/projects/${projectId}/script/evidence/${encodeURIComponent(evidenceId)}/judgement`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+      credentials: "same-origin",
+    })
+      .then((response) => {
+        if (!response.ok) return;
+        applyJudgementState(root, verdict === "cleared" ? "" : verdict);
+      })
+      .catch(() => {
+        // Judgement must never block reading.
+      });
+  };
+
+  document.querySelectorAll("[data-evidence-judgement]").forEach((root) => {
+    root.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const submit = target.closest("[data-submit-incorrect]");
+      if (submit) {
+        const selected = root.querySelector("input[type='radio']:checked");
+        if (!(selected instanceof HTMLInputElement) || !selected.value) return;
+        const note = root.querySelector("textarea")?.value || "";
+        postJudgement(root, "incorrect", selected.value, note);
+        return;
+      }
+      const button = target.closest("[data-verdict]");
+      if (!(button instanceof HTMLElement)) return;
+      const verdict = button.dataset.verdict;
+      if (verdict === "incorrect") {
+        const reasonPanel = root.querySelector(".evidence-judgement__reason");
+        if (reasonPanel) reasonPanel.hidden = false;
+        return;
+      }
+      if (verdict === "correct" || verdict === "cleared") {
+        postJudgement(root, verdict);
+      }
+    });
+  });
+
   // Chapter rows seek the one player on the page; without JS they stay plain labels
   // next to their timestamps, which still tells you where each part begins.
   const episodeAudio = document.querySelector("[data-episode-audio]");

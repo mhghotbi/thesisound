@@ -12,6 +12,7 @@ from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.product_metrics import ProductEvent, emit
 from thesisound.product_metrics.events import (
+    EpisodeEvidenceJudged,
     EpisodeSourceTraceOpened,
     GateScriptApproved,
     GateScriptReviewRequested,
@@ -27,7 +28,11 @@ from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_run import ScriptBuildRunService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.error_messages import user_facing_error
-from thesisound.web.evidence_views import load_evidence_context
+from thesisound.web.evidence_judgement_store import (
+    EvidenceJudgementRecord,
+    EvidenceJudgementStore,
+)
+from thesisound.web.evidence_views import load_evidence_context, resolve_judgement_snapshot
 from thesisound.web.evidence_views import segment_views as _segment_views
 
 Render = Callable[..., HTMLResponse]
@@ -263,6 +268,87 @@ def register_script_routes(
         if context is None:
             return Response(status_code=404)
         return render(request, "projects/_evidence_context.html", context)
+
+    @app.post("/projects/{project_id}/script/evidence/{evidence_id}/judgement")
+    def evidence_judgement(
+        request: Request,
+        project_id: UUID,
+        evidence_id: str,
+        csrf_token: Annotated[str, Form()] = "",
+        turn_id: Annotated[str, Form()] = "",
+        claim_id: Annotated[str, Form()] = "",
+        verdict: Annotated[str, Form()] = "",
+        reason: Annotated[str, Form()] = "",
+        note: Annotated[str, Form()] = "",
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        if csrf_token:
+            try:
+                validate_csrf(request, csrf_token)
+            except ValueError:
+                return Response(status_code=403)
+        account = getattr(request.state, "account", None)
+        user_id = getattr(account, "user_id", None)
+        if user_id is None or not turn_id or not claim_id:
+            return Response(status_code=204)
+        if verdict not in {"correct", "incorrect", "cleared"}:
+            return Response(status_code=204)
+        if verdict == "incorrect" and reason not in {
+            "excerpt_does_not_support",
+            "wrong_locator",
+            "claim_mismatch",
+            "other",
+        }:
+            return Response(status_code=204)
+        project = workspace.load_project(project_id)
+        snapshot = resolve_judgement_snapshot(
+            project,
+            source_store,
+            evidence_id=evidence_id,
+            claim_id=claim_id,
+        )
+        if snapshot is None:
+            return Response(status_code=204)
+        try:
+            record = EvidenceJudgementRecord(
+                project_id=project_id,
+                turn_id=turn_id,
+                claim_id=claim_id,
+                evidence_id=evidence_id,
+                source_id=snapshot["source_id"],  # type: ignore[arg-type]
+                block_id=snapshot["block_id"],  # type: ignore[arg-type]
+                page_start=snapshot["page_start"],  # type: ignore[arg-type]
+                page_end=snapshot["page_end"],  # type: ignore[arg-type]
+                chapter=snapshot["chapter"],  # type: ignore[arg-type]
+                section=snapshot["section"],  # type: ignore[arg-type]
+                verdict=verdict,  # type: ignore[arg-type]
+                reason=reason if verdict == "incorrect" else None,  # type: ignore[arg-type]
+                note=note or None,
+                user_id=int(user_id),
+                excerpt=snapshot["excerpt"],  # type: ignore[arg-type]
+                claim_text=snapshot["claim_text"],  # type: ignore[arg-type]
+                source_title=snapshot["source_title"],  # type: ignore[arg-type]
+                locator_label=snapshot["locator_label"],  # type: ignore[arg-type]
+                extraction_identity=snapshot["extraction_identity"],  # type: ignore[arg-type]
+                reconciler_identity=snapshot["reconciler_identity"],  # type: ignore[arg-type]
+            )
+            EvidenceJudgementStore(workspace.root).append(record)
+        except (OSError, TypeError, ValueError):
+            return Response(status_code=204)
+        if verdict in {"correct", "incorrect"}:
+            emit(
+                ProductEvent.EPISODE_EVIDENCE_JUDGED,
+                EpisodeEvidenceJudged(
+                    verdict=verdict,  # type: ignore[arg-type]
+                    reason=reason if verdict == "incorrect" else None,  # type: ignore[arg-type]
+                ),
+                user_id=user_id,
+                project_id=project_id,
+            )
+        return Response(status_code=204)
 
     @app.post("/projects/{project_id}/script/retry")
     def retry_script(

@@ -161,7 +161,7 @@
         {% if item.grounding_cue %}
         <p class="transcript-turn__grounding"><bdi dir="auto">{{ item.grounding_cue.source_title }}</bdi> — {{ item.grounding_cue.locator }}</p>
         {% endif %}
-        {{ evidence_claim_groups(item.claim_groups, project.project_id, true) }}
+        {{ evidence_claim_groups(item.claim_groups, project.project_id, true, item.turn.turn_id) }}
         {% endif %}
 
         {% if not item.turn.editorial_only %}

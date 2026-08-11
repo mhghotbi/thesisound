@@ -36,6 +36,7 @@ class ProductEvent(StrEnum):
     WORKFLOW_REWOUND = "workflow.rewound"
     EPISODE_AUDIO_DOWNLOADED = "episode.audio_downloaded"
     EPISODE_SOURCE_TRACE_OPENED = "episode.source_trace_opened"
+    EPISODE_EVIDENCE_JUDGED = "episode.evidence_judged"
 
 
 class _Payload(BaseModel):
@@ -160,6 +161,19 @@ class EpisodeSourceTraceOpened(_Payload):
     pass
 
 
+class EpisodeEvidenceJudged(_Payload):
+    verdict: Literal["correct", "incorrect"]
+    reason: (
+        Literal[
+            "excerpt_does_not_support",
+            "wrong_locator",
+            "claim_mismatch",
+            "other",
+        ]
+        | None
+    ) = None
+
+
 PAYLOAD_MODELS: dict[ProductEvent, type[BaseModel]] = {
     ProductEvent.AUTH_CODE_REQUESTED: AuthCodeRequested,
     ProductEvent.AUTH_CODE_VERIFIED: AuthCodeVerified,
@@ -186,4 +200,5 @@ PAYLOAD_MODELS: dict[ProductEvent, type[BaseModel]] = {
     ProductEvent.WORKFLOW_REWOUND: WorkflowRewound,
     ProductEvent.EPISODE_AUDIO_DOWNLOADED: EpisodeAudioDownloaded,
     ProductEvent.EPISODE_SOURCE_TRACE_OPENED: EpisodeSourceTraceOpened,
+    ProductEvent.EPISODE_EVIDENCE_JUDGED: EpisodeEvidenceJudged,
 }

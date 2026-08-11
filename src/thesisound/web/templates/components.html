@@ -98,7 +98,7 @@
   Shared claim → evidence chain. Input is claim_group[] from evidence_views.
   drawer=true wraps in the script-page details; drawer=false is for omitted lists.
 #}
-{% macro evidence_claim_groups(claim_groups, project_id=None, drawer=true) -%}
+{% macro evidence_claim_groups(claim_groups, project_id=None, drawer=true, turn_id=None) -%}
 {%- if drawer -%}
 <details class="evidence-drawer" data-source-trace{% if project_id %} data-project-id="{{ project_id }}"{% endif %}>
   <summary>این گفته از کجا آمد؟</summary>
@@ -132,6 +132,33 @@
     {% endif %}
     <span class="operator-only"><bdi dir="ltr">{{ reference.evidence_id }}</bdi></span>
   </blockquote>
+  {% if drawer and turn_id and project_id and group.get('claim_id') %}
+  <div
+    class="evidence-judgement"
+    data-evidence-judgement
+    data-project-id="{{ project_id }}"
+    data-evidence-id="{{ reference.evidence_id }}"
+    data-claim-id="{{ group.claim_id }}"
+    data-turn-id="{{ turn_id }}"
+  >
+    <div class="evidence-judgement__actions">
+      <button type="button" class="evidence-judgement__btn" data-verdict="correct">درست است</button>
+      <button type="button" class="evidence-judgement__btn" data-verdict="incorrect">نادرست است</button>
+      <button type="button" class="evidence-judgement__btn evidence-judgement__btn--clear" data-verdict="cleared" hidden>پس گرفتن</button>
+    </div>
+    <div class="evidence-judgement__reason" hidden>
+      <p class="evidence-judgement__reason-label">چرا نادرست است؟</p>
+      <label class="evidence-judgement__option"><input type="radio" name="reason-{{ reference.evidence_id }}-{{ turn_id }}" value="excerpt_does_not_support"> عبارت شاهد این مدعا را پشتیبانی نمی‌کند</label>
+      <label class="evidence-judgement__option"><input type="radio" name="reason-{{ reference.evidence_id }}-{{ turn_id }}" value="wrong_locator"> نشانی در منبع درست نیست</label>
+      <label class="evidence-judgement__option"><input type="radio" name="reason-{{ reference.evidence_id }}-{{ turn_id }}" value="claim_mismatch"> این مدعا با گفته نمی‌خواند</label>
+      <label class="evidence-judgement__option"><input type="radio" name="reason-{{ reference.evidence_id }}-{{ turn_id }}" value="other"> مورد دیگر</label>
+      <label class="evidence-judgement__note">یادداشت اختیاری
+        <textarea maxlength="500" rows="2" placeholder="حداکثر ۵۰۰ نویسه"></textarea>
+      </label>
+      <button type="button" class="evidence-judgement__btn evidence-judgement__btn--submit" data-submit-incorrect>ثبت</button>
+    </div>
+  </div>
+  {% endif %}
   {% if drawer %}
   <div class="evidence-context" data-evidence-context data-evidence-id="{{ reference.evidence_id }}" hidden></div>
   {% endif %}

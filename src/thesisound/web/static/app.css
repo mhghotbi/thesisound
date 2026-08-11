@@ -1323,6 +1323,66 @@ span.status-label__mark {
 div.evidence-card { display: grid; gap: 8px; font-size: 12px; }
 div.evidence-card ul { margin: 0; padding-inline-start: 18px; }
 
+.evidence-judgement {
+  margin-block-start: 8px;
+  display: grid;
+  gap: 8px;
+}
+.evidence-judgement__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.evidence-judgement__btn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+}
+.evidence-judgement__btn.is-selected { color: var(--ink); font-weight: 700; }
+.evidence-judgement__btn--clear { color: var(--muted); }
+.evidence-judgement__reason {
+  display: grid;
+  gap: 6px;
+  padding: 8px 0 0;
+}
+.evidence-judgement__reason-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.evidence-judgement__option {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.evidence-judgement__note {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.evidence-judgement__note textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  resize: vertical;
+}
+
 .omitted-claims { display: grid; gap: 16px; }
 .omitted-claim__reason { margin: 0 0 6px; color: var(--ink-soft); font-size: 14px; text-wrap: pretty; }
 
