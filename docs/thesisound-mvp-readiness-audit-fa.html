@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ممیزی آمادگی MVP — Thesisound</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #17201d;
+      --muted: #5f6965;
+      --paper: #fbfaf6;
+      --surface: #ffffff;
+      --line: #dfe4df;
+      --brand: #175f4b;
+      --brand-soft: #e8f3ee;
+      --danger: #a6382c;
+      --danger-soft: #fbecea;
+      --warn: #8a5b09;
+      --warn-soft: #fff4d9;
+      --good: #17683e;
+      --good-soft: #e8f5ed;
+      --blue: #235b8f;
+      --blue-soft: #eaf2fa;
+      --shadow: 0 16px 45px rgba(24, 46, 38, .08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 90% 0, rgba(23, 95, 75, .09), transparent 28rem),
+        linear-gradient(180deg, #f7f5ee 0, var(--paper) 18rem);
+      font-family: "Vazirmatn", "Vazir", Tahoma, sans-serif;
+      line-height: 1.85;
+      text-rendering: optimizeLegibility;
+    }
+
+    a { color: var(--brand); text-underline-offset: .18em; }
+    a:hover { color: #0d4938; }
+    .page { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+
+    header { padding: 56px 0 28px; }
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--brand);
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    h1 { margin: 10px 0 8px; font-size: clamp(2rem, 5vw, 3.7rem); line-height: 1.25; }
+    .lede { max-width: 850px; margin: 0; color: var(--muted); font-size: 1.08rem; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 5px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin-bottom: 28px;
+      border-block: 1px solid rgba(223, 228, 223, .9);
+      background: rgba(251, 250, 246, .92);
+      backdrop-filter: blur(12px);
+    }
+    nav .page { display: flex; gap: 18px; overflow-x: auto; padding-block: 10px; }
+    nav a { flex: 0 0 auto; color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 600; }
+
+    main { padding-bottom: 72px; }
+    section { scroll-margin-top: 70px; margin: 28px 0; }
+    .panel {
+      padding: clamp(20px, 4vw, 34px);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.9);
+      box-shadow: var(--shadow);
+    }
+    h2 { margin: 0 0 14px; font-size: 1.55rem; line-height: 1.45; }
+    h3 { margin: 24px 0 9px; font-size: 1.08rem; }
+    p { margin: 9px 0; }
+    ul, ol { margin: 8px 0; padding-right: 1.3rem; }
+    li { margin: 6px 0; }
+    strong { font-weight: 700; }
+    code {
+      direction: ltr;
+      unicode-bidi: isolate;
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: #f1f3f0;
+      color: #34413c;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: .88em;
+    }
+    .ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+    .muted { color: var(--muted); }
+    .small { font-size: .88rem; }
+
+    .verdict {
+      display: grid;
+      grid-template-columns: minmax(240px, .8fr) minmax(0, 1.7fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+    .verdict-mark {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 25px;
+      border: 1px solid #efc8c3;
+      border-radius: 18px;
+      background: var(--danger-soft);
+    }
+    .verdict-mark span { color: var(--danger); font-size: .8rem; font-weight: 800; }
+    .verdict-mark b { margin-top: 6px; color: #6f221b; font-size: 1.65rem; line-height: 1.35; direction: ltr; text-align: right; }
+    .decision { font-size: 1.05rem; }
+    .callout {
+      margin-top: 17px;
+      padding: 15px 17px;
+      border-right: 4px solid var(--danger);
+      border-radius: 10px;
+      background: #fff8f6;
+    }
+
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--surface);
+    }
+    .card h3 { margin-top: 0; }
+    .metric { color: var(--brand); font-size: 1.35rem; font-weight: 800; }
+    .metric.bad { color: var(--danger); }
+    .metric.warn { color: var(--warn); }
+
+    .journey {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(95px, 1fr));
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .journey div {
+      position: relative;
+      padding: 14px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8faf8;
+      text-align: center;
+      font-size: .83rem;
+      font-weight: 600;
+    }
+    .journey div:not(:last-child)::after {
+      content: "←";
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      z-index: 2;
+      width: 12px;
+      transform: translateY(-50%);
+      color: var(--brand);
+      background: var(--paper);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: .76rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .s-good { color: var(--good); background: var(--good-soft); }
+    .s-warn { color: var(--warn); background: var(--warn-soft); }
+    .s-bad { color: var(--danger); background: var(--danger-soft); }
+    .s-info { color: var(--blue); background: var(--blue-soft); }
+
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: .89rem; }
+    th, td { padding: 12px 13px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+    th { color: #40504a; background: #f3f6f3; font-weight: 700; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+
+    .rank-list { list-style: none; padding: 0; counter-reset: item; }
+    .rank-list li {
+      counter-increment: item;
+      position: relative;
+      margin: 10px 0;
+      padding: 11px 47px 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+    .rank-list li::before {
+      content: counter(item);
+      position: absolute;
+      right: 11px;
+      top: 11px;
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--brand);
+      font-size: .8rem;
+      font-weight: 800;
+    }
+    .source-note { border-right-color: var(--blue); background: #f6faff; }
+    footer { padding: 30px 0 55px; color: var(--muted); font-size: .84rem; }
+
+    @media (max-width: 850px) {
+      .verdict, .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+      .journey { grid-template-columns: 1fr; }
+      .journey div:not(:last-child)::after { content: "↓"; top: auto; right: 50%; bottom: -15px; left: auto; transform: translateX(50%); }
+    }
+    @media (max-width: 620px) {
+      .verdict, .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      header { padding-top: 34px; }
+      .panel { border-radius: 16px; }
+      th, td { padding: 10px; }
+    }
+    @media print {
+      body { background: #fff; font-size: 10.5pt; }
+      nav { display: none; }
+      .page { width: 100%; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+      header { padding-top: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page">
+    <div class="eyebrow">ممیزی محصول و اجرا</div>
+    <h1>آمادگی MVP تزی‌ساوند</h1>
+    <p class="lede">پاسخ به یک سؤال عملی: آیا می‌توان امروز Thesisound را با هزینه‌ی پایین به چند کاربر واقعی داد و یک اپیزود فارسیِ مفید، قابل‌اعتماد و قابل‌شنیدن تحویل گرفت؟</p>
+    <div class="meta">
+      <span class="chip">تاریخ بررسی: ۲۱ مرداد ۱۴۰۵ / ۱۲ اوت ۲۰۲۶</span>
+      <span class="chip">دامنه: repo، تست‌ها، workflow، artifact و runtime موجود</span>
+      <span class="chip">بدون تغییر کد</span>
+      <span class="chip">قیمت‌ها و شواهد وب: مشاهده‌شده در تاریخ گزارش</span>
+    </div>
+  </header>
+
+  <nav aria-label="فهرست گزارش">
+    <div class="page">
+      <a href="#verdict">حکم MVP</a>
+      <a href="#mvp">تعریف MVP</a>
+      <a href="#works">وضعیت فعلی</a>
+      <a href="#value">ارزش و NotebookLM</a>
+      <a href="#features">قابلیت‌ها</a>
+      <a href="#reliability">اعتمادپذیری</a>
+      <a href="#quality">کیفیت</a>
+      <a href="#cost">هزینه و کارایی</a>
+      <a href="#scope">Scope پیشنهادی</a>
+      <a href="#actions">اقدام‌ها</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <section id="verdict" class="panel">
+      <div class="verdict">
+        <div class="verdict-mark">
+          <span>MVP VERDICT</span>
+          <b>NOT READY — CORE GAPS</b>
+        </div>
+        <div>
+          <h2>امروز برای MVP واقعی آماده نیست</h2>
+          <p class="decision">معماری بخش بزرگی از مسیر را دارد و یک اجرای تاریخی تا audio کامل شده است؛ اما evidence فعلی برای release کافی نیست. ورودی فارسیِ خراب می‌تواند «سالم» تلقی شود، media نهاییِ قابل‌شنیدن در artifactهای فعلی وجود ندارد، اختلاف و attribution میان منابع حل نشده و قراردادهای اصلی تست/routing/resume سبز نیستند.</p>
+          <div class="callout"><strong>تصمیم:</strong> Thesisound را می‌توان به‌عنوان prototype محدود روی PDF انگلیسی یا EPUB تمیز نشان داد؛ ولی قبل از دادن آن به کاربر واقعی به‌عنوان «پادکست فارسی قابل‌اعتماد»، چهار شکاف باید بسته شوند: parse فارسی، تحویل واقعی audio، سازگاری artifact و آزمون‌های اصلی، و attribution چندمنبعی.</div>
+        </div>
+      </div>
+      <div class="grid grid-4" style="margin-top:20px">
+        <div class="card"><div class="metric warn">Partial</div><div>Does it work?</div><div class="muted small">اجزا کار می‌کنند؛ مسیر جاری release-safe نیست.</div></div>
+        <div class="card"><div class="metric warn">Weak</div><div>User value</div><div class="muted small">تمایز بالقوه روشن است، خروجی فعلی هنوز اثباتش نمی‌کند.</div></div>
+        <div class="card"><div class="metric bad">Not proven</div><div>Trust / listenability</div><div class="muted small">parse فارسی false-green و audio غیرقابل بازبینی.</div></div>
+        <div class="card"><div class="metric warn">Unpredictable</div><div>Cost / simplicity</div><div class="muted small">هزینه‌ی TTS معقول؛ pipeline کلی پرتماس و بدون قیمت واقعی route جاری.</div></div>
+      </div>
+    </section>
+
+    <section id="mvp" class="panel">
+      <h2>۱. MVP واقعی محصول</h2>
+      <p><strong>MVP ارزش‌محور پیشنهادی:</strong> کاربر یک تا سه منبع دیجیتالِ تمیز می‌دهد و در پایان، بدون دخالت فنی، یک اپیزود فارسی ۱۰، ۲۰ یا ۳۰ دقیقه‌ای با روایت شنیدنی، انتساب روشن به منبع، لینک/شاهد قابل‌بازبینی و فایل MP3 قابل‌پخش و دانلود می‌گیرد. سیستم باید اگر متن قابل‌اعتماد استخراج نشده یا مدت درخواستی با محتوای منبع سازگار نیست، واضح متوقف شود.</p>
+      <div class="journey" aria-label="مسیر اصلی کاربر">
+        <div>آپلود منبع دیجیتال</div>
+        <div>استخراج + نمایش سلامت متن</div>
+        <div>انتخاب شواهد مهم</div>
+        <div>طرح متناسب با مدت</div>
+        <div>script فارسی منبع‌دار</div>
+        <div>TTS و کنترل قطعه‌ها</div>
+        <div>پخش و دانلود اپیزود</div>
+      </div>
+      <p class="muted"><strong>واقعیت repo:</strong> این مسیر به‌صورت stateful پیاده شده و یک branch تاریخی تا audio رفته، اما امروز end-to-end قابل تکرار و قابل تحویل نیست. محصول فعلی بیشتر «pipeline پیشرفته با UI اپراتوری» است تا یک happy path اثبات‌شده برای کاربر نهایی.</p>
+    </section>
+
+    <section id="works" class="panel">
+      <h2>۲. وضعیت فعلی</h2>
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>What already works</h3>
+          <ol>
+            <li>workflow مرحله‌ای از brief و corpus تا script و audio وجود دارد.</li>
+            <li>block، locator، evidence و claim provenance ذخیره می‌شوند.</li>
+            <li>PDF انگلیسی دیجیتال و EPUB بلند واقعاً parse و map شده‌اند.</li>
+            <li>بودجه‌ی محتوا با duration تغییر معنایی دارد، نه فقط تعداد کلمات.</li>
+            <li>artifact، cache، archive و resume برای بسیاری از stageها وجود دارد.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>What blocks a good MVP</h3>
+          <ol>
+            <li>متن فارسیِ به‌هم‌ریخته از parse gate عبور و مبنای claim شده است.</li>
+            <li>خروجی audio فعلی موجود نیست؛ FFmpeg محیط هم در دسترس نیست.</li>
+            <li>readiness فعلی evidence artifacts را به علت schema drift نمی‌خواند.</li>
+            <li>attribution و disagreement واقعی میان منابع پیاده نشده است.</li>
+            <li>matrix واقعی E2E و ارزیابی انسانی شنیداری وجود ندارد.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>What is missing</h3>
+          <ol>
+            <li>quality gate و preview قابل‌فهم برای متن فارسی استخراج‌شده.</li>
+            <li>یک artifact صوتی retained، قابل پخش و قابل دانلود.</li>
+            <li>انتساب شنیداری و نقش روشن هر منبع.</li>
+            <li>cost/latency telemetry کامل برای یک episode واقعی.</li>
+            <li>gold set کوچک فارسی و مقایسه‌ی شنیداری با NotebookLM.</li>
+          </ol>
+        </div>
+      </div>
+      <h3>شاهد تست</h3>
+      <p><span class="status s-bad">Suite not green</span> اجرای کامل: <span class="ltr">۱۸ failed، ۸۷۴ passed، ۱ skipped</span> در ۱۱۸٫۸ ثانیه. بخشی محیطی است—دو شکست FFmpeg و یک محدودیت symlink ویندوز—اما شکست‌های routing contract، reviewer، script resume cache، gate pointer، runtime preflight و پاسخ <code>send_back</code> واقعی و مرتبط با MVP هستند. lint نیز ۲۶ مورد باز دارد، ولی بیشتر آن‌ها release blocker محصولی نیستند.</p>
+    </section>
+
+    <section id="value" class="panel">
+      <h2>۳. Product Value و درد کاربران NotebookLM</h2>
+      <p><strong>رتبه‌ی فعلی: Weak value.</strong> مسئله واقعی است: تبدیل منبع تخصصی به مرور فارسیِ قابل‌شنیدن و قابل‌ردگیری برای دانشجوی علوم انسانی. Thesisound نسبت به summary ساده، انتخاب شواهد، محدودیت پوشش، provenance، duration-aware planning و امکان توقف در نبود محتوای کافی دارد. اما این ارزش هنوز در خروجی نهاییِ قابل‌اعتماد و قابل‌شنیدن اثبات نشده است.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>درد گزارش‌شده درباره NotebookLM</th><th>شاهد</th><th>آیا Thesisound حلش می‌کند؟</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>خطای factual، embellishment یا نسبت‌دادن برداشت به سند؛ در فایل تخصصی این خطاها ظریف‌اند.</td>
+              <td><a href="https://support.google.com/notebooklm/answer/16212820?hl=en-GB">راهنمای رسمی Google</a> احتمال inaccuracies و audio glitch را تصریح می‌کند؛ گزارش‌های <a href="https://www.reddit.com/r/notebooklm/comments/1g9j9er">کاربری ۱</a> و <a href="https://www.reddit.com/r/notebooklm/comments/1tf4mg0/i_wish_notebooklm_was_purpose_built_for_academia/">کاربری آکادمیک</a> نمونه‌های anecdotal هستند.</td>
+              <td><span class="status s-warn">تا حدی</span> claim/evidence و verifier مزیت‌اند؛ ولی parse فارسی خراب نیز با confidence بالا عبور کرده، پس grounding فقط روی artifact سالم معنا دارد.</td>
+            </tr>
+            <tr>
+              <td>نادیده‌گرفتن یک منبع، تمرکز نامتوازن، یا بیان یک دیدگاه به‌عنوان نتیجه قطعی.</td>
+              <td>نمونه‌های anecdotal از <a href="https://www.reddit.com/r/notebooklm/comments/1ps3urh/my_audio_overview_chose_to_ignore_some_sources/">نادیده‌گرفتن منبع مخالف</a> و <a href="https://www.reddit.com/r/notebooklm/comments/1gp9rex">کنترل ضعیف تمرکز</a>.</td>
+              <td><span class="status s-bad">خیر، فعلاً</span> coverage دارد، اما disagreement graph اجرای واقعی خالی است و cross-source reconciliation کامل نیست.</td>
+            </tr>
+            <tr>
+              <td>تلفظ نام‌ها و اصطلاحات تخصصی، speaker glitch، صدای سوم یا خرابی فایل.</td>
+              <td><a href="https://support.google.com/notebooklm/answer/16212820?hl=en-GB">Google Help</a> speaker switches و voice glitches را می‌پذیرد؛ نمونه‌های <a href="https://www.reddit.com/r/notebooklm/comments/1kq1xvy">تلفظ</a> و <a href="https://www.reddit.com/r/notebooklm/comments/1mk8si1/audio_overview_corrupt/">فایل خراب</a> anecdotal‌اند.</td>
+              <td><span class="status s-bad">اثبات نشده</span> glossary و chunk QA طراحی شده‌اند، ولی هیچ audio فعلی برای شنیدن وجود ندارد؛ اجرای تاریخی ۶ قطعه از ۲۴ را manual review پذیرفته است.</td>
+            </tr>
+            <tr>
+              <td>گفت‌وگوی generic، filler، تکرار قالب و حذف نکات مهم در سند بلند.</td>
+              <td>یک <a href="https://www.techradar.com/pro/notebooklm-review">بررسی مستقل TechRadar</a> از حذف نکات، ورود اطلاعات خارج سند و filler می‌گوید؛ گزارش‌های <a href="https://www.reddit.com/r/notebooklm/comments/1sgw86a/notebooklm_is_trash_now/">تکرار</a> و <a href="https://www.reddit.com/r/notebooklm/comments/1hb0o7x">سند بلند</a> anecdotal‌اند.</td>
+              <td><span class="status s-warn">پتانسیل دارد</span> map و duration policy بهترند؛ اما script فعلی پرسش‌وپاسخ مصنوعی و عبارت‌های تکراری مثل «دقیقاً همین‌طور» دارد.</td>
+            </tr>
+            <tr>
+              <td>کنترل محدود ingestion وب: فقط متن صفحه، بدون تصویر، صفحه تو‌در‌تو، paywall و بعضی یادداشت‌ها.</td>
+              <td><a href="https://support.google.com/notebooklm/answer/16215270?co=GENIE.Platform%3DDesktop&amp;hl=en">محدودیت‌های رسمی source ingestion</a>.</td>
+              <td><span class="status s-warn">متفاوت، نه الزاماً بهتر</span> آپلود مستقیم و parserهای متعدد مزیت‌اند، اما web discovery در runtime واقعی اثبات نشده و Persian PDF مشکل جدی دارد.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout source-note"><strong>نتیجه‌ی رقابتی:</strong> wedge معتبر Thesisound «پادکست فارسیِ تخصصی با کنترل پوشش و امکان بازگشت به شاهد» است، نه صرفاً TTS فارسی. امروز بخش provenance در backend وجود دارد، اما سه درد اصلی NotebookLM—اعتماد، توازن دیدگاه و کیفیت شنیداری—هنوز در خروجی واقعی Thesisound حل نشده‌اند. بنابراین فعلاً بهتر از NotebookLM بودن، claim قابل دفاعی نیست.</div>
+      <p class="small muted">یادداشت روش: پست‌های Reddit شواهد anecdotal و غیرنماینده‌اند؛ برای کشف pain point استفاده شده‌اند، نه تخمین نرخ نارضایتی. منبع رسمی Google نیز همزمان قابلیت‌های قوی NotebookLM مانند انتخاب قالب/طول، prompt سفارشی، citation هنگام گوش‌دادن و download/share را نشان می‌دهد؛ مقایسه باید با نسخه‌ی جاری محصول انجام شود.</p>
+    </section>
+
+    <section id="features" class="panel">
+      <h2>۴. Core Features</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>جزء</th><th>دسته</th><th>تصمیم MVP</th></tr></thead>
+          <tbody>
+            <tr><td>Document ingestion</td><td><span class="status s-good">Must work</span></td><td>PDF دیجیتال، EPUB و TXT؛ با fail-closed برای متن خراب.</td></tr>
+            <tr><td>Evidence extraction + locator provenance</td><td><span class="status s-good">Must work</span></td><td>تمایز اصلی اعتماد؛ حفظ شود.</td></tr>
+            <tr><td>Claim prioritization</td><td><span class="status s-good">Must work</span></td><td>برای مدت محدود لازم است؛ تا جای ممکن deterministic.</td></tr>
+            <tr><td>Episode planning + script writer</td><td><span class="status s-good">Must work</span></td><td>طرح داخلی لازم؛ approval جداگانه لازم نیست.</td></tr>
+            <tr><td>TTS + playable/downloadable media</td><td><span class="status s-good">Must work</span></td><td>بدون آن محصول podcast نیست.</td></tr>
+            <tr><td>Cache/reuse + stage retry</td><td><span class="status s-good">Must work</span></td><td>برای هزینه و recovery حیاتی؛ regression resume باید رفع شود.</td></tr>
+            <tr><td>Research Brief</td><td><span class="status s-info">Useful</span></td><td>inline، قابل‌ویرایش و auto-confirm؛ نه یک gate اجباری مستقل.</td></tr>
+            <tr><td>Document map</td><td><span class="status s-info">Useful</span></td><td>فقط برای سند بلند؛ برای PDF کوتاه حذف شود.</td></tr>
+            <tr><td>Coverage audit</td><td><span class="status s-info">Useful</span></td><td>نسخه‌ی سبک/conditional؛ refusal در کمبود ماده حفظ شود.</td></tr>
+            <tr><td>Glossary</td><td><span class="status s-info">Useful</span></td><td>برای اصطلاح تخصصی؛ ابتدا deterministic، مدل فقط در صورت نیاز.</td></tr>
+            <tr><td>Script verifier + reviser</td><td><span class="status s-info">Useful</span></td><td>deterministic همیشه؛ model verifier/reviser فقط برای ریسک یا شکست.</td></tr>
+            <tr><td>Multiple duration modes</td><td><span class="status s-info">Useful</span></td><td>۱۰/۲۰/۳۰ دقیقه کافی؛ رفتار معنایی فعلی حفظ شود.</td></tr>
+            <tr><td>Web/source discovery</td><td><span class="status s-warn">Future</span></td><td>در v1 upload-first defer؛ runtime واقعی آن موجود نیست.</td></tr>
+            <tr><td>OCR اسکن فارسی</td><td><span class="status s-warn">Future</span></td><td>تا زمان proof واقعی، صریحاً unsupported و fail-fast باشد.</td></tr>
+            <tr><td>Cross-source disagreement handling</td><td><span class="status s-warn">Scope-dependent</span></td><td>اگر محصول چند دیدگاه رقیب می‌پذیرد Must work؛ وگرنه v1 به منابع مکمل محدود شود.</td></tr>
+            <tr><td>Multiple content modes</td><td><span class="status s-warn">Future</span></td><td>فقط explanatory در v1.</td></tr>
+            <tr><td>Approval steps</td><td><span class="status s-bad">Overbuilt</span></td><td>۳ approval + شروع دستی audio زمان رسیدن به ارزش را بی‌دلیل زیاد می‌کند.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="reliability" class="panel">
+      <h2>۵. End-to-End Reliability</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>مسیر واقعی</th><th>حکم</th><th>شاهد و failure محتمل</th><th>رفتار برای کاربر</th></tr></thead>
+          <tbody>
+            <tr><td>مقاله انگلیسی digital PDF</td><td><span class="status s-warn">Partial</span></td><td>یک PDF native pass و دیگری warning؛ نمونه‌های تاریخی به claim/script رسیده‌اند.</td><td>happy path محتمل است، ولی case release-level جاری وجود ندارد.</td></tr>
+            <tr><td>مقاله فارسی digital PDF</td><td><span class="status s-bad">Unreliable</span></td><td>RTL presentation forms و ترتیب کلمات خراب، با verdict «warning / safe» پذیرفته شده و claim ساخته است.</td><td>خطرناک‌ترین حالت: خروجی ناقص به‌عنوان سالم ارائه می‌شود.</td></tr>
+            <tr><td>PDF فارسی اسکن‌شده</td><td><span class="status s-bad">Not proven</span></td><td>هیچ scan واقعی در workspace نیست؛ MinerU نصب نیست؛ فقط code/test/benchmark وجود دارد.</td><td>باید در v1 قبل از upload یا بلافاصله با پیام روشن رد شود.</td></tr>
+            <tr><td>سند نسبتاً بلند</td><td><span class="status s-warn">Partial</span></td><td>EPUB با ۱۹۸ block، ۴۷ section و ۷۰ claim پردازش شده؛ retry زیاد و artifact evidence فعلی ناسازگار است.</td><td>resume طراحی شده، اما restart سرور به retry دستی نیاز دارد.</td></tr>
+            <tr><td>تولید script</td><td><span class="status s-warn">Prototype works</span></td><td>script جاری verifier pass و unsupported=0 دارد؛ ولی attribution شنیداری و طبیعی‌بودن ضعیف است.</td><td>کاربر متن می‌گیرد، اما هنوز مزیت شنیداری روشن نیست.</td></tr>
+            <tr><td>تولید audio</td><td><span class="status s-bad">Not releasable</span></td><td>اجرای تاریخی ۲۴ chunk در ۶:۲۶ کامل شده؛ ۶ chunk manual review و مدت واقعی ۱۶٫۸٪ بیشتر بوده. WAV/MP3 اکنون retained نیست و FFmpeg PATH شکست می‌خورد.</td><td>امروز چیزی برای گوش‌دادن و download قابل تأیید نیست.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Retry/resume:</strong> stateهای retryable، archive و reuse نقطه قوت‌اند؛ اما BackgroundTasks صف durable نیست و restart چند run را به شکست دستی رسانده است. برای MVP محدود، queue جدید ضروری نیست—نمایش مرحله‌ی آخر سالم و دکمه‌ی retry قابل‌فهم کافی است. مسئله اصلی recovery نیست؛ false-green بودن parse و artifactهای شکسته است.</p>
+    </section>
+
+    <section id="quality" class="panel">
+      <h2>۶. Quality</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Source fidelity <span class="status s-bad">Blocker</span></h3>
+          <p>در سطح data model، claim به evidence وصل است؛ اما کیفیت evidence تضمین نشده. یک PDF فارسی خراب به claim «قوی» رسیده است. در script چندمنبعی تاریخی نیز تفسیر منابع ثانویه گاهی به خود متفکر نسبت داده شده و نام منبع/نویسنده در روایت شنیده نمی‌شود.</p>
+        </div>
+        <div class="card">
+          <h3>Coverage <span class="status s-warn">Promising</span></h3>
+          <p>duration profile واقعاً coverage target، تعداد claim، مثال، objection و neighbour context را تغییر می‌دهد. برای سند بلند map و selection وجود دارد؛ ولی هیچ ارزیابی انسانی ۵/۱۵/۳۰/۶۰ دقیقه‌ای نشان نمی‌دهد نکات اصلی حفظ شده‌اند.</p>
+        </div>
+        <div class="card">
+          <h3>Script <span class="status s-warn">Below MVP bar</span></h3>
+          <p>فارسی قابل‌فهم و ساختار آموزشی دارد، اما پرسش‌ها اغلب بازگویی پاسخ‌اند، filler و agreement phrase تکرار می‌شود و dialogue طبیعی نیست. سیاست speaker balance جدید برای بهبود همین مسئله اضافه شده، اما خروجی live جدیدی آن را اثبات نمی‌کند.</p>
+        </div>
+        <div class="card">
+          <h3>Audio <span class="status s-bad">Unknown</span></h3>
+          <p>validator، ASR و chunk QA وجود دارند؛ ولی فایل نگه‌داری‌شده‌ای برای شنیدن تلفظ، prosody، تکرار یا گم‌شدن segment نداریم. پذیرش ۶/۲۴ قطعه با manual reviewِ خودکار، quality proof محسوب نمی‌شود.</p>
+        </div>
+      </div>
+      <div class="callout"><strong>آستانه MVP پاس نشده:</strong> کاربر بعد از چند استفاده هنوز ممکن است PDF فارسی سالم‌نما اما خراب، روایت بدون attribution و گفت‌وگوی generic دریافت کند؛ در این وضعیت نمی‌توان گفت نتیجه به‌طور پایدار بهتر از دادن PDF به یک LLM عمومی است.</div>
+    </section>
+
+    <section id="cost" class="panel">
+      <h2>۷. Backend Efficiency و Cost per Episode</h2>
+      <p><strong>Cost / Performance Verdict:</strong> TTS به‌تنهایی برای MVP اقتصادی است؛ pipeline کامل هنوز قابل پیش‌بینی نیست. اجرای تاریخی یک episode حدود ۱۰ دقیقه‌ای، ۳۹ structured call موفق + ۱ failure، ۳۱ تلاش TTS و ۲۴ ASR call داشته است. بازسازی با قیمت فهرست رسمی Gemini در تاریخ گزارش، حداقل حدود <strong class="ltr">$1.09</strong> می‌دهد: <span class="ltr">$0.74 LLM + $0.35 TTS</span>، بدون failed output، ASR، parse/OCR و زیرساخت. route جاری عمدتاً Okian است و repo قیمت آن را ندارد؛ پس این عدد هزینه واقعی امروز نیست.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>مدت هدف</th><th>call برآوردی evidence برای corpus نمونه</th><th>حداقل TTS فهرست Gemini</th><th>هزینه کل</th></tr></thead>
+          <tbody>
+            <tr><td>۵ دقیقه</td><td>۲۵ call؛ حدود ۳۱k selected token</td><td class="ltr">$0.15</td><td>نامعلوم</td></tr>
+            <tr><td>۱۵ دقیقه</td><td>۴۷ call؛ حدود ۶۰k selected token</td><td class="ltr">$0.45</td><td>نامعلوم</td></tr>
+            <tr><td>۳۰ دقیقه</td><td>۷۶ call؛ حدود ۹۹k selected token</td><td class="ltr">$0.90</td><td>نامعلوم</td></tr>
+            <tr><td>۶۰ دقیقه</td><td>۱۱۸ call؛ حدود ۱۵۴k selected token + second pass</td><td class="ltr">$1.80</td><td>نامعلوم</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">برآورد call از partitioner و profile جاری روی corpus موجود شامل سه PDF کوچک + یک EPUB بلند است و اجرای پولی نیست. TTS بر مبنای audio output رسمی Gemini، ۲۵ token در ثانیه و ۲۰ دلار به‌ازای یک میلیون token است؛ مدت واقعی اجرای تاریخی ۱۶٫۸٪ overshoot داشت. قیمت‌های مرجع: <a href="https://ai.google.dev/gemini-api/docs/pricing">Gemini API Pricing</a>، <a href="https://ai.google.dev/gemini-api/docs/latest-model">Gemini models</a> و برای fallback فعلی <a href="https://developers.openai.com/api/docs/models/gpt-4o-mini-tts">OpenAI gpt-4o-mini-tts</a>. به علت نبود usage واقعی route و تبدیل قطعی token-to-duration، برای OpenAI عدد اختراع نشده است.</p>
+
+      <h3>هزینه‌های قابل‌اندازه‌گیری و داده‌های گمشده</h3>
+      <ul>
+        <li><strong>Search:</strong> در upload path صفر. طبق قیمت رسمی، allowance اولیه Google Search رایگان و سپس هر query قابل‌صورتحساب است؛ تعداد query واقعی runtime نداریم.</li>
+        <li><strong>OCR:</strong> cloud fee جاری اثبات نشده؛ compute و latency محلی ناشناخته. دو PDF فارسی Docling را ۴۵۵ و ۴۶۵ ثانیه امتحان کردند و بعد native در کمتر از یک ثانیه با warning تمام شد—waste محسوس.</li>
+        <li><strong>ASR:</strong> اکنون default خاموش است، پس هزینه‌ی پیش‌فرض صفر؛ اجرای تاریخی ۲۴ call داشت، قیمت/usage ثبت‌شده کافی نیست.</li>
+        <li><strong>Infrastructure:</strong> FastAPI + SQLite/JSON برای چند کاربر کم‌هزینه و ساده است؛ هزینه‌ی host واقعی، storage media و worker OCR ثبت نشده.</li>
+      </ul>
+
+      <h3>Wasteهای مهم، نه micro-optimization</h3>
+      <ol>
+        <li>map، coverage، glossary و verifier مدل‌محور تقریباً همیشه اجرا می‌شوند؛ glossary و verifier تاریخی هرکدام حدود ۵۰k input token گرفته‌اند.</li>
+        <li>یک plan failure باعث اجرای دوباره coverage شد؛ resume cache نیز اکنون regression تست دارد.</li>
+        <li>sourceها، script segmentها، TTS و ASR تا حد زیادی sequential هستند؛ chunkهای مستقل می‌توانند با concurrency محدود اجرا شوند.</li>
+        <li>route چندproviderی و key-pool پیچیده است، ولی قیمت route واقعی episode در ledger قابل اتکا نیست.</li>
+      </ol>
+      <p><strong>جمع‌بندی اقتصادی:</strong> حداقل تاریخی حدود یک دلار برای episode ده‌دقیقه‌ای ذاتاً فاجعه نیست؛ اما برای محصول بی‌درآمدی که با NotebookLM رایگان رقابت می‌کند، تعداد call، retry و latency بدون telemetry و سقف هزینه قابل قبول نیست. با upload-first، یک route قیمت‌دار، stageهای conditional و ASR هدفمند، مدل اقتصادی می‌تواند معقول شود.</p>
+    </section>
+
+    <section id="engineering" class="panel">
+      <h2>۸. Overengineering و Underbuilding</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>What is overengineered</h3>
+          <ol>
+            <li>۱۲ gate و چند approval برای رسیدن از منبع تا audio.</li>
+            <li>اجرای همیشه‌فعال map/coverage/glossary/verifier/ASR به‌جای conditional.</li>
+            <li>routing و fallback چندproviderی پیش از cost proof یک route اصلی.</li>
+            <li>سطح زیاد observability، lineage، benchmark و artifact schema نسبت به gold set واقعی.</li>
+            <li>modeها و durationهای متعدد پیش از اثبات یک مسیر explanatory.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>Missing MVP requirements، نه Nice-to-have</h3>
+          <ol>
+            <li>fail-closed parsing فارسی و preview قبل از claim extraction.</li>
+            <li>فایل MP3 retained و final-listen واقعی.</li>
+            <li>attribution شنیداری؛ یا محدودیت صریح برای منابع متعارض.</li>
+            <li>progress/error ساده با resume از آخرین stage سالم.</li>
+            <li>تست E2E زنده و ارزیابی انسانی فارسی با cost/latency ثبت‌شده.</li>
+          </ol>
+        </div>
+      </div>
+      <p class="muted">provenance، locator، refusal در پوشش ناکافی و cache جزو overengineering محسوب نشده‌اند؛ این‌ها برای وعده‌ی اعتماد و هزینه‌ی MVP مستقیماً ارزش دارند.</p>
+    </section>
+
+    <section id="scope" class="panel">
+      <h2>۹. Recommended MVP Scope</h2>
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>Keep for MVP</h3>
+          <ul>
+            <li>آپلود PDF دیجیتال / EPUB / TXT</li>
+            <li>۱ تا ۳ منبع مکمل، با role و attribution روشن</li>
+            <li>explanatory mode در ۱۰/۲۰/۳۰ دقیقه</li>
+            <li>evidence، claim، locator و content budgeting</li>
+            <li>script فارسی + deterministic checks</li>
+            <li>TTS، MP3، پخش/دانلود و retry</li>
+            <li>cache و refusal برای متن/پوشش ناسالم</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Simplify / Change before MVP</h3>
+          <ul>
+            <li>brief در همان صفحه، editable و بدون approval جدا</li>
+            <li>document map فقط برای سند بلند</li>
+            <li>glossary و model verifier/reviser فقط conditional</li>
+            <li>ASR فقط sample/risk-based؛ final listen انسانی برای alpha</li>
+            <li>یک provider اصلی با قیمت و cap روشن</li>
+            <li>bounded parallelism برای script/TTS مستقل</li>
+            <li>حداکثر یک confirmation قبل از generation</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Defer until real users</h3>
+          <ul>
+            <li>topic/title-only web discovery</li>
+            <li>PDF اسکن فارسی تا زمان proof واقعی</li>
+            <li>critical/comparative/debate modes</li>
+            <li>۴۵/۶۰/۱۲۰ دقیقه</li>
+            <li>corpus با دیدگاه‌های متعارض تا reconciliation واقعی</li>
+            <li>multi-provider auto-routing پیچیده</li>
+            <li>گسترش operator dashboards و freeze machinery</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout"><strong>Scope نهایی release:</strong> «یک مرور فارسیِ منبع‌دار و قابل‌شنیدن از ۱ تا ۳ فایل دیجیتال تمیز، در ۱۰/۲۰/۳۰ دقیقه، با MP3 و امکان بازگشت به شاهد.» هر چیزی خارج این جمله یا باید کیفیت همین مسیر را تضمین کند، یا فعلاً defer شود.</div>
+    </section>
+
+    <section id="actions" class="panel">
+      <h2>۱۰. Next Actions — به ترتیب اولویت</h2>
+      <ol class="rank-list">
+        <li><strong>Action:</strong> parse فارسی را fail-closed کن و سه fixture واقعی فارسی را به Gate E2E اضافه کن.<br><strong>Why:</strong> منبع RTL خراب امروز «safe» پذیرفته می‌شود.<br><strong>Expected impact:</strong> حذف بزرگ‌ترین ریسک اعتماد و unsupported output.<br><strong>Effort:</strong> M</li>
+        <li><strong>Action:</strong> یک run جاری تا MP3 با FFmpeg کامل کن و media را در archive/rewind نگه دار.<br><strong>Why:</strong> artifact تاریخی به فایل‌های حذف‌شده اشاره می‌کند و audio قابل شنیدن نیست.<br><strong>Expected impact:</strong> کامل‌شدن ارزش اصلی و امکان QA واقعی تلفظ/segment.<br><strong>Effort:</strong> M</li>
+        <li><strong>Action:</strong> schema جاری evidence/readiness و regressionهای core را هم‌راستا کن: routing، reviewer، resume cache، gate pointer و <code>send_back</code>.<br><strong>Why:</strong> وضعیت «verified» فعلی با artifact ناخوانا و suite قرمز قابل اتکا نیست.<br><strong>Expected impact:</strong> resume قابل‌پیش‌بینی و release signal معتبر.<br><strong>Effort:</strong> M</li>
+        <li><strong>Action:</strong> attribution را وارد روایت کن و corpus متعارض را تا reconciliation واقعی رد/هشدار بده.<br><strong>Why:</strong> graph اختلاف اجرای واقعی خالی است و تفسیر ثانویه می‌تواند صدای منبع اصلی شود.<br><strong>Expected impact:</strong> تمایز واقعی با summary عمومی و حفظ nuance.<br><strong>Effort:</strong> M</li>
+        <li><strong>Action:</strong> UI و scope را به upload دیجیتال، explanatory و ۱۰/۲۰/۳۰ دقیقه محدود و approvalها را به یک confirmation کاهش بده.<br><strong>Why:</strong> user journey فعلی بیش از ارزش اثبات‌شده تنظیم و gate دارد.<br><strong>Expected impact:</strong> زمان کمتر تا first listen و خطای کاربری کمتر.<br><strong>Effort:</strong> S</li>
+        <li><strong>Action:</strong> map/glossary/verifier/reviser/ASR را conditional، route اصلی را قیمت‌دار و script/TTS را با concurrency محدود اجرا کن.<br><strong>Why:</strong> callهای تکراری و sequential مهم‌ترین waste هزینه/latency هستند.<br><strong>Expected impact:</strong> هزینه قابل پیش‌بینی‌تر و انتظار محسوساً کمتر، بدون حذف provenance.<br><strong>Effort:</strong> M</li>
+        <li><strong>Action:</strong> یک blind listening benchmark کوچک در برابر NotebookLM اجرا کن و fidelity، coverage، naturalness، pronunciation، cost و latency را ثبت کن.<br><strong>Why:</strong> اکنون claim بهتر بودن هیچ evidence انسانی ندارد.<br><strong>Expected impact:</strong> تصمیم release و اولویت محصول بر اساس ارزش واقعی کاربر.<br><strong>Effort:</strong> M</li>
+      </ol>
+    </section>
+
+    <section id="evidence" class="panel">
+      <h2>پایه‌ی شواهد و محدودیت‌ها</h2>
+      <p>این تصمیم بر README/PRODUCT/STATUS و milestoneها، state machine و gate registry، routing/config، کل suite تست، dry-run eval، readiness report، benchmarkهای pre-freeze، چهار project runtime، script و manifest/audio QA تاریخی و usage/latency ثبت‌شده تکیه دارد. git پیش و پس از بررسی برای کد تمیز بود؛ اجرای تست فقط cacheهای خارج از tracked changes ایجاد کرد.</p>
+      <ul>
+        <li>هیچ PDF فارسی اسکن‌شده‌ی واقعی، gold answer انسانی، audio retained یا داده‌ی paid traffic وجود نداشت؛ در این موارد حکم «نامعلوم/اثبات‌نشده» است، نه شکست قطعی کیفیت.</li>
+        <li>قیمت واقعی Okian، ASR تاریخی، compute OCR و infrastructure ثبت نشده؛ بنابراین جدول هزینه lower bound/برآورد ظرفیت است، نه invoice.</li>
+        <li>شواهد Reddit فقط برای کشف الگوی درد کاربرند. ادعای prevalence یا رضایت کلی NotebookLM از آن‌ها استخراج نشده است.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="page">
+    <p><strong>جمع‌بندی یک‌خطی:</strong> Thesisound زیرساخت یک محصول متمایز را ساخته، اما پیش از جذب کاربر واقعی باید از «pipeline با gateهای زیاد» به «یک first listen فارسیِ سالم، منبع‌دار و قابل تکرار» برسد.</p>
+    <p>این فایل یک سند HTML مستقل است؛ تمام styleها inline هستند و برای تایپوگرافی از Vazirmatn با fallback محلی استفاده می‌کند. بارگذاری نسخه‌ی وب فونت نیازمند اتصال اینترنت است.</p>
+  </footer>
+</body>
+</html>
