@@ -23,10 +23,29 @@ With Okian credentials set, ungrounded Gemini structured-text calls automaticall
 Fallback does **not** apply to:
 
 - grounded stages (`grounding_mode` other than `none`);
-- TTS / ASR;
+- TTS / ASR (TTS has a separate OpenAI fallback — see below);
 - non-rate-limit Gemini failures (schema, safety, timeouts, single-key non-quota errors).
 
 Without `OKIAN_BASE_URL` and `OKIAN_API_KEY`, exhausted Gemini keys fail as before.
+
+## OpenAI TTS fallback
+
+When `OPENAI_API_KEY` is set, Gemini TTS calls that exhaust the Gemini key pool (rate-limit / quota) automatically retry on OpenAI `/audio/speech`:
+
+```dotenv
+OPENAI_API_KEY=
+OPENAI_BASE_URL=https://api.openai.com/v1
+THESISOUND_MODEL_TTS_FALLBACK=gpt-4o-mini-tts
+THESISOUND_OPENAI_TTS_VOICE_A=coral
+THESISOUND_OPENAI_TTS_VOICE_B=ash
+```
+
+- Speaker `A` → `THESISOUND_OPENAI_TTS_VOICE_A`, speaker `B` → `THESISOUND_OPENAI_TTS_VOICE_B`.
+- Response format is raw PCM (24 kHz), matching the existing audio pipeline.
+- Style prompts are sent as OpenAI `instructions`.
+- ASR is **not** included in this fallback. ASR remains Gemini-only and is off by default (`THESISOUND_AUDIO_ASR_ENABLED=false`).
+
+On TTS fallback, the failed Gemini call stays in the ledger and the OpenAI retry is a new call with `parent_call_id` pointing at that Gemini row and `openai_tts_fallback_from=gemini` in call metadata.
 
 ## Routing file
 

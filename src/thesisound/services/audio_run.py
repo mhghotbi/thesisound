@@ -112,6 +112,7 @@ class AudioBuildRunService:
         default_direction: AudioDirectionSettings,
         accept_manual_review: bool = False,
         asr_model: str | None = None,
+        asr_enabled: bool = True,
         qa_identity: dict[str, float | int] | None = None,
     ) -> None:
         self.workspace_store = workspace_store
@@ -122,6 +123,7 @@ class AudioBuildRunService:
         self.default_direction = default_direction
         self.accept_manual_review = accept_manual_review
         self.asr_model = asr_model
+        self.asr_enabled = asr_enabled
         self.qa_identity = qa_identity
         self._mutation_lock = Lock()
 
@@ -295,8 +297,9 @@ class AudioBuildRunService:
             project_id,
             script_hash=script_hash,
             accept_manual_review=self.accept_manual_review,
-            expected_asr_model=self.asr_model,
-            expected_qa_identity=self.qa_identity,
+            expected_asr_model=self.asr_model if self.asr_enabled else None,
+            expected_qa_identity=self.qa_identity if self.asr_enabled else None,
+            asr_enabled=self.asr_enabled,
         )
 
     def _mark_succeeded(self, run: AudioBuildRun) -> None:

@@ -44,6 +44,7 @@ class AudioPipelineService:
         style_prompts: dict[str, str],
         max_regeneration_attempts: int = 1,
         accept_manual_review: bool = False,
+        asr_enabled: bool = True,
     ) -> None:
         self.workspace_store = workspace_store
         self.script_store = script_store
@@ -60,6 +61,7 @@ class AudioPipelineService:
         self.style_prompts = style_prompts
         self.max_regeneration_attempts = max_regeneration_attempts
         self.accept_manual_review = accept_manual_review
+        self.asr_enabled = asr_enabled
 
     def run(
         self,
@@ -136,54 +138,68 @@ class AudioPipelineService:
             transition(project, ProjectState.AUDIO_VERIFYING)
             self.workspace_store.save_project(project)
 
-        stage("transcribing")
-        with tracing.span("audio.transcribing", component="audio") as span:
-            qa_reports = []
-            regenerated: list[str] = []
-            for chunk in chunks:
-                report = self._transcribe_and_check(project_id, chunk)
-                needs_regen = (
-                    self._needs_regeneration(report.verdict)
-                    and self.max_regeneration_attempts > 0
-                )
-                if needs_regen:
-                    stage("regenerating")
-                    instruction = report.regeneration_instruction or (
-                        "متن را دقیق و کامل بازتولید کن"
+        if self.asr_enabled:
+            stage("transcribing")
+            with tracing.span("audio.transcribing", component="audio") as span:
+                qa_reports = []
+                regenerated: list[str] = []
+                for chunk in chunks:
+                    report = self._transcribe_and_check(project_id, chunk)
+                    needs_regen = (
+                        self._needs_regeneration(report.verdict)
+                        and self.max_regeneration_attempts > 0
                     )
-                    with tracing.span(
-                        "audio.regenerating", component="audio",
-                        subject_type="chunk", subject_id=chunk.chunk_id, detail="verbose",
-                    ):
-                        self._synthesize(
-                            project_id,
-                            chunk,
-                            attempts=2,
-                            additional_instruction=instruction,
+                    if needs_regen:
+                        stage("regenerating")
+                        instruction = report.regeneration_instruction or (
+                            "متن را دقیق و کامل بازتولید کن"
                         )
-                        report = self._transcribe_and_check(project_id, chunk, force=True)
-                    regenerated.append(chunk.chunk_id)
-                qa_reports.append(report)
-            span.measure(chunk_count=len(chunks), regenerated_count=len(regenerated))
+                        with tracing.span(
+                            "audio.regenerating", component="audio",
+                            subject_type="chunk", subject_id=chunk.chunk_id, detail="verbose",
+                        ):
+                            self._synthesize(
+                                project_id,
+                                chunk,
+                                attempts=2,
+                                additional_instruction=instruction,
+                            )
+                            report = self._transcribe_and_check(
+                                project_id, chunk, force=True
+                            )
+                        regenerated.append(chunk.chunk_id)
+                    qa_reports.append(report)
+                span.measure(chunk_count=len(chunks), regenerated_count=len(regenerated))
 
-        manifest.status = "qa_ready"
-        manifest.regenerated_chunk_ids = regenerated
-        manifest.passed_chunk_count = sum(report.verdict == "pass" for report in qa_reports)
-        manifest.updated_at = datetime.now(UTC)
-        self.audio_store.save_manifest(manifest)
-        failed = [report for report in qa_reports if not self._qa_acceptable(report.verdict)]
-        if failed:
-            detail = ", ".join(f"{item.chunk_id}:{item.verdict}" for item in failed)
-            raise ValueError(f"Audio QA did not pass for all chunks: {detail}")
-        for report in qa_reports:
-            if report.verdict == "manual_review" and self.accept_manual_review:
-                emit_review_decision(
-                    disposition="accepted_manual_review",
-                    subject_type="audio_chunk",
-                    subject_id=report.chunk_id,
-                    reason_code="accept_manual_review_config",
-                    component="audio",
-                )
+            manifest.status = "qa_ready"
+            manifest.regenerated_chunk_ids = regenerated
+            manifest.passed_chunk_count = sum(
+                report.verdict == "pass" for report in qa_reports
+            )
+            manifest.updated_at = datetime.now(UTC)
+            self.audio_store.save_manifest(manifest)
+            failed = [
+                report for report in qa_reports if not self._qa_acceptable(report.verdict)
+            ]
+            if failed:
+                detail = ", ".join(f"{item.chunk_id}:{item.verdict}" for item in failed)
+                raise ValueError(f"Audio QA did not pass for all chunks: {detail}")
+            for report in qa_reports:
+                if report.verdict == "manual_review" and self.accept_manual_review:
+                    emit_review_decision(
+                        disposition="accepted_manual_review",
+                        subject_type="audio_chunk",
+                        subject_id=report.chunk_id,
+                        reason_code="accept_manual_review_config",
+                        component="audio",
+                    )
+        else:
+            # MVP: skip ASR cost; treat synthesized+validated segments as accepted.
+            manifest.status = "qa_ready"
+            manifest.passed_chunk_count = len(chunks)
+            manifest.regenerated_chunk_ids = []
+            manifest.updated_at = datetime.now(UTC)
+            self.audio_store.save_manifest(manifest)
 
         stage("assembling")
         with tracing.span("audio.assembling", component="audio") as span:

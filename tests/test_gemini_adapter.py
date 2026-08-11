@@ -190,6 +190,8 @@ def test_gemini_adapter_maps_rate_limit_errors(tmp_path) -> None:
         workspace_root=tmp_path / "workspaces",
         observability_database_path=tmp_path / "ledger.sqlite3",
         observability_artifact_root=tmp_path / "artifacts",
+        okian_base_url="",
+        okian_api_key="",
     )
     adapter = GeminiStructuredModel(
         client=FakeClient(FakeModels(error=RateLimitException("too many requests"))),

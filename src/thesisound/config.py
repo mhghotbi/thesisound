@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     parsed_document_cache_enabled: bool = True
     log_level: str = "INFO"
 
-    # Gemini-only proxy (local Xray HTTP inbound). Okian always connects directly.
+    # Gemini-only proxy (local Xray HTTP inbound). Okian and OpenAI always connect directly.
     # Set to "none" / empty to disable Gemini proxying.
     http_proxy: str | None = DEFAULT_HTTP_PROXY
 
@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     model_reviewer: str = ""
     model_tts: str = "gemini-3.1-flash-tts-preview"
     model_asr: str = "gemini-3.6-flash"
+    # Used only when Gemini TTS hits key-pool exhaustion / rate-limit.
+    model_tts_fallback: str = "gpt-4o-mini-tts"
     model_routing_file: Path = Path("./config/model-routing.toml")
     model_route_overrides: dict[str, str] = Field(default_factory=dict)
 
@@ -56,6 +58,19 @@ class Settings(BaseSettings):
         repr=False,
     )
     okian_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
+
+    openai_api_key: str | None = Field(
+        default=None,
+        validation_alias="OPENAI_API_KEY",
+        exclude=True,
+        repr=False,
+    )
+    openai_base_url: str = Field(
+        default="https://api.openai.com/v1",
+        validation_alias="OPENAI_BASE_URL",
+    )
+    openai_tts_voice_a: str = "coral"
+    openai_tts_voice_b: str = "ash"
 
     model_retry_base_seconds: float = Field(default=1, ge=0, le=60)
     model_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
@@ -145,6 +160,10 @@ class Settings(BaseSettings):
     script_speaker_balance_enabled: bool = True
     # Temporary for live e2e: keep scoring manual_review, but do not block assembly on it.
     audio_qa_accept_manual_review: bool = True
+    # ASR + transcript QA are expensive for MVP. Off skips transcription, QA
+    # verdicts, and ASR-driven regeneration; WAV validation during TTS and
+    # final assembly still run. Set true to restore the full audio QA loop.
+    audio_asr_enabled: bool = False
     audio_max_regeneration_attempts: int = Field(default=1, ge=0, le=1)
     audio_silence_milliseconds: int = Field(default=220, ge=0, le=2_000)
     ffmpeg_command: str = "ffmpeg"
@@ -220,6 +239,8 @@ class Settings(BaseSettings):
             raise ValueError("Audio QA review threshold must be below the pass threshold")
         if self.tts_voice_a == self.tts_voice_b:
             raise ValueError("TTS speakers A and B must use different voices")
+        if self.openai_tts_voice_a == self.openai_tts_voice_b:
+            raise ValueError("OpenAI TTS speakers A and B must use different voices")
         if self.environment == "production":
             if self.allow_test_otp:
                 raise ValueError("Test OTP must be disabled in production")

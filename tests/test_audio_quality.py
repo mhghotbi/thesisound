@@ -186,6 +186,7 @@ def test_settings_configure_missing_sentence_threshold() -> None:
     from thesisound.config import Settings
 
     assert Settings().audio_qa_missing_sentence_threshold == pytest.approx(0.85)
+    assert Settings().audio_asr_enabled is False
     with pytest.raises(ValueError):
         Settings(audio_qa_missing_sentence_threshold=0.49)
     with pytest.raises(ValueError):

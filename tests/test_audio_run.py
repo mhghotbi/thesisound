@@ -31,6 +31,7 @@ class FakeAudioStore:
         *,
         script_hash: str,
         accept_manual_review: bool = False,
+        **_kwargs,
     ) -> bool:
         del project_id, script_hash, accept_manual_review
         return self.valid

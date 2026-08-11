@@ -314,6 +314,7 @@ class AudioArtifactStore:
         accept_manual_review: bool = False,
         expected_asr_model: str | None = None,
         expected_qa_identity: dict[str, Any] | None = None,
+        asr_enabled: bool = True,
     ) -> bool:
         if not self.artifacts_match_script(project_id, script_hash):
             return False
@@ -345,6 +346,10 @@ class AudioArtifactStore:
             )
             if segment is None:
                 return False
+            if not asr_enabled:
+                # MVP without ASR: validated segments + final mix are enough.
+                accepted += 1
+                continue
             record, _ = segment
             transcript = self.load_transcript_optional(
                 project_id,

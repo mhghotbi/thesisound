@@ -87,6 +87,9 @@ def _settings(tmp_path: Path, *, with_okian: bool) -> Settings:
         "workspace_root": tmp_path / "workspaces",
         "observability_database_path": tmp_path / "ledger.sqlite3",
         "observability_artifact_root": tmp_path / "artifacts",
+        # Explicit empties beat process env; otherwise Okian stays "configured".
+        "okian_base_url": "",
+        "okian_api_key": "",
     }
     if with_okian:
         kwargs["okian_base_url"] = "https://okian.example/v1"

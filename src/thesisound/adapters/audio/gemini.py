@@ -4,8 +4,9 @@ import base64
 import hashlib
 import json
 from collections.abc import Sequence
+from threading import Lock
 from typing import Any, Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel
 
@@ -55,6 +56,7 @@ class GeminiTtsAdapter:
         settings: Settings | None = None,
     ) -> None:
         runtime = settings or _settings()
+        self._settings = runtime
         self._client, self._pool = _resolve_client(api_key, api_keys, pool, client, runtime)
         self.project_id = project_id
         self.workflow_run_id = workflow_run_id
@@ -63,6 +65,8 @@ class GeminiTtsAdapter:
         self._timeout_ms = runtime.tts_timeout_seconds * 1000
         self._max_provider_attempts = runtime.provider_max_attempts
         self._retry_base_seconds = runtime.provider_retry_base_seconds
+        self._openai_port: Any | None = None
+        self._openai_lock = Lock()
 
     def synthesize(self, request: TtsRequest) -> TtsResponse:
         try:
@@ -135,6 +139,16 @@ class GeminiTtsAdapter:
         except Exception as exc:
             mapped = _audio_provider_error(exc)
             self.observability.fail(spec.call_id, mapped, error_code=_error_code(exc))
+            if self._should_fallback_to_openai(mapped):
+                fallback_request = request.model_copy(
+                    update={"model": self._settings.model_tts_fallback}
+                )
+                return self._openai().synthesize(
+                    fallback_request,
+                    call_id=uuid4(),
+                    parent_call_id=spec.call_id,
+                    extra_metadata={"openai_tts_fallback_from": "gemini"},
+                )
             raise mapped from exc
 
         self.observability.succeed(
@@ -155,6 +169,27 @@ class GeminiTtsAdapter:
             provider=self.provider,
             model=request.model,
         )
+
+    def _openai(self) -> Any:
+        if self._openai_port is not None:
+            return self._openai_port
+        from thesisound.adapters.audio.openai import OpenAiTtsAdapter
+
+        with self._openai_lock:
+            if self._openai_port is None:
+                self._openai_port = OpenAiTtsAdapter(
+                    settings=self._settings,
+                    observability=self.observability,
+                    project_id=self.project_id,
+                    workflow_run_id=self.workflow_run_id,
+                )
+        return self._openai_port
+
+    def _openai_configured(self) -> bool:
+        return bool((self._settings.openai_api_key or "").strip())
+
+    def _should_fallback_to_openai(self, error: Exception) -> bool:
+        return isinstance(error, ModelRateLimitError) and self._openai_configured()
 
 
 class GeminiAsrAdapter:

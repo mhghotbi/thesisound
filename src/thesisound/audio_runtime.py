@@ -80,6 +80,7 @@ def create_audio_builder(
             style_prompts=style_prompts,
             max_regeneration_attempts=settings.audio_max_regeneration_attempts,
             accept_manual_review=settings.audio_qa_accept_manual_review,
+            asr_enabled=settings.audio_asr_enabled,
         )
 
     builder = AudioBuildRunService(
@@ -91,6 +92,7 @@ def create_audio_builder(
         default_direction=default_direction,
         accept_manual_review=settings.audio_qa_accept_manual_review,
         asr_model=settings.model_asr,
+        asr_enabled=settings.audio_asr_enabled,
         qa_identity=qa_identity,
     )
     builder.recover_interrupted_runs()

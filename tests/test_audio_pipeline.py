@@ -93,7 +93,7 @@ def _script() -> Script:
     )
 
 
-def _service(tmp_path: Path, *, fail_first: bool = False):
+def _service(tmp_path: Path, *, fail_first: bool = False, asr_enabled: bool = True):
     workspace = WorkspaceStore(tmp_path / "workspaces")
     project = Project(raw_input="topic", state=ProjectState.SCRIPT_VERIFIED, script=_script())
     workspace.save_project(project)
@@ -115,6 +115,7 @@ def _service(tmp_path: Path, *, fail_first: bool = False):
         voices={"A": "Kore", "B": "Puck"},
         style_prompts={"A": "طبیعی و دقیق بخوان", "B": "طبیعی و دقیق بخوان"},
         max_regeneration_attempts=1,
+        asr_enabled=asr_enabled,
     )
     return workspace, project, service, audio_store, tts, asr
 
@@ -142,6 +143,29 @@ def test_audio_pipeline_regenerates_only_failed_chunk_once(tmp_path: Path) -> No
     assert manifest.regenerated_chunk_ids == ["audio-0001"]
     assert len(tts.calls) == 2
     assert asr.calls == 2
+
+
+def test_audio_pipeline_skips_asr_when_disabled(tmp_path: Path) -> None:
+    workspace, project, service, store, tts, asr = _service(tmp_path, asr_enabled=False)
+
+    manifest = service.run(project.project_id)
+
+    assert manifest.status == "verified"
+    assert manifest.passed_chunk_count == manifest.chunk_count == 1
+    assert manifest.regenerated_chunk_ids == []
+    assert workspace.load_project(project.project_id).state == ProjectState.COMPLETE
+    assert len(tts.calls) == 1
+    assert asr.calls == 0
+    assert store.has_verified_artifacts(
+        project.project_id,
+        script_hash=manifest.script_hash,
+        asr_enabled=False,
+    )
+    assert not store.has_verified_artifacts(
+        project.project_id,
+        script_hash=manifest.script_hash,
+        asr_enabled=True,
+    )
 
 
 def _run_tolerating_missing_ffmpeg(service, project_id) -> None:

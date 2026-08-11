@@ -42,12 +42,31 @@
       }
       event.preventDefault();
       event.stopImmediatePropagation();
+      // Keep the clicked submit control across the CSRF re-post. Bare
+      // requestSubmit()/submit() omit named button values, so "confirm"
+      // would fall through to the server default of "save".
+      const submitter = event.submitter instanceof HTMLElement ? event.submitter : null;
       refreshCsrf()
         .catch(() => {})
         .finally(() => {
           form.dataset.csrfSynced = "1";
-          if (typeof form.requestSubmit === "function") form.requestSubmit();
-          else form.submit();
+          if (typeof form.requestSubmit === "function") {
+            if (submitter) form.requestSubmit(submitter);
+            else form.requestSubmit();
+          } else if (submitter && submitter.name) {
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = submitter.name;
+            hidden.value = submitter.value;
+            form.appendChild(hidden);
+            try {
+              form.submit();
+            } finally {
+              hidden.remove();
+            }
+          } else {
+            form.submit();
+          }
         });
     },
     true,
