@@ -24,6 +24,7 @@ from thesisound.episode import (
 )
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
+from thesisound.services.analysis_profile import plan_evidence_extraction
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
 from thesisound.services.coverage_auditor import CoverageAuditorService, can_plan_episode
 from thesisound.services.disagreement_graph import DisagreementGraphBuilder
@@ -32,6 +33,7 @@ from thesisound.services.episode_budget import EpisodeBudgetEstimator
 from thesisound.services.episode_planner import EpisodePlannerService
 from thesisound.services.episode_reuse import planning_input_key
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
+from thesisound.services.evidence_scope import scope_claims_and_evidence
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
     ClaimLedger,
@@ -393,15 +395,38 @@ class EpisodePreparationService:
         evidence_items: list[EvidenceItem] = []
         blocks: list[SourceDocumentBlock] = []
         extraction_plans: list[EvidenceExtractionPlan] = []
+        project_brief = project.brief
         for source_id in source_ids:
-            ledgers.append(self.source_store.load_claim_ledger(project_id, source_id))
-            evidence_items.extend(
-                self.source_store.load_evidence_items(project_id, source_id)
+            source_blocks = self.source_store.load_blocks(project_id, source_id)
+            blocks.extend(source_blocks)
+            try:
+                plan = self.source_store.load_extraction_plan(project_id, source_id)
+            except (OSError, ValueError):
+                if project_brief is None:
+                    raise
+                document_map = self.source_store.load_document_map(project_id, source_id)
+                plan = plan_evidence_extraction(project_brief, document_map, source_blocks)
+            extraction_plans.append(plan)
+            ledger = self.source_store.load_claim_ledger(project_id, source_id)
+            source_evidence = self.source_store.load_evidence_items(project_id, source_id)
+            scoped_claims, scoped_evidence = scope_claims_and_evidence(
+                ledger.claims,
+                source_evidence,
+                plan.selected_block_ids,
             )
-            blocks.extend(self.source_store.load_blocks(project_id, source_id))
-            extraction_plans.append(
-                self.source_store.load_extraction_plan(project_id, source_id)
+            ledgers.append(
+                ClaimLedger(
+                    source_id=ledger.source_id,
+                    claims=scoped_claims,
+                    unresolved_evidence_ids=[
+                        evidence_id
+                        for evidence_id in ledger.unresolved_evidence_ids
+                        if evidence_id in {item.evidence_id for item in scoped_evidence}
+                    ],
+                    warnings=list(ledger.warnings),
+                )
             )
+            evidence_items.extend(scoped_evidence)
         claims = [claim for ledger in ledgers for claim in ledger.claims]
         claim_ids = [claim.claim_id for claim in claims]
         if len(claim_ids) != len(set(claim_ids)):

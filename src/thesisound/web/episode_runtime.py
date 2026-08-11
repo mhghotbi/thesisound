@@ -8,9 +8,13 @@ from thesisound.config import Settings
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
+from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
+from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.coverage_auditor import CoverageAuditorService
 from thesisound.services.disagreement_graph import DisagreementGraphBuilder
+from thesisound.services.document_map_part_cache import DocumentMapPartCache
+from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.episode_budget import EpisodeBudgetEstimator
 from thesisound.services.episode_planner import EpisodePlannerService
@@ -19,9 +23,11 @@ from thesisound.services.episode_planning_run import (
     EpisodePlanningRunStore,
 )
 from thesisound.services.episode_preparation_service import EpisodePreparationService
+from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
+from thesisound.services.source_analysis_service import SourceAnalysisService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.services.sqlite_block_retriever import SQLiteBlockRetriever
 
@@ -33,9 +39,9 @@ def create_episode_planner(
     source_store = SourceArtifactStore(workspace.root)
     episode_store = EpisodeArtifactStore(workspace.root)
 
-    def preparation_service_factory(project_id: UUID) -> EpisodePreparationService:
+    def _model_runner() -> ModelRunner:
         model_port = GeminiStructuredModel(api_keys=settings.gemini_api_keys)
-        runner = ModelRunner(
+        return ModelRunner(
             model_port,
             PromptLoader(),
             WorkspaceModelRunStore(
@@ -44,6 +50,9 @@ def create_episode_planner(
             ),
             base_retry_delay_seconds=settings.model_retry_base_seconds,
         )
+
+    def preparation_service_factory(project_id: UUID) -> EpisodePreparationService:
+        runner = _model_runner()
         retriever = SQLiteBlockRetriever(
             episode_store.retrieval_database_path(project_id)
         )
@@ -59,13 +68,35 @@ def create_episode_planner(
             evidence_pack_builder=EvidencePackBuilder(retriever),
         )
 
+    def source_analysis_service_factory() -> SourceAnalysisService:
+        runner = _model_runner()
+        return SourceAnalysisService(
+            workspace_store=workspace,
+            artifact_store=source_store,
+            block_builder=BlockBuilder(),
+            document_mapper=DocumentMapperService(
+                runner,
+                part_cache=DocumentMapPartCache(workspace.root),
+                max_workers=settings.document_map_workers,
+            ),
+            evidence_extractor=EvidenceExtractorService(
+                runner,
+                max_workers=settings.evidence_extraction_workers,
+                batch_size=settings.evidence_extraction_batch_size,
+            ),
+            claim_reconciler=ClaimReconcilerService(runner),
+        )
+
     planner = EpisodePlanningRunService(
         workspace_store=workspace,
         run_store=EpisodePlanningRunStore(workspace.root),
         episode_store=episode_store,
         preparation_service_factory=preparation_service_factory,
+        source_analysis_service_factory=source_analysis_service_factory,
         coverage_model=settings.model_strong,
         planning_model=settings.model_strong,
+        fast_model=settings.model_fast,
+        strong_model=settings.model_strong,
     )
     _reconcile_completed_runs(planner, workspace)
     planner.recover_interrupted_runs()

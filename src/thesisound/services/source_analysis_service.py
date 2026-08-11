@@ -25,6 +25,7 @@ from thesisound.services.document_identity import block_sequence_key
 from thesisound.services.document_map_cache import DocumentMapCache, is_shareable_document_map
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
+from thesisound.services.evidence_scope import extraction_profiles_compatible
 from thesisound.services.evidence_validator import validate_evidence_collection
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
@@ -223,6 +224,10 @@ class SourceAnalysisService:
         blocks = self.artifact_store.load_blocks(project_id, source_id)
         document_map = self.artifact_store.load_document_map(project_id, source_id)
         # A changed brief can shift selected_block_ids between retry attempts.
+        try:
+            prior_plan = self.artifact_store.load_extraction_plan(project_id, source_id)
+        except (OSError, ValueError):
+            prior_plan = None
         plan = plan_evidence_extraction(project.brief, document_map, blocks)
         self.artifact_store.save_extraction_plan(project_id, source_id, plan)
 
@@ -234,7 +239,18 @@ class SourceAnalysisService:
             if record.block_id in known_ids
         ]
         extracted_prior = [record for record in prior if record.status == "extracted"]
-        skip_ids = {record.block_id for record in extracted_prior}
+        selected_ids = set(plan.selected_block_ids)
+        profile_ok = (
+            prior_plan is not None
+            and extraction_profiles_compatible(prior_plan.profile, plan.profile)
+        )
+        # Reuse only selected blocks whose extraction contract still matches. Deferred
+        # priors stay on disk for resume but are excluded from skip and aggregates.
+        skip_ids = {
+            record.block_id
+            for record in extracted_prior
+            if record.block_id in selected_ids and profile_ok
+        }
 
         def save_one(record: BlockEvidenceExtraction) -> None:
             self.artifact_store.save_block_extraction(
@@ -257,14 +273,20 @@ class SourceAnalysisService:
         by_id = {record.block_id: record for record in extracted_prior}
         by_id.update({record.block_id: record for record in new_records})
         records = [by_id[block.block_id] for block in blocks if block.block_id in by_id]
+        # Aggregate files must reflect the current selection only so long→short
+        # duration changes do not leave deferred-block claims eligible downstream.
+        scoped_records = [
+            record for record in records if record.block_id in selected_ids
+        ]
         validate_evidence_collection(
-            [record for record in records if record.status == "extracted"],
+            [record for record in scoped_records if record.status == "extracted"],
             blocks,
         )
-        self.artifact_store.save_evidence(project_id, source_id, records)
+        self.artifact_store.save_evidence(project_id, source_id, scoped_records)
 
-        selected_ids = set(plan.selected_block_ids)
-        kept_ids = {record.block_id for record in records if record.status == "extracted"}
+        kept_ids = {
+            record.block_id for record in scoped_records if record.status == "extracted"
+        }
         kept_tokens = sum(
             block.estimated_token_count
             for block in blocks
@@ -283,10 +305,12 @@ class SourceAnalysisService:
         kept_coverage = kept_tokens / total_tokens if total_tokens else 1.0
         retention = kept_tokens / planned_tokens if planned_tokens else 1.0
         claim_count = sum(
-            len(record.extraction.claims) for record in records if record.status == "extracted"
+            len(record.extraction.claims)
+            for record in scoped_records
+            if record.status == "extracted"
         )
-        rejected = [record for record in records if record.status == "rejected"]
-        skipped = [record for record in records if record.status == "skipped"]
+        rejected = [record for record in scoped_records if record.status == "rejected"]
+        skipped = [record for record in scoped_records if record.status == "skipped"]
         warnings = [
             f"Rejected evidence for {record.block_id}: {record.rejection_reason}"
             for record in rejected
@@ -371,10 +395,22 @@ class SourceAnalysisService:
         prompt_version: str | None = None,
         finalize_project: bool = True,
     ) -> tuple[ClaimLedger, SourceAnalysisManifest]:
+        project = self.workspace_store.load_project(project_id)
+        selected_ids: set[str] | None = None
+        try:
+            plan = self.artifact_store.load_extraction_plan(project_id, source_id)
+            selected_ids = set(plan.selected_block_ids)
+        except (OSError, ValueError):
+            if project.brief is not None:
+                blocks = self.artifact_store.load_blocks(project_id, source_id)
+                document_map = self.artifact_store.load_document_map(project_id, source_id)
+                planned = plan_evidence_extraction(project.brief, document_map, blocks)
+                selected_ids = set(planned.selected_block_ids)
         extractions = [
             record
             for record in self.artifact_store.load_extractions(project_id, source_id)
             if record.status == "extracted"
+            and (selected_ids is None or record.block_id in selected_ids)
         ]
         ledger, run = self.claim_reconciler.reconcile(
             project_id=project_id,
@@ -392,11 +428,65 @@ class SourceAnalysisService:
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
 
-        project = self.workspace_store.load_project(project_id)
         if finalize_project and project.state == ProjectState.CORPUS_BUILDING:
             transition(project, ProjectState.CORPUS_READY)
             self.workspace_store.save_project(project)
         return ledger, manifest
+
+    def sync_to_current_profile(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        *,
+        fast_model: str,
+        strong_model: str,
+    ) -> bool:
+        """Re-extract delta blocks and rebuild claims when the brief profile diverges.
+
+        Returns True when extraction/claims were refreshed. Compatible plans with the
+        same selected_block_ids are a no-op so duration requeues that already match
+        the stored corpus do not pay for model work.
+        """
+
+        project = self.workspace_store.load_project(project_id)
+        if project.brief is None:
+            raise ValueError("ResearchBrief is required to sync evidence depth.")
+        blocks = self.artifact_store.load_blocks(project_id, source_id)
+        document_map = self.artifact_store.load_document_map(project_id, source_id)
+        planned = plan_evidence_extraction(project.brief, document_map, blocks)
+        try:
+            stored_plan = self.artifact_store.load_extraction_plan(project_id, source_id)
+        except (OSError, ValueError):
+            stored_plan = None
+        if (
+            stored_plan is not None
+            and extraction_profiles_compatible(stored_plan.profile, planned.profile)
+            and stored_plan.selected_block_ids == planned.selected_block_ids
+        ):
+            return False
+
+        previous_selected = (
+            len(stored_plan.selected_block_ids) if stored_plan is not None else 0
+        )
+        tracing.event(
+            "corpus.profile_delta",
+            component="corpus",
+            project_id=project_id,
+            subject_type="source",
+            subject_id=str(source_id),
+            previous_selected_block_count=previous_selected,
+            selected_block_count=len(planned.selected_block_ids),
+            previous_depth=stored_plan.profile.depth if stored_plan is not None else None,
+            depth=planned.profile.depth,
+        )
+        self.extract_evidence(project_id, source_id, model=fast_model)
+        self.build_claims(
+            project_id,
+            source_id,
+            model=strong_model,
+            finalize_project=False,
+        )
+        return True
 
     def analyze_source(
         self,

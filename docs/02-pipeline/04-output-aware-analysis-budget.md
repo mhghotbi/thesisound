@@ -199,6 +199,7 @@ Source manifest نیز این مقادیر خلاصه را ثبت می‌کند:
 ```text
 src/thesisound/services/analysis_profile.py
 src/thesisound/services/evidence_extractor.py
+src/thesisound/services/evidence_scope.py
 src/thesisound/services/source_analysis_service.py
 src/thesisound/services/source_artifact_store.py
 src/thesisound/source_analysis.py
@@ -223,17 +224,22 @@ prompts/evidence_extraction/1.3.0/
   -> deepen only core sections when needed
 ```
 
-نسخه فعلی plan جدید را می‌سازد و stage را دوباره اجرا می‌کند؛ reuse افزایشی block-level هنوز کامل نشده است. Artifactهای block-level زیرساخت این قابلیت را فراهم کرده‌اند.
+`requeue_with_duration` فقط brief و صف planning را به‌روز می‌کند؛ قبل از coverage،
+`EpisodePlanningRunService.run` با `sync_to_current_profile` اختلاف profile/selection را
+به‌صورت delta extraction و rebuild claim ledger جبران می‌کند. blockهای سازگار با همان
+قرارداد استخراج reuse می‌شوند؛ blockهای تازه‌انتخاب‌شده extract می‌شوند؛ و
+`_load_corpus` فقط evidence/claimهای داخل `selected_block_ids` فعلی را به planning می‌دهد.
+
+second-pass deepen برای core sectionهای مبهم هنوز پیاده نشده است.
 
 ---
 
 ## کارهای بعدی که نباید فراموش شوند
 
 1. hierarchical Document Map برای کتاب کامل؛
-2. incremental profile upgrade بدون اجرای مجدد blockهای معتبر؛
-3. second-pass extraction فقط برای core sectionهای مبهم یا بسیار مهم؛
-4. تقسیم token budget میان چند source بر اساس role و authority؛
-5. benchmark کیفیت و هزینه برای tierهای مختلف؛
-6. سنجش اینکه coverage targetها واقعاً با کیفیت اپیزود هم‌بستگی دارند یا نه؛
-7. امکان نمایش deliberate omissions به کاربر؛
-8. جلوگیری از اینکه خروجی ۶۰ دقیقه‌ای با padding و تکرار پر شود.
+2. second-pass extraction فقط برای core sectionهای مبهم یا بسیار مهم؛
+3. تقسیم token budget میان چند source بر اساس role و authority؛
+4. benchmark کیفیت و هزینه برای tierهای مختلف؛
+5. سنجش اینکه coverage targetها واقعاً با کیفیت اپیزود هم‌بستگی دارند یا نه؛
+6. امکان نمایش deliberate omissions به کاربر؛
+7. جلوگیری از اینکه خروجی ۶۰ دقیقه‌ای با padding و تکرار پر شود.
