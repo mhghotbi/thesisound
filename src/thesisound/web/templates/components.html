@@ -93,3 +93,53 @@
 </section>
 {% if hint %}<p class="error-recovery__hint">{{ hint }}</p>{% endif %}
 {%- endmacro %}
+
+{#
+  Shared claim → evidence chain. Input is claim_group[] from evidence_views.
+  drawer=true wraps in the script-page details; drawer=false is for omitted lists.
+#}
+{% macro evidence_claim_groups(claim_groups, project_id=None, drawer=true) -%}
+{%- if drawer -%}
+<details class="evidence-drawer" data-source-trace{% if project_id %} data-project-id="{{ project_id }}"{% endif %}>
+  <summary>این گفته از کجا آمد؟</summary>
+{%- else -%}
+<div class="evidence-claim-groups">
+{%- endif -%}
+{% if not claim_groups %}
+<p class="evidence-card evidence-card--unavailable">برای این گفته شاهدی ثبت نشده است.</p>
+{% else %}
+{% for group in claim_groups %}
+<div class="evidence-claim-group">
+  {% if group.availability == 'unavailable' or not group.claim_text %}
+  <p class="evidence-claim-group__title evidence-claim-group__title--unavailable">متن این مدعا در دسترس نیست</p>
+  {% else %}
+  <p class="evidence-claim-group__title">{{ group.claim_text }}</p>
+  {% if group.support_status_label %}<p class="evidence-claim-group__status">{{ group.support_status_label }}</p>{% endif %}
+  {% endif %}
+  {% if group.evidence %}
+  {% for reference in group.evidence %}
+  {% if reference.availability == 'source_removed' or reference.status == 'source_removed' %}
+  <p class="evidence-card evidence-card--unavailable">{{ reference.message }}</p>
+  {% elif reference.availability == 'unavailable' or reference.status == 'unavailable' %}
+  <p class="evidence-card evidence-card--unavailable">{{ reference.message }}</p>
+  {% else %}
+  <blockquote class="evidence-card">
+    {{ reference.excerpt }}
+    {% if reference.support_kind_label %}<span class="evidence-card__kind">{{ reference.support_kind_label }}</span>{% endif %}
+    <cite><bdi dir="auto">{{ reference.source_title }}</bdi> — {{ reference.locator_label or reference.locator }}</cite>
+    <span class="operator-only"><bdi dir="ltr">{{ reference.evidence_id }}</bdi></span>
+  </blockquote>
+  {% endif %}
+  {% endfor %}
+  {% elif group.availability != 'unavailable' %}
+  <p class="evidence-card evidence-card--unavailable">برای این مدعا شاهدی در این گفته ثبت نشده است.</p>
+  {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+{%- if drawer -%}
+</details>
+{%- else -%}
+</div>
+{%- endif -%}
+{%- endmacro %}

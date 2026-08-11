@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components.html" import status_label, technical_details, error_notice, error_recovery %}
+{% from "components.html" import status_label, technical_details, error_notice, error_recovery, evidence_claim_groups %}
 {% block title %}متن گفتار | مقال{% endblock %}
 {% block content %}
 {% set speaker_labels = {'A': 'اول', 'B': 'دوم'} %}
@@ -158,24 +158,10 @@
         {% if item.turn.editorial_only %}
         <p class="transcript-turn__aside">گفتهٔ گذار — مدعایی دربارهٔ منابع ندارد.</p>
         {% else %}
-        <details class="evidence-drawer" data-source-trace data-project-id="{{ project.project_id }}">
-          <summary>این گفته از کجا آمد؟</summary>
-          {% if item.references %}
-          {% for reference in item.references %}
-          {% if reference.status == 'unavailable' %}
-          <p class="evidence-card evidence-card--unavailable">{{ reference.message }}</p>
-          {% else %}
-          <blockquote class="evidence-card">
-            {{ reference.excerpt }}
-            <cite><bdi dir="auto">{{ reference.source_title }}</bdi> — {{ reference.locator }}</cite>
-            <span class="operator-only"><bdi dir="ltr">{{ reference.evidence_id }}</bdi></span>
-          </blockquote>
-          {% endif %}
-          {% endfor %}
-          {% else %}
-          <p class="evidence-card evidence-card--unavailable">برای این گفته شاهدی ثبت نشده است.</p>
-          {% endif %}
-        </details>
+        {% if item.grounding_cue %}
+        <p class="transcript-turn__grounding"><bdi dir="auto">{{ item.grounding_cue.source_title }}</bdi> — {{ item.grounding_cue.locator }}</p>
+        {% endif %}
+        {{ evidence_claim_groups(item.claim_groups, project.project_id, true) }}
         {% endif %}
 
         {% if not item.turn.editorial_only %}

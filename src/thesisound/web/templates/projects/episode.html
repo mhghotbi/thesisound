@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components.html" import status_label, technical_details, error_notice, error_recovery %}
+{% from "components.html" import status_label, technical_details, error_notice, error_recovery, evidence_claim_groups %}
 {% block title %}طرح گفتار | مقال{% endblock %}
 {% block content %}
 <header class="page-heading page-heading--compact">
@@ -152,10 +152,18 @@
   </div>
 </section>
 
-{% if episode_plan.deliberately_omitted_claims %}
+{% if omitted_claim_views %}
 <section class="section-block" aria-labelledby="omitted-claims-title">
-  <div class="section-heading"><h2 id="omitted-claims-title">آنچه آگاهانه در این گفتار نیامده است</h2><span>{{ episode_plan.deliberately_omitted_claims | length | fa_num }} مورد</span></div>
-  <div class="data-panel"><ul>{% for item in episode_plan.deliberately_omitted_claims %}<li>{{ item.reason }}{% if item.claim_id %}<code class="operator-only"> · <bdi dir="ltr">{{ item.claim_id }}</bdi></code>{% endif %}</li>{% endfor %}</ul></div>
+  <div class="section-heading"><h2 id="omitted-claims-title">آنچه آگاهانه در این گفتار نیامده است</h2><span>{{ omitted_claim_views | length | fa_num }} مورد</span></div>
+  <div class="data-panel omitted-claims">
+    {% for item in omitted_claim_views %}
+    <article class="omitted-claim">
+      <p class="omitted-claim__reason">{{ item.reason }}</p>
+      {{ evidence_claim_groups(item.claim_groups, none, false) }}
+      {% if item.claim_id %}<p class="operator-only"><code><bdi dir="ltr">{{ item.claim_id }}</bdi></code></p>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
 </section>
 {% endif %}
 

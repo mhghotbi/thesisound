@@ -12,7 +12,13 @@ from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.episode_planning_run import EpisodePlanningRunService
+from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.error_messages import user_facing_error
+from thesisound.web.evidence_views import (
+    load_claim_index,
+    load_evidence_index,
+    omitted_claim_views,
+)
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
@@ -36,6 +42,17 @@ def register_episode_routes(
     def episode_context(project_id: UUID) -> dict[str, object]:
         project = workspace.load_project(project_id)
         run = planner.run_store.load_optional(project_id)
+        episode_plan = _load_optional(episode_store.load_plan, project_id) or project.episode_plan
+        omitted_views: list[dict[str, object]] = []
+        if episode_plan is not None and episode_plan.deliberately_omitted_claims:
+            source_store = SourceArtifactStore(workspace.root)
+            claims = load_claim_index(project, source_store)
+            evidence_by_id = load_evidence_index(project, source_store)
+            omitted_views = omitted_claim_views(
+                episode_plan.deliberately_omitted_claims,
+                claims=claims,
+                evidence_by_id=evidence_by_id,
+            )
         return {
             "project": project,
             "planning_run": run,
@@ -43,8 +60,8 @@ def register_episode_routes(
             "planning_attempt": len(planner.run_store.load_history(project_id)),
             "coverage": _load_optional(episode_store.load_coverage, project_id),
             "budget": _load_optional(episode_store.load_budget, project_id),
-            "episode_plan": _load_optional(episode_store.load_plan, project_id)
-            or project.episode_plan,
+            "episode_plan": episode_plan,
+            "omitted_claim_views": omitted_views,
             "can_start": project.state == ProjectState.CORPUS_READY,
             "can_retry": bool(
                 run and run.status == "failed" and project.state == ProjectState.FAILED_RETRYABLE

@@ -8,7 +8,7 @@ from fastapi import BackgroundTasks, FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.status import HTTP_303_SEE_OTHER
 
-from thesisound.domain import Locator, Project, ProjectState, Script
+from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.product_metrics import ProductEvent, emit
 from thesisound.product_metrics.events import (
@@ -27,8 +27,7 @@ from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_run import ScriptBuildRunService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.error_messages import user_facing_error
-from thesisound.web.source_manifest import UiSourceManifestStore
-from thesisound.web.source_manifest import UiSourceManifestStore
+from thesisound.web.evidence_views import segment_views as _segment_views
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
@@ -359,93 +358,6 @@ def _render_script_page(
         },
         status_code=status_code,
     )
-
-
-def _segment_views(
-    project: Project,
-    script: Script | None,
-    source_store: SourceArtifactStore,
-) -> list[dict[str, object]]:
-    if script is None or project.episode_plan is None:
-        return []
-    source_titles = {source.source_id: source.title for source in project.sources}
-    for item in UiSourceManifestStore(
-        source_store.workspace_root / str(project.project_id)
-    ).load():
-        source_titles.setdefault(item.source_id, item.title)
-    source_ids = [source.source_id for source in project.sources if source.usable_as_evidence]
-    if not project.sources:
-        source_ids = source_store.list_claim_ready_source_ids(project.project_id)
-    evidence_by_id: dict[str, dict[str, object]] = {}
-    for source_id in source_ids:
-        try:
-            evidence_items = source_store.load_evidence_items(project.project_id, source_id)
-        except FileNotFoundError:
-            continue
-        for item in evidence_items:
-            evidence_by_id[item.evidence_id] = {
-                "evidence_id": item.evidence_id,
-                "status": "ok",
-                "source_id": str(source_id),
-                "source_title": source_titles.get(source_id, "منبع بدون عنوان"),
-                "locator": _locator_label(item.locator),
-                "excerpt": item.supporting_excerpt,
-            }
-
-    turns_by_segment: dict[str, list[dict[str, object]]] = {}
-    for turn in script.turns:
-        references: list[dict[str, object]] = []
-        for evidence_id in turn.evidence_ids:
-            found = evidence_by_id.get(evidence_id)
-            if found is not None:
-                references.append(found)
-            else:
-                references.append(
-                    {
-                        "evidence_id": evidence_id,
-                        "status": "unavailable",
-                        "source_id": None,
-                        "source_title": None,
-                        "locator": None,
-                        "excerpt": None,
-                        "message": (
-                            "این شاهد در دسترس نیست؛ منبع از مجموعه خارج شده "
-                            "یا پروندهٔ شاهد بارگذاری نشد."
-                        ),
-                    }
-                )
-        turns_by_segment.setdefault(turn.segment_id, []).append(
-            {
-                "turn": turn,
-                "references": references,
-            }
-        )
-    return [
-        {
-            "segment": segment,
-            "turns": turns_by_segment.get(segment.segment_id, []),
-        }
-        for segment in project.episode_plan.segments
-    ]
-
-
-def _locator_label(locator: Locator) -> str:
-    parts: list[str] = []
-    if locator.page_start is not None:
-        page = str(locator.page_start)
-        if locator.page_end is not None and locator.page_end != locator.page_start:
-            page += f"–{locator.page_end}"
-        parts.append(f"صفحه {page}")
-    if locator.chapter:
-        parts.append(f"فصل {locator.chapter}")
-    if locator.section:
-        parts.append(f"بخش {locator.section}")
-    if locator.paragraph_start is not None:
-        paragraph = str(locator.paragraph_start)
-        if locator.paragraph_end is not None and locator.paragraph_end != locator.paragraph_start:
-            paragraph += f"–{locator.paragraph_end}"
-        parts.append(f"بند {paragraph}")
-    return "، ".join(parts) if parts else "نشانی در منبع مشخص نیست"
 
 
 def _load_optional(loader: Callable[[UUID], object], project_id: UUID) -> object | None:

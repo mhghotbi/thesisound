@@ -5,7 +5,9 @@ from fastapi.testclient import TestClient
 
 from thesisound.config import Settings
 from thesisound.domain import (
+    ClaimRecord,
     ClaimType,
+    DeliberatelyOmittedClaim,
     EpisodePlan,
     EpisodeSegment,
     EvidenceExtraction,
@@ -20,6 +22,7 @@ from thesisound.domain import (
     SourceCandidate,
     SourceDecision,
     SourceRole,
+    SupportStatus,
     TopicType,
 )
 from thesisound.pipeline import WorkspaceStore
@@ -32,7 +35,7 @@ from thesisound.services.plan_approval import (
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_run import ScriptBuildRun, ScriptBuildRunStore
 from thesisound.services.source_artifact_store import SourceArtifactStore
-from thesisound.source_analysis import BlockEvidenceExtraction
+from thesisound.source_analysis import BlockEvidenceExtraction, ClaimLedger
 from thesisound.web.app import create_app
 
 
@@ -173,6 +176,96 @@ def test_episode_page_exposes_explicit_plan_approval_gate(tmp_path: Path) -> Non
     assert f"/projects/{project.project_id}/script/approve" in page.text
 
 
+def test_episode_page_shows_omitted_claim_text_and_evidence(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    source_id = uuid4()
+    project = _project(ProjectState.EPISODE_PLANNED)
+    project.sources = [
+        SourceCandidate(
+            source_id=source_id,
+            title="کتاب طرح",
+            role=SourceRole.PRIMARY,
+            source_type="book",
+            origin="fixture",
+            access=SourceAccess.FULL_TEXT,
+            user_decision=SourceDecision.INCLUDE,
+        )
+    ]
+    assert project.episode_plan is not None
+    project.episode_plan = project.episode_plan.model_copy(
+        update={
+            "deliberately_omitted_claims": [
+                DeliberatelyOmittedClaim(
+                    claim_id="claim-omit",
+                    reason="خارج از بودجهٔ زمانی",
+                )
+            ]
+        }
+    )
+    workspace.save_project(project)
+    store = SourceArtifactStore(settings.workspace_root)
+    store.save_evidence(
+        project.project_id,
+        source_id,
+        [
+            BlockEvidenceExtraction(
+                source_id=source_id,
+                block_id="block-1",
+                extraction=EvidenceExtraction(
+                    segment_function="argument",
+                    claims=[
+                        EvidenceItem(
+                            evidence_id="ev-omit",
+                            source_id=source_id,
+                            block_id="block-1",
+                            claim="مدعای کنارگذاشته",
+                            claim_type=ClaimType.AUTHOR_POSITION,
+                            supporting_excerpt="عبارت کنارگذاشته",
+                            locator=Locator(page_start=3, page_end=3),
+                            support_kind="direct",
+                            confidence=0.9,
+                        )
+                    ],
+                ),
+            )
+        ],
+    )
+    store.save_claim_ledger(
+        project.project_id,
+        source_id,
+        ClaimLedger(
+            source_id=source_id,
+            claims=[
+                ClaimRecord(
+                    claim_id="claim-omit",
+                    claim="مدعای کنارگذاشته",
+                    claim_type=ClaimType.AUTHOR_POSITION,
+                    evidence_ids=["ev-omit"],
+                    support_status=SupportStatus.MODERATE,
+                )
+            ],
+        ),
+    )
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/episode")
+
+    assert page.status_code == 200
+    assert "آنچه آگاهانه در این گفتار نیامده است" in page.text
+    assert "خارج از بودجهٔ زمانی" in page.text
+    assert "مدعای کنارگذاشته" in page.text
+    assert "عبارت کنارگذاشته" in page.text
+    assert "شاهد صریح" in page.text
+
+
 def test_verified_script_page_shows_quality_and_source_trace(tmp_path: Path) -> None:
     settings = _settings(tmp_path)
     workspace = WorkspaceStore(settings.workspace_root)
@@ -262,6 +355,22 @@ def test_verified_script_page_shows_quality_and_source_trace(tmp_path: Path) -> 
             )
         ],
     )
+    SourceArtifactStore(settings.workspace_root).save_claim_ledger(
+        project.project_id,
+        source_id,
+        ClaimLedger(
+            source_id=source_id,
+            claims=[
+                ClaimRecord(
+                    claim_id="claim-1",
+                    claim="گزاره مستند",
+                    claim_type=ClaimType.AUTHOR_POSITION,
+                    evidence_ids=["evidence-1"],
+                    support_status=SupportStatus.STRONG,
+                )
+            ],
+        ),
+    )
     app = create_app(
         settings,
         corpus_executor=lambda _: None,
@@ -280,6 +389,8 @@ def test_verified_script_page_shows_quality_and_source_trace(tmp_path: Path) -> 
     assert "کتاب اصلی" in page.text
     assert "صفحه 12" in page.text
     assert "عبارت دقیق منبع" in page.text
+    assert "گزاره مستند" in page.text
+    assert "شاهد صریح" in page.text
     assert "SCRIPT_VERIFIED" in page.text
 
 
@@ -350,7 +461,7 @@ def test_verified_script_page_shows_drawer_for_unavailable_evidence(
 
     assert page.status_code == 200
     assert "این گفته از کجا آمد؟" in page.text
-    assert "این شاهد در دسترس نیست" in page.text
+    assert "متن این مدعا در دسترس نیست" in page.text
     assert "evidence-drawer" in page.text
 
 
