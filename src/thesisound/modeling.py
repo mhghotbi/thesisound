@@ -81,6 +81,7 @@ class ModelAttemptRecord(BaseModel):
     error_message: str | None = None
     retryable: bool = False
     retry_delay_ms: int | None = Field(default=None, ge=0)
+    retry_stop_reason: str | None = None
     usage: ModelUsage | None = None
     finish_reason: str | None = None
     grounding_source_count: int = Field(default=0, ge=0)

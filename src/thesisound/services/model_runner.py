@@ -24,7 +24,7 @@ from thesisound.modeling import (
 )
 from thesisound.ports import RunMetadata, TextModelPort
 from thesisound.prompt_loader import PromptLoader
-from thesisound.services.model_retry import decide_retry
+from thesisound.services.model_retry import decide_retry, error_fingerprint
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 
 type Validator[T: BaseModel] = Callable[[T], None]
@@ -129,6 +129,8 @@ class ModelRunner:
 
         user_prompt = bundle.user_prompt
         ledger = getattr(self.model_port, "observability", None)
+        previous_fingerprint: str | None = None
+        contract_repairs_used = 0
         for attempt_number in range(1, bundle.contract.max_attempts + 1):
             started = perf_counter()
             attempt_started_at = datetime.now(UTC)
@@ -190,12 +192,16 @@ class ModelRunner:
                 return ModelExecution[T](output=response.output, record=record)
             except ModelError as exc:
                 latency_ms = max(0, round((perf_counter() - started) * 1000))
+                fingerprint = error_fingerprint(exc)
                 decision = decide_retry(
                     exc,
                     attempt=attempt_number,
                     max_attempts=bundle.contract.max_attempts,
+                    prompt_id=bundle.contract.id,
                     retry_schema_errors=bundle.contract.retry_schema_errors,
                     base_delay_seconds=self.base_retry_delay_seconds,
+                    previous_fingerprint=previous_fingerprint,
+                    contract_repairs_used=contract_repairs_used,
                 )
                 call_id = response.call_id if response is not None else metadata.call_id
                 # P1: the response came back and our validator rejected it, so the
@@ -219,6 +225,7 @@ class ModelRunner:
                         error_message=str(exc),
                         retryable=decision.should_retry,
                         retry_delay_ms=round(decision.delay_seconds * 1000),
+                        retry_stop_reason=decision.stop_reason,
                         usage=attempt_usage,
                         call_id=call_id,
                     )
@@ -232,9 +239,11 @@ class ModelRunner:
                     self.run_store.save_error(record)
                     self.run_store.save_record(record)
                     raise
+                previous_fingerprint = fingerprint
                 if decision.delay_seconds:
                     self.sleeper(decision.delay_seconds)
                 if decision.repair_instruction:
+                    contract_repairs_used += 1
                     user_prompt = _append_repair_instruction(
                         bundle.user_prompt,
                         decision.repair_instruction,
@@ -251,6 +260,7 @@ class ModelRunner:
                         error_type=type(exc).__name__,
                         error_message=str(exc),
                         retryable=False,
+                        retry_stop_reason="non_retryable",
                         call_id=metadata.call_id,
                     )
                 )

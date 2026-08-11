@@ -502,3 +502,187 @@ def test_verifier_run_raises_before_any_provider_call_when_the_reviewer_is_not_i
     # Route resolution precedes run_store.initialize(), so a blocked route must
     # not leave even a model-run record behind.
     assert list((tmp_path / "workspaces").rglob("record.json")) == []
+
+
+def _prompt_root_for(
+    tmp_path: Path,
+    *,
+    prompt_id: str,
+    max_attempts: int,
+    retry_schema_errors: bool = True,
+) -> Path:
+    root = tmp_path / f"prompts-{prompt_id}"
+    version = root / prompt_id / "1.0.0"
+    version.mkdir(parents=True)
+    (version / "contract.json").write_text(
+        json.dumps(
+            {
+                "id": prompt_id,
+                "version": "1.0.0",
+                "model_tier": "fast",
+                "output_model": "ExampleOutput",
+                "max_attempts": max_attempts,
+                "retry_schema_errors": retry_schema_errors,
+                "system_file": "system.md",
+                "user_file": "user.md",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (version / "system.md").write_text("System {{ context }}", encoding="utf-8")
+    (version / "user.md").write_text("User {{ topic }}", encoding="utf-8")
+    return root
+
+
+def _runner_for_prompt(
+    tmp_path: Path,
+    model: FakeModel,
+    *,
+    prompt_id: str,
+    max_attempts: int,
+    retry_schema_errors: bool = True,
+    sleeper=lambda _: None,
+) -> ModelRunner:
+    return ModelRunner(
+        model,
+        PromptLoader(
+            _prompt_root_for(
+                tmp_path,
+                prompt_id=prompt_id,
+                max_attempts=max_attempts,
+                retry_schema_errors=retry_schema_errors,
+            )
+        ),
+        WorkspaceModelRunStore(tmp_path / "workspaces"),
+        base_retry_delay_seconds=0.1,
+        sleeper=sleeper,
+    )
+
+
+def test_model_runner_stops_contract_repair_for_low_recovery_stages(tmp_path: Path) -> None:
+    model = FakeModel([ExampleOutput(value="bad"), ExampleOutput(value="good")])
+
+    def validator(output: ExampleOutput) -> None:
+        if output.value != "good":
+            raise DeterministicValidationError("value must equal good")
+
+    with pytest.raises(DeterministicValidationError):
+        _runner_for_prompt(
+            tmp_path,
+            model,
+            prompt_id="episode_plan",
+            max_attempts=2,
+        ).run(
+            project_id=uuid4(),
+            stage="episode_plan",
+            prompt_name="episode_plan",
+            variables={"context": "safe", "topic": "Arendt"},
+            output_type=ExampleOutput,
+            model="fake-model",
+            validator=validator,
+        )
+
+    assert len(model.prompts) == 1
+    record_path = next((tmp_path / "workspaces").rglob("record.json"))
+    payload = json.loads(record_path.read_text(encoding="utf-8"))
+    assert payload["attempts"][0]["retry_stop_reason"] == "stage_policy"
+
+
+def test_model_runner_still_retries_provider_errors_on_low_recovery_stages(
+    tmp_path: Path,
+) -> None:
+    delays: list[float] = []
+    model = FakeModel([ModelTimeoutError("timeout"), ExampleOutput(value="ok")])
+
+    execution = _runner_for_prompt(
+        tmp_path,
+        model,
+        prompt_id="glossary",
+        max_attempts=2,
+        sleeper=delays.append,
+    ).run(
+        project_id=uuid4(),
+        stage="glossary",
+        prompt_name="glossary",
+        variables={"context": "safe", "topic": "Arendt"},
+        output_type=ExampleOutput,
+        model="fake-model",
+    )
+
+    assert execution.output.value == "ok"
+    assert len(execution.record.attempts) == 2
+    assert delays == [0.1]
+
+
+def test_model_runner_stops_identical_deterministic_repairs(tmp_path: Path) -> None:
+    model = FakeModel(
+        [
+            ExampleOutput(value="bad"),
+            ExampleOutput(value="bad"),
+            ExampleOutput(value="good"),
+        ]
+    )
+
+    def validator(output: ExampleOutput) -> None:
+        if output.value != "good":
+            raise DeterministicValidationError("value must equal good")
+
+    with pytest.raises(DeterministicValidationError):
+        _runner_for_prompt(
+            tmp_path,
+            model,
+            prompt_id="evidence_extraction",
+            max_attempts=3,
+        ).run(
+            project_id=uuid4(),
+            stage="evidence_extraction",
+            prompt_name="evidence_extraction",
+            variables={"context": "safe", "topic": "Arendt"},
+            output_type=ExampleOutput,
+            model="fake-model",
+            validator=validator,
+        )
+
+    assert len(model.prompts) == 2
+    assert "REPAIR_INSTRUCTION" in model.prompts[1]
+    record_path = next((tmp_path / "workspaces").rglob("record.json"))
+    payload = json.loads(record_path.read_text(encoding="utf-8"))
+    assert payload["attempts"][1]["retry_stop_reason"] == "identical_repair"
+
+
+def test_model_runner_allows_second_repair_when_error_changes(tmp_path: Path) -> None:
+    model = FakeModel(
+        [
+            ExampleOutput(value="first"),
+            ExampleOutput(value="second"),
+            ExampleOutput(value="good"),
+        ]
+    )
+    seen: list[str] = []
+
+    def validator(output: ExampleOutput) -> None:
+        seen.append(output.value)
+        if output.value == "first":
+            raise DeterministicValidationError("first failure")
+        if output.value == "second":
+            raise DeterministicValidationError("second distinct failure")
+
+    execution = _runner_for_prompt(
+        tmp_path,
+        model,
+        prompt_id="evidence_extraction",
+        max_attempts=3,
+    ).run(
+        project_id=uuid4(),
+        stage="evidence_extraction",
+        prompt_name="evidence_extraction",
+        variables={"context": "safe", "topic": "Arendt"},
+        output_type=ExampleOutput,
+        model="fake-model",
+        validator=validator,
+    )
+
+    assert execution.output.value == "good"
+    assert seen == ["first", "second", "good"]
+    assert "first failure" in model.prompts[1]
+    assert "second distinct failure" in model.prompts[2]

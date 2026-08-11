@@ -32,6 +32,7 @@ def test_excerpt_not_found_has_a_distinct_retryable_error_type() -> None:
             error,
             attempt=1,
             max_attempts=3,
+            prompt_id="evidence_extraction",
             retry_schema_errors=True,
             base_delay_seconds=0,
         ).should_retry

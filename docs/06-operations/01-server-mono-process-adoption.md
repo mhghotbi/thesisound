@@ -71,7 +71,7 @@ Each item was scored on two axes; the final tier is **the higher of the two**.
 
 | Their pattern | Our equivalent |
 |---|---|
-| Draft retry loop on bad JSON | `services/model_retry.py:25` — retry with a repair instruction on contract failure |
+| Draft retry loop on bad JSON | `services/model_retry.py` — stage- and error-class policy: provider/timeout/rate-limit still back off; contract repairs are capped per prompt (evidence unlimited within `max_attempts`, document_map/default one repair, episode/glossary/verifier/reviser none). Identical `(error_type, message)` fingerprints stop further repairs. |
 | `promptVersion` on every run row | `prompt_loader.py:99`, `services/model_run_store.py:36` — versioned contracts with content hash |
 | Skip-if-exists and TTL cache | `services/corpus_reuse.py:38` — sha256 plus identical extraction plan; document map cache |
 | Structural validator and math oracle | `services/script_checks.py:53-190` — ten deterministic issue types, three-way verdict; `services/excerpt_matching.py:101` locates excerpts verbatim |
