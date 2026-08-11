@@ -1,0 +1,10 @@
+{
+  "id": "evidence_extraction_batch",
+  "version": "1.0.0",
+  "model_tier": "fast",
+  "output_model": "BatchEvidenceExtractionDraft",
+  "max_attempts": 3,
+  "retry_schema_errors": true,
+  "system_file": "system.md",
+  "user_file": "user.md"
+}

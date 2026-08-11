@@ -28,6 +28,7 @@ from thesisound.services.excerpt_matching import locate_excerpt
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
     AnalysisProfile,
+    BatchEvidenceExtractionDraft,
     BlockEvidenceExtraction,
     EvidenceClaimDraft,
     EvidenceExtractionDraft,
@@ -42,14 +43,26 @@ _DEFAULT_MAX_ATTEMPTS = 3
 # succeeded, probe at most this many blocks so a revoked key or dead endpoint
 # aborts without paying for one call per remaining block.
 _BREAKER_CONSECUTIVE_FAILURES = 3
+# Cap the source text carried by one batch. Ordinary blocks fit the configured maximum;
+# this only isolates pathological blocks so one truncated output cannot lose siblings.
+_MAX_BATCH_SOURCE_TOKENS = 12_000
 
 
 class EvidenceExtractorService:
-    def __init__(self, model_runner: ModelRunner, *, max_workers: int = 1) -> None:
+    def __init__(
+        self,
+        model_runner: ModelRunner,
+        *,
+        max_workers: int = 1,
+        batch_size: int = 1,
+    ) -> None:
         if max_workers < 1:
             raise ValueError("max_workers must be at least 1.")
+        if batch_size < 1:
+            raise ValueError("batch_size must be at least 1.")
         self.model_runner = model_runner
         self.max_workers = max_workers
+        self.batch_size = batch_size
 
     def extract_source(
         self,
@@ -83,6 +96,11 @@ class EvidenceExtractorService:
         }
         index_by_id = {block.block_id: index for index, block in enumerate(blocks)}
         max_attempts = _evidence_max_attempts(self.model_runner, prompt_version)
+        batch_max_attempts = _evidence_max_attempts(
+            self.model_runner,
+            prompt_version,
+            "evidence_extraction_batch",
+        )
 
         pending = [
             block
@@ -94,6 +112,7 @@ class EvidenceExtractorService:
         if not pending:
             return [], []
 
+        units = _plan_units(pending, self.batch_size)
         results: dict[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]] = {}
         # Callers persist from `on_extraction`, so serialize the callback here rather than
         # asking every caller to be thread-safe. The model call itself stays outside it.
@@ -101,55 +120,82 @@ class EvidenceExtractorService:
         consecutive_skipped = 0
         succeeded = 0
 
+        def any_block_succeeded() -> bool:
+            with handover:
+                return succeeded > 0
+
         def work(
-            block: SourceDocumentBlock,
-        ) -> tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]:
+            unit: list[SourceDocumentBlock],
+        ) -> list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]]:
+            if len(unit) == 1:
+                block = unit[0]
+                with tracing.span(
+                    "corpus.extract_evidence",
+                    component="corpus",
+                    subject_type="block",
+                    subject_id=block.block_id,
+                    detail="verbose",
+                ):
+                    outcome = self._extract_block(
+                        project_id=project_id,
+                        source_id=source_id,
+                        block=block,
+                        section=section_by_block.get(block.block_id),
+                        blocks=blocks,
+                        index_by_id=index_by_id,
+                        document_map=document_map,
+                        profile=profile,
+                        model=model,
+                        prompt_version=prompt_version,
+                        max_attempts=max_attempts,
+                    )
+                return [(block.block_id, outcome)]
             with tracing.span(
-                "corpus.extract_evidence",
+                "corpus.extract_evidence_batch",
                 component="corpus",
-                subject_type="block",
-                subject_id=block.block_id,
+                subject_type="block_batch",
+                subject_id=f"{unit[0].block_id}+{len(unit) - 1}",
                 detail="verbose",
             ):
-                outcome = self._extract_block(
+                return self._extract_batch(
                     project_id=project_id,
                     source_id=source_id,
-                    block=block,
-                    section=section_by_block.get(block.block_id),
+                    unit=unit,
+                    section_by_block=section_by_block,
                     blocks=blocks,
                     index_by_id=index_by_id,
                     document_map=document_map,
                     profile=profile,
                     model=model,
                     prompt_version=prompt_version,
-                    max_attempts=max_attempts,
+                    max_attempts=batch_max_attempts,
+                    fallback_max_attempts=max_attempts,
+                    fallback_allowed=any_block_succeeded,
                 )
-            return block.block_id, outcome
 
         def hand_over(
-            block_id: str,
-            outcome: tuple[BlockEvidenceExtraction, ModelRunRecord | None],
+            outcomes: list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]],
         ) -> str | None:
             nonlocal consecutive_skipped, succeeded
             with handover:
-                record = outcome[0]
-                results[block_id] = outcome
-                if on_extraction is not None:
-                    on_extraction(record)
-                if record.status == "skipped":
+                for block_id, outcome in outcomes:
+                    results[block_id] = outcome
+                    if on_extraction is not None:
+                        on_extraction(outcome[0])
+                records = [outcome[0] for _, outcome in outcomes]
+                if records and all(record.status == "skipped" for record in records):
                     consecutive_skipped += 1
                 else:
                     succeeded += 1
                     consecutive_skipped = 0
                 if succeeded == 0 and consecutive_skipped >= _BREAKER_CONSECUTIVE_FAILURES:
-                    return record.rejection_reason or "provider failure"
+                    return records[0].rejection_reason or "provider failure"
             return None
 
-        workers = min(self.max_workers, len(pending))
+        workers = min(self.max_workers, len(units))
         if workers == 1:
-            for block in pending:
-                block_id, outcome = work(block)
-                breaker_reason = hand_over(block_id, outcome)
+            for unit in units:
+                breaker_reason = hand_over(work(unit))
                 if breaker_reason is not None:
                     raise ModelProviderError(
                         "Evidence extraction circuit breaker opened after "
@@ -164,20 +210,20 @@ class EvidenceExtractorService:
             futures = {}
             with ThreadPoolExecutor(max_workers=workers) as pool:
                 initial = (
-                    len(pending)
-                    if len(pending) <= workers
-                    else min(len(pending), _BREAKER_CONSECUTIVE_FAILURES)
+                    len(units)
+                    if len(units) <= workers
+                    else min(len(units), _BREAKER_CONSECUTIVE_FAILURES)
                 )
                 for _ in range(initial):
-                    block = pending[next_index]
+                    unit = units[next_index]
                     next_index += 1
-                    futures[pool.submit(bound_work, block)] = block.block_id
+                    futures[pool.submit(bound_work, unit)] = next_index - 1
                 try:
                     while futures:
                         future = next(as_completed(futures))
                         futures.pop(future)
-                        block_id, outcome = future.result()
-                        breaker_reason = hand_over(block_id, outcome)
+                        outcomes = future.result()
+                        breaker_reason = hand_over(outcomes)
                         if breaker_reason is not None:
                             for remaining in futures:
                                 remaining.cancel()
@@ -188,22 +234,24 @@ class EvidenceExtractorService:
                                 f"failures before any block succeeded: {breaker_reason}"
                             )
                         if succeeded > 0:
-                            while len(futures) < workers and next_index < len(pending):
-                                block = pending[next_index]
+                            while len(futures) < workers and next_index < len(units):
+                                unit = units[next_index]
                                 next_index += 1
-                                futures[pool.submit(bound_work, block)] = block.block_id
+                                futures[pool.submit(bound_work, unit)] = next_index - 1
                 except BaseException:
                     pool.shutdown(wait=True, cancel_futures=True)
                     raise
 
         records: list[BlockEvidenceExtraction] = []
         runs: list[ModelRunRecord] = []
+        seen_runs: set[UUID] = set()
         for block in blocks:
             outcome = results.get(block.block_id)
             if outcome is None:
                 continue
             records.append(outcome[0])
-            if outcome[1] is not None:
+            if outcome[1] is not None and outcome[1].run_id not in seen_runs:
+                seen_runs.add(outcome[1].run_id)
                 runs.append(outcome[1])
         return records, runs
 
@@ -299,16 +347,140 @@ class EvidenceExtractorService:
             )
         return record, run
 
+    def _extract_batch(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        unit: list[SourceDocumentBlock],
+        section_by_block: dict[str, DocumentMapSection],
+        blocks: list[SourceDocumentBlock],
+        index_by_id: dict[str, int],
+        document_map: DocumentMap,
+        profile: AnalysisProfile,
+        model: str,
+        prompt_version: str | None,
+        max_attempts: int,
+        fallback_max_attempts: int,
+        fallback_allowed: Callable[[], bool],
+    ) -> list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]]:
+        """Extract one consecutive unit, falling back only for affected blocks."""
+
+        unit_ids = {block.block_id for block in unit}
+        variables = {
+            "source_id": str(source_id),
+            "working_thesis": document_map.working_thesis,
+            "analysis_profile": profile.model_dump(mode="json"),
+            "block_count": len(unit),
+            "blocks": [
+                _block_payload(
+                    position,
+                    block,
+                    section_by_block.get(block.block_id),
+                    [
+                        neighbor
+                        for neighbor in _neighbor_context(
+                            block, blocks, index_by_id, profile.neighbor_context_blocks
+                        )
+                        if neighbor["block_id"] not in unit_ids
+                    ],
+                )
+                for position, block in enumerate(unit, start=1)
+            ],
+        }
+        stats = {"dropped_claims": 0, "cross_block_excerpts": 0}
+
+        def validator(draft: BatchEvidenceExtractionDraft) -> None:
+            _validate_batch_structure(draft, unit)
+            for entry in draft.entries:
+                block = unit[entry.block_index - 1]
+                _salvage_entry_inplace(entry.extraction, block, unit, profile, stats)
+
+        fallback_ids: set[str] = set()
+        outcomes: dict[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]] = {}
+        try:
+            execution = self.model_runner.run(
+                project_id=project_id,
+                stage="evidence_extraction_batch",
+                prompt_name="evidence_extraction_batch",
+                variables=variables,
+                output_type=BatchEvidenceExtractionDraft,
+                model=model,
+                prompt_version=prompt_version,
+                validator=validator,
+            )
+            for entry in execution.output.entries:
+                block = unit[entry.block_index - 1]
+                extraction = _materialize_extraction(entry.extraction, block)
+                validate_evidence_extraction(extraction, block)
+                if not extraction.claims and not _has_auxiliary_content(extraction):
+                    fallback_ids.add(block.block_id)
+                    continue
+                outcomes[block.block_id] = (
+                    BlockEvidenceExtraction(
+                        source_id=source_id,
+                        block_id=block.block_id,
+                        extraction=extraction,
+                        status="extracted",
+                    ),
+                    execution.record,
+                )
+        except (ModelProviderError, ModelSafetyError) as exc:
+            if not fallback_allowed():
+                _emit_batch_event(project_id, unit, fallback_block_count=0, stats=stats)
+                return [
+                    (
+                        block.block_id,
+                        (
+                            BlockEvidenceExtraction(
+                                source_id=source_id,
+                                block_id=block.block_id,
+                                extraction=EvidenceExtraction(segment_function="rejected"),
+                                status="skipped",
+                                rejection_reason=str(exc)[:1_000] or type(exc).__name__,
+                                failure_kind="provider",
+                            ),
+                            None,
+                        ),
+                    )
+                    for block in unit
+                ]
+            fallback_ids = set(unit_ids)
+        except StructuredOutputError:
+            fallback_ids = set(unit_ids)
+
+        _emit_batch_event(
+            project_id, unit, fallback_block_count=len(fallback_ids), stats=stats
+        )
+        for block in unit:
+            if block.block_id not in fallback_ids:
+                continue
+            outcomes[block.block_id] = self._extract_block(
+                project_id=project_id,
+                source_id=source_id,
+                block=block,
+                section=section_by_block.get(block.block_id),
+                blocks=blocks,
+                index_by_id=index_by_id,
+                document_map=document_map,
+                profile=profile,
+                model=model,
+                prompt_version=prompt_version,
+                max_attempts=fallback_max_attempts,
+            )
+        return [(block.block_id, outcomes[block.block_id]) for block in unit]
+
 
 def _evidence_max_attempts(
     model_runner: ModelRunner,
     prompt_version: str | None,
+    prompt_name: str = "evidence_extraction",
 ) -> int:
     loader = getattr(model_runner, "prompt_loader", None)
     if loader is None:
         return _DEFAULT_MAX_ATTEMPTS
     try:
-        contract = loader.load_contract("evidence_extraction", version=prompt_version)
+        contract = loader.load_contract(prompt_name, version=prompt_version)
     except Exception:
         return _DEFAULT_MAX_ATTEMPTS
     return contract.max_attempts
@@ -400,6 +572,70 @@ def _salvage_draft_inplace(
         draft.responses = []
 
 
+def _validate_batch_structure(
+    draft: BatchEvidenceExtractionDraft,
+    unit: list[SourceDocumentBlock],
+) -> None:
+    """Structural batch failures retry; entry-level content failures do not."""
+
+    indices = [entry.block_index for entry in draft.entries]
+    if sorted(indices) != list(range(1, len(unit) + 1)):
+        raise DeterministicValidationError(
+            f"Batched extraction must return exactly {len(unit)} entries with "
+            f"block_index 1..{len(unit)}; got {sorted(indices)}."
+        )
+
+
+def _salvage_entry_inplace(
+    draft: EvidenceExtractionDraft,
+    block: SourceDocumentBlock,
+    unit: list[SourceDocumentBlock],
+    profile: AnalysisProfile,
+    stats: dict[str, int],
+) -> None:
+    """Batch-only copy of single-block salvage, with measurement counters.
+
+    Keep this separate from ``_salvage_draft_inplace``: the single-block path is
+    experiment E2's control arm and must not change with the batched treatment.
+    """
+
+    kept: list[EvidenceClaimDraft] = []
+    seen_claims: set[str] = set()
+    dropped_claims = 0
+    for position, claim in enumerate(draft.claims):
+        if claim.claim_type.value == "editorial_explanation":
+            dropped_claims += 1
+            continue
+        normalized_claim = _normalize(claim.claim).casefold()
+        if normalized_claim in seen_claims:
+            dropped_claims += 1
+            continue
+        try:
+            _validate_claim_excerpt(claim, block.text)
+        except DeterministicValidationError:
+            dropped_claims += 1
+            if any(
+                sibling.block_id != block.block_id
+                and locate_excerpt(claim.supporting_excerpt, sibling.text) is not None
+                for sibling in unit
+            ):
+                stats["cross_block_excerpts"] += 1
+            continue
+        seen_claims.add(normalized_claim)
+        kept.append(claim)
+        if len(kept) >= profile.max_claims_per_block:
+            dropped_claims += len(draft.claims) - position - 1
+            break
+    # Claims beyond the budget are deliberately dropped in place rather than retrying K blocks.
+    stats["dropped_claims"] += dropped_claims
+    draft.claims = kept
+    if not profile.include_examples:
+        draft.examples = []
+    if not profile.include_objections_and_responses:
+        draft.objections = []
+        draft.responses = []
+
+
 def _materialize_extraction(
     draft: EvidenceExtractionDraft,
     block: SourceDocumentBlock,
@@ -479,6 +715,79 @@ def _neighbor_context(
         for neighbor in blocks[start:end]
         if neighbor.block_id != block.block_id and neighbor.block_type != "front_matter"
     ]
+
+
+def _plan_units(
+    pending: list[SourceDocumentBlock],
+    batch_size: int,
+) -> list[list[SourceDocumentBlock]]:
+    """Consecutive slices capped by block count and source-token mass."""
+
+    if batch_size <= 1:
+        return [[block] for block in pending]
+    units: list[list[SourceDocumentBlock]] = []
+    current: list[SourceDocumentBlock] = []
+    current_tokens = 0
+    for block in pending:
+        if current and (
+            len(current) >= batch_size
+            or current_tokens + block.estimated_token_count > _MAX_BATCH_SOURCE_TOKENS
+        ):
+            units.append(current)
+            current = []
+            current_tokens = 0
+        current.append(block)
+        current_tokens += block.estimated_token_count
+    if current:
+        units.append(current)
+    return units
+
+
+def _block_payload(
+    index: int,
+    block: SourceDocumentBlock,
+    section: DocumentMapSection | None,
+    neighbors: list[dict[str, object]],
+) -> dict[str, object]:
+    """Trimmed model payload: IDs and locators stay application-side."""
+
+    return {
+        "index": index,
+        "block_type": block.block_type,
+        "heading_path": block.heading_path,
+        "text": block.text,
+        "section_context": None
+        if section is None
+        else {
+            "title": section.title,
+            "function": section.function,
+            "key_concepts": section.key_concepts,
+            "unresolved_context": section.unresolved_context,
+        },
+        "neighbor_context": neighbors,
+    }
+
+
+def _emit_batch_event(
+    project_id: UUID,
+    unit: list[SourceDocumentBlock],
+    *,
+    fallback_block_count: int,
+    stats: dict[str, int],
+) -> None:
+    """Emit E2's per-call measurement record, including aborted calls."""
+
+    tracing.event(
+        "corpus.evidence_batch",
+        component="corpus",
+        project_id=project_id,
+        subject_type="block_batch",
+        subject_id=f"{unit[0].block_id}+{len(unit) - 1}",
+        block_count=len(unit),
+        fallback_block_count=fallback_block_count,
+        dropped_claim_count=stats["dropped_claims"],
+        cross_block_excerpt_count=stats["cross_block_excerpts"],
+    )
 
 
 def _full_profile() -> AnalysisProfile:

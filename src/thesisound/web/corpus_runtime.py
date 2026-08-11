@@ -55,6 +55,7 @@ def create_corpus_builder(
             evidence_extractor=EvidenceExtractorService(
                 runner,
                 max_workers=settings.evidence_extraction_workers,
+                batch_size=settings.evidence_extraction_batch_size,
             ),
             claim_reconciler=ClaimReconcilerService(runner),
         )

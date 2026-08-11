@@ -173,6 +173,22 @@ class EvidenceExtractionDraft(BaseModel):
     must_not_be_lost: list[str] = Field(default_factory=list)
 
 
+class BatchEvidenceEntryDraft(BaseModel):
+    """One block's extraction inside a batched call.
+
+    ``block_index`` is 1-based and refers to this block's position in this call's
+    TARGET_BLOCKS_JSON list. It is the only attribution channel: block IDs are not
+    sent to the model, so reordered responses remain attributable safely.
+    """
+
+    block_index: int = Field(ge=1)
+    extraction: EvidenceExtractionDraft
+
+
+class BatchEvidenceExtractionDraft(BaseModel):
+    entries: list[BatchEvidenceEntryDraft] = Field(default_factory=list)
+
+
 class BlockEvidenceExtraction(BaseModel):
     """One block extraction outcome.
 

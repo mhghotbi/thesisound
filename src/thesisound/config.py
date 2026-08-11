@@ -77,6 +77,9 @@ class Settings(BaseSettings):
     # partition failure aborts the whole map, so a dead provider must not be paid for
     # once per partition. Set to 1 to restore the fully sequential behaviour.
     document_map_workers: int = Field(default=4, ge=1, le=16)
+    # Blocks per evidence_extraction call. 1 preserves the audited one-block,
+    # one-call behaviour; larger values use the separate batch prompt.
+    evidence_extraction_batch_size: int = Field(default=1, ge=1, le=8)
     keep_rendered_prompts: bool = False
     gemini_google_search_enabled: bool = True
     gemini_url_context_enabled: bool = True
