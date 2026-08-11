@@ -395,8 +395,6 @@ def test_recovery_from_script_ready_preserves_retryable_state(tmp_path: Path) ->
     assert persisted.state == ProjectState.SCRIPT_READY
     assert "interrupted" in (persisted.last_error or "").lower()
     assert service.retry(project.project_id).status == "queued"
-
-
 def test_review_required_is_a_successful_run(tmp_path: Path) -> None:
     class ReviewRequiredPipeline(FakePipeline):
         def run(self, project_id: UUID, *, on_stage, **_):
