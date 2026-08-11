@@ -18,14 +18,30 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound import logging_setup, tracing
-from thesisound.accounts import AccountError, accounts_store_from_settings
+from thesisound.accounts import AccountError, AccountLockedError, accounts_store_from_settings
 from thesisound.adapters.sms import KavenegarOtpSender
 from thesisound.audio_runtime import create_audio_builder
 from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState, ResearchBrief, TopicType
 from thesisound.observability import ledger_from_settings, tracer_from_settings
 from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.product_metrics import ProductEvent, configure_product_metrics, emit, emit_failed_count
+from thesisound.product_metrics.events import (
+    AuthCodeFailed,
+    AuthCodeRequested,
+    AuthCodeVerified,
+    AuthLockedOut,
+    AuthLoggedOut,
+    AuthPasswordFailed,
+    AuthPasswordSucceeded,
+    GateBriefConfirmed,
+    GateBriefEdited,
+    ProjectCreated,
+    UserRegistered,
+)
+from thesisound.product_metrics.store import ProductEventStore
 from thesisound.services.observability_reporting import ObservabilityReporter
+from thesisound.services.product_metrics_rollup import ProductMetricsRollup
 from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
 from thesisound.web.audio_routes import register_audio_routes
 from thesisound.web.auth import NullOtpSender, OtpError, OtpSenderPort, OtpService
@@ -39,7 +55,6 @@ from thesisound.web.readiness_routes import register_readiness_routes
 from thesisound.web.script_routes import register_script_routes
 from thesisound.web.script_runtime import create_script_builder
 from thesisound.web.source_routes import register_source_routes
-
 _WEB_ROOT = Path(__file__).parent
 _TEMPLATES_ROOT = _WEB_ROOT / "templates"
 _STATIC_ROOT = _WEB_ROOT / "static"
@@ -105,6 +120,14 @@ def _validate_csrf(request: Request, submitted: str) -> None:
 
 def _safe_next_path(value: str) -> str:
     return value if value.startswith("/") and not value.startswith("//") else "/projects"
+
+
+def _ensure_anon_id(request: Request) -> str:
+    anon_id = request.session.get("anon_id")
+    if not isinstance(anon_id, str) or not anon_id:
+        anon_id = secrets.token_urlsafe(16)
+        request.session["anon_id"] = anon_id
+    return anon_id
 
 
 def _topic_type(raw_input: str) -> TopicType:
@@ -270,6 +293,11 @@ def create_app(
     tracing.install_tracer(tracer_from_settings(runtime))
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
     accounts = accounts_store_from_settings(runtime)
+    configure_product_metrics(
+        runtime,
+        ProductEventStore(runtime.resolved_observability_database_path),
+        user_resolver=accounts.primary_user_id_for_project,
+    )
     preflight = RuntimePreflight(runtime)
     corpus_builder = create_corpus_builder(runtime, workspace)
     episode_planner = create_episode_planner(runtime, workspace)
@@ -290,6 +318,31 @@ def create_app(
         max_age=60 * 60 * 24 * 14,
     )
     app.mount("/static", StaticFiles(directory=_STATIC_ROOT), name="static")
+
+    @app.middleware("http")
+    async def dynamic_response_headers(
+        request: Request, call_next: Callable
+    ) -> Response:
+        """Keep session HTML off shared caches and visible behind WCDN.
+
+        WCDN's SMART policy was caching `/login` (and other form pages) with an
+        embedded CSRF token, so POSTs failed validation. It also replaces HTML
+        422 bodies with a generic "Upstream Error" page, hiding our form errors.
+        """
+        response = await call_next(request)
+        if not request.url.path.startswith("/static"):
+            response.headers["Cache-Control"] = (
+                "private, no-store, max-age=0, must-revalidate"
+            )
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        if (
+            runtime.environment != "test"
+            and response.status_code == 422
+            and "text/html" in response.headers.get("content-type", "")
+        ):
+            response.status_code = 200
+        return response
 
     @app.middleware("http")
     async def guard_live_runs(request: Request, call_next: Callable) -> Response:
@@ -407,7 +460,7 @@ def create_app(
             return None
         next_path = request.url.path
         return RedirectResponse(
-            f"/login?next={next_path}",
+            f"/auth/login?next={next_path}",
             status_code=HTTP_303_SEE_OTHER,
         )
 
@@ -475,7 +528,7 @@ def create_app(
     @app.get("/", include_in_schema=False)
     def root(request: Request) -> RedirectResponse:
         return RedirectResponse(
-            "/projects" if _is_authenticated(request) else "/login",
+            "/projects" if _is_authenticated(request) else "/auth/login",
             status_code=HTTP_303_SEE_OTHER,
         )
 
@@ -483,14 +536,26 @@ def create_app(
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
-    @app.get("/login", response_class=HTMLResponse)
+    @app.post("/csrf/refresh")
+    def refresh_csrf(request: Request) -> dict[str, str]:
+        """Issue a session-matching CSRF token.
+
+        Shared CDNs may cache HTML form pages with a stale embedded token.
+        POSTs are not cached, so clients refresh the token before submit.
+        """
+        return {"csrf_token": _ensure_csrf(request)}
+
     def login_page(request: Request, next: str = "/projects") -> Response:
         if _is_authenticated(request):
             return RedirectResponse("/projects", status_code=HTTP_303_SEE_OTHER)
         safe_next = _safe_next_path(next)
         return render(request, "auth/login.html", {"next_path": safe_next})
 
-    @app.get("/login/password", response_class=HTMLResponse)
+    # /auth/login is the live entrypoint: WCDN had cached /login HTML with a
+    # stale CSRF token, which made every POST look like a 422 upstream error.
+    app.add_api_route("/auth/login", login_page, methods=["GET"], response_class=HTMLResponse)
+    app.add_api_route("/login", login_page, methods=["GET"], response_class=HTMLResponse)
+
     def password_login_page(request: Request, next: str = "/projects") -> Response:
         if _is_authenticated(request):
             return RedirectResponse("/projects", status_code=HTTP_303_SEE_OTHER)
@@ -499,6 +564,19 @@ def create_app(
             "auth/password.html",
             {"next_path": _safe_next_path(next)},
         )
+
+    app.add_api_route(
+        "/auth/login/password",
+        password_login_page,
+        methods=["GET"],
+        response_class=HTMLResponse,
+    )
+    app.add_api_route(
+        "/login/password",
+        password_login_page,
+        methods=["GET"],
+        response_class=HTMLResponse,
+    )
 
     @app.post("/login/password", response_class=HTMLResponse)
     def password_login(
@@ -509,10 +587,21 @@ def create_app(
         next_path: Annotated[str, Form()] = "/projects",
     ) -> Response:
         safe_next = _safe_next_path(next_path)
+        anon_id = _ensure_anon_id(request)
         try:
             _validate_csrf(request, csrf_token)
             account = accounts.verify_password(username, password)
-        except (AccountError, ValueError) as error:
+        except AccountLockedError as error:
+            emit(
+                ProductEvent.AUTH_LOCKED_OUT,
+                AuthLockedOut(method="password"),
+                anon_id=anon_id,
+            )
+            emit(
+                ProductEvent.AUTH_PASSWORD_FAILED,
+                AuthPasswordFailed(reason="locked"),
+                anon_id=anon_id,
+            )
             return render(
                 request,
                 "auth/password.html",
@@ -522,6 +611,37 @@ def create_app(
                     "next_path": safe_next,
                 },
                 status_code=422,
+            )
+        except (AccountError, ValueError) as error:
+            reason = "locked" if "تلاش‌ها" in str(error) else "invalid"
+            emit(
+                ProductEvent.AUTH_PASSWORD_FAILED,
+                AuthPasswordFailed(reason=reason),  # type: ignore[arg-type]
+                anon_id=anon_id,
+            )
+            return render(
+                request,
+                "auth/password.html",
+                {
+                    "error": str(error),
+                    "username": username,
+                    "next_path": safe_next,
+                },
+                status_code=422,
+            )
+        is_first = accounts.record_login(account.user_id)
+        emit(
+            ProductEvent.AUTH_PASSWORD_SUCCEEDED,
+            AuthPasswordSucceeded(),
+            user_id=account.user_id,
+            anon_id=anon_id,
+        )
+        if is_first:
+            emit(
+                ProductEvent.USER_REGISTERED,
+                UserRegistered(method="password"),
+                user_id=account.user_id,
+                anon_id=anon_id,
             )
         request.session.pop("pending_phone", None)
         request.session.pop("login_next", None)
@@ -536,6 +656,7 @@ def create_app(
         csrf_token: Annotated[str, Form()],
         next_path: Annotated[str, Form()] = "/projects",
     ) -> Response:
+        anon_id = _ensure_anon_id(request)
         try:
             _validate_csrf(request, csrf_token)
             normalized = otp.request_code(phone)
@@ -546,16 +667,29 @@ def create_app(
                 {"error": str(error), "phone": phone, "next_path": next_path},
                 status_code=422,
             )
+        emit(
+            ProductEvent.AUTH_CODE_REQUESTED,
+            AuthCodeRequested(),
+            anon_id=anon_id,
+            session_id=anon_id,
+        )
         request.session["pending_phone"] = normalized
         request.session["login_next"] = _safe_next_path(next_path)
-        return RedirectResponse("/login/verify", status_code=HTTP_303_SEE_OTHER)
+        return RedirectResponse("/auth/login/verify", status_code=HTTP_303_SEE_OTHER)
 
-    @app.get("/login/verify", response_class=HTMLResponse)
     def verify_page(request: Request) -> Response:
         phone = request.session.get("pending_phone")
         if not phone:
-            return RedirectResponse("/login", status_code=HTTP_303_SEE_OTHER)
+            return RedirectResponse("/auth/login", status_code=HTTP_303_SEE_OTHER)
         return render(request, "auth/verify.html", {"phone": phone})
+
+    app.add_api_route(
+        "/auth/login/verify",
+        verify_page,
+        methods=["GET"],
+        response_class=HTMLResponse,
+    )
+    app.add_api_route("/login/verify", verify_page, methods=["GET"], response_class=HTMLResponse)
 
     @app.post("/login/verify", response_class=HTMLResponse)
     def verify_code(
@@ -565,19 +699,54 @@ def create_app(
     ) -> Response:
         phone = request.session.get("pending_phone")
         if not phone:
-            return RedirectResponse("/login", status_code=HTTP_303_SEE_OTHER)
+            return RedirectResponse("/auth/login", status_code=HTTP_303_SEE_OTHER)
+        anon_id = _ensure_anon_id(request)
         try:
             _validate_csrf(request, csrf_token)
             otp.verify(phone, code)
         except (OtpError, ValueError) as error:
+            message = str(error)
+            if "منقضی" in message:
+                reason = "expired"
+            elif "تلاش‌ها" in message:
+                reason = "locked"
+                emit(
+                    ProductEvent.AUTH_LOCKED_OUT,
+                    AuthLockedOut(method="otp"),
+                    anon_id=anon_id,
+                )
+            elif "درست نیست" in message or "شش رقم" in message:
+                reason = "invalid"
+            else:
+                reason = "other"
+            emit(
+                ProductEvent.AUTH_CODE_FAILED,
+                AuthCodeFailed(reason=reason),  # type: ignore[arg-type]
+                anon_id=anon_id,
+            )
             return render(
                 request,
                 "auth/verify.html",
-                {"error": str(error), "phone": phone},
+                {"error": message, "phone": phone},
                 status_code=422,
             )
+        account = accounts.get_or_create_phone_user(phone)
+        is_first = accounts.record_login(account.user_id)
+        emit(
+            ProductEvent.AUTH_CODE_VERIFIED,
+            AuthCodeVerified(),
+            user_id=account.user_id,
+            anon_id=anon_id,
+        )
+        if is_first:
+            emit(
+                ProductEvent.USER_REGISTERED,
+                UserRegistered(method="otp"),
+                user_id=account.user_id,
+                anon_id=anon_id,
+            )
         request.session.pop("pending_phone", None)
-        request.session["user_id"] = accounts.get_or_create_phone_user(phone).user_id
+        request.session["user_id"] = account.user_id
         destination = request.session.pop("login_next", "/projects")
         return RedirectResponse(destination, status_code=HTTP_303_SEE_OTHER)
 
@@ -587,8 +756,17 @@ def create_app(
         csrf_token: Annotated[str, Form()],
     ) -> RedirectResponse:
         _validate_csrf(request, csrf_token)
+        user_id = request.session.get("user_id")
+        emit(
+            ProductEvent.AUTH_LOGGED_OUT,
+            AuthLoggedOut(),
+            user_id=user_id if isinstance(user_id, int) else None,
+            anon_id=request.session.get("anon_id")
+            if isinstance(request.session.get("anon_id"), str)
+            else None,
+        )
         request.session.clear()
-        return RedirectResponse("/login", status_code=HTTP_303_SEE_OTHER)
+        return RedirectResponse("/auth/login", status_code=HTTP_303_SEE_OTHER)
 
     @app.post("/ui/preferences", status_code=204)
     def save_ui_preferences(
@@ -651,6 +829,7 @@ def create_app(
         return render(request, "projects/index.html", {"projects": models})
 
     @app.get("/projects/new", response_class=HTMLResponse)
+    @app.get("/projects/create", response_class=HTMLResponse)
     def new_project_page(request: Request) -> Response:
         if redirect := _login_redirect(request):
             return redirect
@@ -699,6 +878,17 @@ def create_app(
                 # creates a duplicate. Roll back only this brand-new UUID.
                 shutil.rmtree(workspace.project_dir(project.project_id), ignore_errors=True)
                 raise
+            emit(
+                ProductEvent.PROJECT_CREATED,
+                ProjectCreated(
+                    topic_type=brief.topic_type.value
+                    if hasattr(brief.topic_type, "value")
+                    else str(brief.topic_type),
+                    entry_mode="web",
+                ),
+                user_id=request.state.account.user_id,
+                project_id=project.project_id,
+            )
         except ValueError as error:
             return render(
                 request,
@@ -800,6 +990,20 @@ def create_app(
             if action == "confirm" and project.state == ProjectState.BRIEF_READY:
                 transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
+            if action == "confirm":
+                emit(
+                    ProductEvent.GATE_BRIEF_CONFIRMED,
+                    GateBriefConfirmed(),
+                    user_id=request.state.account.user_id,
+                    project_id=project_id,
+                )
+            else:
+                emit(
+                    ProductEvent.GATE_BRIEF_EDITED,
+                    GateBriefEdited(),
+                    user_id=request.state.account.user_id,
+                    project_id=project_id,
+                )
         except ValueError as error:
             current = workspace.load_project(project_id)
             return render(
@@ -882,6 +1086,35 @@ def create_app(
         login_redirect=_login_redirect,
         validate_csrf=_validate_csrf,
     )
+
+    @app.get("/metrics", response_class=HTMLResponse)
+    def metrics_page(request: Request) -> Response:
+        if redirect := _login_redirect(request):
+            return redirect
+        account = _current_account(request)
+        if account is None or account.role != "operator":
+            return RedirectResponse("/projects", status_code=HTTP_303_SEE_OTHER)
+        if request.session.get("ui_mode", "simple") != "operator":
+            return RedirectResponse("/projects", status_code=HTTP_303_SEE_OTHER)
+        rollup = ProductMetricsRollup(
+            ProductEventStore(runtime.resolved_observability_database_path)
+        )
+        rows = rollup.list_metrics(limit=500)
+        by_key: dict[str, list[dict[str, object]]] = {}
+        for row in rows:
+            by_key.setdefault(str(row["metric_key"]), []).append(row)
+        return render(
+            request,
+            "metrics.html",
+            {
+                "north_star": by_key.get("trusted_episodes_weekly", []),
+                "stage_conversion": by_key.get("stage_conversion", []),
+                "gate_block_rate": by_key.get("gate_block_rate", []),
+                "gate_resolution_rate": by_key.get("gate_resolution_rate", []),
+                "gate_median_blocked": by_key.get("gate_median_blocked_seconds", []),
+                "emit_failed": emit_failed_count(),
+            },
+        )
 
     return app
 

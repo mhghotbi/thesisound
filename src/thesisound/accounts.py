@@ -30,6 +30,10 @@ class AccountError(ValueError):
     """User-actionable account or authentication error."""
 
 
+class AccountLockedError(AccountError):
+    """Raised when a login lockout is newly triggered."""
+
+
 @dataclass(frozen=True, slots=True)
 class AccountRecord:
     user_id: int
@@ -214,11 +218,13 @@ class AccountStore:
                     failed_attempts += 1
                     lockout_until: str | None = None
                     message = _GENERIC_LOGIN_ERROR
+                    newly_locked = False
                     if failed_attempts >= self.password_login_max_attempts:
                         lockout_until = _timestamp(
                             current_time + timedelta(seconds=self.password_login_lockout_seconds)
                         )
                         message = _LOCKED_LOGIN_ERROR
+                        newly_locked = True
                     connection.execute(
                         """
                         UPDATE users
@@ -233,17 +239,17 @@ class AccountStore:
                         ),
                     )
                     connection.commit()
+                    if newly_locked:
+                        raise AccountLockedError(message)
                     raise AccountError(message)
 
                 connection.execute(
                     """
                     UPDATE users
-                    SET failed_attempts = 0, locked_until = NULL,
-                        last_login_at = ?, updated_at = ?
+                    SET failed_attempts = 0, locked_until = NULL, updated_at = ?
                     WHERE user_id = ?
                     """,
                     (
-                        _timestamp(current_time),
                         _timestamp(current_time),
                         int(fresh[0]),
                     ),
@@ -352,6 +358,43 @@ class AccountStore:
                 (str(project_id),),
             ).fetchone()
         return row is not None
+
+    def record_login(self, user_id: int, *, now: datetime | None = None) -> bool:
+        """Set last_login_at. Returns True if this is the first login."""
+
+        current_time = (now or _now()).astimezone(UTC)
+        with self._lock, closing(self._connect()) as connection, connection:
+            row = connection.execute(
+                "SELECT last_login_at FROM users WHERE user_id = ?",
+                (user_id,),
+            ).fetchone()
+            if row is None:
+                raise AccountError("حساب کاربری پیدا نشد.")
+            is_first = row[0] is None
+            connection.execute(
+                """
+                UPDATE users
+                SET last_login_at = ?, updated_at = ?
+                WHERE user_id = ?
+                """,
+                (_timestamp(current_time), _timestamp(current_time), user_id),
+            )
+        return is_first
+
+    def primary_user_id_for_project(self, project_id: UUID | str) -> int | None:
+        """Resolve the denormalized user for a project, preferring role=owner."""
+
+        with self._lock, closing(self._connect()) as connection, connection:
+            row = connection.execute(
+                """
+                SELECT user_id FROM project_members
+                 WHERE project_id = ?
+                 ORDER BY CASE WHEN role = 'owner' THEN 0 ELSE 1 END, user_id
+                 LIMIT 1
+                """,
+                (str(project_id),),
+            ).fetchone()
+        return int(row[0]) if row else None
 
     def _initialize(self) -> None:
         with self._lock, closing(self._connect()) as connection, connection:

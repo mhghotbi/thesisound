@@ -13,6 +13,8 @@ from thesisound.audio import AudioPipelineManifest, script_hash
 from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState
 from thesisound.pipeline import WorkspaceStore
+from thesisound.product_metrics import ProductEvent, emit
+from thesisound.product_metrics.events import EpisodeAudioDownloaded
 from thesisound.services.audio_artifact_store import AudioArtifactStore
 from thesisound.services.audio_direction import (
     DEFAULT_ACCENT,
@@ -182,6 +184,12 @@ def register_audio_routes(
             accept_manual_review=builder.accept_manual_review,
         ):
             return Response(status_code=404)
+        emit(
+            ProductEvent.EPISODE_AUDIO_DOWNLOADED,
+            EpisodeAudioDownloaded(format="wav"),
+            user_id=getattr(request.state.account, "user_id", None),
+            project_id=project_id,
+        )
         return FileResponse(
             audio_store.final_audio_path(project_id),
             media_type="audio/wav",
@@ -213,6 +221,12 @@ def register_audio_routes(
                 mp3_path = audio_store.write_final_mp3_from_wav(project_id)
             except (OSError, RuntimeError):
                 return Response(status_code=404)
+        emit(
+            ProductEvent.EPISODE_AUDIO_DOWNLOADED,
+            EpisodeAudioDownloaded(format="mp3"),
+            user_id=getattr(request.state.account, "user_id", None),
+            project_id=project_id,
+        )
         return FileResponse(
             mp3_path,
             media_type="audio/mpeg",

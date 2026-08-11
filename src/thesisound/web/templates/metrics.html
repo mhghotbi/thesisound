@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}شاخص‌های محصول · مقال{% endblock %}
+{% block content %}
+<section class="section-block">
+  <h1>شاخص‌های محصول</h1>
+  <p class="lede">North star، قیف D1، و بلوک دروازه‌های E5–E7. فقط حالت پیشرفتهٔ اپراتور.</p>
+  <p class="operator-only">emit_failed: <code><bdi dir="ltr">{{ emit_failed }}</bdi></code></p>
+</section>
+
+<section class="section-block" aria-labelledby="north-star-title">
+  <h2 id="north-star-title">A1 · اپیزودهای قابل‌اعتماد (هفتگی)</h2>
+  {% if north_star %}
+  <table class="data-table">
+    <thead><tr><th>روز/هفته</th><th>مقدار</th></tr></thead>
+    <tbody>
+      {% for row in north_star %}
+      <tr><td><bdi dir="ltr">{{ row.day }}</bdi></td><td><bdi dir="ltr">{{ row.value }}</bdi></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>هنوز داده‌ای نیست.</p>
+  {% endif %}
+</section>
+
+<section class="section-block" aria-labelledby="funnel-title">
+  <h2 id="funnel-title">D1 · تبدیل قیف</h2>
+  {% if stage_conversion %}
+  <table class="data-table">
+    <thead><tr><th>روز</th><th>ابعاد</th><th>نرخ</th><th>صورت</th><th>مخرج</th></tr></thead>
+    <tbody>
+      {% for row in stage_conversion %}
+      <tr>
+        <td><bdi dir="ltr">{{ row.day }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.dimension_json }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.value }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.numerator }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.denominator }}</bdi></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>هنوز داده‌ای نیست.</p>
+  {% endif %}
+</section>
+
+<section class="section-block" aria-labelledby="gates-title">
+  <h2 id="gates-title">E5–E7 · دروازه‌های مسدودکننده</h2>
+  <h3>E5 · نرخ مسدود شدن</h3>
+  {% if gate_block_rate %}
+  <table class="data-table">
+    <thead><tr><th>روز</th><th>دروازه</th><th>نرخ</th></tr></thead>
+    <tbody>
+      {% for row in gate_block_rate %}
+      <tr>
+        <td><bdi dir="ltr">{{ row.day }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.dimension_json }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.value }}</bdi></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>هنوز داده‌ای نیست.</p>
+  {% endif %}
+
+  <h3>E6 · نرخ بازیابی</h3>
+  {% if gate_resolution_rate %}
+  <table class="data-table">
+    <thead><tr><th>روز</th><th>دروازه</th><th>نرخ</th></tr></thead>
+    <tbody>
+      {% for row in gate_resolution_rate %}
+      <tr>
+        <td><bdi dir="ltr">{{ row.day }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.dimension_json }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.value }}</bdi></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>هنوز داده‌ای نیست.</p>
+  {% endif %}
+
+  <h3>E7 · میانهٔ ثانیه‌های مسدود بودن</h3>
+  {% if gate_median_blocked %}
+  <table class="data-table">
+    <thead><tr><th>روز</th><th>دروازه</th><th>ثانیه</th></tr></thead>
+    <tbody>
+      {% for row in gate_median_blocked %}
+      <tr>
+        <td><bdi dir="ltr">{{ row.day }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.dimension_json }}</bdi></td>
+        <td><bdi dir="ltr">{{ row.value }}</bdi></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>هنوز داده‌ای نیست.</p>
+  {% endif %}
+</section>
+{% endblock %}

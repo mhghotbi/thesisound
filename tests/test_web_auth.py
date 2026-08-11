@@ -20,6 +20,7 @@ def _settings(tmp_path: Path, **overrides: object) -> Settings:
         "test_otp_code": "999999",
         "otp_resend_cooldown_seconds": 5,
         "ui_demo_mode": True,
+        "web_secure_cookies": False,
     }
     values.update(overrides)
     return Settings(**values)
@@ -59,7 +60,7 @@ def test_protected_page_redirects_to_login(tmp_path: Path) -> None:
         response = client.get("/projects", follow_redirects=False)
 
     assert response.status_code == 303
-    assert response.headers["location"].startswith("/login?next=")
+    assert response.headers["location"].startswith("/auth/login?next=")
 
 
 def test_development_otp_logs_in(tmp_path: Path) -> None:

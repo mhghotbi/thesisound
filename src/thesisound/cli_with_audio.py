@@ -6,6 +6,7 @@ from thesisound.doctor_cli import register_doctor_command
 from thesisound.eval_cli import register_eval_command
 from thesisound.model_cli import register_model_commands
 from thesisound.observability_cli import register_observability_commands
+from thesisound.product_metrics_cli import register_product_metrics_commands
 from thesisound.readiness_cli import register_readiness_command
 from thesisound.search_cli import register_search_commands
 
@@ -15,6 +16,7 @@ register_doctor_command(app)
 register_model_commands(app)
 register_search_commands(app)
 register_observability_commands(app)
+register_product_metrics_commands(app)
 
 register_readiness_command(app)
 register_eval_command(app)

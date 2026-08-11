@@ -76,3 +76,27 @@ def test_otp_service_does_not_store_challenge_when_send_fails() -> None:
 
     with pytest.raises(OtpError, match="ابتدا درخواست"):
         service.verify("09121234567", "123456")
+
+
+def test_otp_service_skips_sms_for_configured_test_phone() -> None:
+    class BoomSender:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def send(self, phone: str, code: str) -> None:
+            del phone, code
+            self.calls += 1
+            raise RuntimeError("sms must not run for test otp")
+
+    sender = BoomSender()
+    service = OtpService(
+        secret="test-secret",
+        sender=sender,
+        allow_test_otp=True,
+        test_phone="09120000000",
+        test_code="999999",
+    )
+
+    assert service.request_code("09120000000") == "09120000000"
+    assert sender.calls == 0
+    assert service.verify("09120000000", "999999") is True

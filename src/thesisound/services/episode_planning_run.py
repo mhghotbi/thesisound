@@ -10,8 +10,13 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
 from thesisound import tracing
+from thesisound.config import Settings
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
+from thesisound.product_metrics import ProductEvent, emit
+from thesisound.product_metrics.emit import classify_gate_reason
+from thesisound.product_metrics.events import GateBlocked, GateResolved
+from thesisound.product_metrics.store import ProductEventStore
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.episode_preparation_service import EpisodePreparationService
 
@@ -239,12 +244,18 @@ class EpisodePlanningRunService:
         )
         self.run_store.save(run)
         if previous.status == "blocked":
+            blocked_seconds = _blocked_seconds(project_id, gate_name="coverage")
             tracing.event(
                 "gate.resolved",
                 component="episode",
                 project_id=project_id,
                 workflow_run_id=previous.run_id,
                 resolution="reduced_duration",
+            )
+            emit(
+                ProductEvent.GATE_RESOLVED,
+                GateResolved(gate_name="coverage", blocked_seconds=blocked_seconds),
+                project_id=project_id,
             )
         return run
 
@@ -257,12 +268,18 @@ class EpisodePlanningRunService:
         transition(project, ProjectState.SOURCES_COLLECTING)
         self.workspace_store.save_project(project)
         self.run_store.mark_outputs_stale(project_id, reason)
+        blocked_seconds = _blocked_seconds(project_id, gate_name="coverage")
         tracing.event(
             "gate.resolved",
             component="episode",
             project_id=project_id,
             workflow_run_id=run.run_id,
             resolution="reopened_inputs",
+        )
+        emit(
+            ProductEvent.GATE_RESOLVED,
+            GateResolved(gate_name="coverage", blocked_seconds=blocked_seconds),
+            project_id=project_id,
         )
 
     def run(self, project_id: UUID) -> EpisodePlanningRun:
@@ -383,6 +400,14 @@ class EpisodePlanningRunService:
             workflow_run_id=run.run_id,
             reason=reason,
         )
+        emit(
+            ProductEvent.GATE_BLOCKED,
+            GateBlocked(
+                gate_name="coverage",
+                reason=classify_gate_reason(reason),
+            ),
+            project_id=run.project_id,
+        )
         return run
 
     def _set_stage(self, run: EpisodePlanningRun, stage: EpisodePlanningStage) -> None:
@@ -414,3 +439,18 @@ def _atomic_write(path: Path, content: str) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(content, encoding="utf-8")
     temporary.replace(path)
+
+
+def _blocked_seconds(project_id: UUID, *, gate_name: str) -> int:
+    try:
+        store = ProductEventStore(Settings().resolved_observability_database_path)
+        last = store.last_event_time(
+            name=ProductEvent.GATE_BLOCKED.value,
+            project_id=project_id,
+            gate_name=gate_name,
+        )
+        if last is None:
+            return 0
+        return max(0, int((datetime.now(UTC) - last.astimezone(UTC)).total_seconds()))
+    except Exception:
+        return 0

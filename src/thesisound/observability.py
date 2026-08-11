@@ -2183,8 +2183,44 @@ def _migrate_v2_pipeline_spans_and_events(connection: sqlite3.Connection) -> Non
 # Never edit a migration that has shipped; add a new one instead. An entry
 # may be either a raw SQL script (executed via executescript) or a callable
 # taking the connection, for migrations that need conditional logic.
+_SCHEMA_V4_PRODUCT_EVENTS = """
+CREATE TABLE IF NOT EXISTS product_events(
+    event_id        TEXT PRIMARY KEY,
+    occurred_at     TEXT NOT NULL,
+    name            TEXT NOT NULL,
+    user_id         INTEGER,
+    anon_id         TEXT,
+    project_id      TEXT,
+    session_id      TEXT,
+    environment     TEXT NOT NULL,
+    is_synthetic    INTEGER NOT NULL DEFAULT 0,
+    event_version   INTEGER NOT NULL DEFAULT 1,
+    properties_json TEXT NOT NULL DEFAULT '{}'
+);
+CREATE INDEX IF NOT EXISTS idx_product_events_name_time
+    ON product_events(name, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_product_events_user_time
+    ON product_events(user_id, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_product_events_project
+    ON product_events(project_id, occurred_at);
+CREATE INDEX IF NOT EXISTS idx_product_events_real
+    ON product_events(occurred_at DESC) WHERE is_synthetic = 0;
+
+CREATE TABLE IF NOT EXISTS product_metric_daily(
+    metric_key      TEXT NOT NULL,
+    day             TEXT NOT NULL,
+    dimension_json  TEXT NOT NULL DEFAULT '{}',
+    value           REAL NOT NULL,
+    numerator       REAL,
+    denominator     REAL,
+    computed_at     TEXT NOT NULL,
+    PRIMARY KEY (metric_key, day, dimension_json)
+);
+"""
+
 _MIGRATIONS: tuple[str | Callable[[sqlite3.Connection], None], ...] = (
     _SCHEMA_V1,
     _migrate_v2_pipeline_spans_and_events,
     _SCHEMA_V3_PIPELINE_RUNS,
+    _SCHEMA_V4_PRODUCT_EVENTS,
 )

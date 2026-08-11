@@ -93,23 +93,24 @@ class OtpService:
             )
             raise OtpError(f"برای ارسال دوباره {max(1, remaining)} ثانیه صبر کنید.")
 
-        code = (
-            self._test_code
-            if self._allow_test_otp and phone == self._test_phone
-            else f"{secrets.randbelow(1_000_000):06d}"
-        )
+        use_test_otp = self._allow_test_otp and phone == self._test_phone
+        code = self._test_code if use_test_otp else f"{secrets.randbelow(1_000_000):06d}"
         challenge = OtpChallenge(
             phone=phone,
             code_digest=self._digest(phone, code),
             expires_at=current_time + self._ttl,
             requested_at=current_time,
         )
-        try:
-            self._sender.send(phone, code)
-        except OtpError:
-            raise
-        except Exception as exc:
-            raise OtpError("ارسال کد ورود ناموفق بود. دوباره تلاش کنید.") from exc
+        # Dev/test OTP must not depend on the SMS provider: the receptor is a
+        # fixed fake number, and a Kavenegar rejection would block the only
+        # documented login path when ALLOW_TEST_OTP is on.
+        if not use_test_otp:
+            try:
+                self._sender.send(phone, code)
+            except OtpError:
+                raise
+            except Exception as exc:
+                raise OtpError("ارسال کد ورود ناموفق بود. دوباره تلاش کنید.") from exc
         self._challenges[phone] = challenge
         return phone
 

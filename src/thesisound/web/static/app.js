@@ -2,7 +2,56 @@
   const root = document.documentElement;
   const validThemes = new Set(["cobalt", "wood", "olive", "slate"]);
   const validModes = new Set(["simple", "operator"]);
-  const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+  let csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+
+  const applyCsrf = (token) => {
+    if (!token) return;
+    csrf = token;
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) meta.setAttribute("content", token);
+    document.querySelectorAll('input[name="csrf_token"]').forEach((input) => {
+      input.value = token;
+    });
+  };
+
+  const refreshCsrf = async () => {
+    const response = await fetch("/csrf/refresh", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    applyCsrf(data.csrf_token);
+  };
+
+  // Shared HTML caches can embed a CSRF token that no longer matches the
+  // browser session cookie. Refresh from a POST (never CDN-cached) first.
+  refreshCsrf().catch(() => {});
+
+  document.addEventListener(
+    "submit",
+    (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      if (!form.querySelector('input[name="csrf_token"]')) return;
+      if (form.dataset.csrfSynced === "1") {
+        delete form.dataset.csrfSynced;
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      refreshCsrf()
+        .catch(() => {})
+        .finally(() => {
+          form.dataset.csrfSynced = "1";
+          if (typeof form.requestSubmit === "function") form.requestSubmit();
+          else form.submit();
+        });
+    },
+    true,
+  );
 
   const persistPreference = async (field, value) => {
     if (!csrf) return;
@@ -148,6 +197,25 @@
     checkbox.addEventListener("change", () => {
       checkbox.disabled = true;
       checkbox.form?.requestSubmit();
+    });
+  });
+
+  document.querySelectorAll("[data-source-trace]").forEach((details) => {
+    details.addEventListener("toggle", () => {
+      if (!details.open || details.dataset.traced === "1") return;
+      details.dataset.traced = "1";
+      const projectId = details.dataset.projectId;
+      if (!projectId) return;
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+      const body = new URLSearchParams({ csrf_token: csrf });
+      fetch(`/projects/${projectId}/script/source-trace`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+        credentials: "same-origin",
+      }).catch(() => {
+        // Metrics must never block reading the source trace.
+      });
     });
   });
 

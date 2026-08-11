@@ -23,6 +23,14 @@ from thesisound.domain import (
     SourceRole,
 )
 from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.product_metrics import ProductEvent, emit
+from thesisound.product_metrics.catalogue import stage_for_state
+from thesisound.product_metrics.events import (
+    GateCorpusConfirmed,
+    GateSourceDeleted,
+    GateSourceToggled,
+    WorkflowRewound,
+)
 from thesisound.services.corpus_building import CorpusBuildingService, CorpusBuildRun
 from thesisound.services.episode_planning_run import (
     EpisodePlanningRun,
@@ -517,6 +525,12 @@ def register_source_routes(
                 ),
                 status_code=422,
             )
+        emit(
+            ProductEvent.GATE_SOURCE_DELETED,
+            GateSourceDeleted(),
+            user_id=getattr(request.state.account, "user_id", None),
+            project_id=project_id,
+        )
         return _source_redirect(project_id)
 
     @app.post("/projects/{project_id}/sources/{source_id}/toggle")
@@ -534,7 +548,13 @@ def register_source_routes(
         project = workspace.load_project(project_id)
         if project.state not in _EDITABLE_SOURCE_STATES:
             return _source_redirect(project_id, error="selection-locked")
-        UiSourceManifestStore(workspace.project_dir(project_id)).toggle(source_id)
+        updated = UiSourceManifestStore(workspace.project_dir(project_id)).toggle(source_id)
+        emit(
+            ProductEvent.GATE_SOURCE_TOGGLED,
+            GateSourceToggled(selected=updated.selected),
+            user_id=getattr(request.state.account, "user_id", None),
+            project_id=project_id,
+        )
         return _source_redirect(project_id)
 
     @app.post("/projects/{project_id}/workflow/rewind")
@@ -555,11 +575,19 @@ def register_source_routes(
             if target not in {"brief", "sources"}:
                 raise ValueError("مرحله مقصد معتبر نیست.")
             actor = request.state.account.label
+            project = workspace.load_project(project_id)
+            from_stage = stage_for_state(project.state)
             revision.rewind(
                 project_id,
                 target=target,
                 actor=actor,
                 reason=reason,
+            )
+            emit(
+                ProductEvent.WORKFLOW_REWOUND,
+                WorkflowRewound(from_stage=from_stage, target=target),  # type: ignore[arg-type]
+                user_id=getattr(request.state.account, "user_id", None),
+                project_id=project_id,
             )
         except (OSError, ValueError) as error:
             return RedirectResponse(
@@ -610,6 +638,12 @@ def register_source_routes(
             transition(project, ProjectState.CORPUS_BUILDING)
             corpus_builder.confirm_project(original_project, project, inputs)
             background_tasks.add_task(execute_corpus, project_id)
+            emit(
+                ProductEvent.GATE_CORPUS_CONFIRMED,
+                GateCorpusConfirmed(source_count=len(selected)),
+                user_id=getattr(request.state.account, "user_id", None),
+                project_id=project_id,
+            )
         except (OSError, RuntimeError, ValueError) as error:
             current = workspace.load_project(project_id)
             return render(
