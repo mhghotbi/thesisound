@@ -25,10 +25,10 @@ build/
 .thesisound/
 .cache/huggingface/
 .cache/paddle/
-# workspaces/
-# artifacts/
-# benchmarks/ocr/runtime/
-# benchmarks/persian_ocr/runtime/
+workspaces/
+artifacts/
+benchmarks/ocr/runtime/
+benchmarks/persian_ocr/runtime/
 *.wav
 *.mp3
 *.flac
