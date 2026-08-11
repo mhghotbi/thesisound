@@ -36,13 +36,18 @@ def register_observability_commands(app: typer.Typer) -> None:
         stage: str | None = typer.Option(None, help="Filter by pipeline stage."),
         status: str | None = typer.Option(None, help="Filter by call status."),
         limit: int = typer.Option(100, min=1, max=2_000),
+        include_synthetic: bool = typer.Option(
+            False,
+            "--include-synthetic",
+            help="Include test/synthetic telemetry rows (excluded by default).",
+        ),
     ) -> None:
         """Show model calls, attempts, token use, latency, and failures for one project."""
 
         settings = Settings()
         ledger = ledger_from_settings(settings)
         rollup = ObservabilityRollup(ledger)
-        summary = rollup.project_summary(project_id)
+        summary = rollup.project_summary(project_id, include_synthetic=include_synthetic)
         console = Console()
         console.print(
             f"[bold]Project {project_id}[/bold] · calls={summary.call_count} · "
@@ -59,7 +64,13 @@ def register_observability_commands(app: typer.Typer) -> None:
         table.add_column("Tokens", justify="right")
         table.add_column("Latency", justify="right")
         table.add_column("Call ID")
-        for call in ledger.list_calls(project_id, stage=stage, status=status, limit=limit):
+        for call in ledger.list_calls(
+            project_id,
+            stage=stage,
+            status=status,
+            limit=limit,
+            include_synthetic=include_synthetic,
+        ):
             table.add_row(
                 call.started_at.isoformat(timespec="seconds"),
                 call.stage,
@@ -77,6 +88,11 @@ def register_observability_commands(app: typer.Typer) -> None:
     def runs(
         project_id: UUID,
         limit: int = typer.Option(50, min=1, max=2_000),
+        include_synthetic: bool = typer.Option(
+            False,
+            "--include-synthetic",
+            help="Include test/synthetic telemetry rows (excluded by default).",
+        ),
     ) -> None:
         """Show one aggregate row per pipeline workflow run."""
 
@@ -90,8 +106,16 @@ def register_observability_commands(app: typer.Typer) -> None:
         table.add_column("Calls", justify="right")
         table.add_column("Failed", justify="right")
         table.add_column("Total tokens", justify="right")
+        table.add_column("Cost", justify="right")
         table.add_column("Run ID")
-        for run in ledger.list_runs(project_id, limit=limit):
+        for run in ledger.list_runs(
+            project_id, limit=limit, include_synthetic=include_synthetic
+        ):
+            cost_label = (
+                "unknown"
+                if run.unpriced_call_count > 0 and run.priced_call_count == 0
+                else _format_cost(run.total_cost_micros)
+            )
             table.add_row(
                 run.started_at.isoformat(timespec="seconds"),
                 run.kind,
@@ -100,6 +124,7 @@ def register_observability_commands(app: typer.Typer) -> None:
                 str(run.call_count),
                 str(run.failed_call_count),
                 str(run.total_tokens),
+                cost_label,
                 str(run.workflow_run_id),
             )
         console.print(table)
@@ -248,7 +273,14 @@ def register_observability_commands(app: typer.Typer) -> None:
         console.print(table)
 
     @app.command("pipeline-summary")
-    def pipeline_summary(project_id: UUID) -> None:
+    def pipeline_summary(
+        project_id: UUID,
+        include_synthetic: bool = typer.Option(
+            False,
+            "--include-synthetic",
+            help="Include test/synthetic telemetry rows (excluded by default).",
+        ),
+    ) -> None:
         """Rank every recorded span name by self time (total minus children)
         across every trace for a project -- where the wall clock actually
         goes -- plus cache hit rates, the biggest cost lever in the system."""
@@ -257,7 +289,7 @@ def register_observability_commands(app: typer.Typer) -> None:
         ledger = ledger_from_settings(settings)
         rollup = ObservabilityRollup(ledger)
         console = Console()
-        rows = rollup.stage_summary(project_id)
+        rows = rollup.stage_summary(project_id, include_synthetic=include_synthetic)
         if not rows:
             console.print(f"[yellow]No recorded spans for project {project_id}.[/yellow]")
             return
@@ -281,7 +313,9 @@ def register_observability_commands(app: typer.Typer) -> None:
             )
         console.print(table)
 
-        cache_rows = rollup.cache_hit_rates(project_id)
+        cache_rows = rollup.cache_hit_rates(
+            project_id, include_synthetic=include_synthetic
+        )
         if cache_rows:
             cache_table = Table(title="Cache hit rates")
             cache_table.add_column("Cache")
@@ -298,7 +332,14 @@ def register_observability_commands(app: typer.Typer) -> None:
             console.print(cache_table)
 
     @app.command("cost")
-    def cost(project_id: UUID) -> None:
+    def cost(
+        project_id: UUID,
+        include_synthetic: bool = typer.Option(
+            False,
+            "--include-synthetic",
+            help="Include test/synthetic telemetry rows (excluded by default).",
+        ),
+    ) -> None:
         """Show total spend and a stage/provider/model breakdown for one
         project. A model with no configured price shows as unknown, never
         as a silent 0 -- see config/model-pricing.toml."""
@@ -307,7 +348,7 @@ def register_observability_commands(app: typer.Typer) -> None:
         ledger = ledger_from_settings(settings)
         rollup = ObservabilityRollup(ledger)
         console = Console()
-        summary = rollup.project_summary(project_id)
+        summary = rollup.project_summary(project_id, include_synthetic=include_synthetic)
         if summary.call_count == 0:
             console.print(f"[yellow]No recorded model calls for project {project_id}.[/yellow]")
             return
@@ -335,7 +376,7 @@ def register_observability_commands(app: typer.Typer) -> None:
                     "have no configured price)[/yellow]"
                 )
             console.print(f"Wasted retry/failure spend={wasted_display}{wasted_caveat}")
-        rows = rollup.cost_breakdown(project_id)
+        rows = rollup.cost_breakdown(project_id, include_synthetic=include_synthetic)
         if not rows:
             return
         table = Table(title="Cost breakdown")

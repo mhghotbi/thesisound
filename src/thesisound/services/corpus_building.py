@@ -14,6 +14,7 @@ from thesisound import tracing
 from thesisound.domain import Project, ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.corpus_reuse import reusable_claim_ledger
+from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.source_analysis_service import SourceAnalysisService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 
@@ -413,14 +414,12 @@ class CorpusBuildingService:
             ingestion_path=source.ingestion_path,
             brief=project.brief,
         )
-        tracing.event(
-            "cache.lookup",
-            component="cache",
-            project_id=project.project_id,
+        emit_cache_lookup(
             cache="claim_ledger",
             result="hit" if ledger is not None else "miss",
             subject_type="source",
             subject_id=str(source.source_id),
+            avoided_calls=1 if ledger is not None else None,
         )
         if ledger is None:
             return queued

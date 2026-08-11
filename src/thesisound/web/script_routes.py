@@ -21,6 +21,7 @@ from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
     episode_plan_hash,
 )
+from thesisound.services.lineage_events import emit_review_decision
 from thesisound.services.runtime_preflight import RuntimePreflight
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_run import ScriptBuildRunService
@@ -103,6 +104,13 @@ def register_script_routes(
             validate_csrf(request, csrf_token)
             actor = request.state.account.label
             builder.approve_and_queue(project_id, approved_by=actor)
+            emit_review_decision(
+                disposition="approved",
+                subject_type="script",
+                subject_id=str(project_id),
+                reviewer=actor,
+                reason_code="script_approve",
+            )
             background_tasks.add_task(execute, project_id)
             emit(
                 ProductEvent.GATE_SCRIPT_APPROVED,
@@ -170,6 +178,14 @@ def register_script_routes(
                 ),
             )
             script_store.save_review_decision(review)
+            emit_review_decision(
+                disposition=review.decision,
+                subject_type="script",
+                subject_id=str(project_id),
+                reviewer=review.reviewer,
+                reason_code=clean_reason[:120],
+                regenerated_stage="script" if decision == "send_back" else None,
+            )
             manifest = script_store.load_manifest(project_id)
             if decision == "accept":
                 transition(project, ProjectState.SCRIPT_VERIFIED)

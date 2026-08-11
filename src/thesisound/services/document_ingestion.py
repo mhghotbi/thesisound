@@ -9,6 +9,11 @@ from thesisound.ingestion import IngestionResult, ParseAttempt, ParserRoute
 from thesisound.ports import DocumentParserPort, ParsedDocument, ParserIdentityPort
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_inspector import inspect_document
+from thesisound.services.lineage_events import (
+    emit_cache_lookup,
+    emit_quality_label,
+    emit_review_decision,
+)
 from thesisound.services.parse_quality import assess_parse_quality
 from thesisound.services.parsed_document_cache import ParsedDocumentCache, parse_cache_key
 from thesisound.services.parser_router import route_parser
@@ -87,14 +92,14 @@ def ingest_document(
                             inspection, parser_name=name, identity=identity
                         )
                         cached = parse_cache.load(cache_key, parser_name=name)
-                        tracing.event(
-                            "cache.lookup",
-                            component="cache",
+                        emit_cache_lookup(
                             cache="shared_parsed_document",
                             result="hit" if cached is not None else "miss",
                             subject_type="parser",
                             subject_id=name,
-                            content_key=cache_key[:16],
+                            lookup_key=cache_key[:16],
+                            artifact_hash=cache_key[:16] if cached is not None else None,
+                            avoided_calls=1 if cached is not None else None,
                         )
 
                 started = perf_counter()
@@ -105,6 +110,21 @@ def ingest_document(
                         gate.set(
                             verdict=quality.verdict, safe=quality.safe_for_claim_extraction
                         )
+                        emit_quality_label(
+                            label_source="parse_quality",
+                            subject_type="parser",
+                            subject_id=name,
+                            verdict=quality.verdict,
+                            safe_for_claim_extraction=quality.safe_for_claim_extraction,
+                        )
+                        if quality.verdict == "manual_review":
+                            emit_review_decision(
+                                disposition="manual_review",
+                                subject_type="parse",
+                                subject_id=name,
+                                reason_code="parse_quality_gate",
+                                component="ingestion",
+                            )
                     attempt = ParseAttempt(
                         parser_name=name,
                         status="success",

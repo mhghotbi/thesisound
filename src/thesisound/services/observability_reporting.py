@@ -241,25 +241,29 @@ class ObservabilityReporter:
         trace_page: int = 1,
         event_page: int = 1,
         depth: int = 6,
+        include_synthetic: bool = False,
     ) -> dict[str, Any]:
         trace_page = max(1, trace_page)
         event_page = max(1, event_page)
         depth = max(1, min(depth, 12))
+        synth = "1=1" if include_synthetic else "is_synthetic = 0"
         with self._connect() as connection:
             trace_count = int(
                 connection.execute(
-                    "SELECT COUNT(DISTINCT trace_id) FROM pipeline_spans WHERE project_id = ?",
+                    f"SELECT COUNT(DISTINCT trace_id) FROM pipeline_spans "
+                    f"WHERE project_id = ? AND {synth}",
                     (str(project_id),),
                 ).fetchone()[0]
             )
             trace_pages = max(1, math.ceil(trace_count / _TRACE_PAGE_SIZE))
             trace_page = min(trace_page, trace_pages)
             trace_rows = connection.execute(
-                """
+                f"""
                 SELECT s.trace_id, s.name, s.status, s.started_at, s.ended_at,
                        s.duration_ms, s.attributes_json
                   FROM pipeline_spans AS s
                  WHERE s.project_id = ?
+                   AND {"s.is_synthetic = 0" if not include_synthetic else "1=1"}
                    AND s.span_id = (
                        SELECT candidate.span_id
                          FROM pipeline_spans AS candidate
@@ -284,18 +288,18 @@ class ObservabilityReporter:
 
             event_count = int(
                 connection.execute(
-                    "SELECT COUNT(*) FROM pipeline_events WHERE project_id = ?",
+                    f"SELECT COUNT(*) FROM pipeline_events WHERE project_id = ? AND {synth}",
                     (str(project_id),),
                 ).fetchone()[0]
             )
             event_pages = max(1, math.ceil(event_count / _EVENT_PAGE_SIZE))
             event_page = min(event_page, event_pages)
             event_rows = connection.execute(
-                """
+                f"""
                 SELECT event_id, trace_id, span_id, occurred_at, name, component,
                        level, subject_type, subject_id, attributes_json
                   FROM pipeline_events
-                 WHERE project_id = ?
+                 WHERE project_id = ? AND {synth}
                  ORDER BY occurred_at DESC
                  LIMIT ? OFFSET ?
                 """,
@@ -307,22 +311,23 @@ class ObservabilityReporter:
             ).fetchall()
             events = [self._event_row(row) for row in event_rows]
             retry_row = connection.execute(
-                """
+                f"""
                 SELECT COUNT(*),
                        COUNT(*) FILTER (
                            WHERE retry_scheduled = 1 OR provider_attempt_count > 1
                        )
-                  FROM model_calls WHERE project_id = ?
+                  FROM model_calls WHERE project_id = ? AND {synth}
                 """,
                 (str(project_id),),
             ).fetchone()
             error_rows = connection.execute(
-                """
+                f"""
                 SELECT call_id, started_at, stage, operation, provider,
                        COALESCE(resolved_model, requested_model) AS model,
                        status, error_type, error_message
                   FROM model_calls
                  WHERE project_id = ? AND status IN ('failed', 'rejected')
+                   AND {synth}
                  ORDER BY started_at DESC
                  LIMIT 20
                 """,
@@ -336,14 +341,22 @@ class ObservabilityReporter:
             trace_tree = self._trace_tree(selected_trace, depth=depth)
             waterfall = self._waterfall(selected_trace)
 
-        summary = self.rollup.project_summary(project_id)
+        summary = self.rollup.project_summary(
+            project_id, include_synthetic=include_synthetic
+        )
         model_call_count = int(retry_row[0] or 0)
         retry_count = int(retry_row[1] or 0)
         return {
             "summary": summary,
-            "cost_breakdown": self.rollup.cost_breakdown(project_id),
-            "stage_summary": self.rollup.stage_summary(project_id)[:20],
-            "cache_rates": self.rollup.cache_hit_rates(project_id),
+            "cost_breakdown": self.rollup.cost_breakdown(
+                project_id, include_synthetic=include_synthetic
+            ),
+            "stage_summary": self.rollup.stage_summary(
+                project_id, include_synthetic=include_synthetic
+            )[:20],
+            "cache_rates": self.rollup.cache_hit_rates(
+                project_id, include_synthetic=include_synthetic
+            ),
             "retry_count": retry_count,
             "retry_rate": retry_count / model_call_count if model_call_count else 0.0,
             "traces": traces,

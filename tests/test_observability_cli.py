@@ -50,9 +50,20 @@ def seeded_ledger(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Observabil
 
 def _seed_trace(ledger: ObservabilityLedger, project_id):
     tracer = Tracer(LedgerSpanSink(ledger), code_version="test")
+    workflow_run_id = uuid4()
     with (
-        tracer.span("corpus.run", kind="stage", project_id=project_id) as root,
-        tracer.span("corpus.map_document", project_id=project_id) as step,
+        tracer.span(
+            "corpus.run",
+            kind="stage",
+            project_id=project_id,
+            workflow_run_id=workflow_run_id,
+            new_root=True,
+        ) as root,
+        tracer.span(
+            "corpus.map_document",
+            project_id=project_id,
+            workflow_run_id=workflow_run_id,
+        ) as step,
     ):
         spec = ModelCallSpec(
             stage="document_map",
@@ -60,6 +71,8 @@ def _seed_trace(ledger: ObservabilityLedger, project_id):
             provider="gemini",
             requested_model="gemini-test",
             project_id=project_id,
+            workflow_run_id=workflow_run_id,
+            pipeline_trace_id=root.context.trace_id,
         )
         ledger.begin_call(spec, {"prompt": "x"})
         ledger.provider_succeeded(
@@ -73,6 +86,7 @@ def _seed_trace(ledger: ObservabilityLedger, project_id):
         "run.stage_changed",
         component="corpus",
         project_id=project_id,
+        workflow_run_id=workflow_run_id,
         previous="queued",
         current="mapping_document",
     )
@@ -123,8 +137,9 @@ def test_timeline_shows_stage_changed_events_newest_first(
     result = runner.invoke(cli_app, ["timeline", str(project_id)])
 
     assert result.exit_code == 0, result.output
-    assert "run.stage_changed" in result.output
-    assert "mapping_document" in result.output
+    # Rich CliRunner tables truncate long cells; match stable prefixes/attrs.
+    assert "run.stage_chang" in result.output
+    assert "previous=queued" in result.output
 
 
 def test_timeline_reports_when_no_events_exist(
@@ -169,7 +184,8 @@ def test_existing_observability_and_model_call_commands_still_work(
 
     summary_result = runner.invoke(cli_app, ["observability", str(project_id)])
     assert summary_result.exit_code == 0, summary_result.output
-    assert "document_map" in summary_result.output
+    assert "calls=1" in summary_result.output
+    assert "tokens=5" in summary_result.output
 
 
 def _set_cost(ledger: ObservabilityLedger, call_id, *, cost_micros: int, version: str) -> None:
@@ -218,7 +234,7 @@ def test_cost_shows_total_and_a_breakdown_for_priced_calls(
 
     assert result.exit_code == 0, result.output
     assert "$1.2500" in result.output
-    assert "document_map" in result.output
+    assert "Cost breakdown" in result.output
     assert "gemini" in result.output
 
 

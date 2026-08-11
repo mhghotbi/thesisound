@@ -16,6 +16,7 @@ from thesisound.domain import (
 from thesisound.modeling import DeterministicValidationError, ModelError, ModelRunRecord
 from thesisound.services.document_identity import partition_block_key
 from thesisound.services.document_map_part_cache import DocumentMapPartCache
+from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
     DocumentMapDraft,
@@ -337,13 +338,12 @@ class DocumentMapperService:
             return None
         content_key = partition_block_key(partition)
         draft = self.part_cache.load(content_key, partition)
-        tracing.event(
-            "cache.lookup",
-            component="cache",
-            project_id=project_id,
+        emit_cache_lookup(
             cache="document_map_part",
             result="hit" if draft is not None else "miss",
-            content_key=content_key[:16],
+            lookup_key=content_key[:16],
+            artifact_hash=content_key[:16] if draft is not None else None,
+            avoided_calls=1 if draft is not None else None,
         )
         return draft
 

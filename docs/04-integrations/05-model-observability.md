@@ -97,6 +97,15 @@ Filters:
 
 ```bash
 uv run thesisound observability <project-id> --stage document_map --status failed
+uv run thesisound observability <project-id> --include-synthetic
+```
+
+Include synthetic telemetry only when deliberately inspecting test pollution:
+
+```bash
+uv run thesisound runs <project-id> --include-synthetic
+uv run thesisound cost <project-id> --include-synthetic
+uv run thesisound pipeline-summary <project-id> --include-synthetic
 ```
 
 One call with all credential attempts:
@@ -123,3 +132,39 @@ uv run thesisound model-call <call-id> \
 - `failed`: provider, timeout, safety, schema, or other execution failure.
 
 This distinction prevents a valid HTTP response with unusable output from being reported as a successful model operation.
+
+## Environment isolation and synthetic telemetry
+
+Every pipeline row (`model_calls`, `pipeline_spans`, `pipeline_events`, `pipeline_runs`) is stamped with:
+
+- `environment` — from `Settings.environment` (`development`, `test`, or `production`);
+- `is_synthetic` — true when `Settings.allow_test_otp` is set or `environment == "test"` (same rule as product metrics).
+
+Operator CLI and UI aggregates **exclude synthetic rows by default**. Pass `--include-synthetic` (CLI) or `?include_synthetic=true` (web) to include them. Unit tests that construct `ObservabilityLedger` directly default to `is_synthetic=false` and write into a temp path, so they do not pollute the shared workspace ledger.
+
+## Required workflow linkage
+
+Production writes fail closed when a model call or root `kind="stage"` span lacks `project_id` and `workflow_run_id` (calls also require `pipeline_trace_id`). Development soft-reports missing fields via a `linkage.incomplete` event and still writes. Synthetic/test writes are exempt.
+
+Use `ObservabilityLedger.check_workflow_linkage(workflow_run_id)` before treating a run’s aggregates as decision-ready. Every span/call in that run must resolve to project, workflow, trace, and stage.
+
+## Cost rollups
+
+Call-level `cost_micros` / `pricing_version` are filled when `config/model-pricing.toml` has matching rows (left empty by default so unknown never looks like $0). On run finish, `pipeline_runs` stores:
+
+- `total_cost_micros` — sum of priced calls only;
+- `priced_call_count` / `unpriced_call_count` — when `unpriced_call_count > 0` and no priced calls, treat cost as **unknown**, not free.
+
+Fill pricing rows for your account, then run `thesisound observability-reprice` if historical calls need recomputation.
+
+## Cache, review, and quality lineage events
+
+Append-only `pipeline_events` carry decision-ready lineage:
+
+| Event | Purpose |
+| --- | --- |
+| `cache.lookup` | `cache`, `result` (`hit`/`miss`), plus optional `lookup_key`, `artifact_id`/`artifact_hash`, `invalidation_reason`, `forced_refresh`, `avoided_calls`, `avoided_tokens_est`. Optional explicit `project_id` when ambient span context is absent. |
+| `review.decision` | Human or gate disposition for `plan` / `script` / `parse` / `audio_chunk` with optional reviewer and reason |
+| `quality.label` | Machine auxiliary scores/verdicts (parse QA, script verifier, audio QA) — never human ground truth |
+
+These inherit ambient `workflow_run_id` / `project_id` from the active root stage span.

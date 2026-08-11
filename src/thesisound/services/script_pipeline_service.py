@@ -19,6 +19,7 @@ from thesisound.script import (
 )
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
+from thesisound.services.lineage_events import emit_cache_lookup, emit_quality_label
 from thesisound.services.persian_script_writer import PersianScriptWriterService
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
@@ -318,12 +319,10 @@ class ScriptPipelineService:
                         prompt_version=prompt_version,
                     )
             else:
-                tracing.event(
-                    "cache.lookup",
-                    component="cache",
-                    project_id=project_id,
+                emit_cache_lookup(
                     cache="script_glossary",
                     result="hit",
+                    avoided_calls=1,
                 )
 
             script = self.script_store.load_script_optional(project_id)
@@ -339,12 +338,10 @@ class ScriptPipelineService:
                     span.measure(turn_count=len(script.turns))
             else:
                 self._ensure_script_ready(project_id, script)
-                tracing.event(
-                    "cache.lookup",
-                    component="cache",
-                    project_id=project_id,
+                emit_cache_lookup(
                     cache="script_draft",
                     result="hit",
+                    avoided_calls=1,
                 )
 
             checks = self.script_store.load_checks_optional(project_id)
@@ -377,6 +374,13 @@ class ScriptPipelineService:
                         span.set(verdict=verification.verdict)
                         if verification.quality is not None:
                             span.measure(quality_overall=verification.quality.overall)
+                            emit_quality_label(
+                                label_source="script_verifier",
+                                subject_type="script",
+                                subject_id=str(project_id),
+                                verdict=verification.verdict,
+                                score=verification.quality.overall,
+                            )
 
             if checks.verdict != "pass" or verification.verdict != "pass":
                 revised = self.script_store.load_script_optional(project_id, revised=True)

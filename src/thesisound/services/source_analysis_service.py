@@ -27,6 +27,7 @@ from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_scope import extraction_profiles_compatible
 from thesisound.services.evidence_validator import validate_evidence_collection
+from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
     BlockEvidenceExtraction,
@@ -139,29 +140,26 @@ class SourceAnalysisService:
         ) as span:
             blocks = self.artifact_store.load_blocks(project_id, source_id)
             reusable = self._load_reusable_document_map(project_id, source_id, blocks)
-            tracing.event(
-                "cache.lookup",
-                component="cache",
-                project_id=project_id,
+            emit_cache_lookup(
                 cache="project_document_map",
                 result="hit" if reusable is not None else "miss",
                 subject_type="source",
                 subject_id=str(source_id),
+                avoided_calls=1 if reusable is not None else None,
             )
             if reusable is not None:
                 span.set(source="project_reuse")
                 return self._mark_document_mapped(project_id, source_id)
             content_key = block_sequence_key(blocks)
             shared = self.document_map_cache.load(content_key, blocks, source_id=source_id)
-            tracing.event(
-                "cache.lookup",
-                component="cache",
-                project_id=project_id,
+            emit_cache_lookup(
                 cache="shared_document_map",
                 result="hit" if shared is not None else "miss",
                 subject_type="source",
                 subject_id=str(source_id),
-                content_key=content_key[:16],
+                lookup_key=content_key[:16],
+                artifact_hash=content_key[:16] if shared is not None else None,
+                avoided_calls=1 if shared is not None else None,
             )
             if shared is not None:
                 self.artifact_store.save_document_map(project_id, source_id, shared)

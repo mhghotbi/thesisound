@@ -62,6 +62,7 @@ def register_observability_routes(
         trace_page: int = Query(default=1, ge=1),
         event_page: int = Query(default=1, ge=1),
         depth: int = Query(default=6, ge=1, le=12),
+        include_synthetic: bool = Query(default=False),
     ) -> Response:
         if response := require_operator(request, project_id):
             return response
@@ -73,6 +74,7 @@ def register_observability_routes(
                 trace_page=trace_page,
                 event_page=event_page,
                 depth=depth,
+                include_synthetic=include_synthetic,
             )
         except FileNotFoundError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -93,6 +95,7 @@ def register_observability_routes(
             {
                 "project": project,
                 "selected_call": selected_call,
+                "include_synthetic": include_synthetic,
                 **overview,
             },
         )

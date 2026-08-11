@@ -9,6 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from thesisound.domain import EpisodePlan, Project, ProjectState
+from thesisound.services.lineage_events import emit_review_decision
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 
 
@@ -68,6 +69,13 @@ class EpisodePlanApprovalStore:
             approved_by=actor,
         )
         self.save(approval)
+        emit_review_decision(
+            disposition="approved",
+            subject_type="plan",
+            subject_id=str(project.project_id),
+            reviewer=actor,
+            reason_code="plan_approval",
+        )
         return approval
 
     def require_current(self, project: Project) -> EpisodePlanApproval:

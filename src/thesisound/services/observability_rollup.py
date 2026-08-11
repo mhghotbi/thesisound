@@ -14,21 +14,30 @@ from thesisound.observability import (
 )
 
 
+def _synthetic_clause(include_synthetic: bool, *, alias: str | None = None) -> str:
+    if include_synthetic:
+        return "1=1"
+    column = f"{alias}.is_synthetic" if alias else "is_synthetic"
+    return f"{column} = 0"
+
+
 class ObservabilityRollup:
     """Read-only derived metrics over the observability ledger.
 
     The ledger remains a persistence boundary. Aggregation SQL lives here so
     CLI and web reporting share definitions without turning the store itself
-    into an analytics service.
+    into an analytics service. Aggregates exclude synthetic rows by default.
     """
 
     def __init__(self, ledger: ObservabilityLedger) -> None:
         self.database_path = ledger.database_path
 
-    def project_summary(self, project_id: UUID) -> ProjectUsageSummary:
+    def project_summary(
+        self, project_id: UUID, *, include_synthetic: bool = False
+    ) -> ProjectUsageSummary:
         with closing(self._connect()) as connection:
             row = connection.execute(
-                """
+                f"""
                 SELECT COUNT(*),
                        COUNT(*) FILTER (WHERE status = 'succeeded'),
                        COUNT(*) FILTER (WHERE status = 'failed'),
@@ -51,7 +60,7 @@ class ObservabilityRollup:
                            WHERE status IN ('rejected', 'failed') AND cost_micros IS NULL
                        )
                 FROM model_calls
-                WHERE project_id = ?
+                WHERE project_id = ? AND {_synthetic_clause(include_synthetic)}
                 """,
                 (str(project_id),),
             ).fetchone()
@@ -75,14 +84,18 @@ class ObservabilityRollup:
             unpriced_wasted_count=int(values[14] or 0),
         )
 
-    def stage_summary(self, project_id: UUID) -> list[StageSummary]:
+    def stage_summary(
+        self, project_id: UUID, *, include_synthetic: bool = False
+    ) -> list[StageSummary]:
+        synth = _synthetic_clause(include_synthetic)
         with closing(self._connect()) as connection:
             rows = connection.execute(
-                """
+                f"""
                 WITH child_time AS (
                     SELECT parent_span_id AS parent, SUM(duration_ms) AS ms
                       FROM pipeline_spans
                      WHERE project_id = ? AND parent_span_id IS NOT NULL
+                       AND {synth}
                      GROUP BY parent_span_id
                 )
                 SELECT s.name, s.component,
@@ -92,7 +105,7 @@ class ObservabilityRollup:
                        COUNT(*) FILTER (WHERE s.status = 'error')
                   FROM pipeline_spans s
                   LEFT JOIN child_time c ON c.parent = s.span_id
-                 WHERE s.project_id = ?
+                 WHERE s.project_id = ? AND {_synthetic_clause(include_synthetic, alias="s")}
                  GROUP BY s.name, s.component
                  ORDER BY 5 DESC
                 """,
@@ -112,10 +125,12 @@ class ObservabilityRollup:
             for row in rows
         ]
 
-    def cost_breakdown(self, project_id: UUID) -> list[CostBreakdownRow]:
+    def cost_breakdown(
+        self, project_id: UUID, *, include_synthetic: bool = False
+    ) -> list[CostBreakdownRow]:
         with closing(self._connect()) as connection:
             rows = connection.execute(
-                """
+                f"""
                 SELECT stage, provider, COALESCE(resolved_model, requested_model),
                        COUNT(*),
                        COUNT(*) FILTER (
@@ -132,6 +147,7 @@ class ObservabilityRollup:
                        COALESCE(SUM(total_tokens), 0)
                 FROM model_calls
                 WHERE project_id = ? AND status IN ('succeeded', 'rejected', 'failed')
+                  AND {_synthetic_clause(include_synthetic)}
                 GROUP BY stage, provider, COALESCE(resolved_model, requested_model)
                 ORDER BY SUM(cost_micros) DESC
                 """,
@@ -153,12 +169,15 @@ class ObservabilityRollup:
             for row in rows
         ]
 
-    def evidence_tier_summary(self, project_id: UUID) -> EvidenceTierSummary:
+    def evidence_tier_summary(
+        self, project_id: UUID, *, include_synthetic: bool = False
+    ) -> EvidenceTierSummary:
         """Return the persisted E3 measurements for one experiment arm."""
 
+        synth = _synthetic_clause(include_synthetic)
         with closing(self._connect()) as connection:
             calls = connection.execute(
-                """
+                f"""
                 SELECT COUNT(*), COALESCE(SUM(provider_attempt_count), 0),
                        COALESCE(SUM(total_tokens) FILTER (WHERE status = 'succeeded'), 0),
                        COALESCE(SUM(total_tokens) FILTER (
@@ -174,11 +193,12 @@ class ObservabilityRollup:
                   FROM model_calls
                  WHERE project_id = ? AND stage LIKE 'evidence_extraction%'
                    AND status IN ('succeeded', 'rejected', 'failed')
+                   AND {synth}
                 """,
                 (str(project_id),),
             ).fetchone()
             events = connection.execute(
-                """
+                f"""
                 SELECT COUNT(*),
                        COALESCE(SUM(json_extract(attributes_json, '$.attempt_count')), 0),
                        COALESCE(SUM(json_extract(attributes_json, '$.excerpt_failure_count')), 0),
@@ -192,24 +212,26 @@ class ObservabilityRollup:
                        ) = 'extracted' THEN 1 ELSE 0 END), 0)
                   FROM pipeline_events
                  WHERE project_id = ? AND name = 'corpus.evidence_attempts'
+                   AND {synth}
                 """,
                 (str(project_id),),
             ).fetchone()
             latency_rows = connection.execute(
-                """
+                f"""
                 SELECT latency_ms FROM model_calls
                  WHERE project_id = ? AND stage LIKE 'evidence_extraction%'
-                   AND latency_ms IS NOT NULL
+                   AND latency_ms IS NOT NULL AND {synth}
                  ORDER BY latency_ms
                 """,
                 (str(project_id),),
             ).fetchall()
             unpriced_rows = connection.execute(
-                """
+                f"""
                 SELECT DISTINCT provider, COALESCE(resolved_model, requested_model), operation
                   FROM model_calls
                  WHERE project_id = ? AND stage LIKE 'evidence_extraction%'
                    AND status IN ('succeeded', 'rejected', 'failed') AND cost_micros IS NULL
+                   AND {synth}
                  ORDER BY provider, 2, operation
                 """,
                 (str(project_id),),
@@ -240,10 +262,12 @@ class ObservabilityRollup:
             latency_p95_ms=_percentile(latencies, 0.95),
         )
 
-    def cache_hit_rates(self, project_id: UUID) -> list[CacheHitRateSummary]:
+    def cache_hit_rates(
+        self, project_id: UUID, *, include_synthetic: bool = False
+    ) -> list[CacheHitRateSummary]:
         with closing(self._connect()) as connection:
             rows = connection.execute(
-                """
+                f"""
                 SELECT json_extract(attributes_json, '$.cache') AS cache,
                        COUNT(*) FILTER (
                            WHERE json_extract(attributes_json, '$.result') = 'hit'
@@ -253,6 +277,7 @@ class ObservabilityRollup:
                        )
                 FROM pipeline_events
                 WHERE project_id = ? AND name = 'cache.lookup'
+                  AND {_synthetic_clause(include_synthetic)}
                 GROUP BY cache
                 ORDER BY cache
                 """,

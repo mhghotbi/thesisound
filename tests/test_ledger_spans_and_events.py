@@ -191,9 +191,9 @@ def test_reap_orphaned_spans_marks_stale_running_spans_interrupted(
     assert stored.status == "interrupted"
     assert stored.ended_at is not None
     events = ledger.list_events(context.trace_id)
-    assert len(events) == 1
-    assert events[0].name == "run.recovered"
-    assert events[0].level == "warn"
+    recovered = [event for event in events if event.name == "run.recovered"]
+    assert len(recovered) == 1
+    assert recovered[0].level == "warn"
 
 
 def test_reap_orphaned_spans_leaves_recent_running_spans_alone(
@@ -267,7 +267,7 @@ def test_list_events_by_project_includes_events_recorded_outside_any_span(
 
     events = ledger.list_events_by_project(project_id)
 
-    assert {event.name for event in events} == {"project.state_changed", "cache.lookup"}
+    assert {"project.state_changed", "cache.lookup"} <= {event.name for event in events}
 
 
 def test_list_events_by_project_is_newest_first(ledger: ObservabilityLedger) -> None:

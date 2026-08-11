@@ -263,6 +263,29 @@ class PipelineRunSummary(BaseModel):
     models: list[str] = Field(default_factory=list)
     prompt_versions: list[str] = Field(default_factory=list)
     error_message: str | None = None
+    total_cost_micros: int = 0
+    priced_call_count: int = 0
+    unpriced_call_count: int = 0
+    environment: str = "development"
+    is_synthetic: bool = False
+
+
+class LinkageIssue(BaseModel):
+    """One missing identity field on a span or model call in a workflow."""
+
+    kind: Literal["span", "model_call"]
+    node_id: UUID
+    field: str
+    detail: str
+
+
+class WorkflowLinkageReport(BaseModel):
+    """Integrity check for audit R4: every node must resolve to project,
+    workflow, trace, and stage before aggregates are decision-ready."""
+
+    workflow_run_id: UUID
+    ok: bool
+    issues: list[LinkageIssue] = Field(default_factory=list)
 
 
 class SpanSummary(BaseModel):
@@ -467,11 +490,15 @@ class ObservabilityLedger:
         *,
         store_payloads: bool = True,
         cost_pricer: CostPricer | None = None,
+        environment: str = "development",
+        is_synthetic: bool = False,
     ) -> None:
         self.database_path = database_path.expanduser().resolve()
         self.artifact_root = artifact_root.expanduser().resolve()
         self.store_payloads = store_payloads
         self.cost_pricer = cost_pricer
+        self.environment = environment
+        self.is_synthetic = is_synthetic
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
         self.artifact_root.mkdir(parents=True, exist_ok=True)
         self._lock = RLock()
@@ -479,6 +506,7 @@ class ObservabilityLedger:
 
     def begin_call(self, spec: ModelCallSpec, request_payload: Any) -> UUID:
         started = _now()
+        self._enforce_call_linkage(spec)
         request_path = None
         request_hash = None
         if self.store_payloads:
@@ -496,9 +524,11 @@ class ObservabilityLedger:
                     stage, operation, provider, requested_model, prompt_id,
                     prompt_version, subject_type, subject_id, logical_attempt,
                     status, started_at, timeout_ms, grounding_mode,
-                    request_artifact_path, request_sha256, metadata_json
+                    request_artifact_path, request_sha256, metadata_json,
+                    environment, is_synthetic
                 ) VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?, ?, ?,
+                    ?, ?
                 )
                 """,
                 (
@@ -524,9 +554,199 @@ class ObservabilityLedger:
                     request_path,
                     request_hash,
                     _json(redact_value(spec.metadata, store_payloads=self.store_payloads)),
+                    self.environment,
+                    int(self.is_synthetic),
                 ),
             )
+        if self._should_soft_report_linkage(spec.project_id, spec.workflow_run_id):
+            missing = _missing_call_linkage_fields(spec)
+            if missing:
+                self._record_linkage_incomplete(
+                    kind="model_call",
+                    node_id=spec.call_id,
+                    missing=missing,
+                    project_id=spec.project_id,
+                    workflow_run_id=spec.workflow_run_id,
+                    trace_id=spec.pipeline_trace_id,
+                )
         return spec.call_id
+
+    def _enforce_call_linkage(self, spec: ModelCallSpec) -> None:
+        """Production fail-closed: every real call needs project + workflow.
+
+        Synthetic/test writes are exempt. Development soft-reports via
+        ``linkage.incomplete`` after insert instead of raising.
+        """
+
+        if self.is_synthetic or self.environment != "production":
+            return
+        missing = _missing_call_linkage_fields(spec)
+        if missing:
+            raise ValueError(
+                "Production model calls require project_id, workflow_run_id, and "
+                f"pipeline_trace_id; missing: {', '.join(missing)}"
+            )
+
+    def _should_soft_report_linkage(
+        self,
+        project_id: UUID | None,
+        workflow_run_id: UUID | None,
+    ) -> bool:
+        return (
+            not self.is_synthetic
+            and self.environment == "development"
+            and (project_id is None or workflow_run_id is None)
+        )
+
+    def _enforce_root_span_linkage(self, record: SpanRecord) -> None:
+        if self.is_synthetic or self.environment != "production":
+            return
+        if record.kind != "stage" or record.parent_span_id is not None:
+            return
+        missing: list[str] = []
+        if record.context.project_id is None:
+            missing.append("project_id")
+        if record.context.workflow_run_id is None:
+            missing.append("workflow_run_id")
+        if missing:
+            raise ValueError(
+                "Production root stage spans require project_id and workflow_run_id; "
+                f"missing: {', '.join(missing)}"
+            )
+
+    def _record_linkage_incomplete(
+        self,
+        *,
+        kind: str,
+        node_id: UUID,
+        missing: list[str],
+        project_id: UUID | None,
+        workflow_run_id: UUID | None,
+        trace_id: UUID | None,
+        span_id: UUID | None = None,
+    ) -> None:
+        with suppress(Exception):
+            self.record_event(
+                EventRecord(
+                    event_id=uuid4(),
+                    trace_id=trace_id,
+                    span_id=span_id,
+                    project_id=project_id,
+                    workflow_run_id=workflow_run_id,
+                    occurred_at=_now(),
+                    name="linkage.incomplete",
+                    component="observability",
+                    level="warn",
+                    subject_type=None,
+                    subject_id=None,
+                    attributes={
+                        "kind": kind,
+                        "node_id": str(node_id),
+                        "missing": missing,
+                    },
+                )
+            )
+
+    def check_workflow_linkage(self, workflow_run_id: UUID) -> WorkflowLinkageReport:
+        """Require every span/call in a run to resolve to project, workflow,
+        trace, and stage before treating aggregates as decision-ready."""
+
+        issues: list[LinkageIssue] = []
+        with self._lock, closing(self._connect()) as connection, connection:
+            for row in connection.execute(
+                """
+                SELECT span_id, project_id, workflow_run_id, trace_id, name, kind,
+                       parent_span_id
+                FROM pipeline_spans WHERE workflow_run_id = ?
+                """,
+                (str(workflow_run_id),),
+            ).fetchall():
+                span_id = UUID(row[0])
+                if row[1] is None:
+                    issues.append(
+                        LinkageIssue(
+                            kind="span",
+                            node_id=span_id,
+                            field="project_id",
+                            detail="span missing project_id",
+                        )
+                    )
+                if row[2] is None:
+                    issues.append(
+                        LinkageIssue(
+                            kind="span",
+                            node_id=span_id,
+                            field="workflow_run_id",
+                            detail="span missing workflow_run_id",
+                        )
+                    )
+                if row[3] is None:
+                    issues.append(
+                        LinkageIssue(
+                            kind="span",
+                            node_id=span_id,
+                            field="trace_id",
+                            detail="span missing trace_id",
+                        )
+                    )
+                if not row[4]:
+                    issues.append(
+                        LinkageIssue(
+                            kind="span",
+                            node_id=span_id,
+                            field="stage",
+                            detail="span missing name/stage",
+                        )
+                    )
+            for row in connection.execute(
+                """
+                SELECT call_id, project_id, workflow_run_id, pipeline_trace_id, stage
+                FROM model_calls WHERE workflow_run_id = ?
+                """,
+                (str(workflow_run_id),),
+            ).fetchall():
+                call_id = UUID(row[0])
+                if row[1] is None:
+                    issues.append(
+                        LinkageIssue(
+                            kind="model_call",
+                            node_id=call_id,
+                            field="project_id",
+                            detail="call missing project_id",
+                        )
+                    )
+                if row[2] is None:
+                    issues.append(
+                        LinkageIssue(
+                            kind="model_call",
+                            node_id=call_id,
+                            field="workflow_run_id",
+                            detail="call missing workflow_run_id",
+                        )
+                    )
+                if row[3] is None:
+                    issues.append(
+                        LinkageIssue(
+                            kind="model_call",
+                            node_id=call_id,
+                            field="pipeline_trace_id",
+                            detail="call missing pipeline_trace_id",
+                        )
+                    )
+                if not row[4]:
+                    issues.append(
+                        LinkageIssue(
+                            kind="model_call",
+                            node_id=call_id,
+                            field="stage",
+                            detail="call missing stage",
+                        )
+                    )
+        return WorkflowLinkageReport(
+            workflow_run_id=workflow_run_id,
+            ok=not issues,
+            issues=issues,
+        )
 
     def record_attempt(
         self,
@@ -760,8 +980,9 @@ class ObservabilityLedger:
             connection.execute(
                 """
                 INSERT OR IGNORE INTO pipeline_runs(
-                    workflow_run_id, project_id, trace_id, kind, status, started_at
-                ) VALUES (?, ?, ?, ?, 'running', ?)
+                    workflow_run_id, project_id, trace_id, kind, status, started_at,
+                    environment, is_synthetic
+                ) VALUES (?, ?, ?, ?, 'running', ?, ?, ?)
                 """,
                 (
                     str(spec.workflow_run_id),
@@ -769,6 +990,8 @@ class ObservabilityLedger:
                     str(spec.trace_id),
                     spec.kind,
                     _to_db_timestamp(spec.started_at),
+                    self.environment,
+                    int(self.is_synthetic),
                 ),
             )
         return spec.workflow_run_id
@@ -780,10 +1003,10 @@ class ObservabilityLedger:
         status: str,
         error_message: str | None = None,
     ) -> None:
-        """Finish a run and recompute its call/token aggregates idempotently.
+        """Finish a run and recompute its call/token/cost aggregates idempotently.
 
-        Cost is deliberately absent: calls are not priced until a pricing table
-        exists, so a run-level zero would be misleading rather than useful.
+        ``total_cost_micros`` sums only priced calls. When
+        ``unpriced_call_count > 0``, a zero cost means unknown, not free.
         """
 
         with self._lock, closing(self._connect()) as connection, connection:
@@ -802,7 +1025,13 @@ class ObservabilityLedger:
                        COALESCE(SUM(output_tokens), 0),
                        COALESCE(SUM(thinking_tokens), 0),
                        COALESCE(SUM(cached_tokens), 0),
-                       COALESCE(SUM(total_tokens), 0)
+                       COALESCE(SUM(total_tokens), 0),
+                       COALESCE(SUM(cost_micros) FILTER (WHERE cost_micros IS NOT NULL), 0),
+                       COUNT(*) FILTER (WHERE cost_micros IS NOT NULL),
+                       COUNT(*) FILTER (
+                           WHERE status IN ('succeeded', 'rejected', 'failed')
+                             AND cost_micros IS NULL
+                       )
                 FROM model_calls WHERE workflow_run_id = ?
                 """,
                 (str(workflow_run_id),),
@@ -846,7 +1075,8 @@ class ObservabilityLedger:
                     call_count = ?, failed_call_count = ?, input_tokens = ?,
                     output_tokens = ?, thinking_tokens = ?, cached_tokens = ?,
                     total_tokens = ?, models_json = ?, prompt_versions_json = ?,
-                    error_message = ?
+                    error_message = ?, total_cost_micros = ?, priced_call_count = ?,
+                    unpriced_call_count = ?
                 WHERE workflow_run_id = ?
                 """,
                 (
@@ -863,6 +1093,9 @@ class ObservabilityLedger:
                     json.dumps(models, ensure_ascii=False),
                     json.dumps(prompt_versions, ensure_ascii=False),
                     redact_exception_message(effective_error),
+                    aggregate[7],
+                    aggregate[8],
+                    aggregate[9],
                     str(workflow_run_id),
                 ),
             )
@@ -877,12 +1110,26 @@ class ObservabilityLedger:
             raise FileNotFoundError(f"Pipeline run not found: {workflow_run_id}")
         return _pipeline_run_from_row(row)
 
-    def list_runs(self, project_id: UUID, *, limit: int = 50) -> list[PipelineRunSummary]:
+    def list_runs(
+        self,
+        project_id: UUID,
+        *,
+        limit: int = 50,
+        include_synthetic: bool = False,
+    ) -> list[PipelineRunSummary]:
+        clauses = ["project_id = ?"]
+        params: list[Any] = [str(project_id)]
+        if not include_synthetic:
+            clauses.append("is_synthetic = 0")
+        params.append(max(1, min(limit, 2_000)))
         with self._lock, closing(self._connect()) as connection, connection:
             rows = connection.execute(
-                "SELECT " + _PIPELINE_RUN_COLUMNS + " FROM pipeline_runs "
-                "WHERE project_id = ? ORDER BY started_at DESC LIMIT ?",
-                (str(project_id), max(1, min(limit, 2_000))),
+                "SELECT "
+                + _PIPELINE_RUN_COLUMNS
+                + " FROM pipeline_runs WHERE "
+                + " AND ".join(clauses)
+                + " ORDER BY started_at DESC LIMIT ?",
+                params,
             ).fetchall()
         return [_pipeline_run_from_row(row) for row in rows]
 
@@ -891,14 +1138,16 @@ class ObservabilityLedger:
         buffering) so any open span -- not just long-running stages -- can
         be found and reaped after a crash."""
 
+        self._enforce_root_span_linkage(record)
         with self._lock, closing(self._connect()) as connection, connection:
             connection.execute(
                 """
                 INSERT OR IGNORE INTO pipeline_spans(
                     span_id, trace_id, parent_span_id, project_id, workflow_run_id,
                     name, component, kind, subject_type, subject_id, status,
-                    started_at, process, pid, attributes_json, metrics_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?, ?)
+                    started_at, process, pid, attributes_json, metrics_json,
+                    environment, is_synthetic
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'running', ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     str(record.context.span_id),
@@ -916,8 +1165,32 @@ class ObservabilityLedger:
                     record.pid,
                     _json(redact_value(record.attributes, store_payloads=self.store_payloads)),
                     _json(record.metrics),
+                    self.environment,
+                    int(self.is_synthetic),
                 ),
             )
+        if (
+            record.kind == "stage"
+            and record.parent_span_id is None
+            and self._should_soft_report_linkage(
+                record.context.project_id, record.context.workflow_run_id
+            )
+        ):
+            missing: list[str] = []
+            if record.context.project_id is None:
+                missing.append("project_id")
+            if record.context.workflow_run_id is None:
+                missing.append("workflow_run_id")
+            if missing:
+                self._record_linkage_incomplete(
+                    kind="span",
+                    node_id=record.context.span_id,
+                    missing=missing,
+                    project_id=record.context.project_id,
+                    workflow_run_id=record.context.workflow_run_id,
+                    trace_id=record.context.trace_id,
+                    span_id=record.context.span_id,
+                )
 
     def end_span(self, record: SpanRecord) -> None:
         """Update a span with its terminal status, duration, and final
@@ -954,8 +1227,8 @@ class ObservabilityLedger:
                 INSERT OR IGNORE INTO pipeline_events(
                     event_id, trace_id, span_id, project_id, workflow_run_id,
                     occurred_at, name, component, level, subject_type, subject_id,
-                    attributes_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    attributes_json, environment, is_synthetic
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     str(record.event_id),
@@ -970,6 +1243,8 @@ class ObservabilityLedger:
                     record.subject_type,
                     record.subject_id,
                     _json(redact_value(record.attributes, store_payloads=self.store_payloads)),
+                    self.environment,
+                    int(self.is_synthetic),
                 ),
             )
 
@@ -1016,8 +1291,9 @@ class ObservabilityLedger:
                 """
                 INSERT INTO pipeline_events(
                     event_id, trace_id, span_id, project_id, workflow_run_id,
-                    occurred_at, name, component, level, attributes_json
-                ) VALUES (?, ?, ?, ?, ?, ?, 'run.recovered', 'observability', 'warn', ?)
+                    occurred_at, name, component, level, attributes_json,
+                    environment, is_synthetic
+                ) VALUES (?, ?, ?, ?, ?, ?, 'run.recovered', 'observability', 'warn', ?, ?, ?)
                 """,
                 [
                     (
@@ -1028,6 +1304,8 @@ class ObservabilityLedger:
                         row[3],
                         _to_db_timestamp(now),
                         _json({"span_name": row[4], "reason": "interrupted_by_restart"}),
+                        self.environment,
+                        int(self.is_synthetic),
                     )
                     for row in stale
                 ],
@@ -1142,9 +1420,12 @@ class ObservabilityLedger:
         stage: str | None = None,
         status: str | None = None,
         limit: int = 200,
+        include_synthetic: bool = False,
     ) -> list[CallSummary]:
         clauses = ["project_id = ?"]
         params: list[Any] = [str(project_id)]
+        if not include_synthetic:
+            clauses.append("is_synthetic = 0")
         if stage:
             clauses.append("stage = ?")
             params.append(stage)
@@ -1505,7 +1786,7 @@ class ObservedModelGateway:
         raise error
 
 
-_SHARED_LEDGERS: dict[tuple[str, str, bool], ObservabilityLedger] = {}
+_SHARED_LEDGERS: dict[tuple[str, str, bool, str, bool], ObservabilityLedger] = {}
 _SHARED_LEDGERS_LOCK = RLock()
 
 
@@ -1515,11 +1796,15 @@ def shared_observability_ledger(
     *,
     store_payloads: bool = True,
     cost_pricer: CostPricer | None = None,
+    environment: str = "development",
+    is_synthetic: bool = False,
 ) -> ObservabilityLedger:
     key = (
         str(database_path.expanduser().resolve()),
         str(artifact_root.expanduser().resolve()),
         store_payloads,
+        environment,
+        is_synthetic,
     )
     with _SHARED_LEDGERS_LOCK:
         ledger = _SHARED_LEDGERS.get(key)
@@ -1529,6 +1814,8 @@ def shared_observability_ledger(
                 artifact_root,
                 store_payloads=store_payloads,
                 cost_pricer=cost_pricer,
+                environment=environment,
+                is_synthetic=is_synthetic,
             )
             _SHARED_LEDGERS[key] = ledger
         return ledger
@@ -1543,11 +1830,14 @@ def ledger_from_settings(settings: Any | None = None) -> ObservabilityLedger:
     # so importing CostCalculator at module level here would be circular.
     from thesisound.services.model_pricing import CostCalculator
 
+    is_synthetic = bool(settings.allow_test_otp) or settings.environment == "test"
     return shared_observability_ledger(
         settings.resolved_observability_database_path,
         settings.resolved_observability_artifact_root,
         store_payloads=settings.observability_store_payloads,
         cost_pricer=CostCalculator(settings.pricing_file),
+        environment=settings.environment,
+        is_synthetic=is_synthetic,
     )
 
 
@@ -1837,7 +2127,8 @@ _PIPELINE_RUN_COLUMNS = """
 workflow_run_id, project_id, trace_id, kind, status, started_at, finished_at,
 duration_ms, call_count, failed_call_count, input_tokens, output_tokens,
 thinking_tokens, cached_tokens, total_tokens, models_json,
-prompt_versions_json, error_message
+prompt_versions_json, error_message, total_cost_micros, priced_call_count,
+unpriced_call_count, environment, is_synthetic
 """.replace("\n", " ").strip()
 
 
@@ -1861,7 +2152,23 @@ def _pipeline_run_from_row(row: tuple[Any, ...]) -> PipelineRunSummary:
         models=json.loads(row[15] or "[]"),
         prompt_versions=json.loads(row[16] or "[]"),
         error_message=redact_exception_message(row[17]),
+        total_cost_micros=int(row[18] or 0),
+        priced_call_count=int(row[19] or 0),
+        unpriced_call_count=int(row[20] or 0),
+        environment=row[21] or "development",
+        is_synthetic=bool(row[22]),
     )
+
+
+def _missing_call_linkage_fields(spec: ModelCallSpec) -> list[str]:
+    missing: list[str] = []
+    if spec.project_id is None:
+        missing.append("project_id")
+    if spec.workflow_run_id is None:
+        missing.append("workflow_run_id")
+    if spec.pipeline_trace_id is None:
+        missing.append("pipeline_trace_id")
+    return missing
 
 
 def _now() -> datetime:
@@ -2218,9 +2525,41 @@ CREATE TABLE IF NOT EXISTS product_metric_daily(
 );
 """
 
+
+def _migrate_v5_environment_and_cost(connection: sqlite3.Connection) -> None:
+    """Stamp environment/is_synthetic on pipeline tables and add run cost rollups."""
+
+    env_columns = (
+        ("environment", "environment TEXT NOT NULL DEFAULT 'development'"),
+        ("is_synthetic", "is_synthetic INTEGER NOT NULL DEFAULT 0"),
+    )
+    for table in ("model_calls", "pipeline_spans", "pipeline_events", "pipeline_runs"):
+        for column, ddl in env_columns:
+            _ensure_column(connection, table, column, ddl)
+    for column, ddl in (
+        ("total_cost_micros", "total_cost_micros INTEGER NOT NULL DEFAULT 0"),
+        ("priced_call_count", "priced_call_count INTEGER NOT NULL DEFAULT 0"),
+        ("unpriced_call_count", "unpriced_call_count INTEGER NOT NULL DEFAULT 0"),
+    ):
+        _ensure_column(connection, "pipeline_runs", column, ddl)
+    connection.executescript(
+        """
+        CREATE INDEX IF NOT EXISTS idx_model_calls_real
+            ON model_calls(started_at DESC) WHERE is_synthetic = 0;
+        CREATE INDEX IF NOT EXISTS idx_pipeline_runs_real
+            ON pipeline_runs(started_at DESC) WHERE is_synthetic = 0;
+        CREATE INDEX IF NOT EXISTS idx_pipeline_spans_real
+            ON pipeline_spans(started_at DESC) WHERE is_synthetic = 0;
+        CREATE INDEX IF NOT EXISTS idx_pipeline_events_real
+            ON pipeline_events(occurred_at DESC) WHERE is_synthetic = 0;
+        """
+    )
+
+
 _MIGRATIONS: tuple[str | Callable[[sqlite3.Connection], None], ...] = (
     _SCHEMA_V1,
     _migrate_v2_pipeline_spans_and_events,
     _SCHEMA_V3_PIPELINE_RUNS,
     _SCHEMA_V4_PRODUCT_EVENTS,
+    _migrate_v5_environment_and_cost,
 )

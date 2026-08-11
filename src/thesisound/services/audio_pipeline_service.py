@@ -15,6 +15,7 @@ from thesisound.audio import (
 from thesisound.audio_ports import SpeechToTextPort, TextToSpeechPort, TtsRequest
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.services.lineage_events import emit_review_decision
 from thesisound.services.audio_artifact_store import AudioArtifactStore
 from thesisound.services.audio_assembler import AudioAssembler
 from thesisound.services.audio_qa import AudioQaService
@@ -173,6 +174,15 @@ class AudioPipelineService:
         if failed:
             detail = ", ".join(f"{item.chunk_id}:{item.verdict}" for item in failed)
             raise ValueError(f"Audio QA did not pass for all chunks: {detail}")
+        for report in qa_reports:
+            if report.verdict == "manual_review" and self.accept_manual_review:
+                emit_review_decision(
+                    disposition="accepted_manual_review",
+                    subject_type="audio_chunk",
+                    subject_id=report.chunk_id,
+                    reason_code="accept_manual_review_config",
+                    component="audio",
+                )
 
         stage("assembling")
         with tracing.span("audio.assembling", component="audio") as span:

@@ -34,6 +34,7 @@ from thesisound.services.episode_planner import EpisodePlannerService
 from thesisound.services.episode_reuse import planning_input_key
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
 from thesisound.services.evidence_scope import scope_claims_and_evidence
+from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
     ClaimLedger,
@@ -89,12 +90,11 @@ class EpisodePreparationService:
         assert project.brief is not None
         key = self._planning_key(corpus, project.brief, include_duration=False)
         reused = self._reusable_coverage(project_id, key, project.brief)
-        tracing.event(
-            "cache.lookup",
-            component="cache",
-            project_id=project_id,
+        emit_cache_lookup(
             cache="coverage_audit",
             result="hit" if reused is not None else "miss",
+            lookup_key=key[:16] if isinstance(key, str) else None,
+            avoided_calls=1 if reused is not None else None,
         )
         if reused is not None:
             self._save_coverage_manifest(project_id, reused, corpus.source_ids)
@@ -188,12 +188,11 @@ class EpisodePreparationService:
         key = self._planning_key(corpus, project.brief, include_duration=True)
         stored_inputs = self.episode_store.load_stage_inputs(project_id)
         plan = self._reusable_plan(project_id, stored_inputs, key)
-        tracing.event(
-            "cache.lookup",
-            component="cache",
-            project_id=project_id,
+        emit_cache_lookup(
             cache="episode_plan",
             result="hit" if plan is not None else "miss",
+            lookup_key=key[:16] if isinstance(key, str) else None,
+            avoided_calls=1 if plan is not None else None,
         )
         model_run_ids: list[UUID] = []
         if plan is None:

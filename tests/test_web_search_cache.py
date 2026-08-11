@@ -104,3 +104,4 @@ def test_cache_lookup_events_report_hit_and_miss(
         if event.name == "cache.lookup" and event.attributes.get("cache") == "web_search"
     ]
     assert [event.attributes["result"] for event in events] == ["miss", "hit"]
+    assert [event.project_id for event in events] == [project_id, project_id]
