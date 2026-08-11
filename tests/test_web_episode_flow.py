@@ -13,6 +13,10 @@ from thesisound.services.episode_planning_run import (
 from thesisound.web.app import create_app
 
 
+def _client(app) -> TestClient:
+    return TestClient(app, base_url="https://testserver.local")
+
+
 def _settings(tmp_path: Path) -> Settings:
     return Settings(
         environment="test",
@@ -78,7 +82,7 @@ def test_web_queues_episode_planning_from_corpus_ready(tmp_path: Path) -> None:
         episode_executor=lambda _: None,
     )
 
-    with TestClient(app) as client:
+    with _client(app) as client:
         _login(client)
         page = client.get(f"/projects/{project.project_id}/episode")
         assert "سنجش کفایت منابع و ساخت طرح" in page.text
@@ -119,11 +123,13 @@ def test_blocked_web_flow_has_no_continue_anyway_and_can_reduce_duration(
         episode_executor=lambda _: None,
     )
 
-    with TestClient(app) as client:
+    with _client(app) as client:
         _login(client)
         page = client.get(f"/projects/{project.project_id}/episode")
         assert "ادامه‌دادن با corpus ناکافی مجاز نیست" in page.text
         assert "ادامه به هر حال" not in page.text
+        assert "مدت کوتاه‌تر" not in page.text
+        assert "مدت گفتار" in page.text
         response = client.post(
             f"/projects/{project.project_id}/episode/duration",
             data={
@@ -165,7 +171,7 @@ def test_blocked_web_flow_can_reopen_sources_and_marks_episode_stale(
         episode_executor=lambda _: None,
     )
 
-    with TestClient(app) as client:
+    with _client(app) as client:
         _login(client)
         page = client.get(f"/projects/{project.project_id}/episode")
         response = client.post(
@@ -208,7 +214,7 @@ def test_duration_can_change_on_a_finished_plan(tmp_path: Path) -> None:
         episode_executor=lambda _: None,
     )
 
-    with TestClient(app) as client:
+    with _client(app) as client:
         _login(client)
         projects = client.get("/projects")
         response = client.post(
@@ -241,7 +247,7 @@ def test_duration_cannot_exceed_the_supported_ceiling(tmp_path: Path) -> None:
         episode_executor=lambda _: None,
     )
 
-    with TestClient(app) as client:
+    with _client(app) as client:
         _login(client)
         projects = client.get("/projects")
         response = client.post(
@@ -269,7 +275,7 @@ def test_duration_is_locked_once_the_script_has_started(tmp_path: Path) -> None:
         episode_executor=lambda _: None,
     )
 
-    with TestClient(app) as client:
+    with _client(app) as client:
         _login(client)
         projects = client.get("/projects")
         response = client.post(

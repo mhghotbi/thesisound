@@ -1385,6 +1385,13 @@ div.evidence-card ul { margin: 0; padding-inline-start: 18px; }
 
 .omitted-claims { display: grid; gap: 16px; }
 .omitted-claim__reason { margin: 0 0 6px; color: var(--ink-soft); font-size: 14px; text-wrap: pretty; }
+.plan-list-details > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.plan-list-details > summary::-webkit-details-marker { display: none; }
+.plan-list-details > summary.section-heading { margin-block-end: 12px; }
+.plan-list-details[open] > summary.section-heading { margin-block-end: 12px; }
 
 .quality-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .quality-row h3 { margin: 0; font-size: 14px; }

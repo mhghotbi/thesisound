@@ -15,9 +15,10 @@ from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.product_metrics import ProductEvent, emit
 from thesisound.product_metrics.emit import classify_gate_reason
-from thesisound.product_metrics.events import GateBlocked, GateResolved
+from thesisound.product_metrics.events import GateBlocked, GateResolved, PlanDurationChanged
 from thesisound.product_metrics.store import ProductEventStore
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
+from thesisound.services.episode_duration_cost import reextraction_required_for_duration
 from thesisound.services.episode_preparation_service import EpisodePreparationService
 from thesisound.services.source_analysis_service import SourceAnalysisService
 from thesisound.services.source_artifact_store import SourceArtifactStore
@@ -242,6 +243,12 @@ class EpisodePlanningRunService:
         supported = previous.supported_duration_minutes
         if supported is not None and duration_minutes > supported:
             raise ValueError("The selected duration is still longer than the supported corpus.")
+        previous_duration = previous.target_duration_minutes
+        from_blocked = previous.status == "blocked"
+        source_store = SourceArtifactStore(self.workspace_store.root)
+        needs_reextract = reextraction_required_for_duration(
+            project, source_store, duration_minutes
+        )
         project.brief.target_duration_minutes = duration_minutes
         project.episode_plan = None
         if project.state == ProjectState.EPISODE_PLANNED:
@@ -253,7 +260,18 @@ class EpisodePlanningRunService:
             target_duration_minutes=duration_minutes,
         )
         self.run_store.save(run)
-        if previous.status == "blocked":
+        if duration_minutes != previous_duration:
+            direction = "up" if duration_minutes > previous_duration else "down"
+            emit(
+                ProductEvent.PLAN_DURATION_CHANGED,
+                PlanDurationChanged(
+                    direction=direction,
+                    from_blocked=from_blocked,
+                    reextraction_required=needs_reextract,
+                ),
+                project_id=project_id,
+            )
+        if from_blocked:
             blocked_seconds = _blocked_seconds(project_id, gate_name="coverage")
             tracing.event(
                 "gate.resolved",

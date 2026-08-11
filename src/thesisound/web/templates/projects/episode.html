@@ -78,10 +78,14 @@
 
 <section class="form-sheet section-block" aria-label="راه‌های اصلاح کفایت منابع">
   {% if planning_run.supported_duration_minutes is not none and planning_run.supported_duration_minutes >= 5 %}
-  <form method="post" action="/projects/{{ project.project_id }}/episode/duration" class="field-grid">
+  <form method="post" action="/projects/{{ project.project_id }}/episode/duration" class="field-grid" data-duration-cost>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <label class="field"><span>مدت کوتاه‌تر</span><input type="number" name="duration_minutes" min="5" max="{{ planning_run.supported_duration_minutes | int }}" value="{{ planning_run.supported_duration_minutes | int }}" required></label>
-    <div class="form-actions"><button class="button button--primary" type="submit">کاهش مدت و سنجش دوباره</button></div>
+    <label class="field">
+      <span>مدت گفتار <small>(۵ تا {{ planning_run.supported_duration_minutes | int | fa_num }} دقیقه)</small></span>
+      <input type="number" name="duration_minutes" min="5" max="{{ planning_run.supported_duration_minutes | int }}" value="{{ planning_run.supported_duration_minutes | int }}" required data-duration-input>
+    </label>
+    <div class="form-actions"><button class="button button--primary" type="submit">تغییر مدت و سنجش دوباره</button></div>
+    <small class="field-hint" data-duration-cost-hint>{% if duration_reextraction_required %}برای این مدت، منابع باید عمیق‌تر کاویده شوند؛ این کار زمان‌برتر است و کفایت منابع دوباره سنجیده می‌شود.{% else %}تحلیل منابع دست‌نخورده می‌ماند و ممیزی کفایت هم دوباره هزینه نمی‌شود.{% endif %}</small>
   </form>
   {% endif %}
   <form method="post" action="/projects/{{ project.project_id }}/episode/reopen-inputs" class="form-actions">
@@ -109,16 +113,16 @@
 <section class="section-block" aria-labelledby="episode-duration-title">
   <div class="section-heading"><h2 id="episode-duration-title">مدت گفتار</h2></div>
   <div class="form-sheet">
-    <p>هدف فعلی {{ project.brief.target_duration_minutes | fa_num }} دقیقه است و منابع تا حدود {{ planning_run.supported_duration_minutes | round(1) | fa_num }} دقیقه شاهد کافی دارند.</p>
-    <form method="post" action="/projects/{{ project.project_id }}/episode/duration" class="field-grid">
+    <p>هر مدتی تا {{ planning_run.supported_duration_minutes | round(1) | fa_num }} دقیقه ممکن است. با تغییر مدت، طرح دوباره ساخته می‌شود.</p>
+    <form method="post" action="/projects/{{ project.project_id }}/episode/duration" class="field-grid" data-duration-cost>
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <label class="field">
-        <span>مدت تازه <small>(حداکثر {{ planning_run.supported_duration_minutes | int | fa_num }} دقیقه)</small></span>
-        <input type="number" name="duration_minutes" min="5" max="{{ planning_run.supported_duration_minutes | int }}" value="{{ project.brief.target_duration_minutes }}" required>
+        <span>مدت گفتار <small>(۵ تا {{ planning_run.supported_duration_minutes | int | fa_num }} دقیقه)</small></span>
+        <input type="number" name="duration_minutes" min="5" max="{{ planning_run.supported_duration_minutes | int }}" value="{{ project.brief.target_duration_minutes }}" required data-duration-input>
       </label>
       <div class="form-actions"><button class="button button--secondary" type="submit">تغییر مدت و ساخت دوبارهٔ طرح</button></div>
     </form>
-    <small class="field-hint">طرح فعلی دوباره ساخته می‌شود. تحلیل منابع دست‌نخورده می‌ماند و ممیزی کفایت هم دوباره هزینه نمی‌شود.</small>
+    <small class="field-hint" data-duration-cost-hint>{% if duration_reextraction_required %}برای این مدت، منابع باید عمیق‌تر کاویده شوند؛ این کار زمان‌برتر است و کفایت منابع دوباره سنجیده می‌شود.{% else %}طرح فعلی دوباره ساخته می‌شود. تحلیل منابع دست‌نخورده می‌ماند و ممیزی کفایت هم دوباره هزینه نمی‌شود.{% endif %}</small>
   </div>
 </section>
 {% endif %}
@@ -154,16 +158,41 @@
 
 {% if omitted_claim_views %}
 <section class="section-block" aria-labelledby="omitted-claims-title">
-  <div class="section-heading"><h2 id="omitted-claims-title">آنچه آگاهانه در این گفتار نیامده است</h2><span>{{ omitted_claim_views | length | fa_num }} مورد</span></div>
-  <div class="data-panel omitted-claims">
-    {% for item in omitted_claim_views %}
-    <article class="omitted-claim">
-      <p class="omitted-claim__reason">{{ item.reason }}</p>
-      {{ evidence_claim_groups(item.claim_groups, none, false) }}
-      {% if item.claim_id %}<p class="operator-only"><code><bdi dir="ltr">{{ item.claim_id }}</bdi></code></p>{% endif %}
-    </article>
-    {% endfor %}
-  </div>
+  <details class="plan-list-details" data-plan-list-open="omitted" data-project-id="{{ project.project_id }}">
+    <summary class="section-heading">
+      <h2 id="omitted-claims-title">آنچه آگاهانه در این گفتار نیامده است</h2>
+      <span>{{ omitted_claim_views | length | fa_num }} مورد</span>
+    </summary>
+    <div class="data-panel omitted-claims">
+      {% for item in omitted_claim_views %}
+      <article class="omitted-claim">
+        <p class="omitted-claim__reason">{{ item.reason }}</p>
+        {{ evidence_claim_groups(item.claim_groups, none, false) }}
+        {% if item.claim_id %}<p class="operator-only"><code><bdi dir="ltr">{{ item.claim_id }}</bdi></code></p>{% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </details>
+</section>
+{% endif %}
+
+{% if unused_must_not_be_lost_views %}
+<section class="section-block" aria-labelledby="must-not-be-lost-title">
+  <details class="plan-list-details" data-plan-list-open="must_not_be_lost" data-project-id="{{ project.project_id }}">
+    <summary class="section-heading">
+      <h2 id="must-not-be-lost-title">نکته‌هایی که نباید گم شوند</h2>
+      <span>{{ unused_must_not_be_lost_views | length | fa_num }} مورد</span>
+    </summary>
+    <div class="data-panel omitted-claims">
+      {% for item in unused_must_not_be_lost_views %}
+      <article class="omitted-claim">
+        <p class="omitted-claim__reason">{{ item.text }}</p>
+        {% if item.claim_groups %}{{ evidence_claim_groups(item.claim_groups, none, false) }}{% endif %}
+        {% if item.block_id %}<p class="operator-only"><code><bdi dir="ltr">{{ item.block_id }}</bdi></code></p>{% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </details>
 </section>
 {% endif %}
 

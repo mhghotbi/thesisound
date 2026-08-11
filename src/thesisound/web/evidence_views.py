@@ -291,6 +291,41 @@ def omitted_claim_views(
     return rows
 
 
+def unused_must_not_be_lost_views(
+    review: object | None,
+    *,
+    claims: dict[str, ClaimRecord],
+    evidence_by_id: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    """Render rows for unused must-not-be-lost review items; empty if missing."""
+
+    if review is None:
+        return []
+    items = getattr(review, "items", None) or []
+    rows: list[dict[str, object]] = []
+    for item in items:
+        if getattr(item, "used_in_plan", True):
+            continue
+        point = getattr(item, "point", None)
+        if point is None:
+            continue
+        reflected = list(getattr(item, "reflected_in_claims", None) or [])
+        groups = claim_groups_for_ids(
+            [str(claim_id) for claim_id in reflected],
+            turn_evidence_ids=None,
+            claims=claims,
+            evidence_by_id=evidence_by_id,
+        )
+        rows.append(
+            {
+                "text": str(getattr(point, "text", "") or ""),
+                "claim_groups": groups,
+                "block_id": getattr(point, "block_id", None),
+            }
+        )
+    return rows
+
+
 def _highlight_block_text(text: str, excerpt: str) -> tuple[Markup, bool]:
     span = locate_excerpt_span(excerpt, text)
     if span is None:

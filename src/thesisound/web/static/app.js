@@ -240,6 +240,56 @@
     });
   });
 
+  document.querySelectorAll("[data-plan-list-open]").forEach((details) => {
+    details.addEventListener("toggle", () => {
+      if (!details.open || details.dataset.traced === "1") return;
+      details.dataset.traced = "1";
+      const projectId = details.dataset.projectId;
+      const origin = details.dataset.planListOpen;
+      if (!projectId || !origin) return;
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content || "";
+      const body = new URLSearchParams({ csrf_token: csrf, origin });
+      fetch(`/projects/${projectId}/episode/list-opened`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+        credentials: "same-origin",
+      }).catch(() => {
+        // Metrics must never block reading the list.
+      });
+    });
+  });
+
+  document.querySelectorAll("[data-duration-cost]").forEach((form) => {
+    const input = form.querySelector("[data-duration-input]");
+    const hint =
+      form.querySelector("[data-duration-cost-hint]") ||
+      form.parentElement?.querySelector("[data-duration-cost-hint]");
+    const match = form.action && form.action.match(/\/projects\/([^/]+)\/episode\/duration/);
+    const projectId = match ? match[1] : null;
+    if (!input || !hint || !projectId) return;
+    let timer = null;
+    const refresh = () => {
+      const minutes = Number(input.value);
+      if (!Number.isFinite(minutes) || minutes < 5) return;
+      fetch(`/projects/${projectId}/episode/duration-cost?minutes=${encodeURIComponent(minutes)}`, {
+        credentials: "same-origin",
+        headers: { Accept: "text/html" },
+      })
+        .then((response) => (response.ok ? response.text() : null))
+        .then((text) => {
+          if (text) hint.textContent = text;
+        })
+        .catch(() => {
+          // Keep the server-rendered hint if the live check fails.
+        });
+    };
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(refresh, 250);
+    });
+  });
+
   const applyJudgementState = (root, verdict) => {
     root.dataset.verdict = verdict || "";
     root.querySelectorAll("[data-verdict='correct'], [data-verdict='incorrect']").forEach((button) => {

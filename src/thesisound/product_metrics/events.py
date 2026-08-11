@@ -37,6 +37,9 @@ class ProductEvent(StrEnum):
     EPISODE_AUDIO_DOWNLOADED = "episode.audio_downloaded"
     EPISODE_SOURCE_TRACE_OPENED = "episode.source_trace_opened"
     EPISODE_EVIDENCE_JUDGED = "episode.evidence_judged"
+    PLAN_REVIEWED = "plan.reviewed"
+    PLAN_OMITTED_LIST_OPENED = "plan.omitted_list_opened"
+    PLAN_DURATION_CHANGED = "plan.duration_changed"
 
 
 class _Payload(BaseModel):
@@ -174,6 +177,21 @@ class EpisodeEvidenceJudged(_Payload):
     ) = None
 
 
+class PlanReviewed(_Payload):
+    has_omitted: bool
+    has_unused_must_not_be_lost: bool
+
+
+class PlanOmittedListOpened(_Payload):
+    origin: Literal["omitted", "must_not_be_lost"]
+
+
+class PlanDurationChanged(_Payload):
+    direction: Literal["up", "down"]
+    from_blocked: bool
+    reextraction_required: bool
+
+
 PAYLOAD_MODELS: dict[ProductEvent, type[BaseModel]] = {
     ProductEvent.AUTH_CODE_REQUESTED: AuthCodeRequested,
     ProductEvent.AUTH_CODE_VERIFIED: AuthCodeVerified,
@@ -201,4 +219,7 @@ PAYLOAD_MODELS: dict[ProductEvent, type[BaseModel]] = {
     ProductEvent.EPISODE_AUDIO_DOWNLOADED: EpisodeAudioDownloaded,
     ProductEvent.EPISODE_SOURCE_TRACE_OPENED: EpisodeSourceTraceOpened,
     ProductEvent.EPISODE_EVIDENCE_JUDGED: EpisodeEvidenceJudged,
+    ProductEvent.PLAN_REVIEWED: PlanReviewed,
+    ProductEvent.PLAN_OMITTED_LIST_OPENED: PlanOmittedListOpened,
+    ProductEvent.PLAN_DURATION_CHANGED: PlanDurationChanged,
 }

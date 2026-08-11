@@ -29,6 +29,7 @@ from thesisound.services.document_identity import block_sequence_key
 from thesisound.services.document_map_cache import DocumentMapCache, is_shareable_document_map
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
+from thesisound.services.episode_duration_cost import source_needs_reextraction
 from thesisound.services.evidence_scope import extraction_profiles_compatible
 from thesisound.services.evidence_validator import validate_evidence_collection
 from thesisound.services.lineage_events import emit_cache_lookup
@@ -591,11 +592,7 @@ class SourceAnalysisService:
             stored_plan = self.artifact_store.load_extraction_plan(project_id, source_id)
         except (OSError, ValueError):
             stored_plan = None
-        if (
-            stored_plan is not None
-            and extraction_profiles_compatible(stored_plan.profile, planned.profile)
-            and stored_plan.selected_block_ids == planned.selected_block_ids
-        ):
+        if not source_needs_reextraction(stored_plan, planned):
             return False
 
         previous_selected = (

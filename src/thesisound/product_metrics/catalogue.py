@@ -722,6 +722,159 @@ E8 = MetricDefinition(
     """,
 )
 
+E9 = MetricDefinition(
+    key="plan_review_depth_rate",
+    question="Does anyone open the omitted / must-not-be-lost list?",
+    grain="day",
+    owner="product",
+    sql=f"""
+    WITH reviewed AS (
+      SELECT date(occurred_at) AS day, COUNT(*) AS n
+        FROM product_events
+       WHERE name = 'plan.reviewed' AND {_REAL}
+       GROUP BY date(occurred_at)
+    ),
+    opened AS (
+      SELECT date(occurred_at) AS day,
+             COALESCE(json_extract(properties_json, '$.origin'), 'unknown') AS origin,
+             COUNT(*) AS n
+        FROM product_events
+       WHERE name = 'plan.omitted_list_opened' AND {_REAL}
+       GROUP BY 1, 2
+    )
+    SELECT o.day,
+           json_object('origin', o.origin) AS dimension_json,
+           CAST(o.n AS REAL) / NULLIF(r.n, 0) AS value,
+           CAST(o.n AS REAL) AS numerator,
+           CAST(r.n AS REAL) AS denominator
+      FROM opened o
+      JOIN reviewed r ON r.day = o.day
+    """,
+)
+
+E10 = MetricDefinition(
+    key="plan_duration_adjust_rate",
+    question="What share of planned projects change duration after seeing the plan?",
+    grain="day",
+    owner="product",
+    sql=f"""
+    WITH planned AS (
+      SELECT project_id, date(MIN(occurred_at)) AS day
+        FROM product_events
+       WHERE name = 'project.stage_entered'
+         AND json_extract(properties_json, '$.state') = 'episode_planned'
+         AND {_REAL}
+       GROUP BY project_id
+    ),
+    adjusted AS (
+      SELECT DISTINCT project_id
+        FROM product_events
+       WHERE name = 'plan.duration_changed' AND {_REAL}
+    )
+    SELECT p.day, '{{}}' AS dimension_json,
+           CAST(COUNT(DISTINCT CASE WHEN a.project_id IS NOT NULL THEN p.project_id END) AS REAL)
+             / NULLIF(COUNT(DISTINCT p.project_id), 0) AS value,
+           CAST(COUNT(DISTINCT CASE WHEN a.project_id IS NOT NULL THEN p.project_id END) AS REAL)
+             AS numerator,
+           CAST(COUNT(DISTINCT p.project_id) AS REAL) AS denominator
+      FROM planned p
+      LEFT JOIN adjusted a ON a.project_id = p.project_id
+     GROUP BY p.day
+    """,
+)
+
+E11 = MetricDefinition(
+    key="plan_duration_increase_share",
+    question="Are duration changes mostly increases or decreases?",
+    grain="day",
+    owner="product",
+    sql=f"""
+    SELECT date(occurred_at) AS day, '{{}}' AS dimension_json,
+           CAST(SUM(CASE WHEN json_extract(properties_json, '$.direction') = 'up'
+                         THEN 1 ELSE 0 END) AS REAL)
+             / NULLIF(COUNT(*), 0) AS value,
+           CAST(SUM(CASE WHEN json_extract(properties_json, '$.direction') = 'up'
+                         THEN 1 ELSE 0 END) AS REAL) AS numerator,
+           CAST(COUNT(*) AS REAL) AS denominator
+      FROM product_events
+     WHERE name = 'plan.duration_changed' AND {_REAL}
+     GROUP BY date(occurred_at)
+    """,
+)
+
+E12 = MetricDefinition(
+    key="plan_gate_abandon_rate",
+    question="How many projects die at the plan gate?",
+    grain="day",
+    owner="product",
+    caveat="Max stage = 5 and idle 14d / projects that reached stage 5.",
+    sql=f"""
+    WITH max_stage AS (
+      SELECT project_id,
+             MAX(CAST(json_extract(properties_json, '$.stage') AS INTEGER)) AS stage,
+             MAX(occurred_at) AS last_at,
+             date(MIN(CASE WHEN CAST(json_extract(properties_json, '$.stage') AS INTEGER) = 5
+                           THEN occurred_at END)) AS day
+        FROM product_events
+       WHERE name = 'project.stage_entered' AND {_REAL}
+       GROUP BY project_id
+    ),
+    reached AS (
+      SELECT project_id, day
+        FROM max_stage
+       WHERE day IS NOT NULL
+    ),
+    abandoned AS (
+      SELECT project_id, day
+        FROM max_stage
+       WHERE stage = 5
+         AND day IS NOT NULL
+         AND julianday('now') - julianday(last_at) >= 14
+    )
+    SELECT r.day, '{{}}' AS dimension_json,
+           CAST(COUNT(DISTINCT a.project_id) AS REAL)
+             / NULLIF(COUNT(DISTINCT r.project_id), 0) AS value,
+           CAST(COUNT(DISTINCT a.project_id) AS REAL) AS numerator,
+           CAST(COUNT(DISTINCT r.project_id) AS REAL) AS denominator
+      FROM reached r
+      LEFT JOIN abandoned a ON a.project_id = r.project_id
+     GROUP BY r.day
+    """,
+)
+
+E13 = MetricDefinition(
+    key="plan_replan_before_approval",
+    question="Median replans of the episode plan before script approval?",
+    grain="day",
+    owner="product",
+    caveat="Counts episode_planned → episode_planning stage transitions; AVG used as SQLite median proxy.",
+    sql=f"""
+    WITH replans AS (
+      SELECT project_id, COUNT(*) AS n
+        FROM product_events
+       WHERE name = 'project.stage_entered'
+         AND json_extract(properties_json, '$.from_state') = 'episode_planned'
+         AND json_extract(properties_json, '$.state') = 'episode_planning'
+         AND {_REAL}
+       GROUP BY project_id
+    ),
+    planned AS (
+      SELECT project_id, date(MIN(occurred_at)) AS day
+        FROM product_events
+       WHERE name = 'project.stage_entered'
+         AND json_extract(properties_json, '$.state') = 'episode_planned'
+         AND {_REAL}
+       GROUP BY project_id
+    )
+    SELECT p.day, '{{}}' AS dimension_json,
+           CAST(AVG(COALESCE(r.n, 0)) AS REAL) AS value,
+           NULL AS numerator, NULL AS denominator
+      FROM planned p
+      LEFT JOIN replans r ON r.project_id = p.project_id
+     GROUP BY p.day
+    """,
+)
+
 F1 = MetricDefinition(
     key="source_trace_open_rate",
     question="Is the traceability promise used?",
@@ -1171,6 +1324,11 @@ CATALOGUE: tuple[MetricDefinition, ...] = (
     E6,
     E7,
     E8,
+    E9,
+    E10,
+    E11,
+    E12,
+    E13,
     F1,
     F2,
     F3,
