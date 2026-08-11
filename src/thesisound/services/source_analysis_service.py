@@ -16,9 +16,13 @@ from thesisound.domain import (
     SourceRole,
 )
 from thesisound.ingestion import IngestionResult
-from thesisound.modeling import ModelError
+from thesisound.modeling import ModelError, ModelRunRecord
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
-from thesisound.services.analysis_profile import plan_evidence_extraction
+from thesisound.services.analysis_profile import (
+    build_second_pass_profile,
+    plan_evidence_extraction,
+    required_section_block_ids,
+)
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.document_identity import block_sequence_key
@@ -276,6 +280,17 @@ class SourceAnalysisService:
         scoped_records = [
             record for record in records if record.block_id in selected_ids
         ]
+        scoped_records, second_pass_runs = self._apply_second_pass(
+            project_id=project_id,
+            source_id=source_id,
+            blocks=blocks,
+            document_map=document_map,
+            plan=plan,
+            scoped_records=scoped_records,
+            model=model,
+            prompt_version=prompt_version,
+        )
+        runs = [*runs, *second_pass_runs]
         validate_evidence_collection(
             [record for record in scoped_records if record.status == "extracted"],
             blocks,
@@ -383,6 +398,84 @@ class SourceAnalysisService:
                 f"{_coverage_cause(plan)})."
             )
         return manifest, warnings
+
+    def _apply_second_pass(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        blocks: list[SourceDocumentBlock],
+        document_map: DocumentMap,
+        plan: EvidenceExtractionPlan,
+        scoped_records: list[BlockEvidenceExtraction],
+        model: str,
+        prompt_version: str | None,
+    ) -> tuple[list[BlockEvidenceExtraction], list[ModelRunRecord]]:
+        """Re-extract required-section blocks at deepened depth, in place.
+
+        Gated on ``second_pass_for_core_sections`` (today only >45-minute "extended"
+        episodes). Idempotent: a block already at ``extraction_pass`` 2 is never
+        targeted again, so a no-op re-run of ``extract_evidence`` does not re-pay for
+        a second-pass call. A pass-2 rejection/skip keeps the pass-1 record rather
+        than regressing a good extraction because a retry had a bad day.
+        """
+
+        if not plan.profile.second_pass_for_core_sections:
+            return scoped_records, []
+
+        required_ids = required_section_block_ids(document_map, plan.selected_block_ids)
+        targets = {
+            record.block_id
+            for record in scoped_records
+            if record.status == "extracted"
+            and record.block_id in required_ids
+            and record.extraction_pass < 2
+        }
+        if not targets:
+            return scoped_records, []
+
+        target_tokens = sum(
+            block.estimated_token_count for block in blocks if block.block_id in targets
+        )
+        second_pass_plan = EvidenceExtractionPlan(
+            source_id=source_id,
+            profile=build_second_pass_profile(plan.profile),
+            selected_block_ids=sorted(targets),
+            deferred_block_ids=[],
+            selected_source_tokens=target_tokens,
+            total_source_tokens=target_tokens,
+            achieved_token_coverage=1.0,
+        )
+        deepened, runs = self.evidence_extractor.extract_source(
+            project_id=project_id,
+            source_id=source_id,
+            blocks=blocks,
+            document_map=document_map,
+            model=model,
+            plan=second_pass_plan,
+            prompt_version=prompt_version,
+        )
+
+        by_id = {record.block_id: record for record in scoped_records}
+        upgraded = 0
+        for record in deepened:
+            if record.status == "extracted":
+                promoted = record.model_copy(update={"extraction_pass": 2})
+                by_id[record.block_id] = promoted
+                self.artifact_store.save_block_extraction(project_id, source_id, promoted)
+                upgraded += 1
+        tracing.event(
+            "corpus.evidence_second_pass",
+            component="corpus",
+            project_id=project_id,
+            subject_type="source",
+            subject_id=str(source_id),
+            attempted_block_count=len(targets),
+            upgraded_block_count=upgraded,
+            failed_block_count=len(targets) - upgraded,
+        )
+        updated_records = [by_id[record.block_id] for record in scoped_records]
+        return updated_records, runs
 
     def build_claims(
         self,

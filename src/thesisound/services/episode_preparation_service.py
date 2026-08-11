@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from uuid import UUID
 
-from thesisound import tracing
 from thesisound.domain import (
     ClaimRecord,
     EpisodePlan,
     EvidenceItem,
+    ExtractedAuxiliaryPoint,
+    ExtractedDefinition,
+    ExtractedDistinction,
+    MustNotBeLostPoint,
     Project,
     ProjectState,
     ResearchBrief,
@@ -20,6 +23,8 @@ from thesisound.episode import (
     EpisodeBudgetReport,
     EpisodePreparationManifest,
     EpisodeStageInputs,
+    MustNotBeLostReview,
+    MustNotBeLostReviewItem,
     SegmentEvidencePack,
 )
 from thesisound.modeling import ModelError
@@ -33,7 +38,7 @@ from thesisound.services.episode_budget import EpisodeBudgetEstimator
 from thesisound.services.episode_planner import EpisodePlannerService
 from thesisound.services.episode_reuse import planning_input_key
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
-from thesisound.services.evidence_scope import scope_claims_and_evidence
+from thesisound.services.evidence_scope import scope_by_block, scope_claims_and_evidence
 from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
@@ -50,6 +55,12 @@ class CorpusArtifacts:
     evidence_items: list[EvidenceItem]
     blocks: list[SourceDocumentBlock]
     extraction_plans: list[EvidenceExtractionPlan]
+    definitions: list[ExtractedDefinition] = field(default_factory=list)
+    distinctions: list[ExtractedDistinction] = field(default_factory=list)
+    examples: list[ExtractedAuxiliaryPoint] = field(default_factory=list)
+    objections: list[ExtractedAuxiliaryPoint] = field(default_factory=list)
+    responses: list[ExtractedAuxiliaryPoint] = field(default_factory=list)
+    must_not_be_lost: list[MustNotBeLostPoint] = field(default_factory=list)
 
 
 class EpisodePreparationService:
@@ -209,6 +220,11 @@ class EpisodePreparationService:
                 priorities=priorities,
                 disagreement_graph=disagreement_graph,
                 extraction_plans=corpus.extraction_plans,
+                definitions=corpus.definitions,
+                distinctions=corpus.distinctions,
+                examples=corpus.examples,
+                objections=corpus.objections,
+                responses=corpus.responses,
                 model=model,
                 prompt_version=prompt_version,
             )
@@ -221,6 +237,11 @@ class EpisodePreparationService:
 
         project.episode_plan = plan
         self.workspace_store.save_project(project)
+        # Runs whether the plan was freshly generated or reused from cache, so the
+        # review always reflects the current corpus/plan pairing, not a stale one.
+        self.episode_store.save_must_not_be_lost_review(
+            self._build_must_not_be_lost_review(project_id, corpus, plan)
+        )
         manifest = self.episode_store.load_manifest(project_id)
         manifest.status = "plan_ready"
         manifest.segment_count = len(plan.segments)
@@ -228,6 +249,57 @@ class EpisodePreparationService:
         manifest.updated_at = datetime.now(UTC)
         self.episode_store.save_manifest(manifest)
         return plan
+
+    @staticmethod
+    def _build_must_not_be_lost_review(
+        project_id: UUID,
+        corpus: CorpusArtifacts,
+        plan: EpisodePlan,
+    ) -> MustNotBeLostReview:
+        """Deterministic, non-blocking cross-reference -- never raises, only informs.
+
+        Walks must_not_be_lost -> same-block evidence -> claims grounded in that
+        evidence -> whether any such claim made it into a plan segment.
+        """
+
+        evidence_ids_by_block: dict[str, list[str]] = {}
+        for item in corpus.evidence_items:
+            evidence_ids_by_block.setdefault(item.block_id, []).append(item.evidence_id)
+        claim_ids_by_evidence_id: dict[str, list[str]] = {}
+        for claim in corpus.claims:
+            for evidence_id in claim.evidence_ids:
+                claim_ids_by_evidence_id.setdefault(evidence_id, []).append(claim.claim_id)
+        used_claim_ids = {
+            claim_id for segment in plan.segments for claim_id in segment.claim_ids
+        }
+
+        items: list[MustNotBeLostReviewItem] = []
+        unused_count = 0
+        for point in corpus.must_not_be_lost:
+            candidate_claim_ids = list(
+                dict.fromkeys(
+                    claim_id
+                    for evidence_id in evidence_ids_by_block.get(point.block_id, [])
+                    for claim_id in claim_ids_by_evidence_id.get(evidence_id, [])
+                )
+            )
+            used_in_plan = any(
+                claim_id in used_claim_ids for claim_id in candidate_claim_ids
+            )
+            if not used_in_plan:
+                unused_count += 1
+            items.append(
+                MustNotBeLostReviewItem(
+                    point=point,
+                    reflected_in_claims=candidate_claim_ids,
+                    used_in_plan=used_in_plan,
+                )
+            )
+        return MustNotBeLostReview(
+            project_id=project_id,
+            items=items,
+            unused_count=unused_count,
+        )
 
     def build_evidence_packs(self, project_id: UUID) -> list[SegmentEvidencePack]:
         project = self.workspace_store.load_project(project_id)
@@ -423,6 +495,14 @@ class EpisodePreparationService:
                         if evidence_id in {item.evidence_id for item in scoped_evidence}
                     ],
                     warnings=list(ledger.warnings),
+                    definitions=scope_by_block(ledger.definitions, plan.selected_block_ids),
+                    distinctions=scope_by_block(ledger.distinctions, plan.selected_block_ids),
+                    examples=scope_by_block(ledger.examples, plan.selected_block_ids),
+                    objections=scope_by_block(ledger.objections, plan.selected_block_ids),
+                    responses=scope_by_block(ledger.responses, plan.selected_block_ids),
+                    must_not_be_lost=scope_by_block(
+                        ledger.must_not_be_lost, plan.selected_block_ids
+                    ),
                 )
             )
             evidence_items.extend(scoped_evidence)
@@ -439,6 +519,14 @@ class EpisodePreparationService:
             evidence_items=evidence_items,
             blocks=blocks,
             extraction_plans=extraction_plans,
+            definitions=[item for ledger in ledgers for item in ledger.definitions],
+            distinctions=[item for ledger in ledgers for item in ledger.distinctions],
+            examples=[item for ledger in ledgers for item in ledger.examples],
+            objections=[item for ledger in ledgers for item in ledger.objections],
+            responses=[item for ledger in ledgers for item in ledger.responses],
+            must_not_be_lost=[
+                item for ledger in ledgers for item in ledger.must_not_be_lost
+            ],
         )
 
     @staticmethod

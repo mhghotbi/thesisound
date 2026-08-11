@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from uuid import UUID, uuid4
 
+from test_episode_planning_run import FakePreparationService
+from test_episode_planning_run import _brief as _episode_brief
+
 from thesisound.domain import (
     ClaimRecord,
     ClaimType,
@@ -18,7 +21,12 @@ from thesisound.domain import (
     SupportStatus,
     TopicType,
 )
-from thesisound.modeling import DeterministicValidationError, ModelExecution, ModelRunRecord
+from thesisound.modeling import (
+    DeterministicValidationError,
+    ModelExecution,
+    ModelProviderError,
+    ModelRunRecord,
+)
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.analysis_profile import build_analysis_profile
 from thesisound.services.block_builder import BlockBuilder
@@ -60,7 +68,6 @@ from thesisound.source_analysis import (
     SourceAnalysisManifest,
     SourceDocumentBlock,
 )
-from test_episode_planning_run import FakePreparationService, _brief as _episode_brief
 
 
 class FakeRunner:
@@ -261,9 +268,11 @@ def test_extraction_profiles_compatible_ignores_budget_and_rationale() -> None:
         }
     )
     deeper = build_analysis_profile(_brief(60))
+    flag_only = base.model_copy(update={"second_pass_for_core_sections": True})
 
     assert extraction_profiles_compatible(base, nudged)
     assert not extraction_profiles_compatible(base, deeper)
+    assert not extraction_profiles_compatible(base, flag_only)
 
 
 def test_scope_claims_and_evidence_drops_deferred_block_support() -> None:
@@ -363,6 +372,110 @@ def test_extract_evidence_skips_only_compatible_selected_blocks(tmp_path) -> Non
     assert skip_snapshots[1] == set()
     assert set(plan.selected_block_ids).issubset(set(deeper.selected_block_ids))
     assert len(deeper.selected_block_ids) > len(plan.selected_block_ids)
+
+
+def test_second_pass_deepens_required_section_block_once(tmp_path) -> None:
+    service, project_id, source_id = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=60,
+        block_count=18,
+        tokens_per_block=100,
+    )
+    store = service.artifact_store
+
+    plan_snapshots: list[set[str]] = []
+    original = service.evidence_extractor.extract_source
+
+    def wrapped(**kwargs):
+        plan = kwargs.get("plan")
+        plan_snapshots.append(set(plan.selected_block_ids) if plan else set())
+        return original(**kwargs)
+
+    service.evidence_extractor.extract_source = wrapped  # type: ignore[method-assign]
+
+    service.extract_evidence(project_id, source_id, model="fake")
+
+    records = {
+        record.block_id: record
+        for record in store.load_block_extractions(project_id, source_id)
+    }
+    # FakeRunner's DocumentMapDraft marks the first block's section required.
+    assert records["block-01"].extraction_pass == 2
+    assert all(
+        record.extraction_pass == 1
+        for block_id, record in records.items()
+        if block_id != "block-01"
+    )
+    # The second-pass call is identifiable as the one targeting only block-01;
+    # pass-1 always selects every block at this coverage target.
+    second_pass_calls = [
+        snapshot for snapshot in plan_snapshots if snapshot == {"block-01"}
+    ]
+    assert len(second_pass_calls) == 1
+
+    aggregate = {
+        record.block_id: record
+        for record in store.load_extractions(project_id, source_id)
+    }
+    assert aggregate["block-01"].extraction_pass == 2
+
+    # A no-op re-run must not re-pay for the second pass.
+    service.extract_evidence(project_id, source_id, model="fake")
+    second_pass_calls_after_rerun = [
+        snapshot for snapshot in plan_snapshots if snapshot == {"block-01"}
+    ]
+    assert len(second_pass_calls_after_rerun) == 1
+
+
+def test_second_pass_failure_keeps_the_pass_one_record(tmp_path) -> None:
+    """A pass-2 provider failure must not regress a good pass-1 extraction."""
+
+    class _FailOnSecondCall(FakeRunner):
+        def __init__(self) -> None:
+            self._call_count_by_block: dict[str, int] = {}
+
+        def run(self, *, output_type, variables, **kwargs):
+            if output_type is EvidenceExtractionDraft:
+                block_id = str(variables["block"]["block_id"])
+                count = self._call_count_by_block.get(block_id, 0) + 1
+                self._call_count_by_block[block_id] = count
+                if block_id == "block-01" and count > 1:
+                    raise ModelProviderError("Simulated provider failure on the second pass.")
+            return super().run(output_type=output_type, variables=variables, **kwargs)
+
+    service, project_id, source_id = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=60,
+        block_count=18,
+        tokens_per_block=100,
+    )
+    store = service.artifact_store
+    service.evidence_extractor = EvidenceExtractorService(_FailOnSecondCall())
+
+    service.extract_evidence(project_id, source_id, model="fake")
+
+    record = next(
+        record
+        for record in store.load_block_extractions(project_id, source_id)
+        if record.block_id == "block-01"
+    )
+    assert record.status == "extracted"
+    assert record.extraction_pass == 1
+    assert record.extraction.claims
+
+
+def test_second_pass_does_not_trigger_below_extended_depth(tmp_path) -> None:
+    service, project_id, source_id = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=18,
+        tokens_per_block=100,
+    )
+    store = service.artifact_store
+    service.extract_evidence(project_id, source_id, model="fake")
+    records = store.load_block_extractions(project_id, source_id)
+    assert records
+    assert all(record.extraction_pass == 1 for record in records)
 
 
 def test_build_claims_and_aggregates_omit_deferred_blocks(tmp_path) -> None:

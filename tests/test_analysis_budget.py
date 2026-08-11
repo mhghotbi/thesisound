@@ -10,7 +10,11 @@ from thesisound.domain import (
     Locator,
     ResearchBrief,
 )
-from thesisound.services.analysis_profile import plan_evidence_extraction
+from thesisound.services.analysis_profile import (
+    build_second_pass_profile,
+    plan_evidence_extraction,
+    required_section_block_ids,
+)
 from thesisound.source_analysis import SourceDocumentBlock
 
 _FIXTURE_PATH = Path(__file__).parent / "fixtures" / "analysis_profile" / "real_run_selection.json"
@@ -72,3 +76,50 @@ def test_real_run_selection_keeps_all_seeds_for_a_long_profile() -> None:
     assert first.target_source_tokens == 108_000
     assert first.seeded_block_count == 40
     assert first.selected_block_ids == second.selected_block_ids
+
+
+def test_required_section_block_ids_returns_only_required_sections_blocks() -> None:
+    document_map = DocumentMap(
+        source_id=_SOURCE_ID,
+        scope_locator=Locator(page_start=1, page_end=2),
+        sections=[
+            DocumentMapSection(
+                section_id="sec-required",
+                source_block_ids=["block-1"],
+                title="Required",
+                function="argument",
+                required_for_global_understanding=True,
+            ),
+            DocumentMapSection(
+                section_id="sec-optional",
+                source_block_ids=["block-2"],
+                title="Optional",
+                function="example",
+                required_for_global_understanding=False,
+            ),
+        ],
+    )
+
+    assert required_section_block_ids(document_map, ["block-1", "block-2"]) == {"block-1"}
+    # A required block outside the passed-in scope is not returned.
+    assert required_section_block_ids(document_map, ["block-2"]) == set()
+    assert required_section_block_ids(document_map, []) == set()
+
+
+def test_build_second_pass_profile_raises_levers_to_the_ceiling() -> None:
+    brief, document_map, blocks = _real_run_inputs()
+    profile = plan_evidence_extraction(brief, document_map, blocks).profile
+    # The fixture brief resolves to the brief tier: neither lever starts at the ceiling.
+    assert profile.neighbor_context_blocks == 0
+    assert profile.max_claims_per_block == 2
+
+    deepened = build_second_pass_profile(profile)
+
+    assert deepened.depth == profile.depth
+    assert deepened.neighbor_context_blocks == 2
+    assert deepened.max_claims_per_block == 12
+    assert deepened.include_examples is True
+    assert deepened.include_objections_and_responses is True
+    assert deepened.rationale[-1].startswith("Second pass:")
+    # model_copy leaves the original untouched.
+    assert profile.neighbor_context_blocks == 0

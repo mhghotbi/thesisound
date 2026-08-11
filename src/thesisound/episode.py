@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from thesisound.domain import (
     DeliberatelyOmittedClaim,
     EvidenceItem,
+    MustNotBeLostPoint,
     coerce_deliberately_omitted_claims,
 )
 from thesisound.source_analysis import SourceDocumentBlock
@@ -196,3 +197,23 @@ class EpisodePreparationManifest(BaseModel):
     model_run_ids: list[UUID] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     last_error: str | None = None
+
+
+class MustNotBeLostReviewItem(BaseModel):
+    point: MustNotBeLostPoint
+    reflected_in_claims: list[str] = Field(default_factory=list)
+    used_in_plan: bool = False
+
+
+class MustNotBeLostReview(BaseModel):
+    """Deterministic cross-reference: did each safety-net flag survive into the plan?
+
+    Non-blocking by construction -- this is a human-review surface, not a gate. A
+    flagged item with no reflected claim, or one whose claim was deliberately
+    omitted, is surfaced here rather than silently dropped.
+    """
+
+    project_id: UUID
+    items: list[MustNotBeLostReviewItem] = Field(default_factory=list)
+    unused_count: int = Field(ge=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

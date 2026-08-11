@@ -15,7 +15,9 @@ from thesisound.domain import (
     DocumentMap,
     DocumentMapSection,
     EvidenceExtraction,
+    ExtractedAuxiliaryPoint,
     Locator,
+    MustNotBeLostPoint,
     Project,
     ProjectState,
     ResearchBrief,
@@ -59,6 +61,8 @@ from thesisound.source_analysis import (
     ClaimDraft,
     ClaimReconciliationDraft,
     CrossSectionThreadDraft,
+    DefinitionDraft,
+    DistinctionDraft,
     DocumentMapDraft,
     DocumentMapDraftSection,
     EvidenceClaimDraft,
@@ -604,6 +608,128 @@ def test_evidence_validator_rejects_excerpt_not_in_block() -> None:
 
     with pytest.raises(DeterministicValidationError, match="not present"):
         validate_evidence_extraction(record.extraction, block)
+
+
+def test_extract_source_materializes_auxiliary_evidence_with_provenance() -> None:
+    source_id = uuid4()
+    block = BlockBuilder().build(_parsed_document(), source_id=source_id)[0][0]
+
+    class RichRunner:
+        def run(
+            self,
+            *,
+            project_id: UUID,
+            stage: str,
+            variables: dict[str, object],
+            output_type,
+            model: str,
+            validator=None,
+            **_: object,
+        ):
+            if output_type is DocumentMapDraft:
+                blocks = variables["blocks"]
+                output = DocumentMapDraft(
+                    working_thesis="The chapter distinguishes action from fabrication.",
+                    sections=[
+                        DocumentMapDraftSection(
+                            section_id="sec-001",
+                            source_block_ids=[item["block_id"] for item in blocks],
+                            title="Action",
+                            function="argument",
+                            key_concepts=["action"],
+                            required_for_global_understanding=True,
+                        )
+                    ],
+                )
+            else:
+                assert output_type is EvidenceExtractionDraft
+                target_block = variables["block"]
+                assert isinstance(target_block, dict)
+                excerpt = str(target_block["text"]).split(".")[0].strip()
+                output = EvidenceExtractionDraft(
+                    segment_function="argument",
+                    claims=[
+                        EvidenceClaimDraft(
+                            claim="Action occurs directly between persons.",
+                            claim_type=ClaimType.AUTHOR_POSITION,
+                            supporting_excerpt=excerpt,
+                            support_kind="direct",
+                            confidence=0.9,
+                        )
+                    ],
+                    definitions=[
+                        DefinitionDraft(
+                            term="Action",
+                            definition="Direct disclosure between persons.",
+                        )
+                    ],
+                    distinctions=[
+                        DistinctionDraft(
+                            item_a="Action",
+                            item_b="Fabrication",
+                            distinction="Action cannot be repeated identically.",
+                        )
+                    ],
+                    examples=["Speech in the assembly."],
+                    objections=["Some deny action is distinct from labor."],
+                    responses=["The distinction rests on plurality, not effort."],
+                    must_not_be_lost=["The link between action and plurality."],
+                )
+            if validator is not None:
+                last_error: Exception | None = None
+                for _ in range(5):
+                    try:
+                        validator(output)
+                        last_error = None
+                        break
+                    except DeterministicValidationError as exc:
+                        last_error = exc
+                if last_error is not None:
+                    raise last_error
+            record = ModelRunRecord(
+                project_id=project_id,
+                stage=stage,
+                prompt_id=stage,
+                prompt_version="test",
+                prompt_hash="test",
+                input_hash="test",
+                provider="fake",
+                model=model,
+                output_model=output_type.__name__,
+                status="succeeded",
+            )
+            return ModelExecution(output=output, record=record)
+
+    runner = RichRunner()
+    document_map, _ = DocumentMapperService(runner).map_document(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=[block],
+        model="fake",
+    )
+    record = EvidenceExtractorService(runner).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=[block],
+        document_map=document_map,
+        model="fake",
+    )[0][0]
+
+    extraction = record.extraction
+    assert extraction.definitions[0].source_id == source_id
+    assert extraction.definitions[0].block_id == block.block_id
+    assert extraction.definitions[0].locator == block.locator
+    assert extraction.distinctions[0].source_id == source_id
+    assert extraction.distinctions[0].block_id == block.block_id
+    for point in (*extraction.examples, *extraction.objections, *extraction.responses):
+        assert isinstance(point, ExtractedAuxiliaryPoint)
+        assert point.source_id == source_id
+        assert point.block_id == block.block_id
+        assert point.locator == block.locator
+    assert isinstance(extraction.must_not_be_lost[0], MustNotBeLostPoint)
+    assert extraction.must_not_be_lost[0].text == "The link between action and plurality."
+    assert extraction.must_not_be_lost[0].source_id == source_id
+    assert extraction.must_not_be_lost[0].block_id == block.block_id
 
 
 def test_complete_one_source_pipeline_writes_auditable_artifacts(

@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, EpisodePlan, EpisodeSegment, ResearchBrief
+from thesisound.domain import (
+    ClaimRecord,
+    EpisodePlan,
+    EpisodeSegment,
+    ExtractedAuxiliaryPoint,
+    ExtractedDefinition,
+    ExtractedDistinction,
+    ResearchBrief,
+)
 from thesisound.episode import (
     ClaimPriorityReport,
     CoverageReport,
@@ -30,6 +38,11 @@ class EpisodePlannerService:
         priorities: ClaimPriorityReport,
         disagreement_graph: DisagreementGraph,
         extraction_plans: list[EvidenceExtractionPlan],
+        definitions: list[ExtractedDefinition],
+        distinctions: list[ExtractedDistinction],
+        examples: list[ExtractedAuxiliaryPoint],
+        objections: list[ExtractedAuxiliaryPoint],
+        responses: list[ExtractedAuxiliaryPoint],
         model: str,
         prompt_version: str | None = None,
     ) -> tuple[EpisodePlan, EpisodePlanDraft, ModelRunRecord]:
@@ -41,6 +54,10 @@ class EpisodePlannerService:
             raise ValueError("Deterministic budget is insufficient for episode planning.")
         claim_ids = {claim.claim_id for claim in claims}
         priority_by_id = {item.claim_id: item for item in priorities.priorities}
+        # Grounding material, not claim inventory: no claim_ids, not must-include/
+        # deferred-scored, and not subject to _validate_draft's used-or-omitted gate.
+        # The prompt is instructed to draw on this instead of inventing examples,
+        # objections, responses, definitions, and distinctions from claims alone.
         execution = self.model_runner.run(
             project_id=project_id,
             stage="episode_plan",
@@ -55,6 +72,11 @@ class EpisodePlannerService:
                 "extraction_plans": [
                     plan.model_dump(mode="json") for plan in extraction_plans
                 ],
+                "definitions": [item.model_dump(mode="json") for item in definitions],
+                "distinctions": [item.model_dump(mode="json") for item in distinctions],
+                "examples": [item.model_dump(mode="json") for item in examples],
+                "objections": [item.model_dump(mode="json") for item in objections],
+                "responses": [item.model_dump(mode="json") for item in responses],
             },
             output_type=EpisodePlanDraft,
             model=model,

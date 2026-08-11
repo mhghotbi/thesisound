@@ -16,6 +16,7 @@ from thesisound.episode import (
     EpisodePlanDraft,
     EpisodePreparationManifest,
     EpisodeStageInputs,
+    MustNotBeLostReview,
     SegmentEvidencePack,
 )
 
@@ -123,6 +124,19 @@ class EpisodeArtifactStore:
             SegmentEvidencePack.model_validate(item)
             for item in self._read_jsonl(path)
         ]
+
+    def save_must_not_be_lost_review(self, review: MustNotBeLostReview) -> None:
+        self._write_json(
+            self.episode_dir(review.project_id) / "must-not-be-lost-review.json",
+            review,
+        )
+
+    def load_must_not_be_lost_review(self, project_id: UUID) -> MustNotBeLostReview:
+        return MustNotBeLostReview.model_validate_json(
+            (self.episode_dir(project_id) / "must-not-be-lost-review.json").read_text(
+                encoding="utf-8"
+            )
+        )
 
     def save_stage_inputs(self, project_id: UUID, inputs: EpisodeStageInputs) -> None:
         self._write_json(self.episode_dir(project_id) / "stage-inputs.json", inputs)

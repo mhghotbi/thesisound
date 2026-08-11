@@ -10,7 +10,11 @@ from thesisound.domain import (
     ClaimRecord,
     ClaimType,
     EvidenceExtraction,
+    ExtractedAuxiliaryPoint,
+    ExtractedDefinition,
+    ExtractedDistinction,
     Locator,
+    MustNotBeLostPoint,
     SupportStatus,
 )
 
@@ -168,8 +172,6 @@ class EvidenceExtractionDraft(BaseModel):
     examples: list[str] = Field(default_factory=list)
     objections: list[str] = Field(default_factory=list)
     responses: list[str] = Field(default_factory=list)
-    references_to_other_sections: list[str] = Field(default_factory=list)
-    unresolved_context: list[str] = Field(default_factory=list)
     must_not_be_lost: list[str] = Field(default_factory=list)
 
 
@@ -203,6 +205,7 @@ class BlockEvidenceExtraction(BaseModel):
     status: Literal["extracted", "rejected", "skipped"] = "extracted"
     rejection_reason: str | None = None
     failure_kind: Literal["contract", "provider"] | None = None
+    extraction_pass: int = Field(default=1, ge=1)
 
 
 class ClaimDraft(BaseModel):
@@ -224,6 +227,14 @@ class ClaimLedger(BaseModel):
     claims: list[ClaimRecord] = Field(default_factory=list)
     unresolved_evidence_ids: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    # Deduplicated deterministically from block extractions in claim_reconciler.py --
+    # not model output, so they carry no separate reconciliation draft/prompt.
+    definitions: list[ExtractedDefinition] = Field(default_factory=list)
+    distinctions: list[ExtractedDistinction] = Field(default_factory=list)
+    examples: list[ExtractedAuxiliaryPoint] = Field(default_factory=list)
+    objections: list[ExtractedAuxiliaryPoint] = Field(default_factory=list)
+    responses: list[ExtractedAuxiliaryPoint] = Field(default_factory=list)
+    must_not_be_lost: list[MustNotBeLostPoint] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def require_unique_claim_ids(self) -> ClaimLedger:

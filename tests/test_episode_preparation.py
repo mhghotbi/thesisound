@@ -9,9 +9,14 @@ from thesisound import tracing
 from thesisound.domain import (
     ClaimRecord,
     ClaimType,
+    EpisodePlan,
+    EpisodeSegment,
     EvidenceExtraction,
     EvidenceItem,
+    ExtractedAuxiliaryPoint,
+    ExtractedDefinition,
     Locator,
+    MustNotBeLostPoint,
     Project,
     ProjectState,
     ResearchBrief,
@@ -19,7 +24,12 @@ from thesisound.domain import (
     TopicType,
 )
 from thesisound.episode import (
+    ClaimPriorityRecord,
+    ClaimPriorityReport,
     CoverageAuditDraft,
+    CoverageReport,
+    DisagreementGraph,
+    EpisodeBudgetReport,
     EpisodePlanDraft,
     EpisodeSegmentDraft,
     ObjectiveCoverageDraft,
@@ -32,7 +42,10 @@ from thesisound.services.disagreement_graph import DisagreementGraphBuilder
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.episode_budget import EpisodeBudgetEstimator
 from thesisound.services.episode_planner import EpisodePlannerService
-from thesisound.services.episode_preparation_service import EpisodePreparationService
+from thesisound.services.episode_preparation_service import (
+    CorpusArtifacts,
+    EpisodePreparationService,
+)
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
@@ -320,6 +333,236 @@ def test_prepare_episode_writes_plan_and_grounded_packs(tmp_path: Path) -> None:
     assert (episode_dir / "disagreement-graph.json").exists()
     assert (episode_dir / "episode-plan.json").exists()
     assert (episode_dir / "evidence-packs.jsonl").exists()
+    assert (episode_dir / "must-not-be-lost-review.json").exists()
+
+
+class _SpyPlanRunner:
+    """Captures the variables sent to the episode_plan prompt for one call."""
+
+    def __init__(self) -> None:
+        self.captured_variables: dict[str, object] | None = None
+
+    def run(
+        self,
+        *,
+        project_id: UUID,
+        stage: str,
+        variables: dict[str, object],
+        output_type,
+        model: str,
+        validator=None,
+        **_: object,
+    ):
+        assert output_type is EpisodePlanDraft
+        self.captured_variables = variables
+        output = EpisodePlanDraft(
+            title="Action and fabrication",
+            listener_outcome="The listener can explain the central distinction.",
+            segments=[
+                EpisodeSegmentDraft(
+                    title="Core distinction",
+                    purpose="Introduce the central conceptual distinction.",
+                    target_minutes=10,
+                    claim_ids=["clm-1"],
+                    key_question="What is the central distinction?",
+                    speaker_dynamic="explanation",
+                )
+            ],
+        )
+        if validator is not None:
+            validator(output)
+        record = ModelRunRecord(
+            project_id=project_id,
+            stage=stage,
+            prompt_id=stage,
+            prompt_version="test",
+            prompt_hash="test",
+            input_hash="test",
+            provider="fake",
+            model=model,
+            output_model=output_type.__name__,
+            status="succeeded",
+        )
+        return ModelExecution(output=output, record=record)
+
+
+def test_episode_planner_sends_grounded_auxiliary_evidence_to_the_prompt() -> None:
+    """The prompt must receive real extracted content, not be left to invent it."""
+
+    project_id = uuid4()
+    claim = ClaimRecord(
+        claim_id="clm-1",
+        claim="Action occurs directly between persons.",
+        claim_type=ClaimType.AUTHOR_POSITION,
+        evidence_ids=["ev-1"],
+        support_status=SupportStatus.STRONG,
+    )
+    definition = ExtractedDefinition(
+        term="Action",
+        definition="Direct disclosure between persons.",
+        source_id=project_id,
+        block_id="block-1",
+        locator=Locator(page_start=1, page_end=1),
+    )
+    example = ExtractedAuxiliaryPoint(
+        text="Speech in the assembly.",
+        source_id=project_id,
+        block_id="block-1",
+        locator=Locator(page_start=1, page_end=1),
+    )
+    coverage = CoverageReport(
+        project_id=project_id,
+        central_question_status="well_covered",
+        central_question_claim_ids=[claim.claim_id],
+        max_supported_minutes=10,
+        recommendation="continue",
+        recommendation_reason="The corpus supports the requested duration.",
+        can_plan_episode=True,
+        model_run_id=uuid4(),
+    )
+    budget = EpisodeBudgetReport(
+        project_id=project_id,
+        target_duration_minutes=10,
+        words_per_minute=150,
+        available_claim_seconds=600,
+        original_evidence_tokens=1_000,
+        estimated_supported_minutes=10,
+        model_reported_supported_minutes=10,
+        effective_supported_minutes=10,
+        calibration_status="uncalibrated",
+    )
+    priorities = ClaimPriorityReport(
+        project_id=project_id,
+        target_duration_minutes=10,
+        priorities=[
+            ClaimPriorityRecord(
+                claim_id=claim.claim_id,
+                level="must_include",
+                score=90,
+                estimated_explanation_seconds=60,
+            )
+        ],
+        available_content_seconds=600,
+        estimated_selected_seconds=60,
+    )
+    graph = DisagreementGraph(project_id=project_id)
+
+    runner = _SpyPlanRunner()
+    EpisodePlannerService(runner).plan(
+        project_id=project_id,
+        brief=_brief(10),
+        claims=[claim],
+        coverage=coverage,
+        budget=budget,
+        priorities=priorities,
+        disagreement_graph=graph,
+        extraction_plans=[],
+        definitions=[definition],
+        distinctions=[],
+        examples=[example],
+        objections=[],
+        responses=[],
+        model="fake",
+    )
+
+    assert runner.captured_variables is not None
+    assert runner.captured_variables["definitions"] == [definition.model_dump(mode="json")]
+    assert runner.captured_variables["examples"] == [example.model_dump(mode="json")]
+    assert runner.captured_variables["distinctions"] == []
+    assert runner.captured_variables["objections"] == []
+    assert runner.captured_variables["responses"] == []
+
+
+def test_build_must_not_be_lost_review_distinguishes_used_omitted_and_unreflected() -> None:
+    project_id = uuid4()
+    source_id = uuid4()
+
+    def _point(block_id: str, text: str) -> MustNotBeLostPoint:
+        return MustNotBeLostPoint(
+            text=text,
+            source_id=source_id,
+            block_id=block_id,
+            locator=Locator(page_start=1, page_end=1),
+        )
+
+    used_point = _point("block-used", "Flag reflected in a used claim.")
+    omitted_point = _point("block-omitted", "Flag reflected in an omitted claim.")
+    unreflected_point = _point("block-none", "Flag with no claim at all.")
+
+    corpus = CorpusArtifacts(
+        source_ids=[source_id],
+        claims=[
+            ClaimRecord(
+                claim_id="clm-used",
+                claim="Used claim.",
+                claim_type=ClaimType.AUTHOR_POSITION,
+                evidence_ids=["ev-used"],
+                support_status=SupportStatus.STRONG,
+            ),
+            ClaimRecord(
+                claim_id="clm-omitted",
+                claim="Omitted claim.",
+                claim_type=ClaimType.AUTHOR_POSITION,
+                evidence_ids=["ev-omitted"],
+                support_status=SupportStatus.STRONG,
+            ),
+        ],
+        evidence_items=[
+            EvidenceItem(
+                evidence_id="ev-used",
+                source_id=source_id,
+                block_id="block-used",
+                claim="Used claim.",
+                claim_type=ClaimType.AUTHOR_POSITION,
+                supporting_excerpt="Grounded excerpt for the used claim.",
+                locator=Locator(page_start=1, page_end=1),
+                support_kind="direct",
+                confidence=0.9,
+            ),
+            EvidenceItem(
+                evidence_id="ev-omitted",
+                source_id=source_id,
+                block_id="block-omitted",
+                claim="Omitted claim.",
+                claim_type=ClaimType.AUTHOR_POSITION,
+                supporting_excerpt="Grounded excerpt for the omitted claim.",
+                locator=Locator(page_start=1, page_end=1),
+                support_kind="direct",
+                confidence=0.9,
+            ),
+        ],
+        blocks=[],
+        extraction_plans=[],
+        must_not_be_lost=[used_point, omitted_point, unreflected_point],
+    )
+    plan = EpisodePlan(
+        title="Title",
+        listener_outcome="Outcome",
+        estimated_duration_minutes=5,
+        segments=[
+            EpisodeSegment(
+                segment_id="seg-001",
+                title="Segment",
+                purpose="Purpose",
+                estimated_minutes=5,
+                claim_ids=["clm-used"],
+                key_question="Question?",
+                speaker_dynamic="explanation",
+            )
+        ],
+        deliberately_omitted_claims=[],
+    )
+
+    review = EpisodePreparationService._build_must_not_be_lost_review(project_id, corpus, plan)
+
+    by_block = {item.point.block_id: item for item in review.items}
+    assert by_block["block-used"].used_in_plan is True
+    assert by_block["block-used"].reflected_in_claims == ["clm-used"]
+    assert by_block["block-omitted"].used_in_plan is False
+    assert by_block["block-omitted"].reflected_in_claims == ["clm-omitted"]
+    assert by_block["block-none"].used_in_plan is False
+    assert by_block["block-none"].reflected_in_claims == []
+    assert review.unused_count == 2
 
 
 def _prepared_project(root: Path, duration: int = 10) -> Project:

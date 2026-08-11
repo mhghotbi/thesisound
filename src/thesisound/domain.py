@@ -242,6 +242,8 @@ class DocumentMap(BaseModel):
 class ExtractedDefinition(BaseModel):
     term: str
     definition: str
+    source_id: UUID
+    block_id: str
     locator: Locator
 
 
@@ -249,6 +251,35 @@ class ExtractedDistinction(BaseModel):
     item_a: str
     item_b: str
     distinction: str
+    source_id: UUID
+    block_id: str
+    locator: Locator
+
+
+class ExtractedAuxiliaryPoint(BaseModel):
+    """A grounded example, objection, or response from one block.
+
+    One shape for all three categories: the field they live under on
+    ``EvidenceExtraction`` already carries the semantic distinction.
+    """
+
+    text: str
+    source_id: UUID
+    block_id: str
+    locator: Locator
+
+
+class MustNotBeLostPoint(BaseModel):
+    """Block-level content flagged important but not turned into a claim.
+
+    A safety-net flag, not a proposition. Kept distinct from
+    ``ExtractedAuxiliaryPoint`` so the must-not-be-lost review artifact stays
+    self-documenting.
+    """
+
+    text: str
+    source_id: UUID
+    block_id: str
     locator: Locator
 
 
@@ -270,12 +301,10 @@ class EvidenceExtraction(BaseModel):
     claims: list[EvidenceItem] = Field(default_factory=list)
     definitions: list[ExtractedDefinition] = Field(default_factory=list)
     distinctions: list[ExtractedDistinction] = Field(default_factory=list)
-    examples: list[str] = Field(default_factory=list)
-    objections: list[str] = Field(default_factory=list)
-    responses: list[str] = Field(default_factory=list)
-    references_to_other_sections: list[str] = Field(default_factory=list)
-    unresolved_context: list[str] = Field(default_factory=list)
-    must_not_be_lost: list[str] = Field(default_factory=list)
+    examples: list[ExtractedAuxiliaryPoint] = Field(default_factory=list)
+    objections: list[ExtractedAuxiliaryPoint] = Field(default_factory=list)
+    responses: list[ExtractedAuxiliaryPoint] = Field(default_factory=list)
+    must_not_be_lost: list[MustNotBeLostPoint] = Field(default_factory=list)
 
 
 class ClaimRecord(BaseModel):

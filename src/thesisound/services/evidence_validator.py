@@ -46,6 +46,10 @@ def validate_evidence_extraction(
             distinction.locator.page_end,
             block,
         )
+    for point in (*extraction.examples, *extraction.objections, *extraction.responses):
+        _validate_locator(point.locator.page_start, point.locator.page_end, block)
+    for point in extraction.must_not_be_lost:
+        _validate_locator(point.locator.page_start, point.locator.page_end, block)
 
 
 def validate_evidence_collection(

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import re
+from collections.abc import Iterable
 
 from thesisound import tracing
 from thesisound.domain import DocumentMap, DocumentMapSection, ResearchBrief
@@ -55,6 +56,13 @@ _FUNCTION_WEIGHT = {
     "transition": 10,
     "front_matter": 0,
 }
+# Second-pass deepening pushes these two levers to the schema ceiling (AnalysisProfile
+# caps max_claims_per_block at 12 and neighbor_context_blocks at 2). For today's only
+# caller (depth == "extended") the other two levers -- include_examples and
+# include_objections_and_responses -- are already forced on by build_analysis_profile,
+# so claim capacity and neighbor context are the only levers with real headroom.
+_SECOND_PASS_MAX_CLAIMS_PER_BLOCK = 12
+_SECOND_PASS_NEIGHBOR_CONTEXT_BLOCKS = 2
 
 
 def build_analysis_profile(brief: ResearchBrief) -> AnalysisProfile:
@@ -109,6 +117,33 @@ def build_analysis_profile(brief: ResearchBrief) -> AnalysisProfile:
         include_objections_and_responses=critical_mode or depth in {"deep", "extended"},
         second_pass_for_core_sections=depth == "extended",
         rationale=rationale,
+    )
+
+
+def build_second_pass_profile(profile: AnalysisProfile) -> AnalysisProfile:
+    """Deepen a profile for one re-extraction pass over required-section blocks.
+
+    Ephemeral: the result is never persisted as a source's canonical profile, only
+    passed to a single ``extract_source`` call. ``depth`` is left unchanged so the
+    second pass stays identifiable as the same analysis tier with every extraction
+    lever pushed to its ceiling, rather than a different tier.
+    """
+
+    return profile.model_copy(
+        update={
+            "neighbor_context_blocks": max(
+                profile.neighbor_context_blocks, _SECOND_PASS_NEIGHBOR_CONTEXT_BLOCKS
+            ),
+            "max_claims_per_block": max(
+                profile.max_claims_per_block, _SECOND_PASS_MAX_CLAIMS_PER_BLOCK
+            ),
+            "include_examples": True,
+            "include_objections_and_responses": True,
+            "rationale": [
+                *profile.rationale,
+                "Second pass: deepened extraction for a required_for_global_understanding section.",
+            ],
+        }
     )
 
 
@@ -240,6 +275,32 @@ def plan_evidence_extraction(
             required_section_count=len(required_sections),
             seeded_block_count=seeded_block_count,
         )
+
+
+def required_section_block_ids(
+    document_map: DocumentMap,
+    block_ids: Iterable[str],
+) -> set[str]:
+    """Subset of ``block_ids`` whose document-map section is globally required.
+
+    Reuses the same section-lookup construction as ``plan_evidence_extraction`` so a
+    second extraction pass can target required-section blocks without a dedicated
+    field on ``EvidenceExtractionPlan`` -- this is cheap to re-derive from the
+    document map already in hand at the call site.
+    """
+
+    candidates = set(block_ids)
+    section_by_block = {
+        block_id: section
+        for section in document_map.sections
+        for block_id in section.source_block_ids
+        if block_id in candidates
+    }
+    return {
+        block_id
+        for block_id, section in section_by_block.items()
+        if section.required_for_global_understanding
+    }
 
 
 def _required_section_seeds(

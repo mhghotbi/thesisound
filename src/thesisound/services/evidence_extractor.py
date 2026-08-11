@@ -13,8 +13,10 @@ from thesisound.domain import (
     DocumentMapSection,
     EvidenceExtraction,
     EvidenceItem,
+    ExtractedAuxiliaryPoint,
     ExtractedDefinition,
     ExtractedDistinction,
+    MustNotBeLostPoint,
 )
 from thesisound.modeling import (
     DeterministicValidationError,
@@ -771,6 +773,8 @@ def _materialize_extraction(
             ExtractedDefinition(
                 term=item.term,
                 definition=item.definition,
+                source_id=block.source_id,
+                block_id=block.block_id,
                 locator=block.locator.model_copy(deep=True),
             )
             for item in draft.definitions
@@ -780,17 +784,40 @@ def _materialize_extraction(
                 item_a=item.item_a,
                 item_b=item.item_b,
                 distinction=item.distinction,
+                source_id=block.source_id,
+                block_id=block.block_id,
                 locator=block.locator.model_copy(deep=True),
             )
             for item in draft.distinctions
         ],
-        examples=draft.examples,
-        objections=draft.objections,
-        responses=draft.responses,
-        references_to_other_sections=draft.references_to_other_sections,
-        unresolved_context=draft.unresolved_context,
-        must_not_be_lost=draft.must_not_be_lost,
+        examples=_materialize_points(draft.examples, block),
+        objections=_materialize_points(draft.objections, block),
+        responses=_materialize_points(draft.responses, block),
+        must_not_be_lost=[
+            MustNotBeLostPoint(
+                text=text,
+                source_id=block.source_id,
+                block_id=block.block_id,
+                locator=block.locator.model_copy(deep=True),
+            )
+            for text in draft.must_not_be_lost
+        ],
     )
+
+
+def _materialize_points(
+    texts: list[str],
+    block: SourceDocumentBlock,
+) -> list[ExtractedAuxiliaryPoint]:
+    return [
+        ExtractedAuxiliaryPoint(
+            text=text,
+            source_id=block.source_id,
+            block_id=block.block_id,
+            locator=block.locator.model_copy(deep=True),
+        )
+        for text in texts
+    ]
 
 
 def _has_auxiliary_content(extraction: EvidenceExtraction) -> bool:
