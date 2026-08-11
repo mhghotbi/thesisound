@@ -27,6 +27,8 @@ from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_run import ScriptBuildRunService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.error_messages import user_facing_error
+from thesisound.web.source_manifest import UiSourceManifestStore
+from thesisound.web.source_manifest import UiSourceManifestStore
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
@@ -367,6 +369,10 @@ def _segment_views(
     if script is None or project.episode_plan is None:
         return []
     source_titles = {source.source_id: source.title for source in project.sources}
+    for item in UiSourceManifestStore(
+        source_store.workspace_root / str(project.project_id)
+    ).load():
+        source_titles.setdefault(item.source_id, item.title)
     source_ids = [source.source_id for source in project.sources if source.usable_as_evidence]
     if not project.sources:
         source_ids = source_store.list_claim_ready_source_ids(project.project_id)
@@ -379,19 +385,35 @@ def _segment_views(
         for item in evidence_items:
             evidence_by_id[item.evidence_id] = {
                 "evidence_id": item.evidence_id,
+                "status": "ok",
                 "source_id": str(source_id),
-                "source_title": source_titles.get(source_id, str(source_id)),
+                "source_title": source_titles.get(source_id, "منبع بدون عنوان"),
                 "locator": _locator_label(item.locator),
                 "excerpt": item.supporting_excerpt,
             }
 
     turns_by_segment: dict[str, list[dict[str, object]]] = {}
     for turn in script.turns:
-        references = [
-            evidence_by_id[evidence_id]
-            for evidence_id in turn.evidence_ids
-            if evidence_id in evidence_by_id
-        ]
+        references: list[dict[str, object]] = []
+        for evidence_id in turn.evidence_ids:
+            found = evidence_by_id.get(evidence_id)
+            if found is not None:
+                references.append(found)
+            else:
+                references.append(
+                    {
+                        "evidence_id": evidence_id,
+                        "status": "unavailable",
+                        "source_id": None,
+                        "source_title": None,
+                        "locator": None,
+                        "excerpt": None,
+                        "message": (
+                            "این شاهد در دسترس نیست؛ منبع از مجموعه خارج شده "
+                            "یا پروندهٔ شاهد بارگذاری نشد."
+                        ),
+                    }
+                )
         turns_by_segment.setdefault(turn.segment_id, []).append(
             {
                 "turn": turn,

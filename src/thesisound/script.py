@@ -74,6 +74,7 @@ class ScriptCheckIssue(BaseModel):
         "claim_outside_segment",
         "evidence_outside_pack",
         "missing_grounding",
+        "evidence_unlinked_to_claim",
         "duration_mismatch",
         "repetition",
         "glossary_inconsistency",

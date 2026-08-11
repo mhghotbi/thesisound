@@ -107,7 +107,8 @@ class ScriptChecker:
                     )
                 else:
                     expected_evidence.update(claim.evidence_ids)
-            has_linked_evidence = bool(set(turn.evidence_ids) & expected_evidence)
+            turn_evidence = set(turn.evidence_ids)
+            has_linked_evidence = bool(turn_evidence & expected_evidence)
             if not turn.editorial_only and not has_linked_evidence:
                 issues.append(
                     ScriptCheckIssue(
@@ -117,6 +118,20 @@ class ScriptChecker:
                         issue_type="missing_grounding",
                         explanation=(
                             "Substantive turn has no evidence linked to its claim IDs."
+                        ),
+                    )
+                )
+            unlinked_evidence = sorted(turn_evidence - expected_evidence)
+            if not turn.editorial_only and unlinked_evidence:
+                issues.append(
+                    ScriptCheckIssue(
+                        turn_id=turn.turn_id,
+                        segment_id=turn.segment_id,
+                        severity="blocking",
+                        issue_type="evidence_unlinked_to_claim",
+                        explanation=(
+                            "Turn cites evidence not linked to its claim IDs: "
+                            + ", ".join(unlinked_evidence)
                         ),
                     )
                 )

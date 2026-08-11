@@ -283,6 +283,77 @@ def test_verified_script_page_shows_quality_and_source_trace(tmp_path: Path) -> 
     assert "SCRIPT_VERIFIED" in page.text
 
 
+def test_verified_script_page_shows_drawer_for_unavailable_evidence(
+    tmp_path: Path,
+) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.SCRIPT_VERIFIED)
+    project.sources = []
+    project.script = Script(
+        title="سناریوی شاهد ناموجود",
+        turns=[
+            ScriptTurn(
+                turn_id="seg-1-turn-001",
+                segment_id="seg-1",
+                speaker="A",
+                spoken_text_fa="این گفته شاهدی دارد که بار نمی‌شود.",
+                claim_ids=["claim-1"],
+                evidence_ids=["evidence-missing"],
+            )
+        ],
+    )
+    workspace.save_project(project)
+    approval = EpisodePlanApproval(
+        project_id=project.project_id,
+        plan_hash=episode_plan_hash(project.episode_plan),
+        approved_by="09120000000",
+    )
+    EpisodePlanApprovalStore(settings.workspace_root).save(approval)
+    ScriptBuildRunStore(settings.workspace_root).save(
+        ScriptBuildRun(
+            project_id=project.project_id,
+            approved_plan_hash=approval.plan_hash,
+            approved_by=approval.approved_by,
+            status="succeeded",
+            stage="complete",
+        )
+    )
+    script_store = ScriptArtifactStore(settings.workspace_root)
+    script_store.save_script(project.project_id, project.script)
+    script_store.save_checks(
+        ScriptCheckReport(
+            project_id=project.project_id,
+            verdict="pass",
+            word_count=7,
+            estimated_minutes=0.05,
+            substantive_turn_count=1,
+        )
+    )
+    script_store.save_verification(
+        project.project_id,
+        VerificationDraft(verdict="pass", unsupported_claim_ratio=0),
+    )
+    script_store.save_manifest(
+        ScriptPipelineManifest(project_id=project.project_id, status="verified")
+    )
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+    )
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/script")
+
+    assert page.status_code == 200
+    assert "این گفته از کجا آمد؟" in page.text
+    assert "این شاهد در دسترس نیست" in page.text
+    assert "evidence-drawer" in page.text
+
+
 def _seed_review_required(settings: Settings) -> Project:
     workspace = WorkspaceStore(settings.workspace_root)
     project = _project(ProjectState.SCRIPT_REVIEW_REQUIRED)
