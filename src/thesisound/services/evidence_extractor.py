@@ -96,9 +96,10 @@ class EvidenceExtractorService:
         }
         index_by_id = {block.block_id: index for index, block in enumerate(blocks)}
         max_attempts = _evidence_max_attempts(self.model_runner, prompt_version)
+        batch_prompt_version = _batch_prompt_version(self.model_runner, prompt_version)
         batch_max_attempts = _evidence_max_attempts(
             self.model_runner,
-            prompt_version,
+            batch_prompt_version,
             "evidence_extraction_batch",
         )
 
@@ -114,6 +115,10 @@ class EvidenceExtractorService:
 
         units = _plan_units(pending, self.batch_size)
         results: dict[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]] = {}
+        # A batch can successfully return empty entries for every block, causing all
+        # blocks to fall back to single-block calls. Keep that billed batch run even
+        # though no per-block outcome refers to it.
+        batch_runs: list[ModelRunRecord] = []
         # Callers persist from `on_extraction`, so serialize the callback here rather than
         # asking every caller to be thread-safe. The model call itself stays outside it.
         handover = Lock()
@@ -126,7 +131,10 @@ class EvidenceExtractorService:
 
         def work(
             unit: list[SourceDocumentBlock],
-        ) -> list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]]:
+        ) -> tuple[
+            list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]],
+            list[ModelRunRecord],
+        ]:
             if len(unit) == 1:
                 block = unit[0]
                 with tracing.span(
@@ -149,7 +157,7 @@ class EvidenceExtractorService:
                         prompt_version=prompt_version,
                         max_attempts=max_attempts,
                     )
-                return [(block.block_id, outcome)]
+                return [(block.block_id, outcome)], []
             with tracing.span(
                 "corpus.extract_evidence_batch",
                 component="corpus",
@@ -167,17 +175,22 @@ class EvidenceExtractorService:
                     document_map=document_map,
                     profile=profile,
                     model=model,
-                    prompt_version=prompt_version,
+                    prompt_version=batch_prompt_version,
                     max_attempts=batch_max_attempts,
                     fallback_max_attempts=max_attempts,
                     fallback_allowed=any_block_succeeded,
                 )
 
         def hand_over(
-            outcomes: list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]],
+            work_result: tuple[
+                list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]],
+                list[ModelRunRecord],
+            ],
         ) -> str | None:
             nonlocal consecutive_skipped, succeeded
+            outcomes, completed_batch_runs = work_result
             with handover:
+                batch_runs.extend(completed_batch_runs)
                 for block_id, outcome in outcomes:
                     results[block_id] = outcome
                     if on_extraction is not None:
@@ -253,6 +266,10 @@ class EvidenceExtractorService:
             if outcome[1] is not None and outcome[1].run_id not in seen_runs:
                 seen_runs.add(outcome[1].run_id)
                 runs.append(outcome[1])
+        for run in batch_runs:
+            if run.run_id not in seen_runs:
+                seen_runs.add(run.run_id)
+                runs.append(run)
         return records, runs
 
     def _extract_block(
@@ -363,7 +380,10 @@ class EvidenceExtractorService:
         max_attempts: int,
         fallback_max_attempts: int,
         fallback_allowed: Callable[[], bool],
-    ) -> list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]]:
+    ) -> tuple[
+        list[tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]],
+        list[ModelRunRecord],
+    ]:
         """Extract one consecutive unit, falling back only for affected blocks."""
 
         unit_ids = {block.block_id for block in unit}
@@ -398,6 +418,7 @@ class EvidenceExtractorService:
 
         fallback_ids: set[str] = set()
         outcomes: dict[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]] = {}
+        batch_run: ModelRunRecord | None = None
         try:
             execution = self.model_runner.run(
                 project_id=project_id,
@@ -409,6 +430,7 @@ class EvidenceExtractorService:
                 prompt_version=prompt_version,
                 validator=validator,
             )
+            batch_run = execution.record
             for entry in execution.output.entries:
                 block = unit[entry.block_index - 1]
                 extraction = _materialize_extraction(entry.extraction, block)
@@ -444,7 +466,7 @@ class EvidenceExtractorService:
                         ),
                     )
                     for block in unit
-                ]
+                ], []
             fallback_ids = set(unit_ids)
         except StructuredOutputError:
             fallback_ids = set(unit_ids)
@@ -468,7 +490,10 @@ class EvidenceExtractorService:
                 prompt_version=prompt_version,
                 max_attempts=fallback_max_attempts,
             )
-        return [(block.block_id, outcomes[block.block_id]) for block in unit]
+        return (
+            [(block.block_id, outcomes[block.block_id]) for block in unit],
+            [batch_run] if batch_run is not None else [],
+        )
 
 
 def _evidence_max_attempts(
@@ -484,6 +509,26 @@ def _evidence_max_attempts(
     except Exception:
         return _DEFAULT_MAX_ATTEMPTS
     return contract.max_attempts
+
+
+def _batch_prompt_version(model_runner: ModelRunner, prompt_version: str | None) -> str | None:
+    """Use the requested version only when the batch prompt provides it.
+
+    ``--prompt-version`` selects the single-block prompt. Batch prompts have
+    their own release cadence, so an otherwise valid single-block version must
+    fall back to the latest compatible batch contract instead of failing.
+    """
+
+    if prompt_version is None:
+        return None
+    loader = getattr(model_runner, "prompt_loader", None)
+    if loader is None:
+        return None
+    try:
+        loader.load_contract("evidence_extraction_batch", version=prompt_version)
+    except Exception:
+        return None
+    return prompt_version
 
 
 def _validate_draft(

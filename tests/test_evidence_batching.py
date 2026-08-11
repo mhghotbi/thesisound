@@ -76,6 +76,7 @@ class BatchRunner:
     def __init__(self, *, mode: str = "normal") -> None:
         self.mode = mode
         self.calls: list[tuple[str, list[str]]] = []
+        self.batch_prompt_versions: list[str | None] = []
 
     def run(
         self,
@@ -96,6 +97,9 @@ class BatchRunner:
         else:
             assert stage == "evidence_extraction_batch"
             assert output_type is BatchEvidenceExtractionDraft
+            prompt_version = _.get("prompt_version")
+            assert prompt_version is None or isinstance(prompt_version, str)
+            self.batch_prompt_versions.append(prompt_version)
             payload = variables["blocks"]
             assert isinstance(payload, list)
             texts = [str(block["text"]) for block in payload]
@@ -112,6 +116,14 @@ class BatchRunner:
                 entries.pop()
             if self.mode == "cross_block":
                 entries[1].extraction = _draft(texts[0])
+            if self.mode == "empty":
+                entries = [
+                    BatchEvidenceEntryDraft(
+                        block_index=index,
+                        extraction=EvidenceExtractionDraft(segment_function="argument"),
+                    )
+                    for index in range(1, len(texts) + 1)
+                ]
             output = BatchEvidenceExtractionDraft(entries=entries)
         if stage == "evidence_extraction":
             self.calls.append((stage, texts))
@@ -236,8 +248,46 @@ def test_batch_prompt_contract_and_trimmed_payload() -> None:
     assert bundle.contract.output_model == "BatchEvidenceExtractionDraft"
     assert bundle.contract.model_tier == "fast"
     assert bundle.contract.max_attempts == 3
+    assert "BatchEvidenceExtractionDraft" in bundle.system_prompt
     assert "{{" not in bundle.user_prompt
     assert blocks[0].block_id not in bundle.user_prompt
+
+
+def test_batch_uses_its_latest_contract_when_single_block_version_is_newer() -> None:
+    source_id, blocks, document_map = _fixture(4)
+    runner = BatchRunner()
+    runner.prompt_loader = PromptLoader()  # type: ignore[attr-defined]
+
+    EvidenceExtractorService(runner, batch_size=4).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+        prompt_version="1.3.0",
+    )
+
+    assert runner.batch_prompt_versions == [None]
+
+
+def test_all_fallback_batch_retains_the_successful_batch_run() -> None:
+    source_id, blocks, document_map = _fixture(4)
+    runner = BatchRunner(mode="empty")
+
+    records, runs = EvidenceExtractorService(runner, batch_size=4).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+    )
+
+    assert all(record.status == "extracted" for record in records)
+    assert [stage for stage, _ in runner.calls] == ["evidence_extraction_batch"] + [
+        "evidence_extraction"
+    ] * 4
+    assert [run.stage for run in runs].count("evidence_extraction_batch") == 1
+    assert len(runs) == 5
 
 
 def test_batch_size_setting_and_constructor_are_bounded() -> None:
