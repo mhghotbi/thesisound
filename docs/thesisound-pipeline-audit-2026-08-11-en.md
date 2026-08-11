@@ -259,6 +259,16 @@ Missing artifacts are concentrated in test, source-discovery, and evidence paths
 
 The repository records resolved models for many calls and has token fields, but no active, versioned pricing table is linked to calls. `pricing_version` and `cost_micros` are null for all 476 ledger calls. Search, URL context, OCR compute, TTS, ASR, storage, bandwidth, and manual review are not captured in a common cost model. Any currency amount would therefore be fabricated; this report does not provide one.
 
+#### Update — 2026-08-11 (post-audit remediation)
+
+**Type:** Measured finding
+
+This finding is now partially resolved; the underlying mechanism required no code changes and was already complete and test-covered (`CostCalculator`, ledger `succeed()`/`fail()`/`reject()`/`reprice()`, and CLI reporting that renders an unpriced call as "unknown," never a silent $0). The only prior blocker was that `config/model-pricing.toml` shipped with zero price rows, by design, to avoid a fabricated number.
+
+`config/model-pricing.toml` now carries Google's public Standard-tier list price for the three Gemini models this project resolves by default (`gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.1-flash-tts-preview`), sourced from `ai.google.dev/gemini-api/docs/pricing` and dated in the table (`pricing_version = "2026-08-11-google-list-price"`, effective from 2026-01-01). Running `thesisound observability-reprice` priced 13 of the 14 real ledger calls (the 14th is the still-`running` stuck call noted elsewhere in this report); `thesisound cost 1296f949-d95b-4771-bbe8-bf2a2e9cb1f5` now reports $0.1634 delivered and $0.0025 wasted on retries/failures. Applying the same table to the 365-record filesystem model-run corpus this audit's Section 5 token/latency tables were built from prices its historical Gemini `structured_text` work at **$2.6350 total**.
+
+This is public list price, not a confirmed negotiated or committed-use rate, and the finding is not fully closed: `okian` (`qwen3.6-35`, `gemma4-31`) has no public price list at all, and separately every historical Okian call in the corpus failed before returning billable usage, so there is nothing to price yet regardless; ASR and `google_search`/`url_context` grounding were deliberately left unpriced because no verified per-operation rate was found for them (the TTS row shows audio-modality tokens priced well above text tokens on the same model family, so reusing the text rate for ASR would likely understate cost rather than approximate it); and OCR compute, storage, bandwidth, and manual review still have no cost model at all, as Section 13 describes. Confidence is high for the priced Gemini `structured_text`/`tts` figures above and unchanged (no data) for everything still unpriced.
+
 ---
 
 ## 5. Performance and Cost Findings

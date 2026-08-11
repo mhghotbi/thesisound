@@ -4,14 +4,31 @@
 # onto every priced call as `pricing_version`, so a later export or CLI query
 # can tell "priced under the January table" apart from "priced after the price
 # change in August". Bump it whenever you edit the rows below.
-version = "unset"
+version = "2026-08-11-google-list-price"
 
-# No active rows by default, on purpose: a model with no matching row here
-# prices as "unknown" everywhere in the CLI, never as a silent, misleading
-# zero. Gemini's public per-token list prices change and vary by region and
-# commitment tier, and Okian is a bespoke provider this project has no public
-# pricing for at all -- so real numbers belong here only once you know your
-# own actual rate. Uncomment and edit the shape below to add one.
+# A model/operation with no matching row here still prices as "unknown"
+# everywhere in the CLI, never as a silent, misleading zero -- that guarantee
+# is why this table shipped empty for so long. The three rows below are
+# Google's public Standard-tier list price for the Gemini models this project
+# actually resolves by default (config.py model_fast / model_strong /
+# model_tts; config/model-routing.toml), fetched from
+# https://ai.google.dev/gemini-api/docs/pricing on 2026-08-11. List price is
+# not necessarily this account's negotiated or committed-use rate -- replace
+# these rows if your actual billing differs, and re-run
+# `thesisound observability-reprice` afterward. OpenRouter (openrouter.ai)
+# lists comparable per-token rates for most of these models too and is a
+# reasonable place to refresh this table from later.
+#
+# Left deliberately unpriced, for reasons that differ per row:
+#   - `okian` (qwen3.6-35, gemma4-31): a bespoke provider with no public price
+#     list at all.
+#   - `google_search` / `url_context`: Gemini grounding can carry an
+#     additional per-request fee on top of token cost that this table has not
+#     verified.
+#   - `asr` on gemini-3.6-flash: the TTS row below shows audio-modality
+#     tokens priced well above text tokens on the same model family, so
+#     reusing the structured_text rate for ASR's audio input would likely
+#     understate cost rather than approximate it.
 #
 # Token rates are micros of currency per one million tokens (1_000_000 micros
 # = one unit of currency), matching the Google Cloud Billing convention, so
@@ -21,22 +38,29 @@ version = "unset"
 # `effective_from <= call.started_at` wins, so a price change only affects
 # calls made after it -- past calls keep the `cost_micros` already persisted
 # at call time unless you explicitly run `observability-reprice`.
-#
-# [[prices]]
-# provider = "gemini"
-# model = "gemini-3.1-flash"          # the resolved model string, not the profile name
-# operation = "structured_text"
-# effective_from = 2026-01-01
-# input_per_million_micros = 75_000    # $0.075 / 1M input tokens, as an example
-# output_per_million_micros = 300_000  # $0.30 / 1M output tokens, as an example
-# cached_per_million_micros = 18_750   # $0.01875 / 1M cached-context tokens, as an example
-#
-# A per-request rate (e.g. a flat TTS/ASR price) uses `per_call_micros`
-# instead of the per-token fields:
-#
-# [[prices]]
-# provider = "gemini"
-# model = "gemini-3.1-flash-tts-preview"
-# operation = "tts"
-# effective_from = 2026-01-01
-# per_call_micros = 4_000
+
+[[prices]]
+provider = "gemini"
+model = "gemini-3.5-flash-lite"
+operation = "structured_text"
+effective_from = 2026-01-01
+input_per_million_micros = 300_000     # $0.30 / 1M input tokens
+output_per_million_micros = 2_500_000  # $2.50 / 1M output tokens
+cached_per_million_micros = 30_000     # $0.03 / 1M cached-context tokens
+
+[[prices]]
+provider = "gemini"
+model = "gemini-3.6-flash"
+operation = "structured_text"
+effective_from = 2026-01-01
+input_per_million_micros = 1_500_000   # $1.50 / 1M input tokens
+output_per_million_micros = 7_500_000  # $7.50 / 1M output tokens (thinking tokens bill at this rate too)
+cached_per_million_micros = 150_000    # $0.15 / 1M cached-context tokens
+
+[[prices]]
+provider = "gemini"
+model = "gemini-3.1-flash-tts-preview"
+operation = "tts"
+effective_from = 2026-01-01
+input_per_million_micros = 1_000_000    # $1.00 / 1M input (text) tokens
+output_per_million_micros = 20_000_000  # $20.00 / 1M output (audio) tokens -- 25 audio tokens/second
