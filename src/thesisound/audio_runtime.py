@@ -81,6 +81,7 @@ def create_audio_builder(
             max_regeneration_attempts=settings.audio_max_regeneration_attempts,
             accept_manual_review=settings.audio_qa_accept_manual_review,
             asr_enabled=settings.audio_asr_enabled,
+            tts_workers=settings.tts_workers,
         )
 
     builder = AudioBuildRunService(

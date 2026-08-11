@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from uuid import UUID
 
 from thesisound import tracing
 from thesisound.audio import (
+    AudioChunk,
     AudioPipelineManifest,
     AudioSegmentRecord,
     pcm_to_wav,
@@ -45,7 +47,10 @@ class AudioPipelineService:
         max_regeneration_attempts: int = 1,
         accept_manual_review: bool = False,
         asr_enabled: bool = True,
+        tts_workers: int = 4,
     ) -> None:
+        if tts_workers < 1:
+            raise ValueError("tts_workers must be at least 1.")
         self.workspace_store = workspace_store
         self.script_store = script_store
         self.audio_store = audio_store
@@ -62,6 +67,7 @@ class AudioPipelineService:
         self.max_regeneration_attempts = max_regeneration_attempts
         self.accept_manual_review = accept_manual_review
         self.asr_enabled = asr_enabled
+        self.tts_workers = tts_workers
 
     def run(
         self,
@@ -115,17 +121,18 @@ class AudioPipelineService:
 
         stage("synthesizing")
         with tracing.span("audio.synthesizing", component="audio") as span:
-            synthesized = 0
-            for chunk in chunks:
-                existing = self.audio_store.load_segment_optional(
+            pending = [
+                chunk
+                for chunk in chunks
+                if self.audio_store.load_segment_optional(
                     project_id,
                     chunk.chunk_id,
                     chunk.content_hash,
                 )
-                if existing is None:
-                    self._synthesize(project_id, chunk, attempts=1)
-                    synthesized += 1
-            span.measure(chunk_count=len(chunks), synthesized_count=synthesized)
+                is None
+            ]
+            self._synthesize_pending(project_id, pending)
+            span.measure(chunk_count=len(chunks), synthesized_count=len(pending))
         manifest.status = "segments_ready"
         manifest.updated_at = datetime.now(UTC)
         self.audio_store.save_manifest(manifest)
@@ -241,6 +248,35 @@ class AudioPipelineService:
         if verdict == "manual_review" and self.accept_manual_review:
             return False
         return verdict != "pass"
+
+    def _synthesize_pending(
+        self,
+        project_id: UUID,
+        pending: list[AudioChunk],
+    ) -> None:
+        """Synthesize missing chunks; fan out when more than one worker is allowed.
+
+        Chunks write distinct segment files, so they are independent. Leaving the
+        executor ``with`` block on an exception waits for in-flight calls so any
+        completed synthesis is still cached for resume.
+        """
+
+        if not pending:
+            return
+        workers = min(self.tts_workers, len(pending))
+        if workers == 1:
+            for chunk in pending:
+                self._synthesize(project_id, chunk, attempts=1)
+            return
+
+        def work(chunk: AudioChunk) -> None:
+            self._synthesize(project_id, chunk, attempts=1)
+
+        bound_work = tracing.bind_context(work)
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(bound_work, chunk) for chunk in pending]
+            for future in as_completed(futures):
+                future.result()
 
     def _synthesize(
         self,

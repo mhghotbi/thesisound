@@ -185,7 +185,15 @@ def _service(
         episode_store=episode_store,
         coverage_auditor=CoverageAuditorService(runner),
         claim_prioritizer=ClaimPrioritizer(),
-        budget_estimator=EpisodeBudgetEstimator(),
+        budget_estimator=EpisodeBudgetEstimator(
+            words_per_minute=settings.episode_budget_words_per_minute,
+            explanation_expansion_factor=(
+                settings.episode_budget_explanation_expansion_factor
+            ),
+            evidence_tokens_per_output_minute=(
+                settings.episode_budget_evidence_tokens_per_output_minute
+            ),
+        ),
         disagreement_builder=DisagreementGraphBuilder(),
         episode_planner=EpisodePlannerService(runner),
         evidence_pack_builder=EvidencePackBuilder(retriever),

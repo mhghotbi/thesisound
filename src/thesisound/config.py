@@ -144,6 +144,20 @@ class Settings(BaseSettings):
     )
     tts_chunk_max_characters: int = Field(default=900, ge=120, le=4_000)
     tts_words_per_minute: int = Field(default=135, ge=80, le=220)
+    # TTS chunks are independent Gemini calls. Kept modest so an audio build does
+    # not pile concurrent requests into the key pool's quota cooldown; set to 1
+    # to restore fully sequential synthesis.
+    tts_workers: int = Field(default=4, ge=1, le=16)
+    # Deterministic episode-budget assumptions (recorded in budget-report.json).
+    # Separate from tts_words_per_minute: this paces planned speech density;
+    # TTS WPM paces synthesis timing.
+    episode_budget_words_per_minute: int = Field(default=130, ge=80, le=220)
+    episode_budget_explanation_expansion_factor: float = Field(
+        default=4.0, ge=1.0, le=10.0
+    )
+    episode_budget_evidence_tokens_per_output_minute: float = Field(
+        default=20.0, ge=1.0, le=500.0
+    )
     audio_sample_rate_hz: int = Field(default=24_000, ge=8_000, le=48_000)
     audio_qa_pass_threshold: float = Field(default=0.90, ge=0.5, le=1)
     audio_qa_review_threshold: float = Field(default=0.78, ge=0.4, le=1)

@@ -13,6 +13,7 @@ class EpisodeBudgetEstimator:
     def __init__(
         self,
         *,
+        # Defaults match Settings / THESISOUND_EPISODE_BUDGET_* env knobs.
         words_per_minute: int = 130,
         explanation_expansion_factor: float = 4.0,
         evidence_tokens_per_output_minute: float = 20.0,

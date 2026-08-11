@@ -11,6 +11,7 @@ import pytest
 
 from thesisound import tracing
 from thesisound.domain import (
+    AuthorityClass,
     ClaimType,
     DocumentMap,
     DocumentMapSection,
@@ -21,6 +22,10 @@ from thesisound.domain import (
     Project,
     ProjectState,
     ResearchBrief,
+    SourceAccess,
+    SourceCandidate,
+    SourceDecision,
+    SourceRole,
     SupportStatus,
     TopicType,
 )
@@ -770,6 +775,8 @@ def test_complete_one_source_pipeline_writes_auditable_artifacts(
     assert manifest.evidence_count == 1
     assert manifest.claim_count == 1
     assert len(ledger.claims) == 1
+    assert "claim_reconciliation" not in runner.calls
+    assert ledger.warnings == ["Claim reconciliation skipped for single-source project."]
     assert workspace.load_project(project.project_id).state == ProjectState.CORPUS_READY
     assert (source_dir / "document-blocks.jsonl").exists()
     assert (source_dir / "document-map.json").exists()
@@ -777,6 +784,55 @@ def test_complete_one_source_pipeline_writes_auditable_artifacts(
     assert (source_dir / "evidence-items.jsonl").exists()
     assert (source_dir / "claim-ledger.json").exists()
     assert list((source_dir / "evidence" / "extractions").glob("*.json"))
+
+
+def test_build_claims_runs_reconciliation_when_project_has_multiple_sources(
+    tmp_path: Path,
+) -> None:
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = _project()
+    workspace.save_project(project)
+    ingestion = _ingestion(Path("chapter.pdf"))
+    ingestion_path = tmp_path / "ingestion.json"
+    ingestion_path.write_text(ingestion.model_dump_json(indent=2), encoding="utf-8")
+
+    runner = FakeRunner()
+    service = SourceAnalysisService(
+        workspace_store=workspace,
+        artifact_store=SourceArtifactStore(tmp_path / "workspaces"),
+        block_builder=BlockBuilder(),
+        document_mapper=DocumentMapperService(runner),
+        evidence_extractor=EvidenceExtractorService(runner),
+        claim_reconciler=ClaimReconcilerService(runner),
+    )
+    source_id, _, _ = service.build_blocks(project.project_id, ingestion)
+    service.map_document(project.project_id, source_id, model="fake")
+    service.extract_evidence(project.project_id, source_id, model="fake")
+
+    project = workspace.load_project(project.project_id)
+    project.sources.append(
+        SourceCandidate(
+            source_id=uuid4(),
+            title="second-source",
+            role=SourceRole.USER_CONTEXT,
+            source_type="pdf",
+            origin="user_upload",
+            access=SourceAccess.FULL_TEXT,
+            user_decision=SourceDecision.INCLUDE,
+            authority_class=AuthorityClass.UNKNOWN,
+        )
+    )
+    workspace.save_project(project)
+
+    runner.calls.clear()
+    ledger, _ = service.build_claims(
+        project.project_id,
+        source_id,
+        model="fake-strong",
+        finalize_project=False,
+    )
+    assert "claim_reconciliation" in runner.calls
+    assert ledger.warnings == []
 
 
 class SalvagingFakeRunner(FakeRunner):

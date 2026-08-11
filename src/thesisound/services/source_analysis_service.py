@@ -544,6 +544,7 @@ class SourceAnalysisService:
             extractions=extractions,
             model=model,
             prompt_version=prompt_version,
+            skip_model=len(project.sources) == 1,
         )
         ledger = ledger.model_copy(
             update={

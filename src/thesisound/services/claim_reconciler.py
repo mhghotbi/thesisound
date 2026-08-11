@@ -12,6 +12,7 @@ from thesisound.domain import (
     ExtractedDefinition,
     ExtractedDistinction,
     MustNotBeLostPoint,
+    SupportStatus,
 )
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.services.model_runner import ModelRunner
@@ -36,6 +37,7 @@ class ClaimReconcilerService:
         extractions: list[BlockEvidenceExtraction],
         model: str,
         prompt_version: str | None = None,
+        skip_model: bool = False,
     ) -> tuple[ClaimLedger, ModelRunRecord]:
         evidence = [
             item
@@ -83,6 +85,23 @@ class ClaimReconcilerService:
         evidence_by_id = {item.evidence_id: item for item in evidence}
         if len(evidence_by_id) != len(evidence):
             raise ValueError("Evidence collection contains duplicate evidence IDs.")
+
+        # Single-source projects cannot produce cross-source disagreement; skip the
+        # model call and promote each evidence item to a claim 1:1.
+        if skip_model:
+            return (
+                _passthrough_ledger(
+                    source_id,
+                    evidence,
+                    definitions=definitions,
+                    distinctions=distinctions,
+                    examples=examples,
+                    objections=objections,
+                    responses=responses,
+                    must_not_be_lost=must_not_be_lost,
+                ),
+                _empty_run_record(project_id, model),
+            )
 
         variables = {
             "source_id": str(source_id),
@@ -199,6 +218,53 @@ def _materialize_ledger(
         responses=responses,
         must_not_be_lost=must_not_be_lost,
     )
+
+
+def _passthrough_ledger(
+    source_id: UUID,
+    evidence: list[EvidenceItem],
+    *,
+    definitions: list[ExtractedDefinition],
+    distinctions: list[ExtractedDistinction],
+    examples: list[ExtractedAuxiliaryPoint],
+    objections: list[ExtractedAuxiliaryPoint],
+    responses: list[ExtractedAuxiliaryPoint],
+    must_not_be_lost: list[MustNotBeLostPoint],
+) -> ClaimLedger:
+    claims = [
+        ClaimRecord(
+            claim_id=_claim_id(source_id, item.claim, [item.evidence_id]),
+            claim=item.claim.strip(),
+            claim_type=item.claim_type,
+            evidence_ids=[item.evidence_id],
+            support_status=_support_status_from_evidence(item),
+            qualifications=list(item.qualifications),
+            agreeing_source_ids=[item.source_id],
+            disagreeing_source_ids=[],
+        )
+        for item in evidence
+    ]
+    return ClaimLedger(
+        source_id=source_id,
+        claims=claims,
+        warnings=["Claim reconciliation skipped for single-source project."],
+        definitions=definitions,
+        distinctions=distinctions,
+        examples=examples,
+        objections=objections,
+        responses=responses,
+        must_not_be_lost=must_not_be_lost,
+    )
+
+
+def _support_status_from_evidence(item: EvidenceItem) -> SupportStatus:
+    if item.support_kind == "inferential":
+        return SupportStatus.MODERATE
+    if item.confidence >= 0.75:
+        return SupportStatus.STRONG
+    if item.confidence >= 0.4:
+        return SupportStatus.MODERATE
+    return SupportStatus.UNCERTAIN
 
 
 def _claim_id(source_id: UUID, claim: str, evidence_ids: list[str]) -> str:

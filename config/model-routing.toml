@@ -42,6 +42,14 @@ model = "gemini-3.5-flash-lite"
 provider = "okian"
 model = "gpt-5.6-luna"
 
+[profiles.okian_deepseek_flash]
+provider = "okian"
+model = "deepseek-v4-flash-latest"
+
+[profiles.okian_deepseek_pro]
+provider = "okian"
+model = "deepseek-v4-pro"
+
 [routes]
 # Grounded: keep on Gemini
 research_brief = "gemini_fast"
@@ -49,13 +57,13 @@ glossary = "gemini_strong"
 web_source_capture = "gemini_fast"
 
 # Text-only stages: Gemini Fast/Strong as in reference file
-document_map = "okian_gemini_fast"
-document_map_merge = "okian_gemini_fast"
-evidence_extraction = "okian_gemini_fast"
-evidence_extraction_batch = "okian_gemini_fast"
-claim_reconciliation = "okian_gemini_strong"
-coverage_audit = "okian_gemini_fast"
-episode_plan = "okian_gemini_strong"
-persian_script_segment = "okian_gemini_strong"
-script_verifier = "okian_gemini_fast"
-script_reviser = "okian_gemini_strong"
+document_map = "okian_deepseek_flash"
+document_map_merge = "okian_deepseek_pro"
+evidence_extraction = "okian_deepseek_flash"
+evidence_extraction_batch = "okian_deepseek_flash"
+claim_reconciliation = "okian_deepseek_pro"
+coverage_audit = "okian_deepseek_pro"
+episode_plan = "okian_deepseek_pro"
+persian_script_segment = "okian_luna"
+script_verifier = "okian_deepseek_pro"
+script_reviser = "okian_luna"

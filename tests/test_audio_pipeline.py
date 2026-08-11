@@ -1,10 +1,13 @@
 from pathlib import Path
+import threading
+import time
 
 import pytest
 
 from thesisound import tracing
 from thesisound.audio import AsrTranscript
 from thesisound.audio_ports import TtsRequest, TtsResponse
+from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState, Script, ScriptTurn
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.audio_artifact_store import AudioArtifactStore
@@ -29,16 +32,29 @@ class FakeScriptStore:
 
 
 class FakeTts:
-    def __init__(self) -> None:
+    def __init__(self, *, delay_seconds: float = 0.0) -> None:
         self.calls: list[TtsRequest] = []
+        self._lock = threading.Lock()
+        self.delay_seconds = delay_seconds
+        self.max_in_flight = 0
+        self._in_flight = 0
 
     def synthesize(self, request: TtsRequest) -> TtsResponse:
-        self.calls.append(request)
-        return TtsResponse(
-            pcm_bytes=b"\x00\x00" * 48_000,
-            provider="fake",
-            model=request.model,
-        )
+        with self._lock:
+            self._in_flight += 1
+            self.max_in_flight = max(self.max_in_flight, self._in_flight)
+            self.calls.append(request)
+        try:
+            if self.delay_seconds:
+                time.sleep(self.delay_seconds)
+            return TtsResponse(
+                pcm_bytes=b"\x00\x00" * 48_000,
+                provider="fake",
+                model=request.model,
+            )
+        finally:
+            with self._lock:
+                self._in_flight -= 1
 
 
 class FakeAsr:
@@ -77,32 +93,42 @@ class FakeAssembler:
         return concatenate_wav(wav_segments, silence_milliseconds=0), "ffmpeg_loudnorm"
 
 
-def _script() -> Script:
+def _script(*, turns: int = 1) -> Script:
     return Script(
         title="آزمون صوت",
         turns=[
             ScriptTurn(
-                turn_id="turn-1",
-                segment_id="seg-1",
+                turn_id=f"turn-{index}",
+                segment_id=f"seg-{index}",
                 speaker="A",
                 spoken_text_fa="این یک متن کامل و روشن برای آزمون تولید صوت است.",
-                claim_ids=["claim-1"],
-                evidence_ids=["evidence-1"],
+                claim_ids=[f"claim-{index}"],
+                evidence_ids=[f"evidence-{index}"],
             )
+            for index in range(1, turns + 1)
         ],
     )
 
 
-def _service(tmp_path: Path, *, fail_first: bool = False, asr_enabled: bool = True):
+def _service(
+    tmp_path: Path,
+    *,
+    fail_first: bool = False,
+    asr_enabled: bool = True,
+    turns: int = 1,
+    tts_workers: int = 4,
+    tts_delay_seconds: float = 0.0,
+):
+    script = _script(turns=turns)
     workspace = WorkspaceStore(tmp_path / "workspaces")
-    project = Project(raw_input="topic", state=ProjectState.SCRIPT_VERIFIED, script=_script())
+    project = Project(raw_input="topic", state=ProjectState.SCRIPT_VERIFIED, script=script)
     workspace.save_project(project)
-    tts = FakeTts()
-    asr = FakeAsr(_script().turns[0].spoken_text_fa, fail_first=fail_first)
+    tts = FakeTts(delay_seconds=tts_delay_seconds)
+    asr = FakeAsr(script.turns[0].spoken_text_fa, fail_first=fail_first)
     audio_store = AudioArtifactStore(workspace.root)
     service = AudioPipelineService(
         workspace_store=workspace,
-        script_store=FakeScriptStore(_script()),  # type: ignore[arg-type]
+        script_store=FakeScriptStore(script),  # type: ignore[arg-type]
         audio_store=audio_store,
         tts=tts,
         asr=asr,
@@ -116,6 +142,7 @@ def _service(tmp_path: Path, *, fail_first: bool = False, asr_enabled: bool = Tr
         style_prompts={"A": "طبیعی و دقیق بخوان", "B": "طبیعی و دقیق بخوان"},
         max_regeneration_attempts=1,
         asr_enabled=asr_enabled,
+        tts_workers=tts_workers,
     )
     return workspace, project, service, audio_store, tts, asr
 
@@ -166,6 +193,29 @@ def test_audio_pipeline_skips_asr_when_disabled(tmp_path: Path) -> None:
         script_hash=manifest.script_hash,
         asr_enabled=True,
     )
+
+
+def test_tts_synthesis_runs_chunks_in_parallel(tmp_path: Path) -> None:
+    workspace, project, service, _, tts, _ = _service(
+        tmp_path,
+        asr_enabled=False,
+        turns=4,
+        tts_workers=4,
+        tts_delay_seconds=0.2,
+    )
+
+    _run_tolerating_missing_ffmpeg(service, project.project_id)
+
+    assert len(tts.calls) == 4
+    assert tts.max_in_flight == 4
+
+
+def test_tts_workers_defaults_to_four_and_is_bounded() -> None:
+    assert Settings(environment="test").tts_workers == 4
+    with pytest.raises(Exception):
+        Settings(environment="test", tts_workers=0)
+    with pytest.raises(Exception):
+        Settings(environment="test", tts_workers=17)
 
 
 def _run_tolerating_missing_ffmpeg(service, project_id) -> None:

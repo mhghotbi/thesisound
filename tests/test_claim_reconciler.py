@@ -25,6 +25,9 @@ from thesisound.source_analysis import (
 class _FakeRunner:
     """Reconciles every evidence item into one claim, unresolving none."""
 
+    def __init__(self) -> None:
+        self.called = False
+
     def run(
         self,
         *,
@@ -36,6 +39,7 @@ class _FakeRunner:
         validator=None,
         **_: object,
     ):
+        self.called = True
         assert output_type is ClaimReconciliationDraft
         evidence = variables["evidence_items"]
         assert isinstance(evidence, list)
@@ -254,3 +258,49 @@ def test_reconcile_preserves_auxiliary_evidence_when_no_claims() -> None:
     assert [item.text for item in ledger.must_not_be_lost] == [
         "The link between action and plurality."
     ]
+
+
+def test_reconcile_skip_model_promotes_evidence_one_to_one() -> None:
+    source_id = uuid4()
+    runner = _FakeRunner()
+    records = [
+        BlockEvidenceExtraction(
+            source_id=source_id,
+            block_id="block-01",
+            extraction=EvidenceExtraction(
+                segment_function="argument",
+                claims=[
+                    _claim_evidence(source_id, "block-01", "ev-a"),
+                    EvidenceItem(
+                        evidence_id="ev-b",
+                        source_id=source_id,
+                        block_id="block-01",
+                        claim="Plurality is the condition of action.",
+                        claim_type=ClaimType.AUTHOR_POSITION,
+                        supporting_excerpt="Plurality is the condition of action in the text.",
+                        locator=_locator(1),
+                        support_kind="inferential",
+                        confidence=0.6,
+                        qualifications=["Within the political realm."],
+                    ),
+                ],
+            ),
+        ),
+    ]
+
+    ledger, run = ClaimReconcilerService(runner).reconcile(
+        project_id=uuid4(),
+        source_id=source_id,
+        extractions=records,
+        model="fake-strong",
+        skip_model=True,
+    )
+
+    assert runner.called is False
+    assert run.provider == "none"
+    assert len(ledger.claims) == 2
+    assert [claim.evidence_ids for claim in ledger.claims] == [["ev-a"], ["ev-b"]]
+    assert ledger.claims[0].support_status == SupportStatus.STRONG
+    assert ledger.claims[1].support_status == SupportStatus.MODERATE
+    assert ledger.claims[1].qualifications == ["Within the political realm."]
+    assert ledger.warnings == ["Claim reconciliation skipped for single-source project."]
