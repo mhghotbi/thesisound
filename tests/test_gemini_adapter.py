@@ -8,6 +8,7 @@ import pytest
 from pydantic import BaseModel
 
 from thesisound.adapters.models.gemini import GeminiStructuredModel
+from thesisound.config import Settings
 from thesisound.modeling import ModelRateLimitError, ModelSafetyError, SchemaValidationError
 from thesisound.ports import RunMetadata
 
@@ -182,9 +183,17 @@ def test_gemini_adapter_attaches_billed_usage_to_safety_errors() -> None:
     assert exc_info.value.usage.input_tokens == 120
 
 
-def test_gemini_adapter_maps_rate_limit_errors() -> None:
+def test_gemini_adapter_maps_rate_limit_errors(tmp_path) -> None:
+    # Disable Okian so this path stays a pure Gemini rate-limit mapping check.
+    settings = Settings(
+        _env_file=None,
+        workspace_root=tmp_path / "workspaces",
+        observability_database_path=tmp_path / "ledger.sqlite3",
+        observability_artifact_root=tmp_path / "artifacts",
+    )
     adapter = GeminiStructuredModel(
-        client=FakeClient(FakeModels(error=RateLimitException("too many requests")))
+        client=FakeClient(FakeModels(error=RateLimitException("too many requests"))),
+        settings=settings,
     )
 
     with pytest.raises(ModelRateLimitError):

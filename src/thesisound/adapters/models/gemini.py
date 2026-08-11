@@ -7,6 +7,7 @@ from copy import deepcopy
 from threading import Lock
 from time import perf_counter
 from typing import Any, Literal, cast
+from uuid import uuid4
 
 from pydantic import BaseModel, ValidationError
 
@@ -198,6 +199,22 @@ class GeminiStructuredModel:
         except Exception as exc:
             mapped = _map_provider_error(exc)
             self.observability.fail(spec.call_id, mapped, error_code=_error_code(exc))
+            if self._should_fallback_to_okian(mapped, metadata):
+                fallback_metadata = metadata.model_copy(
+                    update={
+                        "call_id": uuid4(),
+                        "parent_call_id": spec.call_id,
+                        "provider": "okian",
+                        "okian_fallback_from": "gemini",
+                    }
+                )
+                return self._okian().generate_structured(
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    output_type=output_type,
+                    model=model,
+                    metadata=fallback_metadata,
+                )
             raise mapped from exc
 
         response = observed.response
@@ -253,6 +270,22 @@ class GeminiStructuredModel:
                     observability=self.observability,
                 )
         return self._okian_port
+
+    def _okian_configured(self) -> bool:
+        base_url = (self._settings.okian_base_url or "").strip()
+        api_key = (self._settings.okian_api_key or "").strip()
+        return bool(base_url and api_key)
+
+    def _should_fallback_to_okian(
+        self,
+        error: ModelError,
+        metadata: RunMetadata,
+    ) -> bool:
+        return (
+            isinstance(error, ModelRateLimitError)
+            and metadata.grounding_mode == "none"
+            and self._okian_configured()
+        )
 
     def _tools(self, metadata: RunMetadata) -> list[dict[str, dict[str, object]]]:
         wants_search = metadata.grounding_mode in {

@@ -63,6 +63,9 @@ class RunMetadata(BaseModel):
     timeout_ms: int | None = Field(default=None, ge=1)
     max_provider_attempts: int = Field(default=1, ge=1, le=5)
     provider_retry_base_seconds: float = Field(default=1, ge=0, le=60)
+    # Set when GeminiStructuredModel retries an ungrounded call on Okian after
+    # the Gemini key pool is exhausted. Surfaced in the Okian ledger row.
+    okian_fallback_from: str | None = None
 
 
 class DocumentInspection(BaseModel):
