@@ -10,7 +10,10 @@ from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
-from thesisound.services.persian_script_writer import PersianScriptWriterService
+from thesisound.services.persian_script_writer import (
+    PersianScriptWriterService,
+    SpeakerBalancePolicy,
+)
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
@@ -49,7 +52,10 @@ def create_script_builder(
             script_store=script_store,
             approval_store=approval_store,
             glossary_builder=GlossaryBuilderService(runner),
-            script_writer=PersianScriptWriterService(runner),
+            script_writer=PersianScriptWriterService(
+                runner,
+                SpeakerBalancePolicy(enabled=settings.script_speaker_balance_enabled),
+            ),
             script_checker=ScriptChecker(),
             verifier=ScriptVerifierService(runner),
             reviser=TargetedScriptReviserService(runner),

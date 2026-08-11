@@ -9,6 +9,13 @@ from thesisound.episode import SegmentEvidencePack
 from thesisound.script import Glossary, ScriptCheckIssue, ScriptCheckReport
 
 _WORD = re.compile(r"\w+", re.UNICODE)
+_AFFIRMATIVE_OPENERS = tuple(
+    sorted(
+        ("بله، دقیقاً", "دقیقاً همین‌طور است", "دقیقاً", "کاملاً درست است"),
+        key=len,
+        reverse=True,
+    )
+)
 _PROMPT_LEAKAGE = (
     "system prompt",
     "repair_instruction",
@@ -32,6 +39,7 @@ class ScriptChecker:
         evidence_packs: list[SegmentEvidencePack],
         claims: list[ClaimRecord],
         glossary: Glossary,
+        speaker_balance_violations: dict[str, list[str]] | None = None,
     ) -> ScriptCheckReport:
         issues: list[ScriptCheckIssue] = []
         segment_by_id = {segment.segment_id: segment for segment in episode_plan.segments}
@@ -41,6 +49,8 @@ class ScriptChecker:
         seen_text: Counter[str] = Counter()
         consecutive_speaker = 0
         previous_speaker: str | None = None
+        speaker_words: Counter[str] = Counter()
+        speaker_b_substantive_turn_count = 0
         for turn in script.turns:
             segment = segment_by_id.get(turn.segment_id)
             pack = pack_by_segment.get(turn.segment_id)
@@ -112,6 +122,27 @@ class ScriptChecker:
                 )
 
             normalized = " ".join(turn.spoken_text_fa.casefold().split())
+            speaker_words[turn.speaker] += len(_WORD.findall(turn.spoken_text_fa))
+            if turn.speaker == "B" and not turn.editorial_only:
+                speaker_b_substantive_turn_count += 1
+            if turn.speaker == "A":
+                opener = next(
+                    (item for item in _AFFIRMATIVE_OPENERS if normalized.startswith(item)),
+                    None,
+                )
+                if opener is not None:
+                    issues.append(
+                        ScriptCheckIssue(
+                            turn_id=turn.turn_id,
+                            segment_id=turn.segment_id,
+                            severity="low",
+                            issue_type="restatement",
+                            explanation=(
+                                "Speaker A opens with a bare affirmation that can signal "
+                                f"restatement: {opener}."
+                            ),
+                        )
+                    )
             seen_text[normalized] += 1
             if any(marker in normalized for marker in _PROMPT_LEAKAGE):
                 issues.append(
@@ -182,6 +213,17 @@ class ScriptChecker:
                 )
             )
 
+        for segment_id, violations in (speaker_balance_violations or {}).items():
+            for violation in violations:
+                issues.append(
+                    ScriptCheckIssue(
+                        segment_id=segment_id,
+                        severity="low",
+                        issue_type="speaker_balance",
+                        explanation=violation,
+                    )
+                )
+
         if any(issue.severity == "blocking" for issue in issues):
             verdict = "reject"
         elif any(issue.severity in {"high", "medium"} for issue in issues):
@@ -195,4 +237,35 @@ class ScriptChecker:
             word_count=word_count,
             estimated_minutes=round(estimated_minutes, 2),
             substantive_turn_count=sum(not turn.editorial_only for turn in script.turns),
+            editorial_word_ratio=(
+                round(
+                    sum(
+                        len(_WORD.findall(turn.spoken_text_fa))
+                        for turn in script.turns
+                        if turn.editorial_only
+                    )
+                    / word_count,
+                    4,
+                )
+                if word_count
+                else 0.0
+            ),
+            speaker_a_word_count=speaker_words["A"],
+            speaker_b_word_count=speaker_words["B"],
+            speaker_b_substantive_turn_count=speaker_b_substantive_turn_count,
+            claims_per_segment_minute=(
+                round(
+                    len(
+                        {
+                            claim_id
+                            for segment in episode_plan.segments
+                            for claim_id in segment.claim_ids
+                        }
+                    )
+                    / target,
+                    4,
+                )
+                if target
+                else 0.0
+            ),
         )

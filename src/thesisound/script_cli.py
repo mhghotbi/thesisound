@@ -18,7 +18,10 @@ from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
-from thesisound.services.persian_script_writer import PersianScriptWriterService
+from thesisound.services.persian_script_writer import (
+    PersianScriptWriterService,
+    SpeakerBalancePolicy,
+)
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
@@ -39,6 +42,7 @@ def register_script_commands(app: typer.Typer) -> None:
     app.command("revise-script")(_revise_script)
     app.command("prepare-script")(_prepare_script)
     app.command("record-budget-calibration")(_record_budget_calibration)
+    app.command("script-ab-export")(_script_ab_export)
 
 
 def _approve_plan(
@@ -204,6 +208,26 @@ def _record_budget_calibration(
     _print_json(report.model_dump(mode="json"))
 
 
+def _script_ab_export(
+    project_a: Annotated[UUID, typer.Argument()],
+    project_b: Annotated[UUID, typer.Argument()],
+    out: Annotated[Path, typer.Option("--out")],
+    workspace_root: Annotated[Path | None, typer.Option()] = None,
+) -> None:
+    settings = Settings()
+    from thesisound.services.script_ab_export import ScriptAbExporter
+
+    try:
+        result = ScriptAbExporter(_root(settings, workspace_root)).export(
+            project_a,
+            project_b,
+            out,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        _fail(exc)
+    _print_json(result)
+
+
 def _service(settings: Settings, root: Path) -> ScriptPipelineService:
     model_port = GeminiStructuredModel(api_key=settings.gemini_api_key)
     runner = ModelRunner(
@@ -219,7 +243,10 @@ def _service(settings: Settings, root: Path) -> ScriptPipelineService:
         script_store=ScriptArtifactStore(root),
         approval_store=EpisodePlanApprovalStore(root),
         glossary_builder=GlossaryBuilderService(runner),
-        script_writer=PersianScriptWriterService(runner),
+        script_writer=PersianScriptWriterService(
+            runner,
+            SpeakerBalancePolicy(enabled=settings.script_speaker_balance_enabled),
+        ),
         script_checker=ScriptChecker(),
         verifier=ScriptVerifierService(runner),
         reviser=TargetedScriptReviserService(runner),

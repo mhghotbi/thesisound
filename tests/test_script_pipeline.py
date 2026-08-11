@@ -25,7 +25,7 @@ from thesisound.domain import (
     VerificationIssue,
 )
 from thesisound.episode import DisagreementGraph, SegmentEvidencePack
-from thesisound.modeling import ModelExecution, ModelRunRecord
+from thesisound.modeling import DeterministicValidationError, ModelExecution, ModelRunRecord
 from thesisound.pipeline import WorkspaceStore
 from thesisound.script import (
     GlossaryDraft,
@@ -62,12 +62,18 @@ class FakeScriptRunner:
         revision_verdict: str = "pass",
         revision_quality: ScriptQualityScore | None = None,
         revision_text_prefix: str = "اصلاح",
+        fail_segment_ids: set[str] | None = None,
+        speaker_balance_violation_segment_ids: set[str] | None = None,
     ) -> None:
         self.verification_calls = 0
         self.segment_calls = 0
         self.revision_verdict = revision_verdict
         self.revision_quality = revision_quality
         self.revision_text_prefix = revision_text_prefix
+        self.fail_segment_ids = fail_segment_ids or set()
+        self.speaker_balance_violation_segment_ids = (
+            speaker_balance_violation_segment_ids or set()
+        )
 
     def run(
         self,
@@ -80,6 +86,7 @@ class FakeScriptRunner:
         validator=None,
         **_: object,
     ):
+        has_speaker_balance_violation = False
         if output_type is GlossaryDraft:
             output = GlossaryDraft(
                 terms=[
@@ -98,24 +105,46 @@ class FakeScriptRunner:
             pack = variables["evidence_pack"]
             assert isinstance(segment, dict)
             assert isinstance(pack, dict)
+            has_speaker_balance_violation = (
+                segment["segment_id"] in self.speaker_balance_violation_segment_ids
+            )
+            if segment["segment_id"] in self.fail_segment_ids:
+                raise RuntimeError("simulated segment failure")
             claim_id = segment["claim_ids"][0]
             evidence_id = pack["evidence_items"][0]["evidence_id"]
-            output = SegmentScriptDraft(
-                turns=[
-                    ScriptTurnDraft(
-                        speaker="A",
-                        spoken_text_fa=_spoken("الف", 50),
-                        claim_ids=[claim_id],
-                        evidence_ids=[evidence_id],
-                    ),
-                    ScriptTurnDraft(
-                        speaker="B",
-                        spoken_text_fa=_spoken("ب", 50),
-                        claim_ids=[claim_id],
-                        evidence_ids=[evidence_id],
-                    ),
-                ]
-            )
+            if has_speaker_balance_violation:
+                output = SegmentScriptDraft(
+                    turns=[
+                        ScriptTurnDraft(
+                            speaker="A",
+                            spoken_text_fa="ادعا",
+                            claim_ids=[claim_id],
+                            evidence_ids=[evidence_id],
+                        ),
+                        ScriptTurnDraft(
+                            speaker="B",
+                            spoken_text_fa=_spoken("توضیح", 50),
+                            editorial_only=True,
+                        ),
+                    ]
+                )
+            else:
+                output = SegmentScriptDraft(
+                    turns=[
+                        ScriptTurnDraft(
+                            speaker="A",
+                            spoken_text_fa=_spoken("الف", 50),
+                            claim_ids=[claim_id],
+                            evidence_ids=[evidence_id],
+                        ),
+                        ScriptTurnDraft(
+                            speaker="B",
+                            spoken_text_fa=_spoken("ب", 50),
+                            claim_ids=[claim_id],
+                            evidence_ids=[evidence_id],
+                        ),
+                    ]
+                )
         elif output_type is VerificationDraft:
             self.verification_calls += 1
             script = variables["script"]
@@ -191,6 +220,9 @@ class FakeScriptRunner:
         else:
             raise AssertionError(f"Unexpected output type: {output_type}")
         if validator is not None:
+            if has_speaker_balance_violation:
+                with pytest.raises(DeterministicValidationError):
+                    validator(output)
             validator(output)
         record = ModelRunRecord(
             project_id=project_id,
@@ -501,6 +533,51 @@ def test_script_writer_resumes_completed_segment_draft(tmp_path: Path) -> None:
     service.write_script(project_id, model="fake")
 
     assert runner.segment_calls == 1
+
+
+def test_script_writer_persists_balance_violations_before_later_segment_failure(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    workspace = WorkspaceStore(root)
+    project = workspace.load_project(project_id)
+    first_segment = project.episode_plan.segments[0]
+    second_segment = first_segment.model_copy(update={"segment_id": "seg-002"})
+    project.episode_plan = project.episode_plan.model_copy(
+        update={"segments": [first_segment, second_segment]}
+    )
+    workspace.save_project(project)
+    episode_store = EpisodeArtifactStore(root)
+    first_pack = episode_store.load_evidence_packs(project_id)[0]
+    episode_store.save_evidence_packs(
+        project_id,
+        [first_pack, first_pack.model_copy(update={"segment_id": "seg-002"})],
+    )
+    _approve(root, project_id)
+    runner = FakeScriptRunner(
+        fail_segment_ids={"seg-002"},
+        speaker_balance_violation_segment_ids={"seg-001"},
+    )
+    service = _service(root, runner)
+    service.build_glossary(project_id, model="fake")
+
+    with pytest.raises(RuntimeError, match="simulated segment failure"):
+        service.write_script(project_id, model="fake")
+
+    store = ScriptArtifactStore(root)
+    assert store.load_speaker_balance_violations(project_id) == {
+        "seg-001": ["F1 editorial words are 98.0% of segment words; maximum is 35.0%."]
+    }
+
+    runner.fail_segment_ids.clear()
+    service.write_script(project_id, model="fake")
+    report = service.run_checks(project_id)
+
+    assert any(
+        issue.issue_type == "speaker_balance" and issue.segment_id == "seg-001"
+        for issue in report.issues
+    )
 
 
 def test_script_claim_scope_excludes_unselected_claim_ready_source(tmp_path: Path) -> None:

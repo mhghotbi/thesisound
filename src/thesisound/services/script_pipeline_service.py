@@ -115,8 +115,12 @@ class ScriptPipelineService:
             pack.segment_id: pack for pack in self.episode_store.load_evidence_packs(project_id)
         }
         turns: list[ScriptTurn] = []
+        speaker_balance_violations = self.script_store.load_speaker_balance_violations_optional(
+            project_id
+        )
         run_ids = []
-        for segment in project.episode_plan.segments:
+        segment_count = len(project.episode_plan.segments)
+        for index, segment in enumerate(project.episode_plan.segments, start=1):
             pack = pack_by_segment.get(segment.segment_id)
             if pack is None:
                 raise ValueError(f"Missing evidence pack for segment {segment.segment_id}.")
@@ -125,7 +129,7 @@ class ScriptPipelineService:
                 segment.segment_id,
             )
             if draft is None:
-                segment_turns, draft, run = self.script_writer.write_segment(
+                result = self.script_writer.write_segment(
                     project_id=project_id,
                     brief=project.brief,
                     segment=segment,
@@ -134,16 +138,35 @@ class ScriptPipelineService:
                     disagreement_graph=graph,
                     model=model,
                     prompt_version=prompt_version,
+                    segment_index=index,
+                    segment_count=segment_count,
                 )
+                segment_turns = result.turns
+                draft = result.draft
+                run = result.record
+                if result.violations:
+                    speaker_balance_violations[segment.segment_id] = result.violations
+                else:
+                    speaker_balance_violations.pop(segment.segment_id, None)
                 self.script_store.save_segment_draft(
                     project_id,
                     segment.segment_id,
                     draft,
                 )
+                # Segment drafts survive a later build failure, so their final-attempt
+                # balance results must survive with them for a resumed build.
+                self.script_store.save_speaker_balance_violations(
+                    project_id,
+                    speaker_balance_violations,
+                )
                 run_ids.append(run.run_id)
             else:
                 segment_turns = self._materialize_segment_turns(segment.segment_id, draft)
             turns.extend(segment_turns)
+        self.script_store.save_speaker_balance_violations(
+            project_id,
+            speaker_balance_violations,
+        )
         script = Script(
             title=project.episode_plan.title,
             turns=turns,
@@ -175,6 +198,11 @@ class ScriptPipelineService:
             evidence_packs=self.episode_store.load_evidence_packs(project_id),
             claims=self._load_claims(project_id),
             glossary=self.script_store.load_glossary(project_id),
+            speaker_balance_violations=(
+                {}
+                if revised
+                else self.script_store.load_speaker_balance_violations_optional(project_id)
+            ),
         )
         self.script_store.save_checks(report, revised=revised)
         manifest = self.script_store.load_manifest(project_id)

@@ -111,6 +111,8 @@
   <span>{{ segment_views | length | fa_num }} بخش</span>
   <span>{{ checks.substantive_turn_count | fa_num }} گفتهٔ مستند</span>
   <span>{{ checks.word_count | fa_num }} واژه</span>
+  <span>سهم گفتار گذار {{ (checks.editorial_word_ratio * 100) | round(1) | fa_num }}٪</span>
+  <span>{{ checks.speaker_b_substantive_turn_count | fa_num }} گفتهٔ مستند از ب</span>
   {% if not checks.issues and not verification.issues %}
   {{ status_label('همهٔ گفته‌ها پشتوانه دارند', '', 'success') }}
   {% else %}

@@ -129,6 +129,11 @@ class Settings(BaseSettings):
     # Off until the frozen golden-set evaluation provides evidence for a threshold.
     script_quality_gate_enabled: bool = False
     script_quality_min_overall: float = Field(default=0.70, ge=0, le=1)
+    # Audit R10: the deterministic floor under speaker B. On, because the shipped prompt
+    # already asked for an interlocutor in prose and got 10 filler turns out of 11 -- the
+    # prompt half alone is the configuration we have evidence fails. Off restores the
+    # pre-R10 validator exactly and is how the control arm of the blind A/B is run.
+    script_speaker_balance_enabled: bool = True
     # Temporary for live e2e: keep scoring manual_review, but do not block assembly on it.
     audio_qa_accept_manual_review: bool = True
     audio_max_regeneration_attempts: int = Field(default=1, ge=0, le=1)

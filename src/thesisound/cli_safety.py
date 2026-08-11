@@ -56,6 +56,7 @@ _WRITES = {
     "revise-script",
     "prepare-script",
     "record-budget-calibration",
+    "script-ab-export",
     "prepare-audio",
     "observability-reprice",
     "create-user",

@@ -79,6 +79,8 @@ class ScriptCheckIssue(BaseModel):
         "glossary_inconsistency",
         "prompt_leakage",
         "speaker_pattern",
+        "speaker_balance",
+        "restatement",
         "other",
     ]
     explanation: str = Field(min_length=1)
@@ -91,6 +93,12 @@ class ScriptCheckReport(BaseModel):
     word_count: int = Field(ge=0)
     estimated_minutes: float = Field(ge=0)
     substantive_turn_count: int = Field(ge=0)
+    # Defaulted so reports written before R10 still load.
+    editorial_word_ratio: float = Field(default=0.0, ge=0, le=1)
+    speaker_a_word_count: int = Field(default=0, ge=0)
+    speaker_b_word_count: int = Field(default=0, ge=0)
+    speaker_b_substantive_turn_count: int = Field(default=0, ge=0)
+    claims_per_segment_minute: float = Field(default=0.0, ge=0)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 

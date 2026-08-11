@@ -106,6 +106,37 @@ class ScriptArtifactStore:
         except FileNotFoundError:
             return None
 
+    def save_speaker_balance_violations(
+        self,
+        project_id: UUID,
+        violations: dict[str, list[str]],
+    ) -> None:
+        self._write_json(
+            self.script_dir(project_id) / "speaker-balance-violations.json",
+            violations,
+        )
+
+    def load_speaker_balance_violations(self, project_id: UUID) -> dict[str, list[str]]:
+        path = self.script_dir(project_id, create=False) / "speaker-balance-violations.json"
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict) or not all(
+            isinstance(key, str)
+            and isinstance(value, list)
+            and all(isinstance(item, str) for item in value)
+            for key, value in payload.items()
+        ):
+            raise ValueError("Speaker-balance violations artifact is invalid.")
+        return payload
+
+    def load_speaker_balance_violations_optional(
+        self,
+        project_id: UUID,
+    ) -> dict[str, list[str]]:
+        try:
+            return self.load_speaker_balance_violations(project_id)
+        except FileNotFoundError:
+            return {}
+
     def save_script(self, project_id: UUID, script: Script, *, revised: bool = False) -> None:
         name = "script-revised.json" if revised else "script-draft.json"
         self._write_json(self.script_dir(project_id) / name, script)
