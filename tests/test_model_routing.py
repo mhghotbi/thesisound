@@ -9,6 +9,34 @@ from thesisound.model_routing import load_model_router
 from thesisound.modeling import ModelConfigurationError
 
 
+def test_evidence_extraction_still_resolves_to_the_fast_model_by_default() -> None:
+    settings = Settings(_env_file=None, model_routing_file=Path("config/model-routing.toml"))
+    route = load_model_router(settings).resolve(
+        stage="evidence_extraction",
+        requested_model=settings.model_fast,
+        model_tier="fast",
+    )
+
+    assert route.model == settings.model_fast
+    assert route.profile == "gemini_fast"
+
+
+def test_evidence_extraction_override_resolves_the_strong_profile() -> None:
+    settings = Settings(
+        _env_file=None,
+        model_routing_file=Path("config/model-routing.toml"),
+        model_route_overrides={"evidence_extraction": "gemini_strong"},
+    )
+    route = load_model_router(settings).resolve(
+        stage="evidence_extraction",
+        requested_model=settings.model_fast,
+        model_tier="fast",
+    )
+
+    assert route.model == settings.model_strong
+    assert route.profile == "gemini_strong"
+
+
 def test_checked_in_routing_file_resolves_script_and_map_prompt_ids() -> None:
     settings = Settings(
         _env_file=None,

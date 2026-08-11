@@ -25,6 +25,7 @@ _READONLY = {
     "timeline",
     "pipeline-summary",
     "cost",
+    "evidence-tier-report",
     "readiness",
     "commands",
     "models list",

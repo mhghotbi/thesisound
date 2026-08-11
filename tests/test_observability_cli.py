@@ -245,6 +245,94 @@ def test_cost_reports_when_no_calls_exist(
     assert "No recorded model calls" in result.output
 
 
+def _seed_evidence_arm(
+    ledger: ObservabilityLedger,
+    project_id,
+    *,
+    model: str,
+    excerpt_failures: int,
+    priced: bool,
+) -> None:
+    spec = ModelCallSpec(
+        stage="evidence_extraction",
+        operation="structured_text",
+        provider="gemini",
+        requested_model=model,
+        project_id=project_id,
+        metadata={"model_profile": "gemini_fast"},
+    )
+    ledger.begin_call(spec, {"prompt": "x"})
+    ledger.provider_succeeded(
+        spec.call_id,
+        response_payload={"text": "ok"},
+        usage=ModelUsage(input_tokens=100, output_tokens=10, total_tokens=110),
+        provider_metadata=ProviderMetadata(resolved_model=model),
+    )
+    ledger.succeed(spec.call_id, {"value": "ok"})
+    if priced:
+        _set_cost(ledger, spec.call_id, cost_micros=1_000, version="test")
+    tracer = Tracer(LedgerSpanSink(ledger), code_version="test")
+    tracer.event(
+        "corpus.evidence_attempts",
+        component="corpus",
+        project_id=project_id,
+        subject_type="block",
+        subject_id="block-1",
+        attempt_count=4,
+        excerpt_failure_count=excerpt_failures,
+        salvaged=False,
+        dropped_claim_count=0,
+        kept_claim_count=2,
+        status="extracted",
+    )
+
+
+def test_evidence_tier_report_renders_measurements_and_refuses_unpriced_comparison(
+    cli_app: typer.Typer, seeded_ledger: ObservabilityLedger
+) -> None:
+    baseline = uuid4()
+    comparison = uuid4()
+    _seed_evidence_arm(
+        seeded_ledger, baseline, model="gemini-fast", excerpt_failures=1, priced=True
+    )
+    _seed_evidence_arm(
+        seeded_ledger, comparison, model="gemini-strong", excerpt_failures=0, priced=False
+    )
+
+    single = runner.invoke(cli_app, ["evidence-tier-report", str(baseline)])
+    compared = runner.invoke(
+        cli_app, ["evidence-tier-report", str(baseline), "--compare", str(comparison)]
+    )
+
+    assert single.exit_code == 0, single.output
+    assert "Excerpt failures" in single.output
+    assert "Wasted tokens" in single.output
+    assert compared.exit_code == 0, compared.output
+    assert "verdict: undecidable" in compared.output
+    assert "gemini/gemini-strong/structured_text" in compared.output
+
+
+def test_evidence_tier_comparison_shows_its_measured_deltas_and_ratios(
+    cli_app: typer.Typer, seeded_ledger: ObservabilityLedger
+) -> None:
+    baseline = uuid4()
+    comparison = uuid4()
+    _seed_evidence_arm(
+        seeded_ledger, baseline, model="gemini-fast", excerpt_failures=1, priced=True
+    )
+    _seed_evidence_arm(
+        seeded_ledger, comparison, model="gemini-strong", excerpt_failures=0, priced=True
+    )
+
+    result = runner.invoke(
+        cli_app, ["evidence-tier-report", str(baseline), "--compare", str(comparison)]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Δ = -25.0 pp" in result.output
+    assert "ratio = 1.00×" in result.output
+
+
 def test_observability_reprice_recomputes_cost_and_reports_a_count(
     cli_app: typer.Typer,
     seeded_ledger: ObservabilityLedger,

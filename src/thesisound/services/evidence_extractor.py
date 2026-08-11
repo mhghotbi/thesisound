@@ -48,6 +48,10 @@ _BREAKER_CONSECUTIVE_FAILURES = 3
 _MAX_BATCH_SOURCE_TOKENS = 12_000
 
 
+class ExcerptNotFoundError(DeterministicValidationError):
+    """The excerpt is absent from the source block after normalisation."""
+
+
 class EvidenceExtractorService:
     def __init__(
         self,
@@ -286,6 +290,7 @@ class EvidenceExtractorService:
         model: str,
         prompt_version: str | None,
         max_attempts: int,
+        initial_counters: dict[str, int | bool] | None = None,
     ) -> tuple[BlockEvidenceExtraction, ModelRunRecord | None]:
         """Extract one block. Independent of every other block, so it runs concurrently."""
 
@@ -302,16 +307,33 @@ class EvidenceExtractorService:
                 profile.neighbor_context_blocks,
             ),
         }
-        attempt = {"n": 0}
+        # This closure runs on a worker thread. These counters must stay local
+        # to the block rather than on the shared service instance.
+        counters: dict[str, int | bool] = (
+            dict(initial_counters)
+            if initial_counters is not None
+            else {"n": 0, "excerpt_failures": 0, "salvaged": False, "dropped": 0}
+        )
 
         def validator(draft: EvidenceExtractionDraft) -> None:
-            attempt["n"] += 1
+            counters["n"] += 1
             try:
                 _validate_draft(draft, block=block, profile=profile)
-            except DeterministicValidationError:
-                if attempt["n"] < max_attempts:
+            except ExcerptNotFoundError:
+                counters["excerpt_failures"] += 1
+                if counters["n"] < max_attempts:
                     raise
+                before = len(draft.claims)
                 _salvage_draft_inplace(draft, block=block, profile=profile)
+                counters["salvaged"] = True
+                counters["dropped"] = int(counters["dropped"]) + before - len(draft.claims)
+            except DeterministicValidationError:
+                if counters["n"] < max_attempts:
+                    raise
+                before = len(draft.claims)
+                _salvage_draft_inplace(draft, block=block, profile=profile)
+                counters["salvaged"] = True
+                counters["dropped"] = int(counters["dropped"]) + before - len(draft.claims)
 
         record: BlockEvidenceExtraction
         run: ModelRunRecord | None = None
@@ -362,6 +384,9 @@ class EvidenceExtractorService:
                 rejection_reason=str(exc)[:1_000] or type(exc).__name__,
                 failure_kind="provider",
             )
+        # Validation attempts intentionally exclude provider failures: those
+        # calls never reach the validator and have a different denominator.
+        _emit_evidence_attempt_event(project_id, block, record, counters)
         return record, run
 
     def _extract_batch(
@@ -408,13 +433,33 @@ class EvidenceExtractorService:
                 for position, block in enumerate(unit, start=1)
             ],
         }
-        stats = {"dropped_claims": 0, "cross_block_excerpts": 0}
+        stats: dict[str, object] = {
+            "dropped_claims": 0,
+            "cross_block_excerpts": 0,
+            "by_block": {
+                block.block_id: {
+                    "attempt_count": 0,
+                    "excerpt_failure_count": 0,
+                    "salvaged": False,
+                    "dropped_claim_count": 0,
+                }
+                for block in unit
+            },
+        }
 
         def validator(draft: BatchEvidenceExtractionDraft) -> None:
             _validate_batch_structure(draft, unit)
             for entry in draft.entries:
                 block = unit[entry.block_index - 1]
-                _salvage_entry_inplace(entry.extraction, block, unit, profile, stats)
+                counter = _batch_counter(stats, block.block_id)
+                counter["attempt_count"] += 1
+                dropped, excerpt_failure = _salvage_entry_inplace(
+                    entry.extraction, block, unit, profile, stats
+                )
+                counter["dropped_claim_count"] += dropped
+                counter["salvaged"] = bool(counter["salvaged"] or dropped)
+                if excerpt_failure:
+                    counter["excerpt_failure_count"] += 1
 
         fallback_ids: set[str] = set()
         outcomes: dict[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]] = {}
@@ -450,7 +495,7 @@ class EvidenceExtractorService:
         except (ModelProviderError, ModelSafetyError) as exc:
             if not fallback_allowed():
                 _emit_batch_event(project_id, unit, fallback_block_count=0, stats=stats)
-                return [
+                skipped = [
                     (
                         block.block_id,
                         (
@@ -466,7 +511,13 @@ class EvidenceExtractorService:
                         ),
                     )
                     for block in unit
-                ], []
+                ]
+                for block_id, outcome in skipped:
+                    block = next(item for item in unit if item.block_id == block_id)
+                    _emit_evidence_attempt_event(
+                        project_id, block, outcome[0], _batch_counter(stats, block_id)
+                    )
+                return skipped, []
             fallback_ids = set(unit_ids)
         except StructuredOutputError:
             fallback_ids = set(unit_ids)
@@ -474,6 +525,15 @@ class EvidenceExtractorService:
         _emit_batch_event(
             project_id, unit, fallback_block_count=len(fallback_ids), stats=stats
         )
+        for block in unit:
+            if block.block_id in fallback_ids:
+                continue
+            _emit_evidence_attempt_event(
+                project_id,
+                block,
+                outcomes[block.block_id][0],
+                _batch_counter(stats, block.block_id),
+            )
         for block in unit:
             if block.block_id not in fallback_ids:
                 continue
@@ -489,6 +549,7 @@ class EvidenceExtractorService:
                 model=model,
                 prompt_version=prompt_version,
                 max_attempts=fallback_max_attempts,
+                initial_counters=_single_block_counters(_batch_counter(stats, block.block_id)),
             )
         return (
             [(block.block_id, outcomes[block.block_id]) for block in unit],
@@ -577,7 +638,7 @@ def _validate_claim_excerpt(claim: EvidenceClaimDraft, block_text: str) -> None:
         raise DeterministicValidationError("supporting_excerpt is too short to audit.")
     verbatim = locate_excerpt(claim.supporting_excerpt, block_text)
     if verbatim is None:
-        raise DeterministicValidationError(
+        raise ExcerptNotFoundError(
             "supporting_excerpt must be copied from the supplied source block."
         )
     if _normalize(verbatim) != excerpt:
@@ -636,8 +697,8 @@ def _salvage_entry_inplace(
     block: SourceDocumentBlock,
     unit: list[SourceDocumentBlock],
     profile: AnalysisProfile,
-    stats: dict[str, int],
-) -> None:
+    stats: dict[str, object],
+) -> tuple[int, bool]:
     """Batch-only copy of single-block salvage, with measurement counters.
 
     Keep this separate from ``_salvage_draft_inplace``: the single-block path is
@@ -647,6 +708,7 @@ def _salvage_entry_inplace(
     kept: list[EvidenceClaimDraft] = []
     seen_claims: set[str] = set()
     dropped_claims = 0
+    excerpt_failure = False
     for position, claim in enumerate(draft.claims):
         if claim.claim_type.value == "editorial_explanation":
             dropped_claims += 1
@@ -657,14 +719,15 @@ def _salvage_entry_inplace(
             continue
         try:
             _validate_claim_excerpt(claim, block.text)
-        except DeterministicValidationError:
+        except DeterministicValidationError as exc:
             dropped_claims += 1
+            excerpt_failure = excerpt_failure or isinstance(exc, ExcerptNotFoundError)
             if any(
                 sibling.block_id != block.block_id
                 and locate_excerpt(claim.supporting_excerpt, sibling.text) is not None
                 for sibling in unit
             ):
-                stats["cross_block_excerpts"] += 1
+                stats["cross_block_excerpts"] = int(stats["cross_block_excerpts"]) + 1
             continue
         seen_claims.add(normalized_claim)
         kept.append(claim)
@@ -672,13 +735,14 @@ def _salvage_entry_inplace(
             dropped_claims += len(draft.claims) - position - 1
             break
     # Claims beyond the budget are deliberately dropped in place rather than retrying K blocks.
-    stats["dropped_claims"] += dropped_claims
+    stats["dropped_claims"] = int(stats["dropped_claims"]) + dropped_claims
     draft.claims = kept
     if not profile.include_examples:
         draft.examples = []
     if not profile.include_objections_and_responses:
         draft.objections = []
         draft.responses = []
+    return dropped_claims, excerpt_failure
 
 
 def _materialize_extraction(
@@ -813,12 +877,60 @@ def _block_payload(
     }
 
 
+def _emit_evidence_attempt_event(
+    project_id: UUID,
+    block: SourceDocumentBlock,
+    record: BlockEvidenceExtraction,
+    counters: dict[str, int | bool],
+) -> None:
+    """Emit exactly one E3 measurement event for a processed block."""
+
+    tracing.event(
+        "corpus.evidence_attempts",
+        component="corpus",
+        project_id=project_id,
+        subject_type="block",
+        subject_id=block.block_id,
+        attempt_count=counters["n"] if "n" in counters else counters["attempt_count"],
+        excerpt_failure_count=(
+            counters["excerpt_failures"]
+            if "excerpt_failures" in counters
+            else counters["excerpt_failure_count"]
+        ),
+        salvaged=counters["salvaged"],
+        dropped_claim_count=(
+            counters["dropped"] if "dropped" in counters else counters["dropped_claim_count"]
+        ),
+        kept_claim_count=len(record.extraction.claims),
+        status=record.status,
+    )
+
+
+def _batch_counter(stats: dict[str, object], block_id: str) -> dict[str, int | bool]:
+    by_block = stats["by_block"]
+    assert isinstance(by_block, dict)
+    counter = by_block[block_id]
+    assert isinstance(counter, dict)
+    return counter
+
+
+def _single_block_counters(batch_counter: dict[str, int | bool]) -> dict[str, int | bool]:
+    """Carry one batch entry's measurements into its single-block fallback."""
+
+    return {
+        "n": int(batch_counter["attempt_count"]),
+        "excerpt_failures": int(batch_counter["excerpt_failure_count"]),
+        "salvaged": bool(batch_counter["salvaged"]),
+        "dropped": int(batch_counter["dropped_claim_count"]),
+    }
+
+
 def _emit_batch_event(
     project_id: UUID,
     unit: list[SourceDocumentBlock],
     *,
     fallback_block_count: int,
-    stats: dict[str, int],
+    stats: dict[str, object],
 ) -> None:
     """Emit E2's per-call measurement record, including aborted calls."""
 
@@ -830,8 +942,8 @@ def _emit_batch_event(
         subject_id=f"{unit[0].block_id}+{len(unit) - 1}",
         block_count=len(unit),
         fallback_block_count=fallback_block_count,
-        dropped_claim_count=stats["dropped_claims"],
-        cross_block_excerpt_count=stats["cross_block_excerpts"],
+        dropped_claim_count=int(stats["dropped_claims"]),
+        cross_block_excerpt_count=int(stats["cross_block_excerpts"]),
     )
 
 

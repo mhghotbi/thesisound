@@ -14,6 +14,7 @@ from rich.tree import Tree
 from thesisound.config import Settings
 from thesisound.observability import (
     CallDetail,
+    EvidenceTierSummary,
     ObservabilityLedger,
     TraceNode,
     ledger_from_settings,
@@ -321,6 +322,19 @@ def register_observability_commands(app: typer.Typer) -> None:
         # vacuously 0 -- show "unknown" rather than a number that looks like a real $0.
         total_display = _format_cost(summary.total_cost_micros if priced_count else None)
         console.print(f"[bold]Project {project_id}[/bold] · total cost={total_display}{caveat}")
+        wasted_count = summary.failed_count + summary.rejected_count
+        if wasted_count:
+            wasted_priced_count = wasted_count - summary.unpriced_wasted_count
+            wasted_display = _format_cost(
+                summary.wasted_cost_micros if wasted_priced_count else None
+            )
+            wasted_caveat = ""
+            if summary.unpriced_wasted_count:
+                wasted_caveat = (
+                    f" [yellow]({summary.unpriced_wasted_count} rejected/failed call(s) "
+                    "have no configured price)[/yellow]"
+                )
+            console.print(f"Wasted retry/failure spend={wasted_display}{wasted_caveat}")
         rows = rollup.cost_breakdown(project_id)
         if not rows:
             return
@@ -330,11 +344,24 @@ def register_observability_commands(app: typer.Typer) -> None:
         table.add_column("Model")
         table.add_column("Calls", justify="right")
         table.add_column("Tokens", justify="right")
-        table.add_column("Cost", justify="right")
+        table.add_column("Delivered cost", justify="right")
+        table.add_column("Wasted calls", justify="right")
+        table.add_column("Wasted cost", justify="right")
         for row in rows:
-            cost_cell = _format_cost(row.total_cost_micros) if row.total_cost_micros else "unknown"
+            cost_cell = (
+                _format_cost(row.total_cost_micros)
+                if row.total_cost_micros or not row.unpriced_count
+                else "unknown"
+            )
             if row.unpriced_count:
                 cost_cell += f" [yellow](+{row.unpriced_count} unpriced)[/yellow]"
+            wasted_cell = (
+                _format_cost(row.wasted_cost_micros)
+                if row.wasted_call_count and not row.unpriced_wasted_count
+                else ("unknown" if row.wasted_call_count else "—")
+            )
+            if row.unpriced_wasted_count:
+                wasted_cell += f" [yellow](+{row.unpriced_wasted_count} unpriced)[/yellow]"
             table.add_row(
                 row.stage,
                 row.provider,
@@ -342,8 +369,47 @@ def register_observability_commands(app: typer.Typer) -> None:
                 str(row.call_count),
                 str(row.total_tokens),
                 cost_cell,
+                str(row.wasted_call_count),
+                wasted_cell,
             )
         console.print(table)
+
+    @app.command("evidence-tier-report")
+    def evidence_tier_report(
+        project_id: UUID,
+        compare: UUID | None = typer.Option(  # noqa: B008
+            None, help="Project ID for the strong-tier arm."
+        ),
+        as_json: bool = typer.Option(False, "--json", help="Render the measurement as JSON."),
+    ) -> None:
+        """Report the persisted E3 evidence-extraction measurements."""
+
+        rollup = ObservabilityRollup(ledger_from_settings(Settings()))
+        console = Console()
+        baseline = rollup.evidence_tier_summary(project_id)
+        if baseline.call_count == 0:
+            console.print(
+                f"[yellow]No recorded evidence-extraction calls for project {project_id}.[/yellow]"
+            )
+            return
+        comparison = rollup.evidence_tier_summary(compare) if compare else None
+        if comparison is not None and comparison.call_count == 0:
+            console.print(
+                f"[yellow]No recorded evidence-extraction calls for project {compare}.[/yellow]"
+            )
+            return
+        if as_json:
+            payload: dict[str, object] = {"baseline": _tier_payload(baseline)}
+            if comparison is not None:
+                payload["compare"] = _tier_payload(comparison)
+                payload["verdict"] = _tier_verdict(baseline, comparison)[0]
+            console.print_json(json.dumps(payload, ensure_ascii=False))
+            return
+        _render_tier_summary(console, baseline, label="A")
+        if comparison is not None:
+            _render_tier_summary(console, comparison, label="B")
+            verdict, reason = _tier_verdict(baseline, comparison)
+            _render_tier_comparison(console, baseline, comparison, verdict, reason)
 
     @app.command("observability-reprice")
     def observability_reprice(
@@ -365,6 +431,141 @@ def register_observability_commands(app: typer.Typer) -> None:
         parsed_since = _parse_since(since) if since is not None else None
         updated = ledger.reprice(ledger.cost_pricer, since=parsed_since)
         console.print(f"Repriced {updated} call(s).")
+
+
+def _tier_payload(summary: EvidenceTierSummary) -> dict[str, object]:
+    payload = summary.model_dump(mode="json")
+    payload["excerpt_failure_rate"] = summary.excerpt_failure_rate
+    payload["claims_per_kept_block"] = summary.claims_per_kept_block
+    return payload
+
+
+def _render_tier_summary(console: Console, summary: EvidenceTierSummary, *, label: str) -> None:
+    table = Table(title=f"Evidence tier arm {label}: {summary.project_id}")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("Resolved model", summary.resolved_model or "unknown")
+    table.add_row("Model profile", summary.model_profile or "unknown")
+    table.add_row("Model calls", str(summary.call_count))
+    table.add_row("Provider attempts", str(summary.provider_attempt_count))
+    table.add_row("Validation attempts", str(summary.validation_attempt_count))
+    table.add_row(
+        "Excerpt failures",
+        _format_rate(summary.excerpt_failure_rate),
+    )
+    table.add_row("Blocks", str(summary.block_count))
+    table.add_row("Salvaged blocks", str(summary.salvaged_block_count))
+    table.add_row("Dropped claims", str(summary.dropped_claim_count))
+    table.add_row("Claims / kept block", _format_ratio(summary.claims_per_kept_block))
+    table.add_row("Delivered tokens", str(summary.delivered_tokens))
+    table.add_row("Wasted tokens", str(summary.wasted_tokens))
+    table.add_row("Delivered cost", _format_cost_or_unknown(summary.delivered_cost_micros, summary))
+    table.add_row("Wasted cost", _format_cost_or_unknown(summary.wasted_cost_micros, summary))
+    table.add_row("Latency p50", _format_latency(summary.latency_p50_ms))
+    table.add_row("Latency p95", _format_latency(summary.latency_p95_ms))
+    console.print(table)
+
+
+def _render_tier_comparison(
+    console: Console,
+    baseline: EvidenceTierSummary,
+    comparison: EvidenceTierSummary,
+    verdict: str,
+    reason: str,
+) -> None:
+    reduction = _difference(baseline.excerpt_failure_rate, comparison.excerpt_failure_rate)
+    baseline_cost = baseline.delivered_cost_micros + baseline.wasted_cost_micros
+    comparison_cost = comparison.delivered_cost_micros + comparison.wasted_cost_micros
+    cost_ratio = comparison_cost / baseline_cost if baseline_cost else None
+    yield_ratio = _ratio(comparison.claims_per_kept_block, baseline.claims_per_kept_block)
+    excerpt_delta = _difference(comparison.excerpt_failure_rate, baseline.excerpt_failure_rate)
+    displayed_cost_ratio = (
+        cost_ratio if not baseline.unpriced_count and not comparison.unpriced_count else None
+    )
+    table = Table(title="E3 decision worksheet")
+    table.add_column("Metric")
+    table.add_column("A", justify="right")
+    table.add_column("B", justify="right")
+    table.add_column("Decision", justify="right")
+    table.add_row(
+        "Excerpt-failure rate",
+        _format_rate(baseline.excerpt_failure_rate),
+        _format_rate(comparison.excerpt_failure_rate),
+        f"Δ = {_format_percentage_points(excerpt_delta)}; "
+        + _pass_fail(reduction is not None and reduction > 0.15, "threshold > 15 pp"),
+    )
+    table.add_row(
+        "Total cost",
+        _format_cost(baseline_cost) if not baseline.unpriced_count else "unknown",
+        _format_cost(comparison_cost) if not comparison.unpriced_count else "unknown",
+        f"ratio = {_format_ratio(displayed_cost_ratio, suffix='×')}; "
+        + _pass_fail(cost_ratio is not None and cost_ratio <= 1.2, "threshold <= 1.20×"),
+    )
+    table.add_row(
+        "Claim yield / block",
+        _format_ratio(baseline.claims_per_kept_block),
+        _format_ratio(comparison.claims_per_kept_block),
+        f"ratio = {_format_ratio(yield_ratio, suffix='×')}",
+    )
+    table.add_row(
+        "Latency p50",
+        _format_latency(baseline.latency_p50_ms),
+        _format_latency(comparison.latency_p50_ms),
+        "context only",
+    )
+    console.print(table)
+    console.print(f"[bold]verdict: {verdict}[/bold]" + (f" ({reason})" if reason else ""))
+
+
+def _tier_verdict(
+    baseline: EvidenceTierSummary, comparison: EvidenceTierSummary
+) -> tuple[str, str]:
+    if baseline.unpriced_count or comparison.unpriced_count:
+        missing = sorted(set(baseline.unpriced_rows + comparison.unpriced_rows))
+        detail = ", ".join("/".join(row) for row in missing)
+        return "undecidable", f"missing price rows: {detail}"
+    reduction = _difference(baseline.excerpt_failure_rate, comparison.excerpt_failure_rate)
+    baseline_cost = baseline.delivered_cost_micros + baseline.wasted_cost_micros
+    comparison_cost = comparison.delivered_cost_micros + comparison.wasted_cost_micros
+    if reduction is None or baseline_cost == 0:
+        return "undecidable", "insufficient priced measurements"
+    if reduction > 0.15 and comparison_cost / baseline_cost <= 1.2:
+        return "switch", ""
+    return "keep", ""
+
+
+def _format_cost_or_unknown(value: int, summary: EvidenceTierSummary) -> str:
+    return "unknown" if summary.unpriced_count else _format_cost(value)
+
+
+def _format_rate(value: float | None) -> str:
+    return "unknown" if value is None else f"{value:.1%}"
+
+
+def _format_percentage_points(value: float | None) -> str:
+    return "unknown" if value is None else f"{value * 100:+.1f} pp"
+
+
+def _format_ratio(value: float | None, *, suffix: str = "") -> str:
+    return "unknown" if value is None else f"{value:.2f}{suffix}"
+
+
+def _format_latency(value: int | None) -> str:
+    return "unknown" if value is None else f"{value} ms"
+
+
+def _difference(before: float | None, after: float | None) -> float | None:
+    return None if before is None or after is None else before - after
+
+
+def _ratio(numerator: float | None, denominator: float | None) -> float | None:
+    if numerator is None or denominator in (None, 0):
+        return None
+    return numerator / denominator
+
+
+def _pass_fail(passed: bool, threshold: str) -> str:
+    return f"{'PASS' if passed else 'FAIL'} ({threshold})"
 
 
 def _display_metric(name: str, value: object) -> str:

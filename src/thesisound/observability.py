@@ -231,6 +231,8 @@ class ProjectUsageSummary(BaseModel):
     total_latency_ms: int = 0
     total_cost_micros: int = 0
     unpriced_succeeded_count: int = 0
+    wasted_cost_micros: int = 0
+    unpriced_wasted_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -358,7 +360,47 @@ class CostBreakdownRow(BaseModel):
     call_count: int
     unpriced_count: int
     total_cost_micros: int
+    wasted_call_count: int
+    wasted_cost_micros: int
+    unpriced_wasted_count: int
     total_tokens: int
+
+
+class EvidenceTierSummary(BaseModel):
+    """One project's E3 evidence-extraction measurements."""
+
+    project_id: UUID
+    resolved_model: str | None = None
+    model_profile: str | None = None
+    call_count: int = 0
+    provider_attempt_count: int = 0
+    validation_attempt_count: int = 0
+    excerpt_failure_count: int = 0
+    block_count: int = 0
+    salvaged_block_count: int = 0
+    dropped_claim_count: int = 0
+    kept_claim_count: int = 0
+    extracted_block_count: int = 0
+    delivered_tokens: int = 0
+    wasted_tokens: int = 0
+    delivered_cost_micros: int = 0
+    wasted_cost_micros: int = 0
+    unpriced_count: int = 0
+    unpriced_rows: list[tuple[str, str, str]] = Field(default_factory=list)
+    latency_p50_ms: int | None = None
+    latency_p95_ms: int | None = None
+
+    @property
+    def excerpt_failure_rate(self) -> float | None:
+        if self.validation_attempt_count == 0:
+            return None
+        return self.excerpt_failure_count / self.validation_attempt_count
+
+    @property
+    def claims_per_kept_block(self) -> float | None:
+        if self.extracted_block_count == 0:
+            return None
+        return self.kept_claim_count / self.extracted_block_count
 
 
 class StageSummary(BaseModel):
@@ -585,21 +627,23 @@ class ObservabilityLedger:
         spec = self._spec_for_artifact(call_id)
         if self.store_payloads:
             path, digest = self._write_artifact(spec, "parsed-output.json", parsed_output)
-        cost_fields: dict[str, Any] = {}
-        if self.cost_pricer is not None:
-            priced = self._price_call(call_id, self.cost_pricer)
-            if priced is not None:
-                cost_fields = {
-                    "cost_micros": priced.cost_micros,
-                    "pricing_version": priced.pricing_version,
-                }
         self._finish(
             call_id,
             status="succeeded",
             parsed_output_artifact_path=path,
             parsed_output_sha256=digest,
-            **cost_fields,
+            **self._terminal_cost_fields(call_id),
         )
+
+    def _terminal_cost_fields(self, call_id: UUID) -> dict[str, Any]:
+        """Price a terminal call, including rejected and failed responses."""
+
+        if self.cost_pricer is None:
+            return {}
+        priced = self._price_call(call_id, self.cost_pricer)
+        if priced is None:
+            return {}
+        return {"cost_micros": priced.cost_micros, "pricing_version": priced.pricing_version}
 
     def _price_call(self, call_id: UUID, pricer: CostPricer) -> CostResult | None:
         with self._lock, closing(self._connect()) as connection, connection:
@@ -624,14 +668,14 @@ class ObservabilityLedger:
         )
 
     def reprice(self, pricer: CostPricer, *, since: datetime | None = None) -> int:
-        """Recompute ``cost_micros``/``pricing_version`` for already-succeeded
+        """Recompute ``cost_micros``/``pricing_version`` for terminal
         calls against a (possibly updated) pricing table -- the "what-if"
         number from ``thesisound observability-reprice``, distinct from the
         audit number ``succeed()`` persists once at call time. Returns how
         many calls got a price (calls still unpriced after this are simply
         missing from the table, not touched)."""
 
-        clauses = ["status = 'succeeded'"]
+        clauses = ["status IN ('succeeded', 'rejected', 'failed')"]
         params: list[Any] = []
         if since is not None:
             clauses.append("started_at >= ?")
@@ -676,6 +720,7 @@ class ObservabilityLedger:
             error_type=type(error).__name__,
             error_code=error_code,
             error_message=redact_exception_message(str(error) or type(error).__name__),
+            **self._terminal_cost_fields(call_id),
         )
 
     def reject(self, call_id: UUID, error: Exception) -> None:
@@ -684,6 +729,7 @@ class ObservabilityLedger:
             status="rejected",
             error_type=type(error).__name__,
             error_message=redact_exception_message(str(error) or type(error).__name__),
+            **self._terminal_cost_fields(call_id),
         )
 
     def record_retry(

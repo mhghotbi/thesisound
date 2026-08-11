@@ -764,7 +764,7 @@ class AlwaysBadExcerptRunner(FakeRunner):
         return ModelExecution(output=output, record=record)
 
 
-def test_evidence_extractor_keeps_valid_claims_after_salvage() -> None:
+def test_evidence_extractor_keeps_valid_claims_after_salvage(recording_tracer) -> None:
     source_id = uuid4()
     block = BlockBuilder().build(_parsed_document(), source_id=source_id)[0][0]
     mapper_runner = FakeRunner()
@@ -785,9 +785,21 @@ def test_evidence_extractor_keeps_valid_claims_after_salvage() -> None:
     assert records[0].status == "extracted"
     assert len(records[0].extraction.claims) == 1
     assert "Action occurs" in records[0].extraction.claims[0].claim
+    events = [
+        event for event in recording_tracer.sink.events if event.name == "corpus.evidence_attempts"
+    ]
+    assert len(events) == 1
+    assert events[0].attributes == {
+        "attempt_count": 3,
+        "excerpt_failure_count": 3,
+        "salvaged": True,
+        "dropped_claim_count": 1,
+        "kept_claim_count": 1,
+        "status": "extracted",
+    }
 
 
-def test_evidence_extractor_rejects_block_when_nothing_survives() -> None:
+def test_evidence_extractor_rejects_block_when_nothing_survives(recording_tracer) -> None:
     source_id = uuid4()
     block = BlockBuilder().build(_parsed_document(), source_id=source_id)[0][0]
     mapper_runner = FakeRunner()
@@ -808,6 +820,13 @@ def test_evidence_extractor_rejects_block_when_nothing_survives() -> None:
     assert records[0].status == "rejected"
     assert records[0].extraction.claims == []
     assert records[0].rejection_reason
+    events = [
+        event for event in recording_tracer.sink.events if event.name == "corpus.evidence_attempts"
+    ]
+    assert len(events) == 1
+    assert events[0].attributes["salvaged"] is True
+    assert events[0].attributes["dropped_claim_count"] == 1
+    assert events[0].attributes["kept_claim_count"] == 0
 
 
 def test_extract_evidence_skips_extracted_and_reattempts_rejected(

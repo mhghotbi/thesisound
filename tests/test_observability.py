@@ -386,6 +386,73 @@ def test_succeed_leaves_cost_unset_with_no_pricer_configured(tmp_path: Path) -> 
     assert detail.call.cost_micros is None
 
 
+@pytest.mark.parametrize("terminal", ["reject", "fail"])
+def test_terminal_failures_persist_priced_retry_spend(tmp_path: Path, terminal: str) -> None:
+    ledger = ObservabilityLedger(
+        tmp_path / "ledger.sqlite3", tmp_path / "artifacts", cost_pricer=FakePricer()
+    )
+    spec = ModelCallSpec(
+        stage="evidence_extraction",
+        operation="structured_text",
+        provider="gemini",
+        requested_model="priced-model",
+    )
+    ledger.begin_call(spec, {"prompt": "x"})
+    ledger.provider_succeeded(
+        spec.call_id,
+        response_payload={"text": "bad"},
+        usage=ModelUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+        provider_metadata=ProviderMetadata(),
+    )
+
+    getattr(ledger, terminal)(spec.call_id, ValueError("bad output"))
+
+    detail = ledger.get_call(spec.call_id)
+    assert detail.call.status == ("rejected" if terminal == "reject" else "failed")
+    assert detail.call.cost_micros == 2_000
+    assert detail.call.pricing_version == "test-2026-01"
+
+
+def test_failed_call_without_usage_is_priced_as_zero_not_unknown(tmp_path: Path) -> None:
+    ledger = ObservabilityLedger(
+        tmp_path / "ledger.sqlite3", tmp_path / "artifacts", cost_pricer=FakePricer()
+    )
+    spec = ModelCallSpec(
+        stage="evidence_extraction",
+        operation="structured_text",
+        provider="gemini",
+        requested_model="priced-model",
+    )
+    ledger.begin_call(spec, {"prompt": "x"})
+    ledger.fail(spec.call_id, ConnectionError("reset"))
+
+    assert ledger.get_call(spec.call_id).call.cost_micros == 0
+
+
+def test_reprice_includes_rejected_and_failed_calls(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)
+    rejected = ModelCallSpec(
+        stage="evidence_extraction",
+        operation="structured_text",
+        provider="gemini",
+        requested_model="priced-model",
+    )
+    failed = rejected.model_copy(update={"call_id": uuid4()})
+    for spec, terminal in ((rejected, "reject"), (failed, "fail")):
+        ledger.begin_call(spec, {"prompt": "x"})
+        ledger.provider_succeeded(
+            spec.call_id,
+            response_payload={"text": "bad"},
+            usage=ModelUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+            provider_metadata=ProviderMetadata(),
+        )
+        getattr(ledger, terminal)(spec.call_id, ValueError("bad output"))
+
+    assert ledger.reprice(FakePricer()) == 2
+    assert ledger.get_call(rejected.call_id).call.cost_micros == 2_000
+    assert ledger.get_call(failed.call_id).call.cost_micros == 2_000
+
+
 def test_reprice_recomputes_cost_for_already_succeeded_calls(tmp_path: Path) -> None:
     ledger = _ledger(tmp_path)
     spec = _succeed_a_call(ledger, model="priced-model")
@@ -483,6 +550,40 @@ def test_project_summary_reports_cost_and_unpriced_count(tmp_path: Path) -> None
 
     assert summary.total_cost_micros == 100 * 10 + 50 * 20  # only priced-model counted
     assert summary.unpriced_succeeded_count == 1
+
+
+def test_cost_rollups_keep_delivered_and_wasted_spend_separate(tmp_path: Path) -> None:
+    ledger = ObservabilityLedger(
+        tmp_path / "ledger.sqlite3", tmp_path / "artifacts", cost_pricer=FakePricer()
+    )
+    project_id = uuid4()
+    for terminal in ("succeed", "reject"):
+        spec = ModelCallSpec(
+            project_id=project_id,
+            stage="evidence_extraction",
+            operation="structured_text",
+            provider="gemini",
+            requested_model="priced-model",
+        )
+        ledger.begin_call(spec, {"prompt": "x"})
+        ledger.provider_succeeded(
+            spec.call_id,
+            response_payload={"text": "ok"},
+            usage=ModelUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+            provider_metadata=ProviderMetadata(),
+        )
+        if terminal == "succeed":
+            ledger.succeed(spec.call_id, {"value": "ok"})
+        else:
+            ledger.reject(spec.call_id, ValueError("bad output"))
+
+    summary = ObservabilityRollup(ledger).project_summary(project_id)
+    row = ObservabilityRollup(ledger).cost_breakdown(project_id)[0]
+    assert summary.total_cost_micros == 2_000
+    assert summary.wasted_cost_micros == 2_000
+    assert row.call_count == 2
+    assert row.wasted_call_count == 1
+    assert row.total_cost_micros == row.wasted_cost_micros == 2_000
 
 
 def test_sensitive_attribute_policy_uses_one_payload_switch(tmp_path: Path) -> None:

@@ -159,6 +159,7 @@ class GeminiStructuredModel:
                 "input_artifact_hashes": metadata.input_artifact_hashes,
                 "grounding_urls": metadata.grounding_urls,
                 "output_model": output_type.__name__,
+                "model_profile": metadata.model_profile,
             },
         )
         request_payload = {

@@ -219,6 +219,30 @@ def test_unusable_batch_entry_falls_back_only_where_needed(mode: str) -> None:
         ]
 
 
+def test_batch_fallback_keeps_its_first_validation_measurements(recording_tracer) -> None:
+    source_id, blocks, document_map = _fixture(4)
+    project_id = uuid4()
+    EvidenceExtractorService(BatchRunner(mode="cross_block"), batch_size=4).extract_source(
+        project_id=project_id,
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+    )
+
+    events = {
+        event.subject_id: event
+        for event in recording_tracer.sink.events
+        if event.name == "corpus.evidence_attempts"
+    }
+    fallback = events["block-2"].attributes
+    assert len(events) == 4
+    assert fallback["attempt_count"] == 2
+    assert fallback["excerpt_failure_count"] == 1
+    assert fallback["salvaged"] is True
+    assert fallback["dropped_claim_count"] == 1
+
+
 def test_first_provider_batch_failure_is_skipped_without_fallback() -> None:
     source_id, blocks, document_map = _fixture(4)
     runner = BatchRunner(mode="provider")
