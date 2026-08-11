@@ -20,11 +20,12 @@ from thesisound.web.source_manifest import (
 from thesisound.web.source_routes import WebSourceDiscoveryService
 
 
-def _settings(tmp_path: Path) -> Settings:
+def _settings(tmp_path: Path, *, web_source_discovery_enabled: bool = True) -> Settings:
     return Settings(
         environment="test",
         workspace_root=tmp_path / "workspaces",
         ingestion_artifact_root=tmp_path / "artifacts",
+        observability_database_path=tmp_path / "observability.sqlite3",
         web_session_secret="test-secret-that-is-long-enough",
         allow_test_otp=True,
         test_otp_phone="09120000000",
@@ -32,6 +33,7 @@ def _settings(tmp_path: Path) -> Settings:
         otp_resend_cooldown_seconds=5,
         ui_demo_mode=False,
         web_secure_cookies=False,
+        web_source_discovery_enabled=web_source_discovery_enabled,
     )
 
 
@@ -136,7 +138,7 @@ def test_project_can_start_with_only_a_title_and_auto_add_web_sources(
         project_id = _create_and_confirm(client)
         page = client.get(f"/projects/{project_id}/sources")
         assert "پیدا کردن منبع در وب" in page.text
-        assert "داشتن فایل از قبل الزامی نیست" in page.text
+        assert "فایل بارگذاری کنید تا وارسی کیفیت شروع شود" in page.text
 
         get_search = client.get(
             f"/projects/{project_id}/sources/search",
@@ -167,6 +169,45 @@ def test_project_can_start_with_only_a_title_and_auto_add_web_sources(
     assert project.state == ProjectState.SOURCE_SELECTION_REQUIRED
     assert len(sources) == 1
     assert sources[0].selected
+
+
+def test_web_source_discovery_hidden_when_disabled(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    settings = _settings(tmp_path, web_source_discovery_enabled=False)
+    called = {"search": False}
+
+    def fake_search(self, project, query):
+        called["search"] = True
+        return []
+
+    monkeypatch.setattr(WebSourceDiscoveryService, "search", fake_search)
+    monkeypatch.setattr(RuntimePreflight, "require", lambda *_: None)
+
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+    )
+    with TestClient(app) as client:
+        _login(client)
+        project_id = _create_and_confirm(client)
+        page = client.get(f"/projects/{project_id}/sources")
+        assert "پیدا کردن منبع در وب" not in page.text
+        assert "فایل بارگذاری کنید تا وارسی کیفیت شروع شود" in page.text
+
+        response = client.post(
+            f"/projects/{project_id}/sources/search",
+            data={
+                "csrf_token": _csrf(page.text),
+                "query": "آرنت",
+                "mode": "preview",
+            },
+        )
+        assert response.status_code == 422
+        assert "جست‌وجوی وب فعلاً در دسترس نیست" in response.text
+        assert called["search"] is False
 
 
 def test_search_auth_failure_shows_actionable_message(

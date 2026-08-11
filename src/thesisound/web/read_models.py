@@ -132,7 +132,7 @@ def build_project_read_model(
             attention_label=(
                 "منابع آماده‌اند؛ مجموعهٔ نهایی را تأیید کنید"
                 if ready
-                else "منبع اضافه کنید یا جست‌وجوی وب را اجرا کنید"
+                else "منبع اضافه کنید"
             ),
             primary_action_label="ادامهٔ منابع",
             primary_action_url=f"/projects/{project_id}/sources",

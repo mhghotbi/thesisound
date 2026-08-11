@@ -6,7 +6,7 @@
   <div>
     <p class="kicker">منابع گفتار</p>
     <h1>منابع را اضافه و انتخاب کنید</h1>
-    <p>فقط متن کامل و عبورکرده از وارسی کیفیت می‌تواند مبنای استخراج شاهد قرار گیرد. خلاصهٔ نتیجهٔ جست‌وجو به‌تنهایی منبع محسوب نمی‌شود.</p>
+    <p>فقط متن کامل و عبورکرده از وارسی کیفیت می‌تواند مبنای استخراج شاهد قرار گیرد.</p>
   </div>
   {{ status_label((selected_count | fa_num) ~ ' منبع منتخب', 'مجموعه منابع', 'success' if selected_count else 'attention') }}
 </header>
@@ -48,6 +48,7 @@
   <noscript><button class="button button--primary" type="submit">افزودن و وارسی فایل</button></noscript>
 </form>
 
+{% if web_source_discovery_enabled %}
 <details class="search-path section-block">
   <summary>یا پیدا کردن منبع در وب</summary>
   <div class="search-path__body">
@@ -67,8 +68,9 @@
   </div>
 </details>
 {% endif %}
+{% endif %}
 
-{% if search_candidates and not selection_locked %}
+{% if web_source_discovery_enabled and search_candidates and not selection_locked %}
 <section class="section-block" aria-labelledby="search-results-title">
   <div class="section-heading">
     <div><p class="kicker">پیشنهادهای منبع</p><h2 id="search-results-title">نتایج قابل بررسی</h2></div>
@@ -179,14 +181,14 @@
     {% endfor %}
   </div>
   {% else %}
-  <div class="empty-inline"><strong>هنوز منبعی اضافه نشده است.</strong><span>فایل بارگذاری کنید یا جست‌وجوی خودکار را اجرا کنید؛ داشتن فایل از قبل الزامی نیست.</span></div>
+  <div class="empty-inline"><strong>هنوز منبعی اضافه نشده است.</strong><span>فایل بارگذاری کنید تا وارسی کیفیت شروع شود.</span></div>
   {% endif %}
 </section>
 
 <section class="sticky-confirmation" aria-labelledby="corpus-confirm-title">
   <div>
     <h2 id="corpus-confirm-title">این گفتار بر اساس {{ selected_count | fa_num }} منبع منتخب ساخته می‌شود</h2>
-    <p id="corpus-confirm-hint">نتایج جست‌وجو و منابع انتخاب‌نشده وارد شاهدها و متن گفتار نمی‌شوند.{% if selected_count == 0 %} برای ادامه حداقل یک منبع آماده را انتخاب کنید.{% endif %}</p>
+    <p id="corpus-confirm-hint">فقط منابع منتخب و آماده وارد شاهدها و متن گفتار می‌شوند.{% if selected_count == 0 %} برای ادامه حداقل یک منبع آماده را انتخاب کنید.{% endif %}</p>
   </div>
   {% if selection_locked %}
     <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">مشاهدهٔ تحلیل منابع</a>

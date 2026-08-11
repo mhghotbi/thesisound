@@ -110,6 +110,10 @@ class WebSourceDiscoveryService:
         self.workspace = workspace
 
     def search(self, project: Project, query: str) -> list[WebSourceCandidate]:
+        if not self.settings.web_source_discovery_enabled:
+            raise ValueError(
+                "جست‌وجوی وب فعلاً در دسترس نیست. فایل منبع را بارگذاری کنید."
+            )
         if project.brief is None:
             raise ValueError("برای جست‌وجوی وب ابتدا برداشت پژوهش را تأیید کنید.")
         normalized = query.strip() or project.brief.central_question

@@ -87,16 +87,18 @@ def register_source_routes(
         error: str | None = None,
     ) -> dict[str, object]:
         candidates = WebSourceCandidateStore(workspace.project_dir(project.project_id)).load()
+        discovery_enabled = settings.web_source_discovery_enabled
         return {
             "project": project,
             "sources": sources,
-            "search_candidates": candidates,
+            "search_candidates": candidates if discovery_enabled else [],
             "search_query": (
                 project.brief.central_question if project.brief is not None else project.raw_input
             ),
             "selected_count": sum(source.selected for source in sources),
             "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
             "upload_limit_mb": settings.web_upload_limit_bytes // (1024 * 1024),
+            "web_source_discovery_enabled": discovery_enabled,
             "error": error,
         }
 
@@ -228,6 +230,17 @@ def register_source_routes(
             return redirect
         validate_csrf(request, csrf_token)
         project = workspace.load_project(project_id)
+        if not settings.web_source_discovery_enabled:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    project,
+                    UiSourceManifestStore(workspace.project_dir(project_id)).load(),
+                    error="جست‌وجوی وب فعلاً در دسترس نیست. فایل منبع را بارگذاری کنید.",
+                ),
+                status_code=422,
+            )
         if project.state not in _EDITABLE_SOURCE_STATES:
             return _source_redirect(project_id, error="selection-locked")
         try:
@@ -297,6 +310,17 @@ def register_source_routes(
             return redirect
         validate_csrf(request, csrf_token)
         project = workspace.load_project(project_id)
+        if not settings.web_source_discovery_enabled:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    project,
+                    UiSourceManifestStore(workspace.project_dir(project_id)).load(),
+                    error="جست‌وجوی وب فعلاً در دسترس نیست. فایل منبع را بارگذاری کنید.",
+                ),
+                status_code=422,
+            )
         if project.state not in _EDITABLE_SOURCE_STATES:
             return _source_redirect(project_id, error="selection-locked")
         try:
@@ -625,9 +649,7 @@ def register_source_routes(
                 if source.selected and source.status == UiSourceStatus.READY
             ]
             if not selected:
-                raise ValueError(
-                    "حداقل یک منبع آماده را انتخاب کنید یا جست‌وجوی خودکار وب را اجرا کنید."
-                )
+                raise ValueError("حداقل یک منبع آماده را انتخاب کنید.")
             if any(not source.safe_for_claim_extraction for source in selected):
                 raise ValueError("همه منابع انتخاب‌شده باید از کنترل کیفیت عبور کرده باشند.")
             inputs = corpus_source_inputs(settings, project_id, selected)

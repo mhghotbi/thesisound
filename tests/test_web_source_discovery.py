@@ -28,6 +28,7 @@ def _settings(tmp_path: Path) -> Settings:
         allow_test_otp=True,
         ui_demo_mode=False,
         url_probe_enabled=False,
+        web_source_discovery_enabled=True,
     )
 
 
