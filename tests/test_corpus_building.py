@@ -28,6 +28,7 @@ from thesisound.services.corpus_building import (
     CorpusBuildRunStore,
     CorpusSourceInput,
 )
+from thesisound.services.semantic_identity import claim_reconciler_identity
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.services.workflow_revision import WorkflowRevisionService
 from thesisound.source_analysis import (
@@ -243,6 +244,10 @@ def _seed_claim_ready_artifacts(
                     support_status=SupportStatus.STRONG,
                 )
             ],
+            reconciler_identity=claim_reconciler_identity(
+                model="fake-strong",
+                prompt_version=None,
+            ),
         ),
     )
     store.save_manifest(

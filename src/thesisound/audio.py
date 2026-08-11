@@ -71,6 +71,11 @@ class AudioSegmentQa(BaseModel):
     truncated: bool = False
     pronunciation_review: list[str] = Field(default_factory=list)
     regeneration_instruction: str | None = None
+    # Thresholds/algorithm that produced this verdict (R6 reuse gate).
+    qa_version: int | None = None
+    pass_threshold: float | None = None
+    review_threshold: float | None = None
+    missing_sentence_threshold: float | None = None
 
 
 class AudioPipelineManifest(BaseModel):

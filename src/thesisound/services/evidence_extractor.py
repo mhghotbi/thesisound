@@ -28,6 +28,7 @@ from thesisound.modeling import (
 from thesisound.services.evidence_validator import validate_evidence_extraction
 from thesisound.services.excerpt_matching import locate_excerpt
 from thesisound.services.model_runner import ModelRunner
+from thesisound.services.semantic_identity import evidence_extraction_identity
 from thesisound.source_analysis import (
     AnalysisProfile,
     BatchEvidenceExtractionDraft,
@@ -130,6 +131,7 @@ class EvidenceExtractorService:
         handover = Lock()
         consecutive_skipped = 0
         succeeded = 0
+        identity = evidence_extraction_identity(model=model, prompt_version=prompt_version)
 
         def any_block_succeeded() -> bool:
             with handover:
@@ -198,10 +200,12 @@ class EvidenceExtractorService:
             with handover:
                 batch_runs.extend(completed_batch_runs)
                 for block_id, outcome in outcomes:
-                    results[block_id] = outcome
+                    record, run = outcome
+                    stamped = record.model_copy(update={"extraction_identity": identity})
+                    results[block_id] = (stamped, run)
                     if on_extraction is not None:
-                        on_extraction(outcome[0])
-                records = [outcome[0] for _, outcome in outcomes]
+                        on_extraction(stamped)
+                records = [results[block_id][0] for block_id, _ in outcomes]
                 if records and all(record.status == "skipped" for record in records):
                     consecutive_skipped += 1
                 else:

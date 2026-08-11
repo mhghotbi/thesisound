@@ -126,7 +126,10 @@ def build_web_parsers(
     if local_ocr.is_ready():
         parsers["local-ocr"] = local_ocr
     if find_spec("docling") is not None:
-        parsers["docling"] = DoclingParser(offline=True)
+        parsers["docling"] = DoclingParser(
+            offline=True,
+            timeout_seconds=settings.docling_timeout_seconds,
+        )
     if _command_available(settings.mineru_command):
         parsers["mineru"] = MineruParser(
             command=settings.mineru_command,

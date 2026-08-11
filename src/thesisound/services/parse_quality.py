@@ -10,6 +10,18 @@ from thesisound.quality import ParseIssue, ParseReport
 _NORMALIZE_SPACE = re.compile(r"\s+")
 _SUSPICIOUS_OCR = re.compile(r"(?:\ufffd|\x00|[|Il1]{8,}|[^\w\s]{12,})")
 _MIN_DUPLICATE_CONTENT_CHARACTERS = 80
+_LATEX_COMMAND = re.compile(
+    r"\\(?:frac|sum|prod|int|mathrm|mathbf|left|right|begin|end|alpha|beta|gamma|"
+    r"delta|theta|lambda|sigma|omega|partial|infty|cdot|times|leq|geq|neq)\b"
+)
+_INLINE_MATH = re.compile(r"(?<!\$)\$(?!\$)([^$\n]{1,120})\$(?!\$)")
+_DISPLAY_MATH = re.compile(r"\$\$[^$]+\$\$|\\\[[^\]]+\\\]|\\\([^)]+\\\)")
+_UNICODE_MATH = re.compile(r"[∑∏∫∂∇∞≈≠≤≥±×·√∈∉⊂⊃∀∃→←⇒⇔αβγδθλμσφω]")
+_PIPE_ROW = re.compile(r"^\s*\|.+\|\s*$", re.MULTILINE)
+_TAB_ROW = re.compile(r"^[^\t\n]+\t+[^\t\n]+(?:\t+[^\t\n]+)+$", re.MULTILINE)
+_FRAGMENTATION_BLOCKS_PER_PAGE = 40
+_FRAGMENTATION_MEAN_CHARS = 80
+_READING_ORDER_MIN_LOCATED = 8
 
 
 def assess_parse_quality(
@@ -131,7 +143,139 @@ def assess_parse_quality(
             )
         )
 
+    joined = "\n".join(block.text for block in non_empty)
+    formula_count = sum(1 for block in non_empty if block.kind.casefold() == "formula")
+    table_count = sum(1 for block in non_empty if block.kind.casefold() == "table")
+    math_strength = math_signal_strength(joined)
+    table_strength = table_signal_strength(joined)
+
+    if math_strength >= 2 and formula_count == 0:
+        issues.append(
+            ParseIssue(
+                issue_type="formula_damage",
+                severity="high",
+                evidence=(
+                    f"Math signals are present (strength={math_strength}) but no formula "
+                    "blocks were preserved."
+                ),
+            )
+        )
+        suggested_parser = "mineru"
+    elif math_strength == 1 and formula_count == 0:
+        issues.append(
+            ParseIssue(
+                issue_type="formula_damage",
+                severity="medium",
+                evidence="Weak math signals are present but no formula blocks were preserved.",
+            )
+        )
+        suggested_parser = suggested_parser or "mineru"
+
+    if (
+        table_strength >= 2
+        and table_count == 0
+        and inspection.mime_type == "application/pdf"
+        and (inspection.page_count or 0) >= 2
+    ):
+        issues.append(
+            ParseIssue(
+                issue_type="table_damage",
+                severity="high" if table_strength >= 3 else "medium",
+                evidence=(
+                    f"Table-like structure is present (strength={table_strength}) but no "
+                    "table blocks were preserved."
+                ),
+            )
+        )
+        suggested_parser = suggested_parser or "mineru"
+
+    regression_ratio = reading_order_regression_ratio(non_empty)
+    if regression_ratio >= 0.15:
+        issues.append(
+            ParseIssue(
+                issue_type="wrong_reading_order",
+                severity="high" if regression_ratio >= 0.3 else "medium",
+                evidence=(
+                    f"{regression_ratio:.0%} of located block transitions regress in page order."
+                ),
+            )
+        )
+        suggested_parser = suggested_parser or "docling"
+
+    fragmentation = fragmentation_stats(inspection, non_empty)
+    if fragmentation is not None:
+        blocks_per_page, mean_chars = fragmentation
+        if blocks_per_page > _FRAGMENTATION_BLOCKS_PER_PAGE and mean_chars < _FRAGMENTATION_MEAN_CHARS:
+            issues.append(
+                ParseIssue(
+                    issue_type="other",
+                    severity="high" if blocks_per_page > 60 else "medium",
+                    evidence=(
+                        f"Parsed output is fragmented ({blocks_per_page:.1f} blocks/page, "
+                        f"mean {mean_chars:.0f} characters/block)."
+                    ),
+                )
+            )
+            suggested_parser = suggested_parser or "mineru"
+
     return _build_report(issues, suggested_parser=suggested_parser)
+
+
+def math_signal_strength(text: str) -> int:
+    """Return 0–3 strength for LaTeX / math markup surviving in plain text."""
+
+    strength = 0
+    latex_hits = len(_LATEX_COMMAND.findall(text))
+    inline_hits = len(_INLINE_MATH.findall(text))
+    display_hits = len(_DISPLAY_MATH.findall(text))
+    unicode_hits = len(_UNICODE_MATH.findall(text))
+    if latex_hits >= 2 or display_hits >= 1 or (latex_hits >= 1 and inline_hits >= 1):
+        strength = 2
+    elif latex_hits >= 1 or inline_hits >= 2 or unicode_hits >= 4:
+        strength = 1
+    if latex_hits >= 4 or (latex_hits >= 2 and inline_hits >= 2) or unicode_hits >= 10:
+        strength = 3
+    return strength
+
+
+def table_signal_strength(text: str) -> int:
+    """Return 0–3 strength for tabular markup surviving in plain text."""
+
+    pipe_rows = len(_PIPE_ROW.findall(text))
+    tab_rows = len(_TAB_ROW.findall(text))
+    if pipe_rows >= 4 or tab_rows >= 4:
+        return 3
+    if pipe_rows >= 2 or tab_rows >= 2:
+        return 2
+    if pipe_rows >= 1 or tab_rows >= 1:
+        return 1
+    return 0
+
+
+def reading_order_regression_ratio(blocks: list[ParsedBlock]) -> float:
+    """Fraction of consecutive located blocks whose page_start decreases."""
+
+    pages = [block.page_start for block in blocks if block.page_start is not None]
+    if len(pages) < _READING_ORDER_MIN_LOCATED:
+        return 0.0
+    regressions = sum(1 for previous, current in zip(pages, pages[1:]) if current < previous)
+    transitions = len(pages) - 1
+    return regressions / transitions if transitions else 0.0
+
+
+def fragmentation_stats(
+    inspection: DocumentInspection,
+    blocks: list[ParsedBlock],
+) -> tuple[float, float] | None:
+    """Return (blocks_per_page, mean_block_chars) for multi-page PDFs."""
+
+    if inspection.mime_type != "application/pdf":
+        return None
+    page_count = inspection.page_count or 0
+    if page_count < 4 or not blocks:
+        return None
+    mean_chars = sum(len(block.text.strip()) for block in blocks) / len(blocks)
+    return len(blocks) / page_count, mean_chars
 
 
 def _build_report(issues: list[ParseIssue], suggested_parser: str | None) -> ParseReport:

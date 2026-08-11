@@ -52,6 +52,12 @@ class ParserBenchmarkMetrics(BaseModel):
     page_coverage: float | None = Field(default=None, ge=0, le=1)
     heading_coverage: float = Field(default=0, ge=0, le=1)
     duplicate_ratio: float = Field(default=0, ge=0, le=1)
+    formula_blocks: int = Field(default=0, ge=0)
+    table_blocks: int = Field(default=0, ge=0)
+    blocks_per_page: float | None = Field(default=None, ge=0)
+    reading_order_regression_ratio: float = Field(default=0, ge=0, le=1)
+    math_signal_strength: int = Field(default=0, ge=0, le=3)
+    table_signal_strength: int = Field(default=0, ge=0, le=3)
     issue_count: int = Field(default=0, ge=0)
     score: float = Field(default=0, ge=0, le=100)
     error_type: str | None = None

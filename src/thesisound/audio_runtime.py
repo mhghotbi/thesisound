@@ -14,6 +14,7 @@ from thesisound.services.audio_qa import AudioQaService
 from thesisound.services.audio_run import AudioBuildRunService, AudioBuildRunStore
 from thesisound.services.audio_validator import AudioValidator
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.services.semantic_identity import audio_qa_identity
 from thesisound.services.tts_segmenter import TtsSegmenter
 
 
@@ -26,6 +27,11 @@ def create_audio_builder(
     default_direction = AudioDirectionSettings(
         voice_a=settings.tts_voice_a,
         voice_b=settings.tts_voice_b,
+    )
+    qa_identity = audio_qa_identity(
+        pass_threshold=settings.audio_qa_pass_threshold,
+        review_threshold=settings.audio_qa_review_threshold,
+        missing_sentence_threshold=settings.audio_qa_missing_sentence_threshold,
     )
 
     def pipeline_factory(
@@ -84,6 +90,8 @@ def create_audio_builder(
         pipeline_factory=pipeline_factory,
         default_direction=default_direction,
         accept_manual_review=settings.audio_qa_accept_manual_review,
+        asr_model=settings.model_asr,
+        qa_identity=qa_identity,
     )
     builder.recover_interrupted_runs()
     return builder

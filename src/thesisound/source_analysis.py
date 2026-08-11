@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
@@ -197,6 +197,9 @@ class BlockEvidenceExtraction(BaseModel):
     ``rejected`` means the model answered but the answer remained unusable after
     retries. ``skipped`` means no usable answer was obtained at all, normally
     because a provider or safety failure prevented the model from answering.
+
+    ``extraction_identity`` records model/prompt/extractor versions so reuse can
+    refuse stale blocks after a semantic change (R6). Absent identity is a miss.
     """
 
     source_id: UUID
@@ -206,6 +209,7 @@ class BlockEvidenceExtraction(BaseModel):
     rejection_reason: str | None = None
     failure_kind: Literal["contract", "provider"] | None = None
     extraction_pass: int = Field(default=1, ge=1)
+    extraction_identity: dict[str, Any] | None = None
 
 
 class ClaimDraft(BaseModel):
@@ -235,6 +239,8 @@ class ClaimLedger(BaseModel):
     objections: list[ExtractedAuxiliaryPoint] = Field(default_factory=list)
     responses: list[ExtractedAuxiliaryPoint] = Field(default_factory=list)
     must_not_be_lost: list[MustNotBeLostPoint] = Field(default_factory=list)
+    # Model/prompt/reconciler versions that produced this ledger (R6 reuse gate).
+    reconciler_identity: dict[str, Any] | None = None
 
     @model_validator(mode="after")
     def require_unique_claim_ids(self) -> ClaimLedger:

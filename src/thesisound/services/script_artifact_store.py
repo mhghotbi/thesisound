@@ -18,6 +18,8 @@ from thesisound.script import (
     SegmentScriptDraft,
     VerificationDraft,
 )
+from thesisound.services.lineage_events import emit_cache_lookup
+from thesisound.services.semantic_identity import first_mismatch, script_pipeline_key
 
 
 class ScriptArtifactStore:
@@ -34,6 +36,9 @@ class ScriptArtifactStore:
     def plan_binding_path(self, project_id: UUID) -> Path:
         return self.script_dir(project_id, create=False) / "approved-plan-hash.txt"
 
+    def pipeline_binding_path(self, project_id: UUID) -> Path:
+        return self.script_dir(project_id, create=False) / "pipeline-binding.json"
+
     def clear_pipeline_artifacts(self, project_id: UUID) -> None:
         path = self.workspace_root / str(project_id) / "script"
         if path.exists():
@@ -48,11 +53,105 @@ class ScriptArtifactStore:
         binding = self.script_dir(project_id) / "approved-plan-hash.txt"
         _atomic_write_text(binding, plan_hash + "\n")
 
+    def prepare_for_pipeline(
+        self,
+        project_id: UUID,
+        plan_hash: str,
+        identity: dict[str, Any],
+    ) -> bool:
+        """Bind script artifacts to plan hash plus model/prompt/checker identity.
+
+        Returns True when existing artifacts already match (reuse hit). A miss wipes
+        the script directory so glossary/drafts/checks cannot survive a semantic bump.
+        """
+
+        key = script_pipeline_key(plan_hash, identity)
+        directory = self.script_dir(project_id, create=False)
+        if directory.exists():
+            reason = self._pipeline_mismatch_reason(project_id, plan_hash, identity, key)
+            if reason is None:
+                emit_cache_lookup(
+                    cache="script_pipeline",
+                    result="hit",
+                    project_id=project_id,
+                    lookup_key=key[:16],
+                    avoided_calls=1,
+                )
+                return True
+            emit_cache_lookup(
+                cache="script_pipeline",
+                result="miss",
+                project_id=project_id,
+                lookup_key=key[:16],
+                invalidation_reason=reason,
+            )
+            self.clear_pipeline_artifacts(project_id)
+        else:
+            emit_cache_lookup(
+                cache="script_pipeline",
+                result="miss",
+                project_id=project_id,
+                lookup_key=key[:16],
+                invalidation_reason="artifact_missing",
+            )
+
+        self.prepare_for_plan(project_id, plan_hash)
+        payload = {
+            "plan_hash": plan_hash,
+            "pipeline_key": key,
+            "identity": identity,
+        }
+        self._write_json(self.script_dir(project_id) / "pipeline-binding.json", payload)
+        return False
+
     def artifacts_match_plan(self, project_id: UUID, plan_hash: str) -> bool:
         path = self.plan_binding_path(project_id)
         if not path.exists():
             return False
         return path.read_text(encoding="utf-8").strip() == plan_hash
+
+    def artifacts_match_pipeline(
+        self,
+        project_id: UUID,
+        plan_hash: str,
+        identity: dict[str, Any],
+    ) -> bool:
+        key = script_pipeline_key(plan_hash, identity)
+        return self._pipeline_mismatch_reason(project_id, plan_hash, identity, key) is None
+
+    def _pipeline_mismatch_reason(
+        self,
+        project_id: UUID,
+        plan_hash: str,
+        identity: dict[str, Any],
+        key: str,
+    ) -> str | None:
+        if not self.artifacts_match_plan(project_id, plan_hash):
+            return "plan_hash_mismatch"
+        path = self.pipeline_binding_path(project_id)
+        if not path.exists():
+            return "identity_missing"
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, TypeError):
+            return "identity_missing"
+        stored_identity = payload.get("identity")
+        if not isinstance(stored_identity, dict):
+            return "identity_missing"
+        if payload.get("pipeline_key") == key and payload.get("plan_hash") == plan_hash:
+            return None
+        fields = (
+            "glossary_model",
+            "glossary_prompt_version",
+            "writer_model",
+            "writer_prompt_version",
+            "verifier_model",
+            "verifier_prompt_version",
+            "reviser_model",
+            "reviser_prompt_version",
+            "checker_version",
+        )
+        return first_mismatch(stored_identity, identity, fields) or "pipeline_key_mismatch"
 
     def require_plan(self, project_id: UUID, plan_hash: str) -> ScriptPipelineManifest:
         if not self.artifacts_match_plan(project_id, plan_hash):

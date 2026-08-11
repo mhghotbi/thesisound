@@ -5,8 +5,17 @@ from uuid import UUID
 
 from thesisound.domain import ResearchBrief
 from thesisound.services.analysis_profile import plan_evidence_extraction
+from thesisound.services.lineage_events import emit_cache_lookup
+from thesisound.services.semantic_identity import claim_reconciler_identity, first_mismatch
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import ClaimLedger
+
+_RECONCILER_IDENTITY_FIELDS = (
+    "model",
+    "prompt_version",
+    "reconciler_version",
+    "extractor_version",
+)
 
 
 def reusable_claim_ledger(
@@ -16,6 +25,8 @@ def reusable_claim_ledger(
     source_id: UUID,
     ingestion_path: Path,
     brief: ResearchBrief | None,
+    model: str,
+    prompt_version: str | None = None,
 ) -> ClaimLedger | None:
     """Return the stored ledger when rebuilding this source would repeat finished work.
 
@@ -25,34 +36,70 @@ def reusable_claim_ledger(
     extraction. A brief edit re-ranks and re-budgets blocks, so evidence extracted
     under the previous brief is no longer what this project would ask for.
 
+    Semantic identity (reconciler model/prompt/versions) must also match; otherwise
+    a model or prompt bump would silently reuse stale claims.
+
     Anything missing, unreadable or out of date returns ``None``, which means the
     source is queued and built from scratch.
     """
 
-    if brief is None:
+    current_identity = claim_reconciler_identity(
+        model=model,
+        prompt_version=prompt_version,
+    )
+
+    def _miss(reason: str | None = None) -> None:
+        emit_cache_lookup(
+            cache="claim_ledger",
+            result="miss",
+            project_id=project_id,
+            subject_type="source",
+            subject_id=str(source_id),
+            invalidation_reason=reason,
+        )
         return None
+
+    if brief is None:
+        return _miss("brief_missing")
     try:
         manifest = artifact_store.load_manifest(project_id, source_id)
     except (OSError, ValueError):
-        return None
+        return _miss()
     if manifest.status != "claims_ready":
-        return None
+        return _miss("status_not_ready")
     try:
         ingestion = artifact_store.load_ingestion(ingestion_path)
         if manifest.source_sha256 != ingestion.inspection.sha256:
-            return None
+            return _miss("source_hash_mismatch")
         ledger = artifact_store.load_claim_ledger(project_id, source_id)
         blocks = artifact_store.load_blocks(project_id, source_id)
         document_map = artifact_store.load_document_map(project_id, source_id)
         stored_plan = artifact_store.load_extraction_plan(project_id, source_id)
     except (OSError, ValueError):
-        return None
+        return _miss()
     if ledger.source_id != source_id:
-        return None
+        return _miss("source_id_mismatch")
 
     planned = plan_evidence_extraction(brief, document_map, blocks)
     if planned.profile != stored_plan.profile:
-        return None
+        return _miss("profile_mismatch")
     if planned.selected_block_ids != stored_plan.selected_block_ids:
-        return None
+        return _miss("selected_blocks_mismatch")
+
+    reason = first_mismatch(
+        ledger.reconciler_identity,
+        current_identity,
+        _RECONCILER_IDENTITY_FIELDS,
+    )
+    if reason is not None:
+        return _miss(reason)
+
+    emit_cache_lookup(
+        cache="claim_ledger",
+        result="hit",
+        project_id=project_id,
+        subject_type="source",
+        subject_id=str(source_id),
+        avoided_calls=1,
+    )
     return ledger

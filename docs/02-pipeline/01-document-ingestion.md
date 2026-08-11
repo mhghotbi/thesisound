@@ -33,19 +33,24 @@ local file
 
 ## Routing
 
-قواعد فعلی:
+قواعد فعلی (cheapest-capable):
 
 1. فایل encrypted متوقف می‌شود.
-2. PDF یا تصویر با `image_only_ratio >= 0.67` ابتدا به MinerU می‌رود.
-3. سند دارای signal layout پیچیده ابتدا به MinerU می‌رود.
-4. سند text-bearing معمولی ابتدا به Docling می‌رود.
-5. parser دوم fallback است و فقط وقتی اجرا می‌شود که parser اول خطا دهد یا از quality gate عبور نکند.
+2. EPUB فقط با parser اختصاصی `epub` پردازش می‌شود.
+3. PDF یا تصویر با `image_only_ratio >= 0.67` ابتدا به `local-ocr` (وگرنه MinerU) می‌رود؛ Docling/native فقط fallbackاند.
+4. HTML/HTM ابتدا به Docling می‌رود.
+5. سند text-bearing معمولی (PDF/DOCX/TXT/MD) ابتدا به `native` می‌رود.
+6. سند با signal layout پیچیده ولی لایهٔ متن سالم ابتدا `native` را به‌عنوان probe ارزان اجرا می‌کند؛ فقط اگر quality gate آن را unsafe بداند به Docling سپس MinerU/`local-ocr` می‌رود.
+7. اگر `native` در دسترس نباشد، layout پیچیده با Docling شروع می‌شود.
+8. parser بعدی فقط وقتی اجرا می‌شود که parser قبلی خطا دهد، timeout بخورد، یا از quality gate عبور نکند.
 
-این routing هزینه اجرای هم‌زمان دو parser را در مسیر عادی حذف می‌کند.
+این routing هزینهٔ اجرای هم‌زمان چند parser را در مسیر عادی حذف می‌کند و از اجرای زودهنگام Docling روی ورودی‌های دیجیتال ساده جلوگیری می‌کند.
 
 ## Docling
 
-Docling داخل process اجرا می‌شود و خروجی آن فوراً به قرارداد داخلی normalize می‌شود. هیچ object اختصاصی Docling وارد domain layer نمی‌شود.
+Docling در یک **worker process جداگانه** اجرا می‌شود و خروجی آن فوراً به قرارداد داخلی normalize می‌شود. هیچ object اختصاصی Docling وارد domain layer نمی‌شود.
+
+Timeout پیش‌فرض `THESISOUND_DOCLING_TIMEOUT_SECONDS=360` است. اگر تبدیل از این سقف بگذرد، worker terminate می‌شود، attempt به‌عنوان خطا ثبت می‌شود، و ingestion به fallback بعدی می‌رود.
 
 ## MinerU
 

@@ -18,6 +18,16 @@ from thesisound.audio import (
     AudioSegmentQa,
     AudioSegmentRecord,
 )
+from thesisound.services.lineage_events import emit_cache_lookup
+from thesisound.services.semantic_identity import first_mismatch
+
+
+_QA_IDENTITY_FIELDS = (
+    "qa_version",
+    "pass_threshold",
+    "review_threshold",
+    "missing_sentence_threshold",
+)
 
 
 class AudioArtifactStore:
@@ -116,6 +126,8 @@ class AudioArtifactStore:
         chunk_id: str,
         chunk_hash: str,
         wav_sha256: str,
+        *,
+        expected_model: str | None = None,
     ) -> AsrTranscript | None:
         path = self.audio_dir(project_id, create=False) / "asr" / f"{chunk_id}.json"
         try:
@@ -123,7 +135,34 @@ class AudioArtifactStore:
         except FileNotFoundError:
             return None
         if transcript.chunk_hash != chunk_hash or transcript.wav_sha256 != wav_sha256:
+            emit_cache_lookup(
+                cache="asr_transcript",
+                result="miss",
+                project_id=project_id,
+                subject_type="chunk",
+                subject_id=chunk_id,
+                invalidation_reason="wav_or_chunk_mismatch",
+            )
             return None
+        if expected_model is not None and transcript.model != expected_model:
+            emit_cache_lookup(
+                cache="asr_transcript",
+                result="miss",
+                project_id=project_id,
+                subject_type="chunk",
+                subject_id=chunk_id,
+                invalidation_reason="model_mismatch",
+            )
+            return None
+        if expected_model is not None:
+            emit_cache_lookup(
+                cache="asr_transcript",
+                result="hit",
+                project_id=project_id,
+                subject_type="chunk",
+                subject_id=chunk_id,
+                avoided_calls=1,
+            )
         return transcript
 
     def save_qa(self, project_id: UUID, report: AudioSegmentQa) -> None:
@@ -138,6 +177,8 @@ class AudioArtifactStore:
         chunk_id: str,
         chunk_hash: str,
         wav_sha256: str,
+        *,
+        expected_identity: dict[str, Any] | None = None,
     ) -> AudioSegmentQa | None:
         path = self.audio_dir(project_id, create=False) / "qa" / f"{chunk_id}.json"
         try:
@@ -145,7 +186,41 @@ class AudioArtifactStore:
         except FileNotFoundError:
             return None
         if report.chunk_hash != chunk_hash or report.wav_sha256 != wav_sha256:
+            emit_cache_lookup(
+                cache="audio_qa",
+                result="miss",
+                project_id=project_id,
+                subject_type="chunk",
+                subject_id=chunk_id,
+                invalidation_reason="wav_or_chunk_mismatch",
+            )
             return None
+        if expected_identity is not None:
+            stored = {
+                "qa_version": report.qa_version,
+                "pass_threshold": report.pass_threshold,
+                "review_threshold": report.review_threshold,
+                "missing_sentence_threshold": report.missing_sentence_threshold,
+            }
+            reason = first_mismatch(stored, expected_identity, _QA_IDENTITY_FIELDS)
+            if reason is not None:
+                emit_cache_lookup(
+                    cache="audio_qa",
+                    result="miss",
+                    project_id=project_id,
+                    subject_type="chunk",
+                    subject_id=chunk_id,
+                    invalidation_reason=reason,
+                )
+                return None
+            emit_cache_lookup(
+                cache="audio_qa",
+                result="hit",
+                project_id=project_id,
+                subject_type="chunk",
+                subject_id=chunk_id,
+                avoided_calls=1,
+            )
         return report
 
     def save_manifest(self, manifest: AudioPipelineManifest) -> None:
@@ -237,6 +312,8 @@ class AudioArtifactStore:
         *,
         script_hash: str,
         accept_manual_review: bool = False,
+        expected_asr_model: str | None = None,
+        expected_qa_identity: dict[str, Any] | None = None,
     ) -> bool:
         if not self.artifacts_match_script(project_id, script_hash):
             return False
@@ -274,14 +351,26 @@ class AudioArtifactStore:
                 chunk.chunk_id,
                 chunk.content_hash,
                 record.wav_sha256,
+                expected_model=expected_asr_model,
             )
             qa = self.load_qa_optional(
                 project_id,
                 chunk.chunk_id,
                 chunk.content_hash,
                 record.wav_sha256,
+                expected_identity=expected_qa_identity,
             )
             if transcript is None or qa is None or qa.verdict not in acceptable:
+                return False
+            # When callers omit expected identity, still refuse pre-versioning QA.
+            if expected_qa_identity is None and (
+                qa.qa_version is None
+                or qa.pass_threshold is None
+                or qa.review_threshold is None
+                or qa.missing_sentence_threshold is None
+            ):
+                return False
+            if expected_asr_model is None and not transcript.model:
                 return False
             accepted += 1
         return accepted == manifest.chunk_count

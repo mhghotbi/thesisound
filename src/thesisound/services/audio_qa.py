@@ -7,6 +7,7 @@ from difflib import SequenceMatcher
 from thesisound import tracing
 from thesisound.audio import AsrTranscript, AudioChunk, AudioSegmentQa
 from thesisound.services.lineage_events import emit_quality_label, emit_review_decision
+from thesisound.services.semantic_identity import AUDIO_QA_VERSION, audio_qa_identity
 
 _PERSIAN_DIACRITICS = re.compile(r"[\u064b-\u065f\u0670]")
 _PERSIAN_PUNCTUATION = re.compile(r"[،؛؟٪٫٬«»]")
@@ -133,6 +134,12 @@ class AudioQaService:
                 repeated_phrases=repeated,
                 truncated=truncated,
                 regeneration_instruction=instruction,
+                **audio_qa_identity(
+                    pass_threshold=self.pass_threshold,
+                    review_threshold=self.review_threshold,
+                    missing_sentence_threshold=self.missing_sentence_threshold,
+                    qa_version=AUDIO_QA_VERSION,
+                ),
             )
 
 

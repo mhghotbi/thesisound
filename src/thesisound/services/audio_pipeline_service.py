@@ -21,6 +21,7 @@ from thesisound.services.audio_assembler import AudioAssembler
 from thesisound.services.audio_qa import AudioQaService
 from thesisound.services.audio_validator import AudioValidator
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.services.semantic_identity import audio_qa_identity
 from thesisound.services.tts_segmenter import TtsSegmenter
 
 
@@ -284,6 +285,7 @@ class AudioPipelineService:
                 chunk.chunk_id,
                 chunk.content_hash,
                 record.wav_sha256,
+                expected_model=self.asr_model,
             )
         if transcript is None:
             transcript = self.asr.transcribe(
@@ -299,3 +301,10 @@ class AudioPipelineService:
         report = self.qa.compare(chunk, transcript)
         self.audio_store.save_qa(project_id, report)
         return report
+
+    def qa_identity(self) -> dict[str, float | int]:
+        return audio_qa_identity(
+            pass_threshold=self.qa.pass_threshold,
+            review_threshold=self.qa.review_threshold,
+            missing_sentence_threshold=self.qa.missing_sentence_threshold,
+        )

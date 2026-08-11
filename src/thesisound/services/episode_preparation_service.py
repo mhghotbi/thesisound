@@ -40,6 +40,12 @@ from thesisound.services.episode_reuse import planning_input_key
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
 from thesisound.services.evidence_scope import scope_by_block, scope_claims_and_evidence
 from thesisound.services.lineage_events import emit_cache_lookup
+from thesisound.services.semantic_identity import (
+    COVERAGE_AUDITOR_VERSION,
+    EPISODE_PLANNER_VERSION,
+    first_mismatch,
+    planning_semantic,
+)
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
     ClaimLedger,
@@ -99,13 +105,30 @@ class EpisodePreparationService:
         self.workspace_store.save_project(project)
         corpus = self._load_corpus(project_id)
         assert project.brief is not None
-        key = self._planning_key(corpus, project.brief, include_duration=False)
-        reused = self._reusable_coverage(project_id, key, project.brief)
+        semantic = planning_semantic(
+            model=model,
+            prompt_version=prompt_version,
+            stage_version=COVERAGE_AUDITOR_VERSION,
+        )
+        key = self._planning_key(
+            corpus,
+            project.brief,
+            include_duration=False,
+            semantic=semantic,
+        )
+        reused, miss_reason = self._reusable_coverage(
+            project_id,
+            key,
+            project.brief,
+            semantic=semantic,
+        )
         emit_cache_lookup(
             cache="coverage_audit",
             result="hit" if reused is not None else "miss",
-            lookup_key=key[:16] if isinstance(key, str) else None,
+            project_id=project_id,
+            lookup_key=key[:16],
             avoided_calls=1 if reused is not None else None,
+            invalidation_reason=miss_reason,
         )
         if reused is not None:
             self._save_coverage_manifest(project_id, reused, corpus.source_ids)
@@ -121,7 +144,10 @@ class EpisodePreparationService:
         )
         self.episode_store.save_coverage(report)
         # A fresh audit invalidates the stored plan: it was built on the previous answer.
-        self.episode_store.save_stage_inputs(project_id, EpisodeStageInputs(coverage=key))
+        self.episode_store.save_stage_inputs(
+            project_id,
+            EpisodeStageInputs(coverage=key, coverage_semantic=dict(semantic)),
+        )
         self._save_coverage_manifest(project_id, report, corpus.source_ids)
         return report
 
@@ -196,14 +222,26 @@ class EpisodePreparationService:
         if project.brief is None:
             raise ValueError("ResearchBrief is required for episode planning.")
         corpus = self._load_corpus(project_id)
-        key = self._planning_key(corpus, project.brief, include_duration=True)
+        semantic = planning_semantic(
+            model=model,
+            prompt_version=prompt_version,
+            stage_version=EPISODE_PLANNER_VERSION,
+        )
+        key = self._planning_key(
+            corpus,
+            project.brief,
+            include_duration=True,
+            semantic=semantic,
+        )
         stored_inputs = self.episode_store.load_stage_inputs(project_id)
-        plan = self._reusable_plan(project_id, stored_inputs, key)
+        plan, miss_reason = self._reusable_plan(project_id, stored_inputs, key, semantic)
         emit_cache_lookup(
             cache="episode_plan",
             result="hit" if plan is not None else "miss",
-            lookup_key=key[:16] if isinstance(key, str) else None,
+            project_id=project_id,
+            lookup_key=key[:16],
             avoided_calls=1 if plan is not None else None,
+            invalidation_reason=miss_reason,
         )
         model_run_ids: list[UUID] = []
         if plan is None:
@@ -231,7 +269,9 @@ class EpisodePreparationService:
             self.episode_store.save_plan(project_id, plan, draft)
             self.episode_store.save_stage_inputs(
                 project_id,
-                stored_inputs.model_copy(update={"plan": key}),
+                stored_inputs.model_copy(
+                    update={"plan": key, "plan_semantic": dict(semantic)}
+                ),
             )
             model_run_ids.append(run.run_id)
 
@@ -376,6 +416,7 @@ class EpisodePreparationService:
         brief: ResearchBrief,
         *,
         include_duration: bool,
+        semantic: dict[str, object],
     ) -> str:
         return planning_input_key(
             source_ids=corpus.source_ids,
@@ -383,6 +424,7 @@ class EpisodePreparationService:
             extraction_plans=corpus.extraction_plans,
             brief=brief,
             include_duration=include_duration,
+            semantic=semantic,
         )
 
     def _reusable_coverage(
@@ -390,19 +432,27 @@ class EpisodePreparationService:
         project_id: UUID,
         key: str,
         brief: ResearchBrief,
-    ) -> CoverageReport | None:
+        *,
+        semantic: dict[str, object],
+    ) -> tuple[CoverageReport | None, str | None]:
         """Return the stored audit when the corpus and the research question are the same.
 
         The verdict is re-derived for the duration currently requested, so a reduced
         duration is answered from the audit already paid for.
         """
 
-        if self.episode_store.load_stage_inputs(project_id).coverage != key:
-            return None
+        stored_inputs = self.episode_store.load_stage_inputs(project_id)
+        if stored_inputs.coverage != key:
+            reason = first_mismatch(
+                stored_inputs.coverage_semantic,
+                semantic,
+                ("model", "prompt_version", "stage_version"),
+            )
+            return None, reason or "input_key_mismatch"
         try:
             report = self.episode_store.load_coverage(project_id)
         except (OSError, ValueError):
-            return None
+            return None, "artifact_missing"
         verdict = can_plan_episode(
             recommendation=report.recommendation,
             max_supported_minutes=report.max_supported_minutes,
@@ -411,20 +461,26 @@ class EpisodePreparationService:
         if report.can_plan_episode != verdict:
             report.can_plan_episode = verdict
             self.episode_store.save_coverage(report)
-        return report
+        return report, None
 
     def _reusable_plan(
         self,
         project_id: UUID,
         stored_inputs: EpisodeStageInputs,
         key: str,
-    ) -> EpisodePlan | None:
+        semantic: dict[str, object],
+    ) -> tuple[EpisodePlan | None, str | None]:
         if stored_inputs.plan != key:
-            return None
+            reason = first_mismatch(
+                stored_inputs.plan_semantic,
+                semantic,
+                ("model", "prompt_version", "stage_version"),
+            )
+            return None, reason or "input_key_mismatch"
         try:
-            return self.episode_store.load_plan(project_id)
+            return self.episode_store.load_plan(project_id), None
         except (OSError, ValueError):
-            return None
+            return None, "artifact_missing"
 
     def _save_coverage_manifest(
         self,

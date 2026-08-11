@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from collections.abc import Collection
@@ -7,6 +6,7 @@ from thesisound.ingestion import ParserRoute
 from thesisound.ports import DocumentInspection
 
 _IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}
+_HTML_EXTENSIONS = {".html", ".htm"}
 
 
 class ParserRoutingError(ValueError):
@@ -60,21 +60,55 @@ def route_parser(
             reasons=reasons,
         )
 
+    if inspection.extension in _HTML_EXTENSIONS:
+        if "docling" in available:
+            reasons.append("HTML sources need structure-aware local parsing.")
+            return ParserRoute(
+                primary="docling",
+                fallbacks=_available_in_order(available, "local-ocr", "mineru"),
+                reasons=reasons,
+            )
+        if "local-ocr" in available:
+            reasons.append("Docling is unavailable; local OCR is the next HTML-capable parser.")
+            return ParserRoute(
+                primary="local-ocr",
+                fallbacks=_available_in_order(available, "mineru"),
+                reasons=reasons,
+            )
+        if "mineru" in available:
+            reasons.append("MinerU is the only configured parser that can accept HTML.")
+            return ParserRoute(primary="mineru", reasons=reasons)
+
+    if inspection.likely_complex_layout and "native" in available:
+        reasons.append(
+            "Complex layout with a healthy text layer: probe native first, then "
+            "structure-aware parsers if the quality gate fails."
+        )
+        return ParserRoute(
+            primary="native",
+            fallbacks=_available_in_order(available, "docling", "mineru", "local-ocr"),
+            reasons=reasons,
+        )
+
     if inspection.likely_complex_layout and "docling" in available:
         reasons.append("The text-bearing document needs structure-aware local parsing.")
         return ParserRoute(
             primary="docling",
-            fallbacks=_available_in_order(available, "native", "local-ocr", "mineru"),
+            fallbacks=_available_in_order(available, "mineru", "local-ocr"),
+            reasons=reasons,
+        )
+
+    if inspection.likely_complex_layout and "mineru" in available:
+        reasons.append("The document needs explicit layout and reading-order recovery.")
+        return ParserRoute(
+            primary="mineru",
+            fallbacks=_available_in_order(available, "local-ocr"),
             reasons=reasons,
         )
 
     if inspection.likely_complex_layout and "local-ocr" in available:
         reasons.append("The document needs explicit layout and reading-order recovery.")
-        return ParserRoute(
-            primary="local-ocr",
-            fallbacks=_available_in_order(available, "native", "mineru"),
-            reasons=reasons,
-        )
+        return ParserRoute(primary="local-ocr", reasons=reasons)
 
     if "native" in available:
         reasons.append("A healthy text layer should be extracted without loading OCR models.")

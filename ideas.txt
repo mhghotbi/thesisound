@@ -1,6 +1,6 @@
-adding gemma4-31 and qwen to the steps
 link extractor
+user can select from topics
+adding gemma4-31 and qwen to the steps
 new sepidour models: embedder + whisper
 add voice files to sources
-user can select from topics
 MySQL migration

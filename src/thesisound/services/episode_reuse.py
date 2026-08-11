@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from hashlib import sha256
+from typing import Any, Mapping
 from uuid import UUID
 
 from thesisound.domain import ResearchBrief
@@ -15,6 +16,7 @@ def planning_input_key(
     extraction_plans: list[EvidenceExtractionPlan],
     brief: ResearchBrief,
     include_duration: bool,
+    semantic: Mapping[str, Any],
 ) -> str:
     """Identify the inputs a planning stage was produced from.
 
@@ -24,6 +26,9 @@ def planning_input_key(
     shorter requested duration does not change its answer — only whether that answer is
     enough, which is recomputed on reuse. The episode plan is shaped by the requested
     duration, so a new duration is a new plan.
+
+    ``semantic`` folds model, prompt version, and stage algorithm version so a
+    behavior-changing bump cannot reuse a stale audit or plan (R6).
     """
 
     payload = {
@@ -34,6 +39,7 @@ def planning_input_key(
             for plan in extraction_plans
         ),
         "brief": _brief_payload(brief, include_duration=include_duration),
+        "semantic": dict(semantic),
     }
     canonical = json.dumps(payload, sort_keys=True, ensure_ascii=False)
     return sha256(canonical.encode("utf-8")).hexdigest()

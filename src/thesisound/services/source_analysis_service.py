@@ -32,6 +32,11 @@ from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_scope import extraction_profiles_compatible
 from thesisound.services.evidence_validator import validate_evidence_collection
 from thesisound.services.lineage_events import emit_cache_lookup
+from thesisound.services.semantic_identity import (
+    claim_reconciler_identity,
+    evidence_extraction_identity,
+    first_mismatch,
+)
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import (
     BlockEvidenceExtraction,
@@ -246,13 +251,42 @@ class SourceAnalysisService:
             prior_plan is not None
             and extraction_profiles_compatible(prior_plan.profile, plan.profile)
         )
-        # Reuse only selected blocks whose extraction contract still matches. Deferred
-        # priors stay on disk for resume but are excluded from skip and aggregates.
-        skip_ids = {
-            record.block_id
-            for record in extracted_prior
-            if record.block_id in selected_ids and profile_ok
-        }
+        current_identity = evidence_extraction_identity(
+            model=model,
+            prompt_version=prompt_version,
+        )
+        identity_fields = ("model", "prompt_version", "extractor_version")
+        # Reuse only selected blocks whose extraction contract and semantic identity
+        # still match. Deferred priors stay on disk for resume but are excluded from
+        # skip and aggregates.
+        skip_ids: set[str] = set()
+        for record in extracted_prior:
+            if record.block_id not in selected_ids or not profile_ok:
+                continue
+            reason = first_mismatch(
+                record.extraction_identity,
+                current_identity,
+                identity_fields,
+            )
+            if reason is None:
+                skip_ids.add(record.block_id)
+                emit_cache_lookup(
+                    cache="block_evidence",
+                    result="hit",
+                    project_id=project_id,
+                    subject_type="block",
+                    subject_id=record.block_id,
+                    avoided_calls=1,
+                )
+            else:
+                emit_cache_lookup(
+                    cache="block_evidence",
+                    result="miss",
+                    project_id=project_id,
+                    subject_type="block",
+                    subject_id=record.block_id,
+                    invalidation_reason=reason,
+                )
 
         def save_one(record: BlockEvidenceExtraction) -> None:
             self.artifact_store.save_block_extraction(
@@ -509,6 +543,14 @@ class SourceAnalysisService:
             extractions=extractions,
             model=model,
             prompt_version=prompt_version,
+        )
+        ledger = ledger.model_copy(
+            update={
+                "reconciler_identity": claim_reconciler_identity(
+                    model=model,
+                    prompt_version=prompt_version,
+                )
+            }
         )
         self.artifact_store.save_claim_ledger(project_id, source_id, ledger)
         manifest = self.artifact_store.load_manifest(project_id, source_id)

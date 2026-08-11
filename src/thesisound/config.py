@@ -152,6 +152,7 @@ class Settings(BaseSettings):
     mineru_timeout_seconds: int = Field(default=1_800, ge=30)
     mineru_backend: str | None = None
     mineru_model_source: str | None = None
+    docling_timeout_seconds: int = Field(default=360, ge=30)
 
     allow_provider_uploads: bool = True
     keep_raw_provider_responses: bool = False

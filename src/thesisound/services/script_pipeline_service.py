@@ -28,6 +28,7 @@ from thesisound.services.script_outcome import script_outcome
 from thesisound.services.script_quality import is_better
 from thesisound.services.script_reviser import TargetedScriptReviserService
 from thesisound.services.script_verifier import ScriptVerifierService
+from thesisound.services.semantic_identity import script_pipeline_identity
 from thesisound.services.source_artifact_store import SourceArtifactStore
 
 ScriptStageCallback = Callable[[str], None]
@@ -298,16 +299,37 @@ class ScriptPipelineService:
         stage = on_stage or (lambda _: None)
         try:
             project = self.workspace_store.load_project(project_id)
-            self.approval_store.require_current(project)
-            if project.state == ProjectState.SCRIPT_VERIFIED:
+            approval = self.approval_store.require_current(project)
+            identity = script_pipeline_identity(
+                glossary_model=glossary_model,
+                glossary_prompt_version=prompt_version,
+                writer_model=writer_model,
+                writer_prompt_version=prompt_version,
+                verifier_model=verifier_model,
+                verifier_prompt_version=prompt_version,
+                reviser_model=reviser_model,
+                reviser_prompt_version=prompt_version,
+            )
+            pipeline_matched = self.script_store.prepare_for_pipeline(
+                project_id,
+                approval.plan_hash,
+                identity,
+            )
+            if project.state == ProjectState.SCRIPT_VERIFIED and pipeline_matched:
                 return ScriptPipelineResult(
                     glossary=self.script_store.load_glossary(project_id),
                     script=self.script_store.load_latest_script(project_id),
                     checks=self.script_store.load_latest_checks(project_id),
                     verification=self.script_store.load_latest_verification(project_id),
                 )
-            self._enter_script_drafting(project)
-            self.workspace_store.save_project(project)
+            if project.state == ProjectState.SCRIPT_VERIFIED and not pipeline_matched:
+                # Semantic identity changed; verified artifacts were wiped.
+                mark_failed(project, "Script pipeline identity changed; regenerating.")
+                transition(project, ProjectState.SCRIPT_DRAFTING)
+                self.workspace_store.save_project(project)
+            else:
+                self._enter_script_drafting(project)
+                self.workspace_store.save_project(project)
 
             glossary = self.script_store.load_glossary_optional(project_id)
             if glossary is None:
@@ -322,6 +344,7 @@ class ScriptPipelineService:
                 emit_cache_lookup(
                     cache="script_glossary",
                     result="hit",
+                    project_id=project_id,
                     avoided_calls=1,
                 )
 

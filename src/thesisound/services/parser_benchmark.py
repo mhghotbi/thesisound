@@ -15,7 +15,14 @@ from thesisound.ingestion import (
 from thesisound.ports import DocumentInspection, DocumentParserPort, ParsedBlock
 from thesisound.services.artifact_writer import IngestionArtifactWriter
 from thesisound.services.document_inspector import inspect_document
-from thesisound.services.parse_quality import assess_parse_quality, duplicate_content_ratio
+from thesisound.services.parse_quality import (
+    assess_parse_quality,
+    duplicate_content_ratio,
+    fragmentation_stats,
+    math_signal_strength,
+    reading_order_regression_ratio,
+    table_signal_strength,
+)
 
 _SUPPORTED_EXTENSIONS = {
     ".pdf",
@@ -152,6 +159,15 @@ def _build_metrics(
     )
     duplicate_ratio = duplicate_content_ratio(non_empty)
     page_coverage = _page_coverage(inspection, non_empty)
+    joined = "\n".join(block.text for block in non_empty)
+    formula_blocks = sum(1 for block in non_empty if block.kind.casefold() == "formula")
+    table_blocks = sum(1 for block in non_empty if block.kind.casefold() == "table")
+    math_strength = math_signal_strength(joined)
+    table_strength = table_signal_strength(joined)
+    regression_ratio = reading_order_regression_ratio(non_empty)
+    fragmentation = fragmentation_stats(inspection, non_empty)
+    blocks_per_page = fragmentation[0] if fragmentation is not None else None
+    mean_block_chars = fragmentation[1] if fragmentation is not None else None
     score = _score(
         verdict=quality.verdict,
         safe=quality.safe_for_claim_extraction,
@@ -160,6 +176,13 @@ def _build_metrics(
         heading_coverage=heading_coverage,
         duplicate_ratio=duplicate_ratio,
         issue_count=len(quality.issues),
+        formula_blocks=formula_blocks,
+        table_blocks=table_blocks,
+        math_signal_strength=math_strength,
+        table_signal_strength=table_strength,
+        blocks_per_page=blocks_per_page,
+        mean_block_chars=mean_block_chars,
+        reading_order_regression_ratio=regression_ratio,
     )
     return ParserBenchmarkMetrics(
         parser_name=parser_name,
@@ -173,6 +196,12 @@ def _build_metrics(
         page_coverage=page_coverage,
         heading_coverage=heading_coverage,
         duplicate_ratio=duplicate_ratio,
+        formula_blocks=formula_blocks,
+        table_blocks=table_blocks,
+        blocks_per_page=blocks_per_page,
+        reading_order_regression_ratio=regression_ratio,
+        math_signal_strength=math_strength,
+        table_signal_strength=table_strength,
         issue_count=len(quality.issues),
         score=score,
     )
@@ -187,6 +216,13 @@ def _score(
     heading_coverage: float,
     duplicate_ratio: float,
     issue_count: int,
+    formula_blocks: int = 0,
+    table_blocks: int = 0,
+    math_signal_strength: int = 0,
+    table_signal_strength: int = 0,
+    blocks_per_page: float | None = None,
+    mean_block_chars: float | None = None,
+    reading_order_regression_ratio: float = 0,
 ) -> float:
     verdict_score = {
         "pass": 60,
@@ -201,6 +237,24 @@ def _score(
     score += 8 if safe else 0
     score -= 12 * duplicate_ratio
     score -= min(issue_count * 2, 10)
+    if math_signal_strength >= 1:
+        if formula_blocks > 0:
+            score += min(4 + formula_blocks, 12)
+        else:
+            score -= 8 if math_signal_strength >= 2 else 4
+    if table_signal_strength >= 1:
+        if table_blocks > 0:
+            score += min(3 + table_blocks, 8)
+        else:
+            score -= 6 if table_signal_strength >= 2 else 3
+    if (
+        blocks_per_page is not None
+        and mean_block_chars is not None
+        and blocks_per_page > 40
+        and mean_block_chars < 80
+    ):
+        score -= min((blocks_per_page - 40) * 0.4, 12)
+    score -= min(reading_order_regression_ratio * 20, 10)
     return round(min(max(score, 0), 100), 2)
 
 

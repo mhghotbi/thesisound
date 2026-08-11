@@ -111,6 +111,8 @@ class AudioBuildRunService:
         pipeline_factory: Callable[[UUID, AudioDirectionSettings, UUID], AudioPipelineService],
         default_direction: AudioDirectionSettings,
         accept_manual_review: bool = False,
+        asr_model: str | None = None,
+        qa_identity: dict[str, float | int] | None = None,
     ) -> None:
         self.workspace_store = workspace_store
         self.run_store = run_store
@@ -119,6 +121,8 @@ class AudioBuildRunService:
         self.pipeline_factory = pipeline_factory
         self.default_direction = default_direction
         self.accept_manual_review = accept_manual_review
+        self.asr_model = asr_model
+        self.qa_identity = qa_identity
         self._mutation_lock = Lock()
 
     def queue(
@@ -291,6 +295,8 @@ class AudioBuildRunService:
             project_id,
             script_hash=script_hash,
             accept_manual_review=self.accept_manual_review,
+            expected_asr_model=self.asr_model,
+            expected_qa_identity=self.qa_identity,
         )
 
     def _mark_succeeded(self, run: AudioBuildRun) -> None:

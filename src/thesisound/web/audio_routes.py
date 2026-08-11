@@ -182,6 +182,8 @@ def register_audio_routes(
             project_id,
             script_hash=digest,
             accept_manual_review=builder.accept_manual_review,
+            expected_asr_model=builder.asr_model,
+            expected_qa_identity=builder.qa_identity,
         ):
             return Response(status_code=404)
         emit(
@@ -213,6 +215,8 @@ def register_audio_routes(
             project_id,
             script_hash=digest,
             accept_manual_review=builder.accept_manual_review,
+            expected_asr_model=builder.asr_model,
+            expected_qa_identity=builder.qa_identity,
         ):
             return Response(status_code=404)
         mp3_path = audio_store.final_mp3_path(project_id)

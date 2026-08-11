@@ -172,10 +172,15 @@ class EpisodeStageInputs(BaseModel):
     A stage is reusable only while its key still matches the current inputs. Writing a
     fresh coverage report clears `plan`, because everything downstream of coverage was
     planned against the answer that just changed.
+
+    ``coverage_semantic`` / ``plan_semantic`` retain the model/prompt/version payload
+    used to build each key so cache misses can report a field-level invalidation reason.
     """
 
     coverage: str | None = None
     plan: str | None = None
+    coverage_semantic: dict[str, object] | None = None
+    plan_semantic: dict[str, object] | None = None
 
 
 class EpisodePreparationManifest(BaseModel):

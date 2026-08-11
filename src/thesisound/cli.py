@@ -97,7 +97,7 @@ def _parsers(
     return {
         "native": NativeDocumentParser(),
         "epub": EpubDocumentParser(),
-        "docling": DoclingParser(),
+        "docling": DoclingParser(timeout_seconds=settings.docling_timeout_seconds),
         "mineru": MineruParser(
             command=settings.mineru_command,
             timeout_seconds=settings.mineru_timeout_seconds,
