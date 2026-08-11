@@ -7,7 +7,15 @@ from uuid import UUID
 
 from thesisound import tracing
 from thesisound.domain import Project, ProjectState
-
+from thesisound.product_metrics import ProductEvent, emit
+from thesisound.product_metrics.catalogue import stage_for_state
+from thesisound.product_metrics.emit import classify_error
+from thesisound.product_metrics.events import (
+    ProjectRecovered,
+    ProjectStageEntered,
+    ProjectStageFailed,
+    ProjectTransitionRejected,
+)
 ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
     ProjectState.DRAFT: {ProjectState.BRIEF_READY, ProjectState.FAILED_RETRYABLE},
     ProjectState.BRIEF_READY: {
@@ -96,7 +104,12 @@ class InvalidTransitionError(ValueError):
     pass
 
 
-def transition(project: Project, target: ProjectState) -> Project:
+def transition(
+    project: Project,
+    target: ProjectState,
+    *,
+    actor_user_id: int | None = None,
+) -> Project:
     """Move a project to a valid next state and update its timestamp."""
 
     allowed = ALLOWED_TRANSITIONS[project.state]
@@ -110,10 +123,27 @@ def transition(project: Project, target: ProjectState) -> Project:
             previous=previous.value,
             attempted=target.value,
         )
+        emit(
+            ProductEvent.PROJECT_TRANSITION_REJECTED,
+            ProjectTransitionRejected(
+                from_state=previous.value,
+                attempted_state=target.value,
+            ),
+            user_id=actor_user_id,
+            project_id=project.project_id,
+        )
         raise InvalidTransitionError(f"Cannot transition from {project.state} to {target}")
 
+    now = datetime.now(UTC)
+    failed_for_seconds = 0
+    if previous == ProjectState.FAILED_RETRYABLE:
+        failed_for_seconds = max(0, int((now - project.updated_at).total_seconds()))
+
+    from_stage = stage_for_state(previous)
+    to_stage = stage_for_state(target)
+
     project.state = target
-    project.updated_at = datetime.now(UTC)
+    project.updated_at = now
     if target not in {ProjectState.FAILED_RETRYABLE, ProjectState.FAILED_PERMANENT}:
         project.last_error = None
     tracing.event(
@@ -123,14 +153,56 @@ def transition(project: Project, target: ProjectState) -> Project:
         previous=previous.value,
         current=target.value,
     )
+
+    if target in {ProjectState.FAILED_RETRYABLE, ProjectState.FAILED_PERMANENT}:
+        fail_stage = from_stage if from_stage is not None else (to_stage or 1)
+        emit(
+            ProductEvent.PROJECT_STAGE_FAILED,
+            ProjectStageFailed(
+                stage=fail_stage,
+                state=target.value,
+                permanent=target == ProjectState.FAILED_PERMANENT,
+                error_class=classify_error(project.last_error),
+            ),
+            user_id=actor_user_id,
+            project_id=project.project_id,
+        )
+    if previous == ProjectState.FAILED_RETRYABLE and target not in {
+        ProjectState.FAILED_RETRYABLE,
+        ProjectState.FAILED_PERMANENT,
+    }:
+        recovered_stage = to_stage if to_stage is not None else (from_stage or 1)
+        emit(
+            ProductEvent.PROJECT_RECOVERED,
+            ProjectRecovered(stage=recovered_stage, failed_for_seconds=failed_for_seconds),
+            user_id=actor_user_id,
+            project_id=project.project_id,
+        )
+    if to_stage is not None and to_stage != from_stage:
+        emit(
+            ProductEvent.PROJECT_STAGE_ENTERED,
+            ProjectStageEntered(
+                stage=to_stage,
+                from_stage=from_stage,
+                state=target.value,
+                from_state=previous.value,
+            ),
+            user_id=actor_user_id,
+            project_id=project.project_id,
+        )
     return project
 
 
-def mark_failed(project: Project, message: str, *, permanent: bool = False) -> Project:
+def mark_failed(
+    project: Project,
+    message: str,
+    *,
+    permanent: bool = False,
+    actor_user_id: int | None = None,
+) -> Project:
     target = ProjectState.FAILED_PERMANENT if permanent else ProjectState.FAILED_RETRYABLE
     project.last_error = message
-    return transition(project, target)
-
+    return transition(project, target, actor_user_id=actor_user_id)
 
 class WorkspaceStore:
     """Simple JSON store for the CLI-first prototype.

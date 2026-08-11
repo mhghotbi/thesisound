@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="{{ url_for('static', path='/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='/logo.css') }}">
   <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
-  <script src="{{ url_for('static', path='/app.js') }}" defer></script>
+  <script src="{{ url_for('static', path='/app.js') }}?v=20260811-csrf" defer></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <a class="skip-link" href="#main">رفتن به محتوای اصلی</a>
@@ -47,8 +47,9 @@
       </a>
       <nav class="app-nav" aria-label="ناوبری اصلی">
         <a href="/projects" {% if request.url.path == '/projects' %}aria-current="page"{% endif %}>گفتارهای من</a>
-        <a href="/projects/new" {% if request.url.path == '/projects/new' %}aria-current="page"{% endif %}>گفتار تازه</a>
+        <a href="/projects/create" {% if request.url.path in ['/projects/new', '/projects/create'] %}aria-current="page"{% endif %}>گفتار تازه</a>
         <a class="operator-only" href="/system-check" {% if request.url.path == '/system-check' %}aria-current="page"{% endif %}>آمادگی اجرا</a>
+        <a class="operator-only" href="/metrics" {% if request.url.path == '/metrics' %}aria-current="page"{% endif %}>شاخص‌ها</a>
       </nav>
       <div class="app-header__tools">
         <span class="mode-flag operator-only">حالت پیشرفته</span>
@@ -91,7 +92,7 @@
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 7.5h13M3.5 12.5h13"/></svg>
       گفتارهای من
     </a>
-    <a href="/projects/new" {% if request.url.path == '/projects/new' %}aria-current="page"{% endif %}>
+    <a href="/projects/create" {% if request.url.path in ['/projects/new', '/projects/create'] %}aria-current="page"{% endif %}>
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
       گفتار تازه
     </a>

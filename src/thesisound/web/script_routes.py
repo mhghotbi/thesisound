@@ -10,6 +10,12 @@ from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound.domain import Locator, Project, ProjectState, Script
 from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.product_metrics import ProductEvent, emit
+from thesisound.product_metrics.events import (
+    EpisodeSourceTraceOpened,
+    GateScriptApproved,
+    GateScriptReviewRequested,
+)
 from thesisound.script import ScriptReviewDecision
 from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
@@ -98,6 +104,12 @@ def register_script_routes(
             actor = request.state.account.label
             builder.approve_and_queue(project_id, approved_by=actor)
             background_tasks.add_task(execute, project_id)
+            emit(
+                ProductEvent.GATE_SCRIPT_APPROVED,
+                GateScriptApproved(),
+                user_id=getattr(request.state.account, "user_id", None),
+                project_id=project_id,
+            )
         except (OSError, RuntimeError, ValueError) as error:
             return _render_script_page(
                 request,
@@ -171,6 +183,12 @@ def register_script_routes(
             if decision == "send_back":
                 builder.send_back(project_id)
                 background_tasks.add_task(execute, project_id)
+            emit(
+                ProductEvent.GATE_SCRIPT_REVIEW_REQUESTED,
+                GateScriptReviewRequested(decision=decision),  # type: ignore[arg-type]
+                user_id=getattr(request.state.account, "user_id", None),
+                project_id=project_id,
+            )
         except (OSError, RuntimeError, ValueError) as error:
             return _render_script_page(
                 request,
@@ -185,6 +203,29 @@ def register_script_routes(
                 status_code=422,
             )
         return _script_redirect(project_id)
+
+    @app.post("/projects/{project_id}/script/source-trace")
+    def source_trace_opened(
+        request: Request,
+        project_id: UUID,
+        csrf_token: Annotated[str, Form()] = "",
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        if csrf_token:
+            try:
+                validate_csrf(request, csrf_token)
+            except ValueError:
+                return Response(status_code=403)
+        emit(
+            ProductEvent.EPISODE_SOURCE_TRACE_OPENED,
+            EpisodeSourceTraceOpened(),
+            user_id=getattr(request.state.account, "user_id", None),
+            project_id=project_id,
+        )
+        return Response(status_code=204)
 
     @app.post("/projects/{project_id}/script/retry")
     def retry_script(

@@ -32,7 +32,7 @@
   </form>
 
   <div class="form-actions auth-card__footer">
-    <a class="button button--secondary button--full" href="/login/password?next={{ next_path | urlencode }}">ورود با رمز عبور</a>
+    <a class="button button--secondary button--full" href="/auth/login/password?next={{ next_path | urlencode }}">ورود با رمز عبور</a>
   </div>
 
   {% if test_otp_enabled and environment != "production" %}

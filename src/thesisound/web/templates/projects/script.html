@@ -158,7 +158,7 @@
         {% if item.turn.editorial_only %}
         <p class="transcript-turn__aside">گفتهٔ گذار — مدعایی دربارهٔ منابع ندارد.</p>
         {% elif item.references %}
-        <details class="evidence-drawer">
+        <details class="evidence-drawer" data-source-trace data-project-id="{{ project.project_id }}">
           <summary>این گفته از کجا آمد؟</summary>
           {% for reference in item.references %}
           <blockquote class="evidence-card">

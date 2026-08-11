@@ -30,6 +30,7 @@ def _settings(tmp_path: Path, **overrides: object) -> Settings:
         allow_test_otp=True,
         test_otp_phone="09120000000",
         test_otp_code="999999",
+        web_secure_cookies=False,
         **overrides,
     )
 
@@ -193,7 +194,7 @@ def test_deactivating_account_invalidates_the_next_request(tmp_path: Path) -> No
         revoked = client.get("/projects", follow_redirects=False)
 
     assert revoked.status_code == 303
-    assert revoked.headers["location"] == "/login?next=/projects"
+    assert revoked.headers["location"] == "/auth/login?next=/projects"
 
 
 def test_orphan_is_invisible_until_adopt_command_runs(
