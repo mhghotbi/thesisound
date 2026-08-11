@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.adapters.models.okian import OkianHttpResponse, OkianStructuredModel
 from thesisound.config import Settings
-from thesisound.modeling import ModelRateLimitError, ModelUsage, StructuredModelResponse
+from thesisound.modeling import ModelProviderError, ModelUsage, StructuredModelResponse
 from thesisound.observability import ObservabilityLedger
 from thesisound.ports import RunMetadata
 
@@ -20,6 +20,10 @@ class ExampleOutput(BaseModel):
 
 class RateLimitException(RuntimeError):
     status_code = 429
+
+
+class DisconnectException(RuntimeError):
+    """Simulates a mid-flight provider disconnect (no HTTP status)."""
 
 
 class FakeModels:
@@ -149,9 +153,53 @@ def test_ungrounded_rate_limit_falls_back_to_okian_with_same_model(tmp_path: Pat
     assert succeeded.metadata["okian_fallback_from"] == "gemini"
 
 
-def test_grounded_rate_limit_does_not_fall_back_to_okian(tmp_path: Path) -> None:
+def test_ungrounded_provider_disconnect_falls_back_to_okian(tmp_path: Path) -> None:
     settings = _settings(tmp_path, with_okian=True)
-    models = FakeModels(error=RateLimitException("quota exhausted"))
+    ledger = ObservabilityLedger(
+        settings.resolved_observability_database_path,
+        settings.resolved_observability_artifact_root,
+    )
+    gemini_call_id = uuid4()
+    models = FakeModels(error=DisconnectException("Server disconnected without sending a response."))
+    adapter = GeminiStructuredModel(
+        client=FakeClient(models),
+        settings=settings,
+        observability=ledger,
+    )
+    okian_client = FakeOkianClient()
+    adapter._okian_port = OkianStructuredModel(
+        client=okian_client,
+        settings=settings,
+        observability=ledger,
+    )
+
+    response = adapter.generate_structured(
+        system_prompt="Return JSON.",
+        user_prompt="Answer.",
+        output_type=ExampleOutput,
+        model="gemini-3.6-flash",
+        metadata=RunMetadata(
+            stage="claim_reconciliation",
+            model_or_provider="gemini-3.6-flash",
+            provider="gemini",
+            model_profile="gemini_strong",
+            call_id=gemini_call_id,
+            project_id=uuid4(),
+        ),
+    )
+
+    assert response.provider == "okian"
+    assert response.output.answer == "from-okian"
+    assert len(okian_client.requests) == 1
+    assert okian_client.requests[0][0]["model"] == "gemini-3.6-flash"
+    succeeded = ledger.get_call(response.call_id)
+    assert succeeded.parent_call_id == gemini_call_id
+    assert succeeded.metadata["okian_fallback_from"] == "gemini"
+
+
+def test_grounded_errors_do_not_fall_back_to_okian(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, with_okian=True)
+    models = FakeModels(error=DisconnectException("Server disconnected without sending a response."))
     adapter = GeminiStructuredModel(
         client=FakeClient(models),
         settings=settings,
@@ -168,7 +216,7 @@ def test_grounded_rate_limit_does_not_fall_back_to_okian(tmp_path: Path) -> None
     )
     adapter._okian_port = recording
 
-    with pytest.raises(ModelRateLimitError):
+    with pytest.raises(ModelProviderError, match="Server disconnected"):
         adapter.generate_structured(
             system_prompt="Return JSON.",
             user_prompt="Search.",
@@ -184,14 +232,14 @@ def test_grounded_rate_limit_does_not_fall_back_to_okian(tmp_path: Path) -> None
     assert recording.calls == []
 
 
-def test_rate_limit_without_okian_credentials_raises(tmp_path: Path) -> None:
+def test_error_without_okian_credentials_raises(tmp_path: Path) -> None:
     settings = _settings(tmp_path, with_okian=False)
     adapter = GeminiStructuredModel(
-        client=FakeClient(FakeModels(error=RateLimitException("too many requests"))),
+        client=FakeClient(FakeModels(error=DisconnectException("Server disconnected"))),
         settings=settings,
     )
 
-    with pytest.raises(ModelRateLimitError, match="too many requests"):
+    with pytest.raises(ModelProviderError, match="Server disconnected"):
         adapter.generate_structured(
             system_prompt="system",
             user_prompt="user",

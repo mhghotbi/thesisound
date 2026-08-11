@@ -7,7 +7,7 @@ from copy import deepcopy
 from threading import Lock
 from time import perf_counter
 from typing import Any, Literal, cast
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ValidationError
 
@@ -199,22 +199,17 @@ class GeminiStructuredModel:
         except Exception as exc:
             mapped = _map_provider_error(exc)
             self.observability.fail(spec.call_id, mapped, error_code=_error_code(exc))
-            if self._should_fallback_to_okian(mapped, metadata):
-                fallback_metadata = metadata.model_copy(
-                    update={
-                        "call_id": uuid4(),
-                        "parent_call_id": spec.call_id,
-                        "provider": "okian",
-                        "okian_fallback_from": "gemini",
-                    }
-                )
-                return self._okian().generate_structured(
-                    system_prompt=system_prompt,
-                    user_prompt=user_prompt,
-                    output_type=output_type,
-                    model=model,
-                    metadata=fallback_metadata,
-                )
+            fallback = self._okian_fallback_response(
+                error=mapped,
+                metadata=metadata,
+                gemini_call_id=spec.call_id,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                output_type=output_type,
+                model=model,
+            )
+            if fallback is not None:
+                return fallback
             raise mapped from exc
 
         response = observed.response
@@ -228,6 +223,17 @@ class GeminiStructuredModel:
                 usage=billed_usage,
             )
             self.observability.fail(spec.call_id, error)
+            fallback = self._okian_fallback_response(
+                error=error,
+                metadata=metadata,
+                gemini_call_id=spec.call_id,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                output_type=output_type,
+                model=model,
+            )
+            if fallback is not None:
+                return fallback
             raise error
 
         try:
@@ -236,6 +242,17 @@ class GeminiStructuredModel:
         except ModelError as exc:
             exc.usage = billed_usage
             self.observability.fail(spec.call_id, exc)
+            fallback = self._okian_fallback_response(
+                error=exc,
+                metadata=metadata,
+                gemini_call_id=spec.call_id,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                output_type=output_type,
+                model=model,
+            )
+            if fallback is not None:
+                return fallback
             raise
 
         self.observability.succeed(
@@ -278,13 +295,38 @@ class GeminiStructuredModel:
 
     def _should_fallback_to_okian(
         self,
-        error: ModelError,
+        _error: ModelError,
         metadata: RunMetadata,
     ) -> bool:
-        return (
-            isinstance(error, ModelRateLimitError)
-            and metadata.grounding_mode == "none"
-            and self._okian_configured()
+        return metadata.grounding_mode == "none" and self._okian_configured()
+
+    def _okian_fallback_response[T: BaseModel](
+        self,
+        *,
+        error: ModelError,
+        metadata: RunMetadata,
+        gemini_call_id: UUID,
+        system_prompt: str,
+        user_prompt: str,
+        output_type: type[T],
+        model: str,
+    ) -> StructuredModelResponse[T] | None:
+        if not self._should_fallback_to_okian(error, metadata):
+            return None
+        fallback_metadata = metadata.model_copy(
+            update={
+                "call_id": uuid4(),
+                "parent_call_id": gemini_call_id,
+                "provider": "okian",
+                "okian_fallback_from": "gemini",
+            }
+        )
+        return self._okian().generate_structured(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            output_type=output_type,
+            model=model,
+            metadata=fallback_metadata,
         )
 
     def _tools(self, metadata: RunMetadata) -> list[dict[str, dict[str, object]]]:

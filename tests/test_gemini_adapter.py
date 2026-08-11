@@ -43,6 +43,18 @@ def _metadata() -> RunMetadata:
     return RunMetadata(stage="test", model_or_provider="fake")
 
 
+def _settings_without_okian(tmp_path) -> Settings:
+    # Beat process env so unit tests do not trigger live Okian fallback.
+    return Settings(
+        _env_file=None,
+        workspace_root=tmp_path / "workspaces",
+        observability_database_path=tmp_path / "ledger.sqlite3",
+        observability_artifact_root=tmp_path / "artifacts",
+        okian_base_url="",
+        okian_api_key="",
+    )
+
+
 def test_gemini_adapter_uses_pydantic_schema_without_sampling_parameters() -> None:
     response = SimpleNamespace(
         parsed=ExampleOutput(value="ok"),
@@ -104,7 +116,7 @@ def test_gemini_adapter_validates_text_when_parsed_is_missing() -> None:
     assert result.output.value == "from-text"
 
 
-def test_gemini_adapter_rejects_invalid_structured_output() -> None:
+def test_gemini_adapter_rejects_invalid_structured_output(tmp_path) -> None:
     response = SimpleNamespace(
         parsed={"wrong": "field"},
         text='{"wrong":"field"}',
@@ -112,7 +124,10 @@ def test_gemini_adapter_rejects_invalid_structured_output() -> None:
         prompt_feedback=None,
         usage_metadata=None,
     )
-    adapter = GeminiStructuredModel(client=FakeClient(FakeModels(response=response)))
+    adapter = GeminiStructuredModel(
+        client=FakeClient(FakeModels(response=response)),
+        settings=_settings_without_okian(tmp_path),
+    )
 
     with pytest.raises(SchemaValidationError):
         adapter.generate_structured(
@@ -124,7 +139,7 @@ def test_gemini_adapter_rejects_invalid_structured_output() -> None:
         )
 
 
-def test_gemini_adapter_attaches_billed_usage_to_schema_errors() -> None:
+def test_gemini_adapter_attaches_billed_usage_to_schema_errors(tmp_path) -> None:
     response = SimpleNamespace(
         parsed={"wrong": "field"},
         text='{"wrong":"field"}',
@@ -138,7 +153,10 @@ def test_gemini_adapter_attaches_billed_usage_to_schema_errors() -> None:
             cached_content_token_count=None,
         ),
     )
-    adapter = GeminiStructuredModel(client=FakeClient(FakeModels(response=response)))
+    adapter = GeminiStructuredModel(
+        client=FakeClient(FakeModels(response=response)),
+        settings=_settings_without_okian(tmp_path),
+    )
 
     with pytest.raises(SchemaValidationError) as exc_info:
         adapter.generate_structured(
@@ -154,7 +172,7 @@ def test_gemini_adapter_attaches_billed_usage_to_schema_errors() -> None:
     assert exc_info.value.usage.output_tokens == 8
 
 
-def test_gemini_adapter_attaches_billed_usage_to_safety_errors() -> None:
+def test_gemini_adapter_attaches_billed_usage_to_safety_errors(tmp_path) -> None:
     response = SimpleNamespace(
         parsed=None,
         text=None,
@@ -168,7 +186,10 @@ def test_gemini_adapter_attaches_billed_usage_to_safety_errors() -> None:
             cached_content_token_count=None,
         ),
     )
-    adapter = GeminiStructuredModel(client=FakeClient(FakeModels(response=response)))
+    adapter = GeminiStructuredModel(
+        client=FakeClient(FakeModels(response=response)),
+        settings=_settings_without_okian(tmp_path),
+    )
 
     with pytest.raises(ModelSafetyError) as exc_info:
         adapter.generate_structured(
@@ -184,18 +205,9 @@ def test_gemini_adapter_attaches_billed_usage_to_safety_errors() -> None:
 
 
 def test_gemini_adapter_maps_rate_limit_errors(tmp_path) -> None:
-    # Disable Okian so this path stays a pure Gemini rate-limit mapping check.
-    settings = Settings(
-        _env_file=None,
-        workspace_root=tmp_path / "workspaces",
-        observability_database_path=tmp_path / "ledger.sqlite3",
-        observability_artifact_root=tmp_path / "artifacts",
-        okian_base_url="",
-        okian_api_key="",
-    )
     adapter = GeminiStructuredModel(
         client=FakeClient(FakeModels(error=RateLimitException("too many requests"))),
-        settings=settings,
+        settings=_settings_without_okian(tmp_path),
     )
 
     with pytest.raises(ModelRateLimitError):

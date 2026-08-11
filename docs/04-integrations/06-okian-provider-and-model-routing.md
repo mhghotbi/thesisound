@@ -18,15 +18,14 @@ THESISOUND_MODEL_ROUTING_FILE=./config/model-routing.toml
 THESISOUND_MODEL_ROUTE_OVERRIDES={}
 ```
 
-With Okian credentials set, ungrounded Gemini structured-text calls automatically fall back to Okian when the Gemini key pool is exhausted (quota / rate-limit across all keys). The same model ID is reused. Explicit stage routing to an Okian profile still works independently of this failover.
+With Okian credentials set, ungrounded Gemini structured-text calls automatically fall back to Okian on any Gemini failure (provider errors, timeouts, rate limits, safety blocks, schema/output validation). The same model ID is reused. Explicit stage routing to an Okian profile still works independently of this failover.
 
 Fallback does **not** apply to:
 
 - grounded stages (`grounding_mode` other than `none`);
-- TTS / ASR (TTS has a separate OpenAI fallback — see below);
-- non-rate-limit Gemini failures (schema, safety, timeouts, single-key non-quota errors).
+- TTS / ASR (TTS has a separate OpenAI fallback — see below).
 
-Without `OKIAN_BASE_URL` and `OKIAN_API_KEY`, exhausted Gemini keys fail as before.
+Without `OKIAN_BASE_URL` and `OKIAN_API_KEY`, Gemini failures raise as before.
 
 ## OpenAI TTS fallback
 
@@ -121,4 +120,4 @@ The response must use the common OpenAI-compatible `choices[0].message.content` 
 
 Okian calls use the same unified ledger as Gemini — same fields, same per-attempt key-rotation rows, same redaction. See [`05-model-observability.md`](05-model-observability.md). The only difference is `provider` recorded as `okian`; the API key itself is never written to the ledger or payload artifacts.
 
-On key-pool fallback, the failed Gemini call stays in the ledger, and the Okian retry is a new call with `parent_call_id` pointing at that Gemini row and `okian_fallback_from=gemini` in call metadata.
+On Gemini→Okian fallback, the failed Gemini call stays in the ledger, and the Okian retry is a new call with `parent_call_id` pointing at that Gemini row and `okian_fallback_from=gemini` in call metadata.
