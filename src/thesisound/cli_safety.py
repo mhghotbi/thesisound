@@ -30,6 +30,7 @@ _READONLY = {
     "commands",
     "models list",
     "models verify",
+    "metrics show",
 }
 _WRITES = {
     "init",
@@ -68,6 +69,7 @@ _WRITES = {
     "eval",
     "models provision",
     "models parse",
+    "metrics rollup",
 }
 _SPENDS = {
     "build-brief",
