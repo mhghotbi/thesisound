@@ -3,3 +3,4 @@ link extractor
 new sepidour models: embedder + whisper
 add voice files to sources
 user can select from topics
+MySQL migration
