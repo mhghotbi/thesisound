@@ -1277,6 +1277,47 @@ span.status-label__mark {
   font-size: 12px;
   font-weight: 600;
 }
+.evidence-card__file {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+.evidence-card__file a {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 500;
+}
+.evidence-card__file a:hover { text-decoration: underline; }
+.evidence-context {
+  margin-block-start: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--paper-muted);
+}
+.evidence-context__panel { display: grid; gap: 8px; }
+.evidence-context__text {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.85;
+  text-wrap: pretty;
+  white-space: pre-wrap;
+}
+.evidence-context__text--current mark {
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  color: inherit;
+  padding: 0 0.1em;
+}
+.evidence-context__miss {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.evidence-context__neighbor > summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
 .evidence-card cite { display: block; margin-block-start: 8px; color: var(--muted); font-size: 13px; font-style: normal; font-weight: 500; }
 .evidence-card .operator-only { color: var(--muted-light); font-size: 11px; }
 div.evidence-card { display: grid; gap: 8px; font-size: 12px; }

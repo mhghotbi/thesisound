@@ -98,7 +98,8 @@ def normalize_for_match(text: str) -> tuple[str, list[int]]:
     return "".join(collapsed_chars[start:end]), collapsed_map[start:end]
 
 
-def locate_excerpt(excerpt: str, source_text: str) -> str | None:
+def locate_excerpt_span(excerpt: str, source_text: str) -> tuple[int, int] | None:
+    """Return (start, end) offsets in ``source_text`` for the matched excerpt."""
     needle, _ = normalize_for_match(excerpt)
     haystack, index_map = normalize_for_match(source_text)
     if not needle:
@@ -108,6 +109,14 @@ def locate_excerpt(excerpt: str, source_text: str) -> str | None:
         return None
     start = index_map[position]
     end = index_map[position + len(needle) - 1] + 1
+    return start, end
+
+
+def locate_excerpt(excerpt: str, source_text: str) -> str | None:
+    span = locate_excerpt_span(excerpt, source_text)
+    if span is None:
+        return None
+    start, end = span
     return source_text[start:end]
 
 

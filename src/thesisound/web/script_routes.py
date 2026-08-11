@@ -27,6 +27,7 @@ from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_run import ScriptBuildRunService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.error_messages import user_facing_error
+from thesisound.web.evidence_views import load_evidence_context
 from thesisound.web.evidence_views import segment_views as _segment_views
 
 Render = Callable[..., HTMLResponse]
@@ -243,6 +244,25 @@ def register_script_routes(
             project_id=project_id,
         )
         return Response(status_code=204)
+
+    @app.get(
+        "/projects/{project_id}/script/evidence/{evidence_id}",
+        response_class=HTMLResponse,
+    )
+    def evidence_context(
+        request: Request,
+        project_id: UUID,
+        evidence_id: str,
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        project = workspace.load_project(project_id)
+        context = load_evidence_context(project, source_store, evidence_id)
+        if context is None:
+            return Response(status_code=404)
+        return render(request, "projects/_evidence_context.html", context)
 
     @app.post("/projects/{project_id}/script/retry")
     def retry_script(

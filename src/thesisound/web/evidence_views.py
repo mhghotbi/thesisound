@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from markupsafe import Markup, escape
+
 from thesisound.domain import ClaimRecord, Locator, Project, Script, SupportStatus
+from thesisound.services.excerpt_matching import locate_excerpt_span
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.source_manifest import UiSourceManifestStore
 
@@ -84,6 +87,7 @@ def load_evidence_index(
                 "source_title": titles.get(source_id, "منبع بدون عنوان"),
                 "locator": locator_label(item.locator),
                 "locator_label": locator_label(item.locator),
+                "page_start": item.locator.page_start,
                 "excerpt": item.supporting_excerpt,
                 "support_kind": item.support_kind,
                 "support_kind_label": SUPPORT_KIND_LABELS.get(
@@ -148,6 +152,7 @@ def _evidence_row_for_id(
         "source_title": None,
         "locator": None,
         "locator_label": None,
+        "page_start": None,
         "excerpt": None,
         "support_kind": None,
         "support_kind_label": None,
@@ -284,3 +289,63 @@ def omitted_claim_views(
             }
         )
     return rows
+
+
+def _highlight_block_text(text: str, excerpt: str) -> tuple[Markup, bool]:
+    span = locate_excerpt_span(excerpt, text)
+    if span is None:
+        return Markup(escape(text)), False
+    start, end = span
+    return (
+        Markup(
+            f"{escape(text[:start])}<mark>{escape(text[start:end])}</mark>"
+            f"{escape(text[end:])}"
+        ),
+        True,
+    )
+
+
+def load_evidence_context(
+    project: Project,
+    source_store: SourceArtifactStore,
+    evidence_id: str,
+) -> dict[str, object] | None:
+    """Build lazy context view for one evidence item, or None if not found."""
+    usable_ids, known_ids = resolve_source_ids(project, source_store)
+    search_ids = usable_ids or known_ids
+    item = None
+    source_id: UUID | None = None
+    for candidate_id in search_ids:
+        try:
+            items = source_store.load_evidence_items(project.project_id, candidate_id)
+        except FileNotFoundError:
+            continue
+        for candidate in items:
+            if candidate.evidence_id == evidence_id:
+                item = candidate
+                source_id = candidate_id
+                break
+        if item is not None:
+            break
+    if item is None or source_id is None:
+        return None
+
+    try:
+        blocks = source_store.load_blocks(project.project_id, source_id)
+    except FileNotFoundError:
+        return None
+    by_id = {block.block_id: block for block in blocks}
+    block = by_id.get(item.block_id)
+    if block is None:
+        return None
+
+    highlighted, matched = _highlight_block_text(block.text, item.supporting_excerpt)
+    previous = by_id.get(block.previous_block_id) if block.previous_block_id else None
+    next_block = by_id.get(block.next_block_id) if block.next_block_id else None
+    return {
+        "evidence_id": evidence_id,
+        "matched": matched,
+        "current_html": highlighted,
+        "previous_text": previous.text if previous is not None else None,
+        "next_text": next_block.text if next_block is not None else None,
+    }

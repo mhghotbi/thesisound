@@ -1,0 +1,18 @@
+<section class="evidence-context__panel" aria-label="بافت شاهد در منبع">
+  {% if previous_text %}
+  <details class="evidence-context__neighbor">
+    <summary>پاره‌متن قبل</summary>
+    <p class="evidence-context__text">{{ previous_text }}</p>
+  </details>
+  {% endif %}
+  {% if not matched %}
+  <p class="evidence-context__miss">محل عبارت شاهد در این پاره‌متن پیدا نشد.</p>
+  {% endif %}
+  <p class="evidence-context__text evidence-context__text--current">{{ current_html }}</p>
+  {% if next_text %}
+  <details class="evidence-context__neighbor">
+    <summary>پاره‌متن بعد</summary>
+    <p class="evidence-context__text">{{ next_text }}</p>
+  </details>
+  {% endif %}
+</section>

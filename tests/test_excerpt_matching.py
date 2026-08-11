@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from thesisound.services.excerpt_matching import locate_excerpt
+from thesisound.services.excerpt_matching import locate_excerpt, locate_excerpt_span
 
 
 def test_excerpt_matching_repairs_typographic_variants() -> None:
@@ -34,8 +34,30 @@ def test_excerpt_matching_repairs_typographic_variants() -> None:
         located = locate_excerpt(model_excerpt, source)
         assert located == source
         assert located != model_excerpt
+        span = locate_excerpt_span(model_excerpt, source)
+        assert span == (0, len(source))
+        assert source[span[0] : span[1]] == source
 
 
 def test_excerpt_matching_rejects_invented_text() -> None:
     source = "Action occurs directly between persons in the public realm."
     assert locate_excerpt("This sentence is invented entirely.", source) is None
+    assert locate_excerpt_span("This sentence is invented entirely.", source) is None
+
+
+def test_locate_excerpt_span_mid_string_and_digits() -> None:
+    source = "پیش‌گفتار ۱۲۳ سپس ادامهٔ متن."
+    excerpt = "123 سپس"
+    span = locate_excerpt_span(excerpt, source)
+    assert span is not None
+    start, end = span
+    assert "۱۲۳" in source[start:end] or "123" in source[start:end]
+    assert locate_excerpt(excerpt, source) == source[start:end]
+
+
+def test_locate_excerpt_span_zwnj_variant() -> None:
+    source = "کتاب\u200cها مهم هستند در این بحث بلند."
+    excerpt = "کتابها مهم هستند"
+    span = locate_excerpt_span(excerpt, source)
+    assert span is not None
+    assert locate_excerpt(excerpt, source) == source[span[0] : span[1]]

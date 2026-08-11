@@ -9,7 +9,7 @@ from urllib.parse import quote
 from uuid import UUID, uuid4, uuid5
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 from starlette.status import HTTP_303_SEE_OTHER
 
@@ -52,6 +52,7 @@ from thesisound.web.source_manifest import (
     UiSourceStatus,
 )
 from thesisound.web.source_url_import import UrlSourceImportService, normalize_source_url
+from thesisound.web.upload_paths import resolve_uploaded_source_path
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
@@ -123,6 +124,33 @@ def register_source_routes(
             "projects/sources.html",
             source_context(project, sources),
         )
+
+    @app.get("/projects/{project_id}/sources/{source_id}/file")
+    def source_file(request: Request, project_id: UUID, source_id: UUID) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        store = UiSourceManifestStore(workspace.project_dir(project_id))
+        try:
+            source = store.get(source_id)
+        except FileNotFoundError:
+            return Response(status_code=404)
+        path = resolve_uploaded_source_path(workspace, project_id, source)
+        if path is None:
+            return Response(status_code=404)
+        media_type = source.content_type or "application/octet-stream"
+        is_pdf = media_type == "application/pdf"
+        response = FileResponse(
+            path,
+            media_type=media_type,
+            filename=Path(source.filename).name,
+            content_disposition_type="inline" if is_pdf else "attachment",
+        )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        if is_pdf:
+            response.headers["Content-Security-Policy"] = "sandbox"
+        return response
 
     @app.post("/projects/{project_id}/sources/upload", response_class=HTMLResponse)
     async def upload_source(
@@ -474,8 +502,8 @@ def register_source_routes(
                 raise ValueError("Source selection is locked")
             store = UiSourceManifestStore(workspace.project_dir(project_id))
             source = store.get(source_id)
-            upload = _uploaded_source_path(workspace, project_id, source)
-            if not upload.is_file():
+            upload = resolve_uploaded_source_path(workspace, project_id, source)
+            if upload is None:
                 raise FileNotFoundError("Original upload is missing")
             artifact_root = (
                 settings.ensure_ingestion_artifact_root() / str(project_id) / str(source_id)
@@ -972,23 +1000,6 @@ def _source_candidate(source: UiSourceManifest) -> SourceCandidate:
         user_decision=SourceDecision.INCLUDE,
         relevance_reasons=[relevance],
         limitations=limitations,
-    )
-
-
-def _uploaded_source_path(
-    workspace: WorkspaceStore,
-    project_id: UUID,
-    source: UiSourceManifest,
-) -> Path:
-    local = workspace.project_dir(project_id) / "uploads" / str(source.source_id) / source.filename
-    if local.is_file():
-        return local
-    return (
-        workspace.project_dir(project_id)
-        / "uploads"
-        / "web"
-        / str(source.source_id)
-        / source.filename
     )
 
 

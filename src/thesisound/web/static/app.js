@@ -216,6 +216,27 @@
       }).catch(() => {
         // Metrics must never block reading the source trace.
       });
+      details.querySelectorAll("[data-evidence-context]").forEach((slot) => {
+        const evidenceId = slot.dataset.evidenceId;
+        if (!evidenceId || slot.dataset.loaded === "1") return;
+        slot.dataset.loaded = "1";
+        fetch(`/projects/${projectId}/script/evidence/${encodeURIComponent(evidenceId)}`, {
+          credentials: "same-origin",
+          headers: { Accept: "text/html" },
+        })
+          .then((response) => {
+            if (!response.ok) return null;
+            return response.text();
+          })
+          .then((html) => {
+            if (!html) return;
+            slot.innerHTML = html;
+            slot.hidden = false;
+          })
+          .catch(() => {
+            // Context is additive; excerpt and locator already render without JS.
+          });
+      });
     });
   });
 

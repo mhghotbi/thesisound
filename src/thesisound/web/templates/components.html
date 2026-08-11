@@ -127,8 +127,14 @@
     {{ reference.excerpt }}
     {% if reference.support_kind_label %}<span class="evidence-card__kind">{{ reference.support_kind_label }}</span>{% endif %}
     <cite><bdi dir="auto">{{ reference.source_title }}</bdi> — {{ reference.locator_label or reference.locator }}</cite>
+    {% if project_id and reference.get('source_id') and reference.get('page_start') is not none %}
+    <p class="evidence-card__file"><a href="/projects/{{ project_id }}/sources/{{ reference.source_id }}/file#page={{ reference.page_start }}">رفتن به نشانی</a></p>
+    {% endif %}
     <span class="operator-only"><bdi dir="ltr">{{ reference.evidence_id }}</bdi></span>
   </blockquote>
+  {% if drawer %}
+  <div class="evidence-context" data-evidence-context data-evidence-id="{{ reference.evidence_id }}" hidden></div>
+  {% endif %}
   {% endif %}
   {% endfor %}
   {% elif group.availability != 'unavailable' %}
