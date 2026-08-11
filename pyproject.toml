@@ -36,6 +36,10 @@ web-ui = [
   "python-multipart>=0.0.20,<1",
   "itsdangerous>=2.2,<3",
   "httpx>=0.28,<1",
+  "trafilatura>=2,<3",
+]
+url-fetch = [
+  "trafilatura>=2,<3",
 ]
 parsers = [
   "docling>=2.0,<4",

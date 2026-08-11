@@ -48,6 +48,20 @@
   <noscript><button class="button button--primary" type="submit">افزودن و وارسی فایل</button></noscript>
 </form>
 
+{% if url_source_fetch_enabled %}
+<form class="section-block url-import" method="post" action="/projects/{{ project.project_id }}/sources/from-url">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <label class="field">
+    <span>یا افزودن از نشانی وب</span>
+    <input type="url" name="url" required placeholder="https://…" inputmode="url" autocomplete="off" dir="ltr">
+    <small class="field-hint">متن اصلی صفحه استخراج و از همان وارسی کیفیت فایل‌ها عبور داده می‌شود.</small>
+  </label>
+  <div class="form-actions">
+    <button class="button button--secondary" type="submit">بازیابی متن و افزودن</button>
+  </div>
+</form>
+{% endif %}
+
 {% if web_source_discovery_enabled %}
 <details class="search-path section-block">
   <summary>یا پیدا کردن منبع در وب</summary>
@@ -144,7 +158,7 @@
 
         <p class="source-row__meta">
           {% if source.block_count %}<span>{{ source.block_count | fa_num }} پاره‌متن خوانده شد</span>{% endif %}
-          <span>{% if source.origin == 'gemini_web_search' %}منبع وب بازیابی‌شده{% else %}فایل شما{% endif %}</span>
+          <span>{% if source.origin == 'gemini_web_search' %}منبع وب بازیابی‌شده{% elif source.origin == 'url_fetch' %}منبع از نشانی وب{% else %}فایل شما{% endif %}</span>
           <span><bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) | fa_num }}&nbsp;مگابایت</bdi></span>
           {% if source.canonical_url %}<a href="{{ source.canonical_url }}" rel="noreferrer" target="_blank">نشانی اصلی</a>{% endif %}
         </p>

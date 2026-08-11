@@ -51,6 +51,7 @@ from thesisound.web.source_manifest import (
     UiSourceManifestStore,
     UiSourceStatus,
 )
+from thesisound.web.source_url_import import UrlSourceImportService, normalize_source_url
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
@@ -78,6 +79,7 @@ def register_source_routes(
     validate_csrf: ValidateCsrf,
 ) -> None:
     discovery = WebSourceDiscoveryService(settings, workspace)
+    url_import = UrlSourceImportService(settings, workspace)
     revision = WorkflowRevisionService(workspace)
 
     def source_context(
@@ -99,6 +101,7 @@ def register_source_routes(
             "selection_locked": project.state not in _EDITABLE_SOURCE_STATES,
             "upload_limit_mb": settings.web_upload_limit_bytes // (1024 * 1024),
             "web_source_discovery_enabled": discovery_enabled,
+            "url_source_fetch_enabled": settings.url_source_fetch_enabled,
             "error": error,
         }
 
@@ -205,6 +208,85 @@ def register_source_routes(
         ):
             transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
         workspace.save_project(project)
+        return _source_redirect(project_id)
+
+    @app.post("/projects/{project_id}/sources/from-url", response_class=HTMLResponse)
+    async def import_source_from_url(
+        request: Request,
+        project_id: UUID,
+        csrf_token: Annotated[str, Form()],
+        url: Annotated[str, Form()] = "",
+    ) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        validate_csrf(request, csrf_token)
+        project = workspace.load_project(project_id)
+        if not settings.url_source_fetch_enabled:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    project,
+                    UiSourceManifestStore(workspace.project_dir(project_id)).load(),
+                    error="افزودن منبع از نشانی وب فعلاً در دسترس نیست. فایل منبع را بارگذاری کنید.",
+                ),
+                status_code=422,
+            )
+        if project.state == ProjectState.SOURCE_SELECTION_REQUIRED:
+            transition(project, ProjectState.SOURCES_COLLECTING)
+        if project.state != ProjectState.SOURCES_COLLECTING:
+            return _source_redirect(project_id, error="selection-locked")
+
+        manifest_store = UiSourceManifestStore(workspace.project_dir(project_id))
+        try:
+            canonical = normalize_source_url(url)
+            existing = _source_for_url(manifest_store.load(), canonical)
+            if existing is not None:
+                return _source_redirect(project_id, notice="duplicate-source")
+            manifest = await run_in_threadpool(url_import.import_url, project_id, canonical)
+            upload_root = (
+                workspace.project_dir(project_id)
+                / "uploads"
+                / "web"
+                / str(manifest.source_id)
+            )
+            artifact_root = (
+                settings.ensure_ingestion_artifact_root()
+                / str(project_id)
+                / str(manifest.source_id)
+            )
+            if manifest.content_key:
+                resolved_id = uuid5(project_id, manifest.content_key)
+                if any(item.source_id == resolved_id for item in manifest_store.load()):
+                    shutil.rmtree(upload_root, ignore_errors=True)
+                    shutil.rmtree(artifact_root, ignore_errors=True)
+                    return _source_redirect(project_id, notice="duplicate-source")
+                manifest = _rekey_source(
+                    manifest,
+                    resolved_id,
+                    upload_root=upload_root,
+                    artifact_root=artifact_root,
+                )
+            manifest_store.add(manifest)
+            sources = manifest_store.load()
+            if project.state == ProjectState.SOURCES_COLLECTING and any(
+                source.status == UiSourceStatus.READY for source in sources
+            ):
+                transition(project, ProjectState.SOURCE_SELECTION_REQUIRED)
+            workspace.save_project(project)
+        except (OSError, RuntimeError, ValueError) as error:
+            return render(
+                request,
+                "projects/sources.html",
+                source_context(
+                    project,
+                    manifest_store.load(),
+                    error=user_facing_error(error, action="retrieve"),
+                ),
+                status_code=422,
+            )
         return _source_redirect(project_id)
 
     @app.get("/projects/{project_id}/sources/search", response_class=HTMLResponse)
@@ -861,14 +943,22 @@ def _deselect_source(
 
 
 def _source_candidate(source: UiSourceManifest) -> SourceCandidate:
-    is_web = source.origin == "gemini_web_search"
-    relevance = (
-        "Discovered through Gemini Google Search, captured through URL Context, "
-        "then passed the same parse-quality gate."
-        if is_web
-        else "Selected by the user after the real parse-quality gate using "
-        f"{source.parser_name or 'an available parser'}."
-    )
+    is_web = source.origin in {"gemini_web_search", "url_fetch"}
+    if source.origin == "gemini_web_search":
+        relevance = (
+            "Discovered through Gemini Google Search, captured through URL Context, "
+            "then passed the same parse-quality gate."
+        )
+    elif source.origin == "url_fetch":
+        relevance = (
+            "Imported from a user-provided URL via Trafilatura extraction, "
+            "then passed the same parse-quality gate."
+        )
+    else:
+        relevance = (
+            "Selected by the user after the real parse-quality gate using "
+            f"{source.parser_name or 'an available parser'}."
+        )
     limitations = [item for item in [source.issue_summary, *source.quality_issues] if item]
     return SourceCandidate(
         source_id=source.source_id,

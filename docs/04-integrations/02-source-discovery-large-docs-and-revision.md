@@ -4,12 +4,13 @@ Related: candidate search itself runs through Gemini grounding — see [`01-gemi
 
 ## 1. Starting with only a topic
 
-A user may create a project without uploading a source. The Sources screen exposes two first-class paths:
+A user may create a project without uploading a source. The Sources screen exposes three first-class paths:
 
 1. upload a local file;
-2. run Gemini Google Search from the confirmed Research Brief.
+2. paste a page URL for direct Trafilatura fetch and main-text extraction;
+3. run Gemini Google Search from the confirmed Research Brief (optional; off by default).
 
-Search output is candidate metadata only. A candidate becomes eligible for the corpus only after:
+Direct URL paste does **not** use Gemini. Trafilatura downloads the page, extracts main content as Markdown, then runs the same inspect → parse → quality gate as uploads. Search output remains candidate metadata only. A search candidate becomes eligible for the corpus only after:
 
 1. explicit or automatic selection;
 2. Gemini URL Context capture;
@@ -18,7 +19,7 @@ Search output is candidate metadata only. A candidate becomes eligible for the c
 5. the normal parser and parse-quality gate;
 6. explicit corpus confirmation.
 
-A snippet, overview, abstract, inaccessible page, or incomplete capture is never silently promoted to evidence.
+A snippet, overview, abstract, inaccessible page, or incomplete capture is never silently promoted to evidence. URL paste that yields empty or too-short text is blocked the same way.
 
 ## 2. Large documents
 
@@ -67,9 +68,10 @@ This guarantees that a revised Brief or corpus cannot reuse a stale Episode Plan
 
 ## 5. Known limits
 
-The implemented source-discovery path is a local Gemini vertical slice. It does not yet provide:
+The implemented source-discovery path is a local Gemini vertical slice. Direct URL paste uses Trafilatura for single-page extraction and does not replace Gemini URL Context for search candidates. Neither path yet provides:
 
-- general-purpose crawling;
+- multi-page / sitemap site crawling;
+- browser/JS rendering for heavy SPAs;
 - paywall or authenticated-source access;
 - independent byte-for-byte verification of URL Context capture;
 - strong authority ranking across scholarly and general-web sources;

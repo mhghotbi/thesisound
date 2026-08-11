@@ -63,6 +63,11 @@ class Settings(BaseSettings):
     url_probe_enabled: bool = True
     url_probe_timeout_seconds: int = Field(default=10, ge=1, le=60)
     web_search_cache_ttl_hours: int = Field(default=24, ge=1, le=720)
+    # Direct URL paste on Sources: Trafilatura fetch + extract. Independent of
+    # Gemini web search so paste works without a model key.
+    url_source_fetch_enabled: bool = True
+    url_fetch_timeout_seconds: int = Field(default=30, ge=5, le=120)
+    url_fetch_min_characters: int = Field(default=400, ge=50, le=10_000)
     # Product surface for "find sources on the web". Off by default: code and
     # tests stay, but the UI and routes do not offer discovery until we bring
     # search back as a deliberate feature.
