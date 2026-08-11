@@ -210,13 +210,154 @@
     });
   }
 
-  // Picking a source is a tick, not a trip through a button: the surrounding form
-  // posts the toggle straight away. Without JS the noscript button does the same.
+  // Picking a source is a tick, not a trip through a button: post the toggle in
+  // place so a long list does not jump back to the top on every click. Without JS
+  // the noscript button still does a normal form post.
+  const faDigits = (value) =>
+    String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
+
+  const syncSourceSelectionUi = () => {
+    if (!document.querySelector("[data-sources-workspace]")) return;
+    const selected = document.querySelectorAll("[data-toggle-source]:checked").length;
+    const summary = document.querySelector("[data-ready-selection-summary]");
+    const total = Number(summary?.dataset.sourceTotal || 0);
+    if (summary) {
+      summary.textContent = `${faDigits(selected)} منبع آمادهٔ استفاده از ${faDigits(total)}`;
+    }
+
+    const badge = document.querySelector("[data-selected-badge] .status-label");
+    if (badge) {
+      badge.classList.toggle("status-label--success", selected > 0);
+      badge.classList.toggle("status-label--attention", selected === 0);
+      const mark = badge.querySelector(".status-label__mark");
+      if (mark) {
+        mark.outerHTML =
+          selected > 0
+            ? '<svg class="status-label__mark" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7"/></svg>'
+            : '<svg class="status-label__mark" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 2l5.5 10h-11z"/><path d="M7 6v3M7 10.6v.1"/></svg>';
+      }
+      const primary = badge.querySelector(":scope > span");
+      if (primary) primary.textContent = `${faDigits(selected)} منبع منتخب`;
+    }
+
+    const title = document.querySelector("[data-corpus-confirm-title]");
+    if (title) {
+      title.textContent = `این گفتار بر اساس ${faDigits(selected)} منبع منتخب ساخته می‌شود`;
+    }
+    const hint = document.querySelector("[data-corpus-confirm-hint]");
+    if (hint) {
+      const emptyHint = hint.dataset.emptyHint || "";
+      hint.textContent =
+        "فقط منابع منتخب و آماده وارد شاهدها و متن گفتار می‌شوند." +
+        (selected === 0 ? emptyHint : "");
+    }
+    const confirm = document.querySelector("[data-corpus-confirm-button]");
+    if (confirm instanceof HTMLButtonElement) {
+      confirm.disabled = selected === 0;
+      if (selected === 0) confirm.setAttribute("aria-describedby", "corpus-confirm-hint");
+      else confirm.removeAttribute("aria-describedby");
+    }
+  };
+
   document.querySelectorAll("[data-toggle-source]").forEach((checkbox) => {
     checkbox.addEventListener("change", () => {
+      const form = checkbox.form;
+      if (!form) return;
       checkbox.disabled = true;
-      checkbox.form?.requestSubmit();
+      const row = checkbox.closest("[data-source-id]");
+      const previous = !checkbox.checked;
+      refreshCsrf()
+        .catch(() => {})
+        .then(() =>
+          fetch(form.action, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              Accept: "text/html",
+            },
+            body: new URLSearchParams({ csrf_token: csrf }),
+            credentials: "same-origin",
+            redirect: "manual",
+          }),
+        )
+        .then((response) => {
+          const locationHeader = response.headers.get("Location") || "";
+          if (locationHeader.includes("error=")) {
+            window.location.assign(locationHeader);
+            return;
+          }
+          const redirected =
+            response.status === 303 ||
+            response.status === 302 ||
+            response.status === 0 ||
+            response.type === "opaqueredirect";
+          if (!redirected && !response.ok) {
+            checkbox.checked = previous;
+            return;
+          }
+          row?.classList.toggle("is-selected", checkbox.checked);
+          syncSourceSelectionUi();
+        })
+        .catch(() => {
+          checkbox.checked = previous;
+        })
+        .finally(() => {
+          checkbox.disabled = false;
+        });
     });
+  });
+
+  // Source actions that round-trip through POST→redirect (upload, retry, search…)
+  // used to dump the viewport at the top. Keep the place the reader was working.
+  const sourcesScrollKey = "maqaal:sources-scroll";
+  const sourcesPagePath = /\/projects\/[^/]+\/sources\/?$/;
+  if (sourcesPagePath.test(location.pathname)) {
+    const saved = sessionStorage.getItem(sourcesScrollKey);
+    if (saved != null) {
+      sessionStorage.removeItem(sourcesScrollKey);
+      const y = Number(saved);
+      if (Number.isFinite(y) && y > 0) {
+        const restore = () => window.scrollTo({ top: y, left: 0, behavior: "auto" });
+        restore();
+        requestAnimationFrame(restore);
+      }
+    }
+  }
+
+  const rememberSourcesScroll = () => {
+    if (!sourcesPagePath.test(location.pathname)) return;
+    sessionStorage.setItem(sourcesScrollKey, String(window.scrollY || window.pageYOffset || 0));
+  };
+
+  document.addEventListener(
+    "submit",
+    (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      if (!sourcesPagePath.test(location.pathname)) return;
+      let actionPath = "";
+      try {
+        actionPath = new URL(form.getAttribute("action") || "", location.href).pathname;
+      } catch (_) {
+        return;
+      }
+      if (actionPath.includes("/corpus/confirm")) return;
+      if (actionPath.includes("/sources")) rememberSourcesScroll();
+    },
+    true,
+  );
+
+  document.addEventListener("click", (event) => {
+    if (!sourcesPagePath.test(location.pathname)) return;
+    const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+    if (!link) return;
+    let hrefPath = "";
+    try {
+      hrefPath = new URL(link.getAttribute("href") || "", location.href).pathname;
+    } catch (_) {
+      return;
+    }
+    if (/\/sources\/[^/]+\/delete\/?$/.test(hrefPath)) rememberSourcesScroll();
   });
 
   document.querySelectorAll("[data-source-trace]").forEach((details) => {

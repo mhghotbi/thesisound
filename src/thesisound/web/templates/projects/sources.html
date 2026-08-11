@@ -2,13 +2,13 @@
 {% from "components.html" import status_label, technical_details, error_notice %}
 {% block title %}منابع | مقال{% endblock %}
 {% block content %}
-<header class="page-heading page-heading--compact">
+<header class="page-heading page-heading--compact" data-sources-workspace>
   <div>
     <p class="kicker">منابع گفتار</p>
     <h1>منابع را اضافه و انتخاب کنید</h1>
     <p>فقط متن کامل و عبورکرده از وارسی کیفیت می‌تواند مبنای استخراج شاهد قرار گیرد.</p>
   </div>
-  {{ status_label((selected_count | fa_num) ~ ' منبع منتخب', 'مجموعه منابع', 'success' if selected_count else 'attention') }}
+  <span data-selected-badge>{{ status_label((selected_count | fa_num) ~ ' منبع منتخب', 'مجموعه منابع', 'success' if selected_count else 'attention') }}</span>
 </header>
 
 {% if error %}
@@ -116,7 +116,7 @@
 <section class="section-block" aria-labelledby="source-list-title">
   <div class="section-heading section-heading--rule">
     <h2 id="source-list-title">فایل‌های شما</h2>
-    <span>{{ selected_count | fa_num }} منبع آمادهٔ استفاده از {{ sources | length | fa_num }}</span>
+    <span data-ready-selection-summary data-source-total="{{ sources | length }}">{{ selected_count | fa_num }} منبع آمادهٔ استفاده از {{ sources | length | fa_num }}</span>
   </div>
   {% if sources %}
   <div class="source-list">
@@ -201,15 +201,15 @@
 
 <section class="sticky-confirmation" aria-labelledby="corpus-confirm-title">
   <div>
-    <h2 id="corpus-confirm-title">این گفتار بر اساس {{ selected_count | fa_num }} منبع منتخب ساخته می‌شود</h2>
-    <p id="corpus-confirm-hint">فقط منابع منتخب و آماده وارد شاهدها و متن گفتار می‌شوند.{% if selected_count == 0 %} برای ادامه حداقل یک منبع آماده را انتخاب کنید.{% endif %}</p>
+    <h2 id="corpus-confirm-title" data-corpus-confirm-title>این گفتار بر اساس {{ selected_count | fa_num }} منبع منتخب ساخته می‌شود</h2>
+    <p id="corpus-confirm-hint" data-corpus-confirm-hint data-empty-hint=" برای ادامه حداقل یک منبع آماده را انتخاب کنید.">فقط منابع منتخب و آماده وارد شاهدها و متن گفتار می‌شوند.{% if selected_count == 0 %} برای ادامه حداقل یک منبع آماده را انتخاب کنید.{% endif %}</p>
   </div>
   {% if selection_locked %}
     <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">مشاهدهٔ تحلیل منابع</a>
   {% else %}
     <form method="post" action="/projects/{{ project.project_id }}/corpus/confirm">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <button class="button button--primary" type="submit" {% if selected_count == 0 %}disabled aria-describedby="corpus-confirm-hint"{% endif %}>تأیید منابع</button>
+      <button class="button button--primary" type="submit" data-corpus-confirm-button {% if selected_count == 0 %}disabled aria-describedby="corpus-confirm-hint"{% endif %}>تأیید منابع</button>
     </form>
   {% endif %}
 </section>
