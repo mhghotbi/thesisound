@@ -1,0 +1,10 @@
+{
+  "id": "claim_reconciliation_merge",
+  "version": "1.0.0",
+  "model_tier": "strong",
+  "output_model": "ClaimMergeDraft",
+  "max_attempts": 2,
+  "retry_schema_errors": true,
+  "system_file": "system.md",
+  "user_file": "user.md"
+}

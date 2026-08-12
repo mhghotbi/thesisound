@@ -21,6 +21,7 @@ prompts/document_map_merge/1.1.0/
 prompts/evidence_extraction/1.1.0/
 prompts/evidence_extraction/1.2.0/
 prompts/claim_reconciliation/1.0.0/
+prompts/claim_reconciliation_merge/1.0.0/
 prompts/coverage_audit/1.0.0/
 prompts/episode_plan/1.0.0/
 prompts/episode_plan/1.1.0/

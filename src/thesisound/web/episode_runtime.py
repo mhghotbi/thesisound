@@ -92,7 +92,10 @@ def create_episode_planner(
                 max_workers=settings.evidence_extraction_workers,
                 batch_size=settings.evidence_extraction_batch_size,
             ),
-            claim_reconciler=ClaimReconcilerService(runner),
+            claim_reconciler=ClaimReconcilerService(
+                runner,
+                max_workers=settings.claim_reconciliation_workers,
+            ),
         )
 
     planner = EpisodePlanningRunService(

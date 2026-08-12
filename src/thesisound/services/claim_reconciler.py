@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import re
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from uuid import UUID
 
+from thesisound import tracing
 from thesisound.domain import (
     ClaimRecord,
     EvidenceItem,
@@ -19,15 +21,31 @@ from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
     BlockEvidenceExtraction,
     ClaimLedger,
+    ClaimMergeDraft,
     ClaimReconciliationDraft,
 )
 
 _WHITESPACE = re.compile(r"\s+")
+# Probe one batch before fan-out, matching DocumentMapperService: a dead provider
+# must not be paid for once per batch when the first failure already aborts.
+_PROBE_BATCHES = 1
 
 
 class ClaimReconcilerService:
-    def __init__(self, model_runner: ModelRunner) -> None:
+    def __init__(
+        self,
+        model_runner: ModelRunner,
+        *,
+        maximum_batch_characters: int = 60_000,
+        max_workers: int = 1,
+    ) -> None:
+        if maximum_batch_characters < 1:
+            raise ValueError("maximum_batch_characters must be positive.")
+        if max_workers < 1:
+            raise ValueError("max_workers must be at least 1.")
         self.model_runner = model_runner
+        self.maximum_batch_characters = maximum_batch_characters
+        self.max_workers = max_workers
 
     def reconcile(
         self,
@@ -38,7 +56,7 @@ class ClaimReconcilerService:
         model: str,
         prompt_version: str | None = None,
         skip_model: bool = False,
-    ) -> tuple[ClaimLedger, ModelRunRecord]:
+    ) -> tuple[ClaimLedger, list[ModelRunRecord]]:
         evidence = [
             item
             for record in extractions
@@ -80,7 +98,7 @@ class ClaimReconcilerService:
                     responses=responses,
                     must_not_be_lost=must_not_be_lost,
                 ),
-                _empty_run_record(project_id, model),
+                [_empty_run_record(project_id, model)],
             )
         evidence_by_id = {item.evidence_id: item for item in evidence}
         if len(evidence_by_id) != len(evidence):
@@ -100,9 +118,164 @@ class ClaimReconcilerService:
                     responses=responses,
                     must_not_be_lost=must_not_be_lost,
                 ),
-                _empty_run_record(project_id, model),
+                [_empty_run_record(project_id, model)],
             )
 
+        batches = _partition_evidence(evidence, self.maximum_batch_characters)
+        if len(batches) == 1:
+            draft, record = self._reconcile_batch(
+                project_id=project_id,
+                source_id=source_id,
+                evidence=evidence,
+                model=model,
+                prompt_version=prompt_version,
+            )
+            ledger = _materialize_ledger(
+                source_id,
+                draft,
+                evidence_by_id,
+                definitions=definitions,
+                distinctions=distinctions,
+                examples=examples,
+                objections=objections,
+                responses=responses,
+                must_not_be_lost=must_not_be_lost,
+            )
+            return ledger, [record]
+
+        drafts, batch_records = self._reconcile_batches(
+            project_id=project_id,
+            source_id=source_id,
+            batches=batches,
+            model=model,
+            prompt_version=prompt_version,
+        )
+        batch_claims: list[list[ClaimRecord]] = []
+        unresolved: list[str] = []
+        warnings: list[str] = []
+        for batch, draft in zip(batches, drafts, strict=True):
+            batch_by_id = {item.evidence_id: item for item in batch}
+            batch_ledger = _materialize_ledger(
+                source_id,
+                draft,
+                batch_by_id,
+                definitions=[],
+                distinctions=[],
+                examples=[],
+                objections=[],
+                responses=[],
+                must_not_be_lost=[],
+            )
+            batch_claims.append(batch_ledger.claims)
+            unresolved.extend(batch_ledger.unresolved_evidence_ids)
+            warnings.extend(batch_ledger.warnings)
+
+        merge_draft, merge_record = self._merge_batches(
+            project_id=project_id,
+            source_id=source_id,
+            batch_claims=batch_claims,
+            model=model,
+            prompt_version=prompt_version,
+        )
+        claims = _apply_merge_groups(source_id, batch_claims, merge_draft)
+        warnings.extend(merge_draft.warnings)
+        warnings.append(
+            "Claims were reconciled across "
+            f"{len(batches)} evidence batches; no evidence items were omitted."
+        )
+        return (
+            ClaimLedger(
+                source_id=source_id,
+                claims=claims,
+                unresolved_evidence_ids=list(dict.fromkeys(unresolved)),
+                warnings=warnings,
+                definitions=definitions,
+                distinctions=distinctions,
+                examples=examples,
+                objections=objections,
+                responses=responses,
+                must_not_be_lost=must_not_be_lost,
+            ),
+            [*batch_records, merge_record],
+        )
+
+    def _reconcile_batches(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        batches: list[list[EvidenceItem]],
+        model: str,
+        prompt_version: str | None,
+    ) -> tuple[list[ClaimReconciliationDraft], list[ModelRunRecord]]:
+        drafts: list[ClaimReconciliationDraft | None] = [None] * len(batches)
+        records: list[ModelRunRecord | None] = [None] * len(batches)
+
+        def work(index: int) -> tuple[int, ClaimReconciliationDraft, ModelRunRecord]:
+            draft, record = self._reconcile_batch(
+                project_id=project_id,
+                source_id=source_id,
+                evidence=batches[index],
+                model=model,
+                prompt_version=prompt_version,
+            )
+            return index, draft, record
+
+        workers = min(self.max_workers, len(batches))
+        if workers <= 1:
+            for index in range(len(batches)):
+                _, draft, record = work(index)
+                drafts[index] = draft
+                records[index] = record
+        else:
+            self._fan_out_batches(work, list(range(len(batches))), workers, drafts, records)
+
+        complete = [draft for draft in drafts if draft is not None]
+        if len(complete) != len(batches):
+            raise AssertionError("A claim-reconciliation batch finished without a draft.")
+        return complete, [record for record in records if record is not None]
+
+    def _fan_out_batches(
+        self,
+        work: Callable[[int], tuple[int, ClaimReconciliationDraft, ModelRunRecord]],
+        pending: list[int],
+        workers: int,
+        drafts: list[ClaimReconciliationDraft | None],
+        records: list[ModelRunRecord | None],
+    ) -> None:
+        """Probe one batch, then run the rest concurrently.
+
+        Never more futures in flight than the pool has threads. The first failure
+        observed is the one that propagates — a failed batch aborts the stage.
+        """
+
+        bound_work = tracing.bind_context(work)
+        position = 0
+        futures: set[Future[tuple[int, ClaimReconciliationDraft, ModelRunRecord]]] = set()
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for _ in range(min(_PROBE_BATCHES, len(pending))):
+                futures.add(pool.submit(bound_work, pending[position]))
+                position += 1
+            while futures:
+                future = next(as_completed(futures))
+                futures.discard(future)
+                index, draft, record = future.result()
+                drafts[index] = draft
+                records[index] = record
+                while len(futures) < workers and position < len(pending):
+                    futures.add(pool.submit(bound_work, pending[position]))
+                    position += 1
+
+    def _reconcile_batch(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        evidence: list[EvidenceItem],
+        model: str,
+        prompt_version: str | None,
+    ) -> tuple[ClaimReconciliationDraft, ModelRunRecord]:
+        evidence_by_id = {item.evidence_id: item for item in evidence}
         variables = {
             "source_id": str(source_id),
             "evidence_items": [item.model_dump(mode="json") for item in evidence],
@@ -121,18 +294,98 @@ class ClaimReconcilerService:
             prompt_version=prompt_version,
             validator=validate,
         )
-        ledger = _materialize_ledger(
-            source_id,
-            execution.output,
-            evidence_by_id,
-            definitions=definitions,
-            distinctions=distinctions,
-            examples=examples,
-            objections=objections,
-            responses=responses,
-            must_not_be_lost=must_not_be_lost,
+        return execution.output, execution.record
+
+    def _merge_batches(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        batch_claims: list[list[ClaimRecord]],
+        model: str,
+        prompt_version: str | None,
+    ) -> tuple[ClaimMergeDraft, ModelRunRecord]:
+        known_ids = {
+            claim.claim_id for claims in batch_claims for claim in claims
+        }
+        variables = {
+            "source_id": str(source_id),
+            "batch_count": len(batch_claims),
+            "claims": [
+                {
+                    "batch_index": index,
+                    "claim_id": claim.claim_id,
+                    "claim": claim.claim,
+                    "claim_type": claim.claim_type.value,
+                    "support_status": claim.support_status.value,
+                }
+                for index, claims in enumerate(batch_claims, start=1)
+                for claim in claims
+            ],
+        }
+
+        def validate(draft: ClaimMergeDraft) -> None:
+            _validate_merge_draft(draft, known_ids)
+
+        execution = self.model_runner.run(
+            project_id=project_id,
+            stage="claim_reconciliation_merge",
+            prompt_name="claim_reconciliation_merge",
+            variables=variables,
+            output_type=ClaimMergeDraft,
+            model=model,
+            prompt_version=prompt_version,
+            validator=validate,
         )
-        return ledger, execution.record
+        return execution.output, execution.record
+
+
+def _partition_evidence(
+    evidence: list[EvidenceItem],
+    maximum_characters: int,
+) -> list[list[EvidenceItem]]:
+    """Greedily pack evidence items under a serialized-character budget.
+
+    Size is ``len(item.model_dump_json())`` — what actually enters the prompt.
+    Order is preserved. When the whole list already fits, return it as one batch.
+    A single item larger than the budget cannot be split without losing its
+    locator/evidence identity, so that case fails loudly (same contract as
+    document-map block partitioning).
+    """
+
+    sizes = [len(item.model_dump_json()) for item in evidence]
+    total = sum(sizes)
+    if total <= maximum_characters:
+        return [evidence]
+
+    batches: list[list[EvidenceItem]] = []
+    current: list[EvidenceItem] = []
+    current_size = 0
+    for item, size in zip(evidence, sizes, strict=True):
+        if size > maximum_characters:
+            raise ValueError(
+                "An evidence item is larger than the claim-reconciliation batch "
+                f"budget. Evidence {item.evidence_id} serializes to {size:,} "
+                "characters; shorten its excerpt or raise "
+                "maximum_batch_characters before reconciling."
+            )
+        if current and current_size + size > maximum_characters:
+            batches.append(current)
+            current = []
+            current_size = 0
+        current.append(item)
+        current_size += size
+    if current:
+        batches.append(current)
+
+    flattened_ids = {item.evidence_id for batch in batches for item in batch}
+    expected_ids = {item.evidence_id for item in evidence}
+    if flattened_ids != expected_ids:
+        raise AssertionError(
+            "Evidence partitioning changed coverage (dropped, duplicated, or "
+            "double-counted an evidence ID)."
+        )
+    return batches
 
 
 def _validate_draft(
@@ -173,6 +426,74 @@ def _validate_draft(
             "Every evidence item must be used or explicitly unresolved. Missing: "
             f"{', '.join(sorted(missing))}."
         )
+
+
+def _validate_merge_draft(draft: ClaimMergeDraft, known_ids: set[str]) -> None:
+    seen: set[str] = set()
+    for group in draft.merge_groups:
+        for claim_id in group.claim_ids:
+            if claim_id not in known_ids:
+                raise DeterministicValidationError(
+                    f"Merge group referenced unknown claim ID: {claim_id}."
+                )
+            if claim_id in seen:
+                raise DeterministicValidationError(
+                    f"Claim ID appears in more than one merge group: {claim_id}."
+                )
+            seen.add(claim_id)
+
+
+def _apply_merge_groups(
+    source_id: UUID,
+    batch_claims: list[list[ClaimRecord]],
+    draft: ClaimMergeDraft,
+) -> list[ClaimRecord]:
+    """Union evidence/source IDs for each merge group; first-seen-wins on claim text."""
+
+    ordered: list[ClaimRecord] = [claim for claims in batch_claims for claim in claims]
+    by_id = {claim.claim_id: claim for claim in ordered}
+    merged_away: set[str] = set()
+    result: list[ClaimRecord] = []
+
+    for group in draft.merge_groups:
+        members = [by_id[claim_id] for claim_id in group.claim_ids]
+        # First-seen in batch order, not group order — same tie-break as auxiliary dedupe.
+        members_in_order = sorted(
+            members,
+            key=lambda claim: next(
+                index for index, item in enumerate(ordered) if item.claim_id == claim.claim_id
+            ),
+        )
+        first = members_in_order[0]
+        evidence_ids = list(
+            dict.fromkeys(evidence_id for claim in members_in_order for evidence_id in claim.evidence_ids)
+        )
+        agreeing = sorted(
+            {
+                source
+                for claim in members_in_order
+                for source in claim.agreeing_source_ids
+            },
+            key=str,
+        )
+        result.append(
+            ClaimRecord(
+                claim_id=_claim_id(source_id, first.claim, evidence_ids),
+                claim=first.claim,
+                claim_type=first.claim_type,
+                evidence_ids=evidence_ids,
+                support_status=first.support_status,
+                qualifications=list(first.qualifications),
+                agreeing_source_ids=agreeing,
+                disagreeing_source_ids=[],
+            )
+        )
+        merged_away.update(group.claim_ids)
+
+    for claim in ordered:
+        if claim.claim_id not in merged_away:
+            result.append(claim)
+    return result
 
 
 def _materialize_ledger(

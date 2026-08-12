@@ -588,7 +588,7 @@ class SourceAnalysisService:
             if record.status == "extracted"
             and (selected_ids is None or record.block_id in selected_ids)
         ]
-        ledger, run = self.claim_reconciler.reconcile(
+        ledger, runs = self.claim_reconciler.reconcile(
             project_id=project_id,
             source_id=source_id,
             extractions=extractions,
@@ -608,8 +608,9 @@ class SourceAnalysisService:
         manifest = self.artifact_store.load_manifest(project_id, source_id)
         manifest.status = "claims_ready"
         manifest.claim_count = len(ledger.claims)
-        if run.provider != "none":
-            manifest.model_run_ids.append(run.run_id)
+        manifest.model_run_ids.extend(
+            run.run_id for run in runs if run.provider != "none"
+        )
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
 

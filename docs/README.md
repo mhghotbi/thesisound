@@ -96,7 +96,7 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 
 ## `07-specs/` — specهای اصلاحی برخاسته از ممیزی آمادگی MVP
 
-قرارداد پیاده‌سازی، نه پیشنهاد. ۰۴ و ۰۵ از بازطراحی رابط می‌آیند؛ ۰۱–۰۳ و ۰۶–۰۷ هر کدام یک یافتهٔ [ممیزی آمادگی MVP](thesisound-mvp-readiness-audit-fa.html) را به تغییری قابل‌پیاده‌سازی تبدیل می‌کنند: مسئلهٔ اندازه‌گیری‌شده، طراحی، معیار پذیرش و برنامهٔ تست. سه بند «Simplify / Change before MVP» در ۰۳، ۰۶ و ۰۷ جداگانه پوشش داده شده‌اند.
+قرارداد پیاده‌سازی، نه پیشنهاد. ۰۴ و ۰۵ از بازطراحی رابط می‌آیند؛ ۰۱–۰۳ و ۰۶–۰۸ هر کدام یک یافتهٔ [ممیزی آمادگی MVP](thesisound-mvp-readiness-audit-fa.html) را به تغییری قابل‌پیاده‌سازی تبدیل می‌کنند: مسئلهٔ اندازه‌گیری‌شده، طراحی، معیار پذیرش و برنامهٔ تست. سه بند «Simplify / Change before MVP» در ۰۳، ۰۶ و ۰۷ جداگانه پوشش داده شده‌اند.
 
 | سند | موضوع | وابستگی |
 | --- | --- | --- |
@@ -107,6 +107,7 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`05-plan-priorities.md`](07-specs/05-plan-priorities.md) | اولویت‌های کاربر در طرح گفتار و مذاکره بر سر ظرفیت | ۰۴ §۶.۵ |
 | [`06-conditional-document-map.md`](07-specs/06-conditional-document-map.md) | حذف فراخوانی map وقتی انتخاب شواهد جامع است، با map قطعیِ جایگزین | — |
 | [`07-conditional-glossary-and-verification.md`](07-specs/07-conditional-glossary-and-verification.md) | glossary همیشه deterministic و مدل فقط در صورت نیاز؛ verifier unconditional (audit)؛ reviser صریح | پیاده‌شده (glossary + reviser) |
+| [`08-batched-claim-reconciliation.md`](07-specs/08-batched-claim-reconciliation.md) | partition/merge برای claim reconciliation وقتی شواهد یک source از بودجهٔ prompt بیشتر است | — |
 
 ## افزودن سند جدید
 

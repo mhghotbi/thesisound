@@ -230,6 +230,17 @@ class ClaimReconciliationDraft(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class ClaimMergeGroup(BaseModel):
+    """Claim IDs from different reconciliation batches that express the same proposition."""
+
+    claim_ids: list[str] = Field(min_length=2)
+
+
+class ClaimMergeDraft(BaseModel):
+    merge_groups: list[ClaimMergeGroup] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 class ClaimLedger(BaseModel):
     source_id: UUID
     claims: list[ClaimRecord] = Field(default_factory=list)

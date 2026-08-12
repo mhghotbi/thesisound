@@ -224,9 +224,12 @@ src/thesisound/services/evidence_validator.py
 ```text
 src/thesisound/services/claim_reconciler.py
 prompts/claim_reconciliation/1.0.0/
+prompts/claim_reconciliation_merge/1.0.0/
 ```
 
 Evidence itemهای یک source ممکن است تکراری یا مکمل باشند. این stage آن‌ها را به claimهای canonical تبدیل می‌کند.
+
+وقتی حجم شواهد یک source از بودجهٔ کاراکتری یک فراخوانی بیشتر شود، evidence به batch پارتیشن می‌شود، هر batch با همان prompt موجود reconcile می‌شود، و فقط وقتی بیش از یک batch باشد یک merge سطح claim (`claim_reconciliation_merge`) ادغام می‌کند. جزئیات: [`07-specs/08-batched-claim-reconciliation.md`](../07-specs/08-batched-claim-reconciliation.md).
 
 ### قواعد
 

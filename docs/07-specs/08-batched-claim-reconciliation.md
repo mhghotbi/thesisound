@@ -1,6 +1,6 @@
 # 08 — Batched Claim Reconciliation
 
-Date: 2026-08-12 · Status: proposed · Effort: M · Source: user-reported timeout on `claim_reconciliation` during a multi-source run, 2026-08-12 — a follow-up gap in the MVP readiness audit's Action 4, which is already shipped ([`source_analysis_service.py:547`](../../src/thesisound/services/source_analysis_service.py:547): skip the model call when `len(project.sources) == 1`)
+Date: 2026-08-12 · Status: implemented · Effort: M · Source: user-reported timeout on `claim_reconciliation` during a multi-source run, 2026-08-12 — a follow-up gap in the MVP readiness audit's Action 4, which is already shipped ([`source_analysis_service.py:547`](../../src/thesisound/services/source_analysis_service.py:547): skip the model call when `len(project.sources) == 1`)
 
 Bound `claim_reconciliation`'s per-call prompt size by partitioning one source's evidence into batches and adding a small claim-level merge pass, mirroring the partition/merge shape `DocumentMapperService` already uses for the identical class of problem.
 
