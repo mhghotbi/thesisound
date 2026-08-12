@@ -92,8 +92,16 @@ class OkianHttpClient:
         try:
             with opener.open(request, timeout=timeout_seconds) as response:
                 status = int(getattr(response, "status", 200))
-                raw = response.read()
                 headers = {str(key).lower(): str(value) for key, value in response.headers.items()}
+                if payload.get("stream"):
+                    # Collected inside the `with` so a stall mid-stream still
+                    # raises TimeoutError here and maps to the timeout branch.
+                    return OkianHttpResponse(
+                        payload=_collect_stream(response),
+                        status_code=status,
+                        headers=headers,
+                    )
+                raw = response.read()
         except HTTPError as exc:
             raw = exc.read()
             message, error_code = _error_from_body(raw, fallback=str(exc.reason))
@@ -131,6 +139,64 @@ class OkianHttpClient:
                 error_code="invalid_envelope",
             )
         return OkianHttpResponse(payload=decoded, status_code=status, headers=headers)
+
+
+def _collect_stream(response: Any) -> dict[str, Any]:
+    """Fold an SSE completion stream back into a non-streaming envelope.
+
+    Everything downstream reads the blocking OpenAI shape, so streaming stays a
+    transport detail: only the wire format changes, not the response contract.
+    """
+
+    content: list[str] = []
+    usage: dict[str, Any] | None = None
+    finish_reason: str | None = None
+    resolved_model: str | None = None
+    completion_id: str | None = None
+    for raw_line in response:
+        line = raw_line.decode("utf-8", "replace").strip()
+        if not line.startswith("data:"):
+            continue
+        data = line[5:].strip()
+        if data == "[DONE]":
+            break
+        try:
+            event = json.loads(data)
+        except json.JSONDecodeError:
+            # A keep-alive or a partial frame is not a protocol failure.
+            continue
+        if not isinstance(event, dict):
+            continue
+        completion_id = completion_id or _optional_text(event.get("id"))
+        resolved_model = resolved_model or _optional_text(event.get("model"))
+        if isinstance(event.get("usage"), dict):
+            usage = event["usage"]
+        for choice in event.get("choices") or []:
+            if not isinstance(choice, dict):
+                continue
+            delta = choice.get("delta")
+            if isinstance(delta, dict) and isinstance(delta.get("content"), str):
+                # Only `content` is the answer. The sibling `reasoning` and
+                # `reasoning_details` deltas are the model thinking aloud and
+                # would corrupt the JSON if concatenated in.
+                content.append(delta["content"])
+            finish_reason = _optional_text(choice.get("finish_reason")) or finish_reason
+
+    envelope: dict[str, Any] = {
+        "choices": [
+            {
+                "message": {"content": "".join(content)},
+                "finish_reason": finish_reason,
+            }
+        ]
+    }
+    if completion_id:
+        envelope["id"] = completion_id
+    if resolved_model:
+        envelope["model"] = resolved_model
+    if usage is not None:
+        envelope["usage"] = usage
+    return envelope
 
 
 class OkianCredentialPool:
@@ -248,11 +314,24 @@ class OkianStructuredModel:
         payload = {
             "model": model,
             "messages": [
-                {"role": "system", "content": system_prompt},
+                # The schema is carried in the prompt, not just response_format:
+                # Okian accepts json_schema with HTTP 200 and then ignores it, so
+                # a model that never sees the schema invents property names and
+                # every structured call dies in validation. response_format stays
+                # for gateways/models that do honour it.
+                {
+                    "role": "system",
+                    "content": f"{system_prompt}\n\n{_schema_instruction(output_type)}",
+                },
                 {"role": "user", "content": user_prompt},
             ],
             "temperature": 0,
-            "stream": False,
+            # Streaming keeps bytes on the wire, so the timeout means "the
+            # provider went silent" instead of "the whole completion took too
+            # long". A blocking document_map call generates for ~9 minutes behind
+            # a silent socket and always tripped the 180s timeout.
+            "stream": True,
+            "stream_options": {"include_usage": True},
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
@@ -353,6 +432,43 @@ def _settings() -> Settings:
         return Settings.model_construct()
 
 
+def _schema_instruction(output_type: type[BaseModel]) -> str:
+    """The output contract, stated in the prompt because Okian will not enforce it.
+
+    Lives in the adapter rather than the prompt files: the prompts are shared with
+    Gemini, which applies the same schema natively through response_json_schema.
+    """
+
+    schema = json.dumps(output_type.model_json_schema(), ensure_ascii=False, sort_keys=True)
+    return (
+        "<OUTPUT_JSON_SCHEMA>\n"
+        f"{schema}\n"
+        "</OUTPUT_JSON_SCHEMA>\n"
+        "Your entire response must be one JSON object valid against OUTPUT_JSON_SCHEMA. "
+        "Use exactly those property names and enum values. Emit no markdown fences, "
+        "no prose, and no properties outside the schema."
+    )
+
+
+def _strip_code_fence(content: str) -> str:
+    """Unwrap a ```json fence.
+
+    Nothing constrains decoding on this provider, so a fenced object is a normal
+    response rather than a malformed one.
+    """
+
+    text = content.strip()
+    if not text.startswith("```"):
+        return text
+    body = text[3:]
+    newline = body.find("\n")
+    if newline == -1:
+        return text
+    body = body[newline + 1 :]
+    closing = body.rfind("```")
+    return (body[:closing] if closing != -1 else body).strip()
+
+
 def _coerce_output[T: BaseModel](payload: dict[str, Any], output_type: type[T]) -> T:
     try:
         choices = payload.get("choices")
@@ -365,8 +481,18 @@ def _coerce_output[T: BaseModel](payload: dict[str, Any], output_type: type[T]) 
         if isinstance(content, dict):
             return output_type.model_validate(content)
         if not isinstance(content, str) or not content.strip():
+            if _finish_reason(payload) == "length":
+                # A reasoning model can spend the whole completion budget thinking
+                # and stop before the first answer token. Retrying the same input
+                # only buys the same silence, so name the cause in the failure.
+                raise SchemaValidationError(
+                    "Okian stopped at the completion-token limit before emitting any "
+                    "answer content: the model spent its entire output budget on "
+                    "reasoning. Route this stage to a model that answers within its "
+                    "budget, or reduce the input size."
+                )
             raise SchemaValidationError("Okian returned no structured response content.")
-        return output_type.model_validate_json(content)
+        return output_type.model_validate_json(_strip_code_fence(content))
     except SchemaValidationError:
         raise
     except (ValidationError, json.JSONDecodeError, TypeError, ValueError) as exc:

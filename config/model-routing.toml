@@ -56,20 +56,36 @@ research_brief = "gemini_fast"
 glossary = "gemini_strong"
 web_source_capture = "gemini_fast"
 
-# Text-only stages: Gemini Fast/Strong as in reference file
-document_map = "okian_deepseek_flash"
-document_map_merge = "okian_deepseek_pro"
-evidence_extraction = "okian_deepseek_flash"
-evidence_extraction_batch = "okian_deepseek_flash"
-claim_reconciliation = "okian_deepseek_pro"
-claim_reconciliation_merge = "okian_deepseek_pro"
-coverage_audit = "okian_deepseek_pro"
-episode_plan = "okian_deepseek_pro"
+# Text-only stages run on the two Okian Gemini profiles. The DeepSeek profiles are
+# left defined but unrouted: deepseek-v4-flash is a reasoning model and its thinking
+# length is not stable across identical inputs. Measured on the 9-block / 53k-char
+# document_map call for source 046bbfdb at temperature 0 -- 3,112 / 5,168 / 18,940
+# stream lines across three runs, and one run that spent the whole completion budget
+# reasoning and returned finish_reason=length with zero answer tokens after 547s.
+# gemini-3.5-flash-lite answered the same call in 6.1s with no reasoning tokens.
+
+document_map = "okian_gemini_fast"
+document_map_merge = "okian_gemini_strong"
+evidence_extraction = "okian_gemini_fast"
+evidence_extraction_batch = "okian_gemini_fast"
+claim_reconciliation = "okian_gemini_strong"
+claim_reconciliation_merge = "okian_gemini_strong"
+
+# Reviewer of claim_reconciliation (REVIEWER_PAIRS, warn-only). Kept on the other
+# profile so the auditor is not the model that wrote the claims.
+
+coverage_audit = "okian_gemini_fast"
+episode_plan = "okian_gemini_strong"
 persian_script_segment = "okian_luna"
+
 # Independence from persian_script_segment (audit R6, ModelRouter._require_reviewer_independence)
 # comes from this being a distinct Okian profile, not from THESISOUND_MODEL_REVIEWER -- that
 # setting only takes effect if a profile here uses model_setting = "model_reviewer". If you ever
-# repoint script_verifier at "okian_luna" (or any profile resolving to the same model as the
-# writer), the router refuses to resolve the route rather than let the writer grade itself.
-script_verifier = "okian_deepseek_pro"
-script_reviser = "okian_luna"
+# repoint script_verifier at "okian_gemini_strong" (or any profile resolving to the same model as
+# the writer), the router refuses to resolve the route rather than let the writer grade itself.
+# Only two Okian Gemini models are in play, so the enforced pair has to split them: the writer
+# takes the stronger one because the script is the deliverable, and the verifier takes flash-lite.
+# Swap the two if you would rather have the stronger grader than the stronger writer.
+
+script_verifier = "okian_gemini_fast"
+script_reviser = "okian_gemini_strong"

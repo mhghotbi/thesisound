@@ -18,7 +18,7 @@ def test_checked_in_routing_file_resolves_evidence_extraction_to_okian() -> None
     )
 
     assert route.provider == "okian"
-    assert route.profile == "okian_deepseek_flash"
+    assert route.profile == "okian_gemini_fast"
 
 
 def test_evidence_extraction_override_resolves_the_strong_profile() -> None:
@@ -58,14 +58,16 @@ def test_checked_in_routing_file_resolves_script_and_map_prompt_ids() -> None:
         model_tier="strong",
     )
     assert script_route.provider == "okian"
-    assert script_route.profile == "okian_luna"
+    assert script_route.profile == "okian_gemini_strong"
     verifier_route = router.resolve(
         stage="script_verifier",
         requested_model=settings.model_strong,
         model_tier="strong",
     )
     assert verifier_route.provider == "okian"
-    assert verifier_route.profile == "okian_deepseek_pro"
+    assert verifier_route.profile == "okian_gemini_fast"
+    # The enforced pair must stay on two different models, not merely two profiles.
+    assert verifier_route.model != script_route.model
     # Observability stages like script_segment:{id} are not route keys; ModelRunner
     # must resolve via the prompt contract id instead.
     assert (

@@ -66,14 +66,14 @@ coverage_audit = "reviewer"
     assert check.blocking is False
 
 
-def test_checked_in_routing_file_only_warns_on_the_non_enforced_pair(
+def test_checked_in_routing_file_keeps_both_reviewer_pairs_independent(
     tmp_path: Path,
 ) -> None:
-    # script_verifier/persian_script_segment (enforced) are independent by default.
-    # coverage_audit/claim_reconciliation (not enforced) currently share
-    # okian_deepseek_pro -- a known, accepted warn-only gap, not a block. If this
-    # starts failing, either that pair silently regained independence (update the
-    # assertions) or it started colliding somewhere unexpected (investigate).
+    # Both pairs are independent now that the Okian stages split across the two
+    # Okian Gemini profiles: script_verifier/persian_script_segment (enforced) and
+    # coverage_audit/claim_reconciliation (warn-only) each land on different models.
+    # A warning here means a pair collided again -- most likely two stages were
+    # pointed at one profile, which puts a model back to grading its own output.
     settings = Settings(
         _env_file=None,
         workspace_root=tmp_path / "workspaces",
@@ -83,10 +83,8 @@ def test_checked_in_routing_file_only_warns_on_the_non_enforced_pair(
 
     check = RuntimePreflight(settings)._reviewer_independence("full")
 
-    assert check.status == "warning"
+    assert check.status == "pass"
     assert check.blocking is False
-    assert "coverage_audit" in check.detail
-    assert "claim_reconciliation" in check.detail
 
 
 def test_reviewer_check_is_skipped_when_routing_fails_to_load(tmp_path: Path) -> None:
