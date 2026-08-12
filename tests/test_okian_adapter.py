@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from uuid import uuid4
 
@@ -10,6 +11,7 @@ from thesisound.adapters.models.okian import (
     OkianHttpResponse,
     OkianStructuredModel,
     _collect_stream,
+    _repair_invalid_json_escapes,
     _strip_code_fence,
 )
 from thesisound.config import Settings
@@ -235,6 +237,110 @@ def test_fenced_json_is_parsed_because_nothing_constrains_decoding(tmp_path: Pat
     )
 
     assert response.output.answer == "ok"
+
+
+def test_invalid_json_escape_is_repaired_because_nothing_constrains_decoding(
+    tmp_path: Path,
+) -> None:
+    """gemini-3.6-flash via Okian emitted a bare backslash inside a string value.
+
+    Observed in production (persian_script_segment, project 9c4e58b0): pydantic
+    rejected the whole payload with "Invalid JSON: invalid escape". Structural
+    JSON never contains a backslash outside a string, so doubling the one
+    json.loads chokes on recovers the payload without touching the model's
+    actual words.
+    """
+
+    class InvalidEscapeClient(FakeOkianClient):
+        def create_chat_completion(
+            self,
+            payload: dict[str, object],
+            *,
+            timeout_seconds: float,
+        ) -> OkianHttpResponse:
+            response = super().create_chat_completion(payload, timeout_seconds=timeout_seconds)
+            # A lone backslash before a Persian letter, not a valid JSON escape.
+            response.payload["choices"] = [
+                {
+                    "message": {"content": '{"answer":"این یک \\نمونه است"}'},
+                    "finish_reason": "stop",
+                }
+            ]
+            return response
+
+    adapter = OkianStructuredModel(client=InvalidEscapeClient(), settings=_settings(tmp_path))
+
+    response = adapter.generate_structured(
+        system_prompt="Return JSON.",
+        user_prompt="Answer.",
+        output_type=ExampleOutput,
+        model="gemini-3.6-flash",
+        metadata=RunMetadata(
+            stage="script_segment:seg-005",
+            model_or_provider="gemini-3.6-flash",
+            provider="okian",
+        ),
+    )
+
+    assert response.output.answer == "این یک \\نمونه است"
+
+
+def test_a_real_schema_mismatch_is_not_masked_by_the_escape_repair(tmp_path: Path) -> None:
+    """Escape repair only retries the exact malformed-escape shape.
+
+    A wrong-field response is syntactically valid JSON; repairing escapes
+    would not change the outcome, so it must not be attempted -- the real
+    error (wrong fields) should surface once, not get retried away.
+    """
+
+    class WrongFieldClient(FakeOkianClient):
+        def create_chat_completion(
+            self,
+            payload: dict[str, object],
+            *,
+            timeout_seconds: float,
+        ) -> OkianHttpResponse:
+            response = super().create_chat_completion(payload, timeout_seconds=timeout_seconds)
+            response.payload["choices"] = [
+                {"message": {"content": '{"wrong":"field"}'}, "finish_reason": "stop"}
+            ]
+            return response
+
+    adapter = OkianStructuredModel(client=WrongFieldClient(), settings=_settings(tmp_path))
+
+    with pytest.raises(SchemaValidationError, match="did not match ExampleOutput"):
+        adapter.generate_structured(
+            system_prompt="Return JSON.",
+            user_prompt="Answer.",
+            output_type=ExampleOutput,
+            model="gemini-3.6-flash",
+            metadata=RunMetadata(
+                stage="document_map",
+                model_or_provider="gemini-3.6-flash",
+                provider="okian",
+            ),
+        )
+
+
+def test_repair_invalid_json_escapes_doubles_only_invalid_backslashes() -> None:
+    broken = '{"text": "این یک \\نمونه است"}'
+    with pytest.raises(json.JSONDecodeError):
+        json.loads(broken)
+
+    fixed = _repair_invalid_json_escapes(broken)
+
+    assert json.loads(fixed) == {"text": "این یک \\نمونه است"}
+
+
+def test_repair_invalid_json_escapes_leaves_valid_escapes_untouched() -> None:
+    valid = json.dumps(
+        {"a": 'line1\nline2\t"quoted"', "b": "emoji é", "c": "slash\\/ok"}
+    )
+
+    repaired = _repair_invalid_json_escapes(valid)
+
+    assert repaired == valid
+    assert json.loads(repaired) == json.loads(valid)
 
 
 def test_budget_exhausted_by_reasoning_is_named_in_the_error(tmp_path: Path) -> None:

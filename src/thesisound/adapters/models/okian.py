@@ -469,6 +469,67 @@ def _strip_code_fence(content: str) -> str:
     return (body[:closing] if closing != -1 else body).strip()
 
 
+_VALID_JSON_SIMPLE_ESCAPES = frozenset('"\\/bfnrt')
+_HEX_DIGITS = frozenset("0123456789abcdefABCDEF")
+
+
+def _repair_invalid_json_escapes(text: str) -> str:
+    """Double a backslash that is not a valid JSON escape.
+
+    Observed on gemini-3.6-flash via Okian: the model emits a literal
+    backslash inside a string value (e.g. from Persian punctuation) without
+    escaping it, and json.loads rejects the whole payload at that byte with
+    "invalid escape". Structural JSON tokens never contain a backslash, so
+    any backslash in a roughly-JSON-shaped document is inside a string; a
+    genuinely valid escape (\\", \\\\, \\uXXXX, ...) passes through untouched,
+    only a backslash json.loads would otherwise choke on is doubled into a
+    literal backslash character.
+    """
+
+    pieces: list[str] = []
+    index = 0
+    length = len(text)
+    while index < length:
+        char = text[index]
+        if char != "\\" or index + 1 >= length:
+            pieces.append(char)
+            index += 1
+            continue
+        following = text[index + 1]
+        if following in _VALID_JSON_SIMPLE_ESCAPES:
+            pieces.append(text[index : index + 2])
+            index += 2
+            continue
+        if (
+            following == "u"
+            and index + 6 <= length
+            and all(digit in _HEX_DIGITS for digit in text[index + 2 : index + 6])
+        ):
+            pieces.append(text[index : index + 6])
+            index += 6
+            continue
+        pieces.append("\\\\")
+        index += 1
+    return "".join(pieces)
+
+
+def _parse_structured_json[T: BaseModel](content: str, output_type: type[T]) -> T:
+    stripped = _strip_code_fence(content)
+    try:
+        return output_type.model_validate_json(stripped)
+    except ValidationError as exc:
+        is_malformed_escape = any(
+            error.get("type") == "json_invalid" and "escape" in str(error.get("msg", "")).casefold()
+            for error in exc.errors()
+        )
+        if not is_malformed_escape:
+            # Any other validation failure (missing fields, wrong types) is a
+            # real content problem the repair can't fix; surface it as-is
+            # rather than masking it behind a second, identical error.
+            raise
+        return output_type.model_validate_json(_repair_invalid_json_escapes(stripped))
+
+
 def _coerce_output[T: BaseModel](payload: dict[str, Any], output_type: type[T]) -> T:
     try:
         choices = payload.get("choices")
@@ -492,7 +553,7 @@ def _coerce_output[T: BaseModel](payload: dict[str, Any], output_type: type[T]) 
                     "budget, or reduce the input size."
                 )
             raise SchemaValidationError("Okian returned no structured response content.")
-        return output_type.model_validate_json(_strip_code_fence(content))
+        return _parse_structured_json(content, output_type)
     except SchemaValidationError:
         raise
     except (ValidationError, json.JSONDecodeError, TypeError, ValueError) as exc:
