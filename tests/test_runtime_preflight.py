@@ -6,11 +6,23 @@ from thesisound.config import Settings
 from thesisound.services.runtime_preflight import RuntimePreflight
 
 
-def test_doctor_fails_when_the_verifier_shares_the_writer_model() -> None:
-    settings = Settings(
-        _env_file=None,
-        model_routing_file=Path("config/model-routing.toml"),
+def test_doctor_fails_when_the_verifier_shares_the_writer_model(tmp_path: Path) -> None:
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.shared]
+provider = "gemini"
+model_setting = "model_strong"
+
+[routes]
+persian_script_segment = "shared"
+script_verifier = "shared"
+""".strip(),
+        encoding="utf-8",
     )
+    settings = Settings(_env_file=None, model_routing_file=routing_file)
 
     check = RuntimePreflight(settings)._reviewer_independence("full")
 
@@ -54,6 +66,29 @@ coverage_audit = "reviewer"
     assert check.blocking is False
 
 
+def test_checked_in_routing_file_only_warns_on_the_non_enforced_pair(
+    tmp_path: Path,
+) -> None:
+    # script_verifier/persian_script_segment (enforced) are independent by default.
+    # coverage_audit/claim_reconciliation (not enforced) currently share
+    # okian_deepseek_pro -- a known, accepted warn-only gap, not a block. If this
+    # starts failing, either that pair silently regained independence (update the
+    # assertions) or it started colliding somewhere unexpected (investigate).
+    settings = Settings(
+        _env_file=None,
+        workspace_root=tmp_path / "workspaces",
+        ingestion_artifact_root=tmp_path / "artifacts",
+        model_routing_file=Path("config/model-routing.toml"),
+    )
+
+    check = RuntimePreflight(settings)._reviewer_independence("full")
+
+    assert check.status == "warning"
+    assert check.blocking is False
+    assert "coverage_audit" in check.detail
+    assert "claim_reconciliation" in check.detail
+
+
 def test_reviewer_check_is_skipped_when_routing_fails_to_load(tmp_path: Path) -> None:
     routing_file = tmp_path / "routing.toml"
     routing_file.write_text("not = [valid", encoding="utf-8")
@@ -68,11 +103,26 @@ def test_reviewer_check_is_skipped_when_routing_fails_to_load(tmp_path: Path) ->
 def test_only_the_script_and_full_scopes_block_on_a_self_grading_verifier(
     tmp_path: Path,
 ) -> None:
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.shared]
+provider = "gemini"
+model_setting = "model_strong"
+
+[routes]
+persian_script_segment = "shared"
+script_verifier = "shared"
+""".strip(),
+        encoding="utf-8",
+    )
     settings = Settings(
         _env_file=None,
         workspace_root=tmp_path / "workspaces",
         ingestion_artifact_root=tmp_path / "artifacts",
-        model_routing_file=Path("config/model-routing.toml"),
+        model_routing_file=routing_file,
     )
     preflight = RuntimePreflight(settings)
     by_scope = {

@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thesisound — MVP Readiness Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1c1c1e;
+    --muted: #6b6b70;
+    --border: #e4e4e7;
+    --card-bg: #f7f7f8;
+    --accent: #2563eb;
+    --ok: #15803d;
+    --warn: #b45309;
+    --danger: #b91c1c;
+    --code-bg: #f2f2f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16161a;
+      --fg: #e9e9ec;
+      --muted: #9b9ba3;
+      --border: #2c2c31;
+      --card-bg: #1e1e23;
+      --accent: #60a5fa;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+      --danger: #f87171;
+      --code-bg: #202024;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16161a; --fg: #e9e9ec; --muted: #9b9ba3; --border: #2c2c31;
+    --card-bg: #1e1e23; --accent: #60a5fa; --ok: #4ade80; --warn: #fbbf24;
+    --danger: #f87171; --code-bg: #202024;
+  }
+  :root[data-theme="light"] {
+    --bg: #ffffff; --fg: #1c1c1e; --muted: #6b6b70; --border: #e4e4e7;
+    --card-bg: #f7f7f8; --accent: #2563eb; --ok: #15803d; --warn: #b45309;
+    --danger: #b91c1c; --code-bg: #f2f2f4;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+  }
+  body {
+    font-family: "Vazirmatn", "Tahoma", sans-serif;
+    line-height: 1.9;
+    font-size: 17px;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 6rem;
+  }
+
+  h1, h2, h3 {
+    font-weight: 800;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 1.9rem;
+    margin: 0 0 0.4rem;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 0.8rem;
+  }
+  h2 {
+    font-size: 1.35rem;
+    margin: 2.6rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin: 1.6rem 0 0.7rem;
+    color: var(--accent);
+  }
+
+  .meta {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+  .meta p { margin: 0.2rem 0; }
+  .meta code { font-size: 0.85em; }
+
+  p { margin: 0.8rem 0; }
+  strong { font-weight: 700; }
+
+  ul, ol {
+    margin: 0.8rem 0;
+    padding-inline-start: 1.6rem;
+  }
+  li { margin: 0.35rem 0; }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  code {
+    font-family: "Cascadia Code", "Consolas", monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.88em;
+    direction: ltr;
+    unicode-bidi: embed;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: left;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin: 1rem 0;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.93rem;
+  }
+  th, td {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    vertical-align: top;
+  }
+  th {
+    background: var(--card-bg);
+    font-weight: 700;
+  }
+  tr:last-child td { border-bottom: none; }
+  td code, th code { direction: ltr; display: inline-block; }
+
+  .verdict-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-inline-start: 4px solid var(--danger);
+    border-radius: 8px;
+    padding: 1rem 1.3rem;
+    margin: 1rem 0;
+    font-weight: 700;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    direction: ltr;
+    text-align: left;
+    font-size: 0.95rem;
+    color: var(--danger);
+  }
+  .toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0 2rem;
+  }
+  .toc h3 { margin-top: 0; color: var(--fg); }
+  .toc ol { margin: 0.5rem 0 0; }
+  .toc a { color: var(--fg); }
+  .toc a:hover { color: var(--accent); }
+
+  .action {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.3rem;
+    margin: 1rem 0;
+  }
+  .action strong.title { display: block; margin-bottom: 0.4rem; font-size: 1rem; }
+  .effort {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+  }
+
+  @media print {
+    body { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Thesisound — MVP Readiness Audit</h1>
+<div class="meta">
+  <p><strong>تاریخ audit:</strong> ۲۰۲۶-۰۸-۱۲</p>
+  <p><strong>Baseline:</strong> commit <code>434f5c0</code> (branch <code>main</code>)</p>
+  <p><strong>دامنه:</strong> بررسی read-only از repo، workflowها، تست‌ها، artifactهای واقعی در <code>workspaces/</code>، و پژوهش وب درباره‌ی NotebookLM. هیچ کدی تغییر نکرد.</p>
+  <p><strong>بازبینی ۲:</strong> ریشه‌ی «چگالی اطلاعات پایین» به divisorهای <code>claim_prioritizer</code> اصلاح شد (نه فقط ضریب expansion)؛ مقادیر عددی پیشنهادی اضافه شد؛ جدول کاهش gateها اضافه شد؛ و توصیه‌ی «conditional کردن <code>script_verifier</code>» پس گرفته شد — verifier باید همیشه اجرا شود.</p>
+</div>
+
+<p><strong>معیار این audit:</strong> feature-completeness یا معماری ایده‌آل نیست. سؤال این است:</p>
+<pre><code>Does it work?
+Does the user get real value?
+Is the quality good enough to trust/use?
+Is it cheap and simple enough for an early MVP?</code></pre>
+
+<div class="toc">
+  <h3>فهرست</h3>
+  <ol>
+    <li><a href="#s1">MVP واقعی محصول</a></li>
+    <li><a href="#s2">Product Value</a></li>
+    <li><a href="#s3">Core Features</a></li>
+    <li><a href="#s4">End-to-End Reliability</a></li>
+    <li><a href="#s5">Quality</a></li>
+    <li><a href="#s6">Backend Efficiency</a></li>
+    <li><a href="#s7">Cost per Episode</a></li>
+    <li><a href="#s8">Overengineering Audit</a></li>
+    <li><a href="#s9">Underbuilding Audit</a></li>
+    <li><a href="#s10">Release Scope</a></li>
+    <li><a href="#s11">Final Verdict</a></li>
+    <li><a href="#s12">NotebookLM — درد کاربر و تطابق با ما</a></li>
+  </ol>
+</div>
+
+<h2 id="s1">۱. MVP واقعی محصول</h2>
+<p>مسیر پیاده‌شده در repo با شش gate انسانی: Brief → منابع → تأیید corpus → تأیید Episode Plan → بازبینی script → شروع صوت.</p>
+<p><strong>وضعیت اثبات‌شده‌ی این مسیر:</strong></p>
+<div class="table-wrap"><table>
+<thead><tr><th>مرحله</th><th>اجرای واقعی ثبت‌شده</th></tr></thead>
+<tbody>
+<tr><td>Brief → corpus → evidence</td><td>۳ پروژه</td></tr>
+<tr><td>→ coverage → plan → script</td><td><strong>۱ پروژه</strong> (<code>f781a5c7</code>، ۱۰ دقیقه، یک EPUB انگلیسی)</td></tr>
+<tr><td>→ audio</td><td><strong>۱ بار</strong>، ۹ اوت، برای یک script قدیمی‌تر؛ archive شده، <code>final.wav</code> هیچ‌جا باقی نمانده</td></tr>
+<tr><td>PDF فارسی → script</td><td><strong>صفر</strong></td></tr>
+<tr><td>PDF اسکن‌شده / OCR</td><td><strong>صفر</strong> (فقط harness در <code>benchmarks/persian_ocr/</code>، بدون result)</td></tr>
+<tr><td>web discovery → capture</td><td><strong>صفر</strong> (stage <code>web_source_capture</code> هرگز اجرا نشده)</td></tr>
+<tr><td>چند منبع + reconciliation</td><td><strong>صفر</strong></td></tr>
+<tr><td>مدت‌های غیر از ۱۰ دقیقه</td><td><strong>صفر</strong></td></tr>
+</tbody>
+</table></div>
+<p>پس: مسیر end-to-end یک بار کامل شده، ولی <strong>نه با script فعلی، نه با منبع فارسی، و نه در بیش از یک پیکربندی</strong>.</p>
+
+<h2 id="s2">۲. Product Value</h2>
+<p><strong>نقطه‌ی قوت واقعی:</strong> خروجی موجود در <code>script/script-draft.json</code> از نظر source fidelity خوب است. ۲۲ turn، هر turn محتوایی به <code>claim_id</code> و <code>evidence_id</code> واقعی وصل، attribution درست، nuance آرنت (تمایز Labor/Work/Action، تکثر، برآمدن جامعه) حفظ شده. فارسی طبیعی و قابل‌شنیدن است. این جدی‌تر از یک summary معمولی است.</p>
+<p><strong>سه مشکل ارزشی که در همان فایل قابل اندازه‌گیری‌اند:</strong></p>
+<ol>
+<li><strong>چگالی اطلاعات بسیار پایین.</strong> از یک کتاب کامل، ۷۰ claim استخراج شد؛ فقط <strong>۶ claim</strong> وارد اپیزود ۱۰ دقیقه‌ای شد. یعنی ۹۱٪ از کاری که هزینه‌اش پرداخت شد دور ریخته شد.</li>
+<li><strong>تکرار ساختاری.</strong> الگوی هر segment: A ادعا را می‌گوید → B همان را به‌شکل سؤال بازگو می‌کند → A <strong>همان <code>claim_id</code></strong> را دوباره توضیح می‌دهد → B خلاصه می‌کند. در <code>seg-001</code>، turnهای ۳ و ۴ و ۵ هر سه <code>clm-d47c35b404043ad8</code> هستند.</li>
+<li><strong>ریشه در دو پارامتر hardcode شده است — و پارامتر اصلی، prioritizer است نه budget.</strong>
+
+<p>گام اول، <code>claim_prioritizer.py:57-67</code>، تعداد claimهایی را که اصلاً وارد pipeline می‌شوند تعیین می‌کند:</p>
+<pre><code>must_count       = round(target_duration_minutes / 10)   # ۱۰ دقیقه → ۱
+supporting_count = round(target_duration_minutes / 6)    # ۱۰ دقیقه → ۲
+optional_count   = round(target_duration_minutes / 8)    # ۱۰ دقیقه → ۱</code></pre>
+<p>یعنی برای ۱۰ دقیقه فقط <strong>۴ claim</strong> از ۷۰تا غیر-<code>deferred</code> می‌شوند. آن ۴تا ۱۹۵ ثانیه محتوا می‌دهند.</p>
+
+<p>گام دوم، <code>episode/budget-report.json</code>، این کمبود را می‌پوشاند:</p>
+<pre><code>available_claim_seconds: 195        ← ۳٫۲۵ دقیقه محتوای واقعی
+explanation_expansion_factor: 4.0   ← src/thesisound/services/episode_budget.py:17
+estimated_supported_minutes: 13.0</code></pre>
+<p>یعنی ۳٫۲۵ دقیقه محتوا با ضریب ثابت ۴ به «۱۳ دقیقه قابل‌پشتیبانی» تبدیل می‌شود. این دقیقاً padding است — همان چیزی که <code>PRODUCT.md</code> قول داده بود انجام ندهد: «corpus ناکافی با padding به مدت هدف نمی‌رسد». ضریب ۴ علت نیست؛ <strong>پوششِ</strong> کمبودی است که prioritizer ایجاد کرده.</p>
+
+<p>پارامتر سوم، <code>evidence_tokens_per_output_minute = 20.0</code> (<code>episode_budget.py:19</code>)، عملاً هیچ‌وقت bind نمی‌شود: ۲۵۸٬۷۳۷ ÷ ۲۰ = ۱۲٬۹۳۶ دقیقه. یعنی gateِ «شواهد اصیل کافی» امروز خاموش است.</p>
+
+<p><strong>مقادیر پیشنهادی:</strong></p>
+<div class="table-wrap"><table>
+<thead><tr><th>پارامتر</th><th>فعلی</th><th>پیشنهاد</th><th>فایل</th></tr></thead>
+<tbody>
+<tr><td><code>must_count</code> divisor</td><td><code>/ 10</code></td><td><strong><code>/ 3</code></strong></td><td><code>claim_prioritizer.py:57</code></td></tr>
+<tr><td><code>supporting_count</code> divisor</td><td><code>/ 6</code></td><td><strong><code>/ 2</code></strong></td><td><code>:59</code></td></tr>
+<tr><td><code>optional_count</code> divisor</td><td><code>/ 8</code></td><td><strong><code>/ 4</code></strong></td><td><code>:63</code></td></tr>
+<tr><td><code>explanation_expansion_factor</code></td><td><code>4.0</code></td><td><strong><code>1.35</code></strong></td><td><code>episode_budget.py:17</code></td></tr>
+<tr><td><code>evidence_tokens_per_output_minute</code></td><td><code>20.0</code></td><td><strong><code>2000.0</code></strong></td><td><code>episode_budget.py:19</code></td></tr>
+</tbody>
+</table></div>
+<p>حساب برای ۱۰ دقیقه با اعداد جدید: <code>3+5+3 = 11</code> claim × ~۵۰ ثانیه = ۵۵۰ ثانیه × ۱٫۳۵ = <strong>۱۲٫۴ دقیقه</strong> → هدف ۱۰ دقیقه بدون padding پوشش داده می‌شود. با <code>2000</code>، یک مقاله‌ی ۳٬۰۰۰ توکنی درست به ۱٫۵ دقیقه محدود می‌شود؛ یعنی gate واقعاً کار می‌کند.</p>
+
+<p>تغییر سوم که مکمل این دو است: در <code>prompts/persian_script_segment/1.1.0</code> قاعده‌ای اضافه شود که هر <code>claim_id</code> حداکثر در <strong>یک</strong> turn محتوایی ظاهر شود. الان <code>episode_planner._validate_draft:162</code> تکرار claim را <em>بین</em> segmentها می‌گیرد، ولی <em>داخل</em> یک segment آزاد است — و تکرار مشاهده‌شده دقیقاً همان‌جا رخ داده.</p>
+</li>
+</ol>
+<p><strong>نتیجه:</strong></p>
+<div class="verdict-box">Acceptable MVP value — ولی مشروط</div>
+<p>ارزش هسته (اعتماد + ردیابی) واقعی است و از NotebookLM متمایز است. اما آنچه امروز به گوش کاربر می‌رسد، شش ایده است که سه بار تکرار شده‌اند. با یک اپیزود دیگر، کاربر متوجه الگو می‌شود.</p>
+
+<h2 id="s3">۳. Core Features</h2>
+<p><strong>Must work for MVP</strong><br>
+document ingestion (PDF/EPUB) · parse-quality gate · evidence extraction · claim prioritization · episode planning · script writer · TTS · cache/reuse · دانلود/پخش (WAV و MP3 هر دو موجودند)</p>
+<p><strong>Useful but not essential</strong><br>
+document map (برای اسناد بلند لازم است، برای مقاله نه) · coverage audit · glossary · Research Brief (به‌عنوان یک فرم، نه یک stage مدل)</p>
+<p><strong>Premature / Overengineered برای امروز</strong><br>
+claim reconciliation + disagreement graph · OCR self-hosted (۵ مدل در <code>models.lock.json</code>) · web/source discovery · script reviser · ASR + audio QA · multiple content modes · observability ledger دوگانه (SQLite + filesystem)</p>
+<p><strong>Future feature</strong><br>
+M8 cross-source semantic reconciliation · authority ranking · approval روی هر مرحله</p>
+<p><strong>مورد شاخص:</strong> <code>claim_reconciliation</code> روی یک پروژه‌ی تک‌منبعی ۲۳٬۱۴۰ توکن ورودی و ۵٬۳۰۳ خروجی مصرف کرد و <code>episode/disagreement-graph.json</code> را با <code>nodes: [], edges: []</code> تولید کرد. یعنی ~۰٫۰۷ دلار در هر اجرا برای خروجی خالی، در حالت رایج MVP.</p>
+
+<h2 id="s4">۴. End-to-End Reliability</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>مسیر</th><th>وضعیت</th></tr></thead>
+<tbody>
+<tr><td>PDF انگلیسی digital</td><td>parse با verdict <code>pass</code>/<code>warning</code>؛ تا script برده نشده</td></tr>
+<tr><td><strong>PDF فارسی digital</strong></td><td>هر سه فایل <code>FA-*.pdf</code> با parser <code>native</code> و verdict <strong><code>warning</code></strong> — هیچ‌کدام وارد corpus نشدند. <strong>مسیر فارسی هرگز به script نرسیده.</strong></td></tr>
+<tr><td><strong>PDF فارسی اسکن‌شده</strong></td><td>هیچ اجرایی، هیچ benchmark result. مسیر OCR عملاً unvalidated است.</td></tr>
+<tr><td>سند بلند (EPUB کتاب)</td><td>کار می‌کند: ۱۹۸ block، map سلسله‌مراتبی در ۱۱ partition</td></tr>
+<tr><td>تولید script</td><td>یک بار موفق</td></tr>
+<tr><td>تولید audio</td><td>یک بار، برای script قدیمی؛ فایل نهایی موجود نیست</td></tr>
+</tbody>
+</table></div>
+<p><strong>نقاط شکست محتمل و کیفیت‌شان:</strong></p>
+<ul>
+<li>✅ error handling کاربرپسند خوب است — <code>web/error_messages.py</code> خطاها را به rate_limit / auth / timeout / … دسته‌بندی و به فارسی ترجمه می‌کند.</li>
+<li>✅ resume/retry منطقی است — <code>corpus_reuse</code>، <code>episode_reuse</code>، و <code>episode_duration_cost.py</code> که <strong>از قبل</strong> به کاربر می‌گوید تغییر مدت گران است یا ارزان. این طراحی خوبی است.</li>
+<li>⚠️ <strong>خروجی ناقص می‌تواند سالم به نظر برسد:</strong> verifier در اجرای واقعی روی <code>gemini-3.6-flash</code> رفت — <strong>همان مدلی که script را نوشت</strong>. خروجی‌اش ۲۲ توکن بود (<code>pass</code>، بدون issue). <code>verification.json</code> می‌گوید <code>unsupported_claim_ratio: 0.0</code>. این تأیید مستقل نیست؛ یک مهر لاستیکی است.</li>
+<li>⚠️ <code>config/model-routing.toml</code> فعلی <code>script_verifier = "gemini_fast"</code> است، نه <code>gemini_reviewer</code>. این ضمانت «writer داور خودش نیست» را در config عملاً خاموش کرده. <strong>۸ تست به همین دلیل fail می‌شوند.</strong> ضمناً <code>THESISOUND_MODEL_REVIEWER</code> اصلاً در <code>.env</code> وجود ندارد (در <code>.env.example</code> خالی است)، پس <code>config.py:257</code> آن را به <code>model_strong</code> fallback می‌کند.
+<p>نکته‌ی مهم: مسیر فعلی از نظر فنی «مستقل» است (<code>gemini-3.5-flash-lite</code> ≠ <code>gemini-3.6-flash</code>)، ولی یعنی <strong>ضعیف‌ترین مدل دارد خروجی قوی‌ترین مدل را داوری می‌کند</strong>. استقلال در لفظ، نه در عمل.</p>
+<p>زیرساخت درست از قبل ساخته شده و فقط wire نشده: <code>model_routing.py:131 _require_reviewer_independence</code> اگر مدل reviewer با مدل reviewed یکی باشد، <em>قبل از هر تماس با provider</em> refuse می‌کند. پس اگر <code>THESISOUND_MODEL_REVIEWER</code> خالی بماند و route به <code>gemini_reviewer</code> برگردد، verifier عمداً refuse می‌کند — که رفتار درست است.</p></li>
+</ul>
+
+<h2 id="s5">۵. Quality</h2>
+<p><strong>Source fidelity:</strong> خوب. excerpt matching، evidence validator و locator binding واقعاً کار می‌کنند. attribution درست است.</p>
+<p><strong>Coverage:</strong> ضعیف — نه به‌خاطر باگ، بلکه به‌خاطر انتخاب: ۶ از ۷۰ claim.</p>
+<p><strong>Script:</strong> فارسی طبیعی و قابل شنیدن؛ ولی repetition ساختاری و ساختار dialogue مصنوعی (B همیشه سؤال‌کننده‌ی مطیع). یک ریسک TTS هم هست: اصطلاحات لاتین inline (<code>زحمت (Labor)</code>، <code>حیات فعال (Vita Activa)</code>) — چون glossary <code>first_use_form</code> را این‌طور تعریف کرده. تلفظ اینها توسط TTS فارسی بررسی نشده.</p>
+<p><strong>Audio:</strong> در تنها اجرای ثبت‌شده، ۱۸ chunk <code>pass</code> و ۶ <code>manual_review</code>. اما هر شش مورد <code>similarity_ratio</code> بین ۰٫۹۹۲ تا ۰٫۹۹۸ دارند، با <code>pronunciation_review: []</code>، <code>truncated: false</code>، <code>repeated_phrases: []</code>. یعنی <strong>۲۵٪ از chunkها بی‌دلیل کاربر را به بازبینی فنی می‌فرستند</strong> — noise تقسیم جمله در ASR است، نه مشکل صوت. (نکته‌ی خوب: <code>audio_asr_enabled</code> پیش‌فرض <code>False</code> است، پس این مسیر پیش‌فرض روشن نیست.)</p>
+<p><strong>معیار نهایی:</strong> بله، خروجی از «PDF را به یک LLM عمومی بدهم» بهتر است — به‌شرط اینکه تکرار حل شود. با تکرار فعلی، کاربر بعد از اپیزود دوم متوجه می‌شود.</p>
+
+<h2 id="s6">۶. Backend Efficiency</h2>
+<p>اندازه‌گیری‌شده روی تنها اجرای کامل (<code>f781a5c7</code>، ۱۰ دقیقه، یک EPUB):</p>
+<div class="table-wrap"><table>
+<thead><tr><th>stage</th><th>calls</th><th>input tok</th><th>output tok</th><th>model-time</th></tr></thead>
+<tbody>
+<tr><td><code>document_map_part</code></td><td>۱۱</td><td>۵۹۷٬۸۶۴</td><td>۲۶٬۲۳۶</td><td>۳۲۰s</td></tr>
+<tr><td><code>evidence_extraction</code></td><td>۴۴</td><td>۱۲۴٬۹۶۰</td><td>۲۰٬۹۵۷</td><td>۱۶۶s</td></tr>
+<tr><td><code>script_verifier</code></td><td>۲</td><td>۲۶٬۳۸۱</td><td><strong>۲۲</strong></td><td>۸۵s</td></tr>
+<tr><td><code>episode_plan</code></td><td>۱</td><td>۲۳٬۴۵۷</td><td>۸۵۳</td><td>۲۸s</td></tr>
+<tr><td><code>claim_reconciliation</code></td><td>۲</td><td>۲۳٬۱۴۰</td><td>۵٬۳۰۳</td><td>۱۱۵s</td></tr>
+<tr><td><code>glossary</code></td><td>۱</td><td>۲۱٬۷۸۷</td><td>۵۹۹</td><td>۲۰s</td></tr>
+<tr><td><code>coverage_audit</code></td><td>۱</td><td>۱۷٬۹۲۷</td><td>۵۰۹</td><td>۱۵s</td></tr>
+<tr><td>۴ × <code>script_segment</code></td><td>۴</td><td>۲۶٬۶۸۳</td><td>۳٬۱۹۹</td><td>۱۳۳s</td></tr>
+<tr><td><strong>جمع</strong></td><td><strong>۶۷</strong></td><td><strong>۸۶۲٬۴۵۵</strong></td><td><strong>۵۷٬۷۴۲</strong></td><td><strong>۸۸۲s</strong></td></tr>
+</tbody>
+</table></div>
+<p>به‌علاوه در همان پروژه، <strong>۲۷۳ call و ۲٫۹۸M توکن ورودی</strong> در revisionهای archive‌شده (تلاش‌های قبلی) سوخته است.</p>
+<p><strong>wasteهای واقعی و قابل‌رفع:</strong></p>
+<ol>
+<li><strong><code>document_map_part</code> = ۶۹٪ کل توکن ورودی.</strong> کل کتاب map می‌شود تا در نهایت ۶ claim استفاده شود.</li>
+<li><strong>۷۰ claim تولید، ۴ انتخاب، ۶ استفاده.</strong> prioritization بعد از هزینه انجام می‌شود، نه قبلش — و divisorهای <code>claim_prioritizer.py:57-67</code> باعث می‌شوند حتی از همان ۷۰تا فقط ۴تا غیر-<code>deferred</code> شوند.</li>
+<li><strong><code>claim_reconciliation</code> روی تک‌منبع</strong> — خروجی خالی، هزینه‌ی کامل. conditional نیست.</li>
+<li><strong>TTS و ASR کاملاً sequential</strong>‌اند (<code>audio_pipeline_service.py:119</code> و <code>:146</code>: <code>for chunk in chunks:</code>). ۲۴ chunk پشت‌سرهم. در مقابل، document map و evidence extraction با ۴ worker موازی‌اند. این عدم تقارن بی‌دلیل است و مستقیماً latency کاربر است.</li>
+<li><strong>context اضافه در verifier.</strong> ۲۶٬۳۸۱ توکن ورودی برای داوری یک متن ۱٬۲۲۱ کلمه‌ای. اگر فقط turnهای <code>editorial_only == False</code> و evidence packهای همان‌ها فرستاده شوند، تقریباً نصف می‌شود. <em>خودِ verifier نباید حذف یا conditional شود</em> — همان ضمانتی است که محصول را از NotebookLM جدا می‌کند و هزینه‌اش هم کوچک است (~$۰٫۰۴).</li>
+</ol>
+<p><strong>چیزهایی که خوب‌اند و نباید دست بخورند:</strong> cache/reuse بر پایه‌ی hash، <code>document_map_part_cache</code>، <code>parsed_document_cache</code>، پیش‌بینی هزینه‌ی تغییر مدت، و ASR خاموش به‌صورت پیش‌فرض.</p>
+
+<h2 id="s7">۷. Cost per Episode</h2>
+<p>با نرخ‌های committed در <code>config/model-pricing.toml</code>:</p>
+<p><strong>اندازه‌گیری‌شده (۱۰ دقیقه، یک EPUB کتاب، بدون ASR، مسیر موفق):</strong></p>
+<pre><code>flash-lite  723,080 in + 47,257 out  →  $0.34
+flash       139,375 in + 10,485 out  →  $0.29
+LLM total                            →  $0.62
+TTS (700s × 25 tok/s @ $20/M)        →  $0.35
+──────────────────────────────────────────────
+≈ $0.97 per episode</code></pre>
+<p><strong>هزینه‌ی واقعیِ رسیدن به آن اپیزود (با احتساب تلاش‌های archive‌شده): ≈ $2.5–3.</strong></p>
+<p><strong>برون‌یابی — با برچسب صریح «تخمینی»</strong> (هیچ اجرایی در ۵/۱۵/۳۰/۶۰ دقیقه وجود ندارد):</p>
+<div class="table-wrap"><table>
+<thead><tr><th>مدت</th><th>LLM</th><th>TTS</th><th>جمع تقریبی</th></tr></thead>
+<tbody>
+<tr><td>۵ دقیقه</td><td>~$0.45</td><td>~$0.15</td><td><strong>~$0.60</strong></td></tr>
+<tr><td>۱۵ دقیقه</td><td>~$0.80</td><td>~$0.45</td><td><strong>~$1.25</strong></td></tr>
+<tr><td>۳۰ دقیقه</td><td>~$1.2</td><td>~$0.90</td><td><strong>~$2.1</strong></td></tr>
+<tr><td>۶۰ دقیقه</td><td>~$2.5</td><td>~$1.80</td><td><strong>~$4.3</strong></td></tr>
+</tbody>
+</table></div>
+<p>هزینه‌ی ingestion تقریباً ثابت و تابع اندازه‌ی منبع است، نه مدت؛ TTS خطی است.</p>
+<p><strong>داده‌ای که نداریم:</strong> قیمت ASR (عمداً unpriced)، هزینه‌ی per-request برای Google Search و URL Context، هیچ اجرای multi-source، و هیچ اجرای غیر ۱۰ دقیقه. ضمناً ledger عملاً خالی از داده‌ی واقعی است: ۴۷۶ call که ۴۶۲تای آن <code>project_id = NULL</code> است و فقط ۱۳ رکورد <code>cost_micros</code> دارد. <strong>یعنی cost telemetry برای اجراهای واقعی wire نشده.</strong></p>
+<p><strong>قضاوت:</strong> ~$۱ برای یک اپیزود ۱۰ دقیقه‌ای برای MVP بدون درآمد قابل‌قبول است. آنچه قابل‌قبول نیست، ~$۳ هزینه‌ی واقعی به‌ازای هر اپیزود موفق به‌خاطر rerunها، و پرداخت هزینه‌ی map کل کتاب برای استفاده از ۹٪ آن است.</p>
+
+<h2 id="s8">۸. Overengineering Audit</h2>
+<p>اگر این‌ها امروز نبودند، کاربر افت ارزش حس می‌کرد؟ <strong>نه:</strong></p>
+<ul>
+<li><strong>claim reconciliation + disagreement graph</strong> — تک‌منبعی، خروجی خالی، هزینه‌ی کامل</li>
+<li><strong>OCR self-hosted با ۵ مدل قفل‌شده</strong> (<code>models.lock.json</code>، PaddleOCR + Bina + VLM fallback) — هیچ اجرا، هیچ نتیجه‌ی benchmark</li>
+<li><strong>web/source discovery</strong> — stage <code>web_source_capture</code> صفر بار اجرا شده</li>
+<li><strong>script reviser</strong> — صفر بار اجرا شده</li>
+<li><strong>ASR + expected-vs-heard QA + targeted regeneration</strong> — پیش‌فرض خاموش، و در تنها اجرای روشن، ۶ false positive تولید کرد</li>
+<li><strong>دو observability store موازی</strong> (SQLite ledger + filesystem model-runs) — ledger عملاً بلااستفاده است</li>
+<li><strong>۲۰ ProjectState، ۸۴ متغیر محیطی، ۱۳ prompt stage با نسخه‌بندی</strong> — برای محصولی با صفر کاربر</li>
+<li><strong>Research Brief به‌عنوان یک stage مدل با gate اجباری</strong> — هر سه پروژه‌ی ثبت‌شده brief عملاً یکسانی گرفتند (<code>learning_objectives: ["فهم روشن موضوع و ایده‌های اصلی آن"]</code>، <code>subquestions: []</code>، <code>ambiguities: []</code>). کاربر مجبور است چیزی boilerplate را تأیید کند.</li>
+</ul>
+<p><strong>آنچه نباید حذف شود:</strong> excerpt matching، evidence/locator binding، artifact hash binding، rewind/archive، parse-quality gate. اینها پایه‌ی تفاوت با NotebookLM‌اند.</p>
+
+<h2 id="s9">۹. Underbuilding Audit</h2>
+<p><strong>Missing MVP requirement:</strong></p>
+<ol>
+<li><strong>مسیر منبع فارسی هرگز end-to-end کار نکرده.</strong> هر سه PDF فارسی verdict <code>warning</code> گرفتند و رها شدند. برای یک محصول فارسی‌زبان این blocker است.</li>
+<li><strong>verifier مستقل نیست.</strong> config فعلی آن را به مدل ارزان می‌فرستد؛ در اجرای واقعی همان مدل نویسنده بود. ضمانت اصلی ضدهذیان امروز فعال نیست.</li>
+<li><strong><code>final.wav</code> فعلی وجود ندارد.</strong> script تأییدشده هرگز به صوت تبدیل نشده. کاربر امروز نمی‌تواند خروجی نهایی را بگیرد.</li>
+<li><strong>۱۷ تست fail</strong> از ۸۹۲ (<code>874 passed, 17 failed, 1 skipped</code>) — ۸تا مربوط به همین regression مسیر verifier، بقیه: <code>test_gates.py</code> (ارجاع gate به یک خط خالی)، <code>test_script_pipeline.py</code> (cache-hit)، <code>test_observability_phase56.py</code>.</li>
+<li><strong>cost telemetry برای اجراهای واقعی wire نشده</strong> — بدون آن، runaway cost قابل‌تشخیص نیست.</li>
+</ol>
+<p><strong>Nice to have:</strong> blind comparison با NotebookLM · human scoring · Persian OCR benchmark · UI v2 · latency dashboard.</p>
+
+<h2 id="s10">۱۰. Release Scope</h2>
+<p><strong>Keep for MVP</strong><br>
+upload (PDF/EPUB/TXT) → parse-quality gate → blocks → document map → evidence extraction → prioritization → coverage audit → episode plan → script writer → deterministic checks → verifier (با مدل مستقل) → TTS → assemble → دانلود WAV/MP3. به‌علاوه: cache/reuse، rewind/archive، error messages فارسی، <code>doctor</code>.</p>
+<p><strong>Simplify / Change before MVP</strong></p>
+<ul>
+<li>divisorهای <code>claim_prioritizer</code> (<code>/3</code>، <code>/2</code>، <code>/4</code>) + ضریب expansion به <code>1.35</code> + <code>evidence_tokens_per_output_minute</code> به <code>2000</code> — جدول کامل در بخش ۲</li>
+<li>verifier → مدل <strong>واقعاً</strong> مستقل (<code>gemini_reviewer</code> + <code>THESISOUND_MODEL_REVIEWER</code>). همیشه اجرا شود؛ فقط ورودی‌اش به turnهای محتوایی محدود شود</li>
+<li>claim reconciliation → skip وقتی <code>len(sources) == 1</code></li>
+<li>Research Brief → فرم ساده‌ی بدون gate اجباری</li>
+<li>TTS → موازی</li>
+<li>gateها: از ۶ به ۳ — جدول زیر</li>
+</ul>
+
+<p><strong>کاهش gateها از ۶ به ۳:</strong></p>
+<div class="table-wrap"><table>
+<thead><tr><th>gate فعلی</th><th>تصمیم</th></tr></thead>
+<tbody>
+<tr><td>۱. تأیید Research Brief</td><td><strong>حذف</strong> → ادغام در فرم <code>/projects/new</code>. brief همان‌جا به‌عنوان مقدار پیش‌فرضِ قابل‌ویرایش نمایش داده شود، نه یک صفحه‌ی تأیید جدا. (در هر سه پروژه brief عملاً یکسان بود؛ کاربر boilerplate تأیید می‌کند.)</td></tr>
+<tr><td>۲. تأیید corpus</td><td><strong>نگه دارید</strong> ← <strong>gate ۱</strong>. اینجا اولین جایی است که پول خرج می‌شود.</td></tr>
+<tr><td>۳. تأیید Episode Plan</td><td><strong>نگه دارید</strong> ← <strong>gate ۲</strong>. تغییرش ارزان است و جلوی script generation گران را می‌گیرد.</td></tr>
+<tr><td>۴. تأیید script</td><td><strong>ادغام با ۵</strong></td></tr>
+<tr><td>۵. شروع صوت</td><td><strong>ادغام با ۴</strong> ← <strong>gate ۳</strong>: یک دکمه‌ی واحد «متن درست است — صدا بساز»</td></tr>
+<tr><td>۶. preflight صوت</td><td><strong>حذف از UI</strong> → خودکار اجرا شود؛ فقط در صورت fail نمایش داده شود</td></tr>
+</tbody>
+</table></div>
+<p>نتیجه: <code>corpus</code> / <code>plan</code> / <code>متن+صدا</code>. هیچ gateای که مانع هزینه‌ی برگشت‌ناپذیر است حذف نشده — فقط دو تأیید boilerplate و یک تأیید تکراری.</p>
+<p><strong>Defer until real users</strong><br>
+web/source discovery · OCR self-hosted · ASR + audio QA + regeneration · script reviser · multiple content modes · SQLite ledger · M8/M9/M10</p>
+
+<h2 id="s11">۱۱. Final Verdict</h2>
+<h3>MVP Verdict</h3>
+<div class="verdict-box">NOT READY — CORE GAPS  (و هم‌زمان OVERBUILT FOR CURRENT STAGE)</div>
+<p>معماری، provenance و resumability از سطح یک MVP جلوترند. اما سه چیز پایه‌ای کار نمی‌کنند: مسیر منبع فارسی هرگز به script نرسیده، verifier مستقل نیست، و خروجی صوتی فعلی وجود ندارد. هم‌زمان، حجم زیادی از پیچیدگی برای مسیرهایی ساخته شده که صفر بار اجرا شده‌اند.</p>
+
+<h3>What already works</h3>
+<ol>
+<li>Source fidelity و ردیابی claim → evidence → locator (واقعی و قابل‌بررسی)</li>
+<li>ingestion اسناد بلند بدون truncation (EPUB کتاب، ۱۹۸ block، ۱۱ partition)</li>
+<li>cache/reuse و پیش‌بینی هزینه‌ی تغییر مدت</li>
+<li>rewind/archive بدون از دست رفتن ورودی خام</li>
+<li>پیام‌های خطای فارسی دسته‌بندی‌شده + <code>doctor</code> preflight</li>
+</ol>
+
+<h3>What blocks a good MVP</h3>
+<ol>
+<li>مسیر PDF فارسی هرگز end-to-end اجرا نشده (هر سه فایل <code>warning</code>)</li>
+<li>verifier در config و در اجرای واقعی مستقل نیست — ۸ تست fail</li>
+<li><code>final.wav</code> برای script تأییدشده وجود ندارد</li>
+<li>divisorهای <code>claim_prioritizer</code> (۴ claim برای ۱۰ دقیقه) + ضریب padding ۴٫۰ که تکرار ساختاری تولید می‌کنند</li>
+<li>۱۷ تست failing روی main</li>
+</ol>
+
+<h3>What is overengineered</h3>
+<ol>
+<li>claim reconciliation + disagreement graph روی تک‌منبع</li>
+<li>OCR self-hosted با ۵ مدل قفل‌شده، صفر اجرا</li>
+<li>web/source discovery، صفر اجرا</li>
+<li>ASR + audio QA + regeneration (پیش‌فرض خاموش، ۶ false positive وقتی روشن)</li>
+<li>دو observability store موازی + ۲۰ state + ۸۴ env var</li>
+</ol>
+
+<h3>What is missing</h3>
+<ol>
+<li>یک اجرای واقعی فارسی end-to-end</li>
+<li>cost telemetry برای اجراهای واقعی</li>
+<li>verifier مستقل فعال</li>
+<li>اجرای هیچ مدتی به‌جز ۱۰ دقیقه</li>
+<li>blind comparison با NotebookLM (که همان چیزی است که ادعای تمایز را اثبات می‌کند)</li>
+</ol>
+
+<h3>Cost / Performance Verdict</h3>
+<p>~$۱ برای هر اپیزود ۱۰ دقیقه‌ای اقتصادی است. اما هزینه‌ی <em>واقعی</em> رسیدن به هر اپیزود موفق ~$۳ بود. مهم‌ترین wasteها به ترتیب: (۱) map کل کتاب برای استفاده از ۹٪ آن — ۶۹٪ توکن ورودی؛ (۲) استخراج ۷۰ claim و انتخاب فقط ۴تا به‌خاطر divisorهای prioritizer؛ (۳) reconciliation تک‌منبعی با خروجی خالی؛ (۴) context اضافه‌ی verifier (۲۶k توکن برای متن ۱٬۲۲۱ کلمه‌ای)؛ (۵) TTS/ASR sequential که هزینه نیست ولی latency است.</p>
+
+<h3>Next Actions</h3>
+
+<div class="action">
+<strong class="title">۱. verifier را واقعاً مستقل کنید — دو تغییر</strong>
+<p>الف) <code>config/model-routing.toml</code>: <code>script_verifier = "gemini_fast"</code> → <code>script_verifier = "gemini_reviewer"</code>؛ و <code>config/model-routing copy.toml</code> را حذف کنید.<br>
+ب) <code>.env</code>: کلید <code>THESISOUND_MODEL_REVIEWER</code> را اضافه کنید (امروز اصلاً وجود ندارد) با مدلی متفاوت از <code>THESISOUND_MODEL_STRONG=gemini-3.6-flash</code>.</p>
+Why: ضمانت اصلی ضدهذیان محصول امروز خاموش است · Impact: ۸ تست سبز، verification واقعاً مستقل · <span class="effort">Effort: S</span>
+</div>
+
+<div class="action">
+<strong class="title">۲. یک اجرای کامل با PDF فارسی digital تا <code>final.wav</code></strong>
+Why: هیچ اجرای فارسی end-to-end وجود ندارد؛ این تنها آزمون واقعی محصول است · Impact: مشخص می‌شود آیا MVP وجود دارد یا نه · <span class="effort">Effort: M</span>
+</div>
+
+<div class="action">
+<strong class="title">۳. divisorهای <code>claim_prioritizer</code> و ضریب expansion را اصلاح کنید</strong>
+<p><code>/10, /6, /8</code> → <code>/3, /2, /4</code> · <code>explanation_expansion_factor</code> <code>4.0</code> → <code>1.35</code> · <code>evidence_tokens_per_output_minute</code> <code>20</code> → <code>2000</code>. سپس در prompt، هر <code>claim_id</code> حداکثر یک turn محتوایی.</p>
+Why: منشأ مستقیم تکرار ساختاری؛ برای ۱۰ دقیقه فقط ۴ claim از ۷۰تا انتخاب می‌شود · Impact: بزرگ‌ترین جهش کیفیت شنیداری — ۱۱ ایده‌ی متمایز به‌جای ۶ ایده‌ی سه‌بار تکرارشده · <span class="effort">Effort: S</span>
+</div>
+
+<div class="action">
+<strong class="title">۴. فقط <code>claim_reconciliation</code> را conditional کنید</strong>
+<p>در <code>source_analysis_service.py:541</code>، وقتی corpus تک‌منبعی است تماس با مدل را رد کنید و ledger را مستقیماً از <code>evidence-extractions.jsonl</code> بسازید — dedup آن از قبل deterministic است (<code>source_analysis.py:234</code>).<br>
+<strong>verifier را conditional نکنید.</strong> ضمانتی است که محصول را از NotebookLM جدا می‌کند و هزینه‌اش کوچک است؛ به‌جایش فقط ورودی‌اش را به turnهای <code>editorial_only == False</code> محدود کنید.</p>
+Why: با یک منبع، <code>disagreement-graph.json</code> همیشه <code>{nodes: [], edges: []}</code> است ولی ۲۳٬۱۴۰ + ۵٬۳۰۳ توکن خرج می‌شود · Impact: ~$۰٫۰۷ و ~۱۱۵ ثانیه در هر اجرا، در رایج‌ترین حالت MVP · <span class="effort">Effort: S</span>
+</div>
+
+<div class="action">
+<strong class="title">۵. TTS را موازی کنید</strong>
+Why: ۲۴ chunk sequential، در حالی که map/evidence از قبل ۴ worker دارند · Impact: latency صوت ~۳–۴ برابر کمتر · <span class="effort">Effort: S</span>
+</div>
+
+<div class="action">
+<strong class="title">۶. <code>cost_micros</code> را برای اجراهای واقعی wire کنید</strong>
+Why: ledger عملاً خالی است (۱۳ رکورد priced)؛ بدون آن runaway cost نامرئی است · Impact: قابلیت تصمیم‌گیری با عدد واقعی · <span class="effort">Effort: M</span>
+</div>
+
+<div class="action">
+<strong class="title">۷. مسیرهای صفر-اجرا را پشت feature flag ببرید: web discovery، OCR self-hosted، ASR/QA، reviser</strong>
+Why: هیچ evidence نیازی ندارند و maintenance تولید می‌کنند · Impact: کاهش سطح شکست و پیچیدگی نصب · <span class="effort">Effort: M</span>
+</div>
+
+<h2 id="s12">۱۲. NotebookLM — درد کاربر و تطابق با ما</h2>
+<p>شکایت‌های تکرارشونده‌ی کاربران درباره‌ی تولید صوت از منبع تخصصی:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>درد کاربر NotebookLM</th><th>آیا Thesisound برایش ارزش می‌سازد؟</th></tr></thead>
+<tbody>
+<tr><td><strong>hostها چیزهایی می‌گویند که در منبع نیست</strong> — به‌ویژه در موضوعات تاریخی، از دانش پس‌زمینه می‌کشند</td><td>✅ <strong>بله، و این تفاوت اصلی است.</strong> هر turn محتوایی به <code>evidence_id</code> واقعی bind است، excerpt باید عیناً در block منبع موجود باشد.</td></tr>
+<tr><td><strong>قابل استناد نیست</strong> — «به‌عنوان summary گوش کن، نه citation»</td><td>✅ <strong>بله.</strong> source trace در UI موجود است.</td></tr>
+<tr><td><strong>کنترل طول ندارد</strong> — ۶ تا ۱۵ دقیقه قفل؛ درخواست ۳ دقیقه، خروجی ۱۴ دقیقه</td><td>⚠️ <strong>نیمه.</strong> مدت ۵ تا ۱۲۰ دقیقه انتخابی است و <code>duration_cost_hint</code> هزینه‌ی تغییر را از قبل می‌گوید — این بهتر است. اما divisorهای prioritizer به‌علاوه‌ی ضریب padding ۴٫۰ یعنی تفاوت مدت‌ها معنایی نیست؛ فقط همان محتوا بیشتر کش می‌آید. <strong>همان درد، با مکانیزم متفاوت.</strong></td></tr>
+<tr><td><strong>repetitive و سطحی</strong></td><td>❌ <strong>نه — امروز ما همین مشکل را داریم</strong>، و از NotebookLM قابل‌اندازه‌گیری‌تر: ۶ ایده در ۲۲ turn.</td></tr>
+<tr><td><strong>سند بلند truncate می‌شود؛ نیمه‌ی دوم کتاب نادیده گرفته می‌شود</strong></td><td>✅ <strong>بله.</strong> hierarchical map روی مرز semantic بدون truncation — این معماری مستقیماً همان درد را هدف گرفته.</td></tr>
+<tr><td><strong>لحن casual و بیش‌ازحد پرشور برای کار آکادمیک</strong></td><td>✅ <strong>بله.</strong> لحن خروجی فارسی جدی و آموزشی است.</td></tr>
+<tr><td><strong>همیشه دو صدای یکسان</strong></td><td>⚠️ خنثی</td></tr>
+<tr><td><strong>فارسی در beta</strong> — پشتیبانی هست ولی کیفیتش تضمین‌شده نیست</td><td>⚠️ <strong>فرصت بزرگ، اما اثبات‌نشده.</strong> هیچ اجرای فارسی end-to-end ثبت نشده.</td></tr>
+</tbody>
+</table></div>
+<p><strong>جمع‌بندی:</strong> Thesisound دقیقاً روی سه درد اصلی و بی‌پاسخ NotebookLM نشسته است — <strong>hallucination</strong>، <strong>عدم ردیابی</strong>، و <strong>truncation اسناد بلند</strong> — به‌علاوه‌ی یک جای خالی بازار (فارسی جدی). این positioning درست است و توجیه‌کننده‌ی پیچیدگیِ provenance است.</p>
+<p>اما دو درد دیگر — <strong>repetition/سطحی بودن</strong> و <strong>بی‌معنا بودن تفاوت مدت‌ها</strong> — را ما هنوز حل نکرده‌ایم و در واقع با ضریب ۴٫۰ خودمان بازتولید کرده‌ایم. Action شماره ۳ همان تک‌تغییری است که این را برمی‌گرداند.</p>
+
+<h3>منابع پژوهش وب</h3>
+<ul>
+<li><a href="https://www.aitooldiscovery.com/guides/notebooklm-reddit" target="_blank" rel="noopener">aitooldiscovery — NotebookLM Reddit Review</a></li>
+<li><a href="https://www.xda-developers.com/notebooklm-audio-overviews-sound-human-believe-misinformation/" target="_blank" rel="noopener">XDA — Audio Overviews sound so human, you'll believe the misinformation</a></li>
+<li><a href="https://superlore.ai/blog/notebooklm-audio-overview-limits-2026" target="_blank" rel="noopener">superlore.ai — Audio Overview Limits 2026</a></li>
+<li><a href="https://lawsen.substack.com/p/notebooklm-podcasts-but-good" target="_blank" rel="noopener">lawsen.substack — NotebookLM podcasts, but good</a></li>
+<li><a href="https://workspaceupdates.googleblog.com/2025/04/language-expansion-audio-overviews-notebooklm.html" target="_blank" rel="noopener">Google Workspace Updates — 50+ languages</a></li>
+</ul>
+
+</body>
+</html>

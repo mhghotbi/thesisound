@@ -11,12 +11,20 @@
     <div>
       <p class="kicker">برداشت اولیه</p>
       <h1>من این‌طور فهمیدم</h1>
+      {% if project.state.value == 'brief_ready' %}
       <p>این تأیید واقعی است: تا زمانی که برداشت اولیه را تأیید نکنید، افزودن یا تحلیل منابع شروع نمی‌شود.</p>
+      {% else %}
+      <p>این برداشت اولیه معیار انتخاب منبع، سنجش کفایت و ساختار گفتار است. هر زمان لازم بود می‌توانید ویرایشش کنید.</p>
+      {% endif %}
     </div>
   </header>
 
   {% if request.query_params.get('saved') %}
+    {% if project.state.value == 'brief_ready' %}
     <div class="notice notice--success" role="status">ویرایش‌ها ذخیره شد؛ برداشت اولیه هنوز تأیید نشده است.</div>
+    {% else %}
+    <div class="notice notice--success" role="status">ویرایش‌ها ذخیره شد.</div>
+    {% endif %}
   {% endif %}
 
   {% if brief_locked %}

@@ -1,0 +1,48 @@
+{
+  "source_id": "4c598a0d-6454-4a87-9f8a-735364c44118",
+  "block_id": "blk-fixture-definitions",
+  "extraction": {
+    "segment_function": "fixture block",
+    "claims": [],
+    "definitions": [
+      {
+        "term": "vita activa",
+        "definition": "The active life of political and social engagement.",
+        "locator": {
+          "page_start": 12,
+          "page_end": 12,
+          "chapter": "Intro",
+          "section": "Intro",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "distinctions": [
+      {
+        "item_a": "labor",
+        "item_b": "work",
+        "distinction": "Labor is cyclical; work produces lasting objects.",
+        "locator": {
+          "page_start": 12,
+          "page_end": 12,
+          "chapter": "Intro",
+          "section": "Intro",
+          "paragraph_start": null,
+          "paragraph_end": null,
+          "epub_cfi": null
+        }
+      }
+    ],
+    "examples": [],
+    "objections": [],
+    "responses": [],
+    "must_not_be_lost": []
+  },
+  "status": "extracted",
+  "rejection_reason": null,
+  "failure_kind": null,
+  "extraction_pass": 1,
+  "extraction_identity": null
+}

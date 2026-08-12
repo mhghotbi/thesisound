@@ -1060,7 +1060,11 @@ def test_extract_evidence_skips_extracted_and_reattempts_rejected(
     assert skip_snapshots[0] == set()
     assert manifest.status == "evidence_ready"
     assert manifest.evidence_count >= 1
-    saved = store.load_block_extractions(project.project_id, source_id)
+    saved = store.load_block_extractions(
+        project.project_id,
+        source_id,
+        block_locators=store.load_block_locators(project.project_id, source_id),
+    )
     assert any(item.status == "extracted" for item in saved)
 
     service.extract_evidence(project.project_id, source_id, model="fake")
@@ -1333,7 +1337,11 @@ def test_extract_evidence_fails_when_all_blocks_rejected(tmp_path: Path) -> None
     service.map_document(project.project_id, source_id, model="fake")
     with pytest.raises(ValueError, match="no claim-bearing evidence"):
         service.extract_evidence(project.project_id, source_id, model="fake")
-    saved = store.load_block_extractions(project.project_id, source_id)
+    saved = store.load_block_extractions(
+        project.project_id,
+        source_id,
+        block_locators=store.load_block_locators(project.project_id, source_id),
+    )
     assert saved
     assert all(item.status == "rejected" for item in saved)
 

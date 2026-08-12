@@ -275,7 +275,7 @@ def test_skipping_a_stopped_source_continues_without_reconfirming(tmp_path: Path
     }
 
 
-def test_create_and_confirm_brief(tmp_path: Path) -> None:
+def test_create_project_confirms_the_brief_in_one_step(tmp_path: Path) -> None:
     settings = _settings(tmp_path)
     with TestClient(_app(settings)) as client:
         _login(client)
@@ -289,24 +289,32 @@ def test_create_and_confirm_brief(tmp_path: Path) -> None:
                 "prior_knowledge": "introductory",
                 "duration": "20",
                 "mode": "explanatory",
+                "must_include": "زمینه تاریخی",
+                "exclusions": "",
             },
             follow_redirects=False,
         )
         assert response.status_code == 303
+        assert response.headers["location"].endswith("/sources")
         project_id = UUID(response.headers["location"].split("/")[2])
 
+        # No separate confirmation screen: the creation form is the whole gate.
         project = WorkspaceStore(settings.workspace_root).load_project(project_id)
-        assert project.state == ProjectState.BRIEF_READY
+        assert project.state == ProjectState.SOURCES_COLLECTING
+        assert project.brief.scope_inclusions == ["زمینه تاریخی"]
 
-        page = client.get(response.headers["location"])
+        # The brief stays editable afterward -- removing the gate screen doesn't
+        # make the brief a one-shot.
+        brief_page = client.get(f"/projects/{project_id}/brief")
+        assert "فقط خواندنی" not in brief_page.text
         response = client.post(
             f"/projects/{project_id}/brief",
             data={
-                "csrf_token": _csrf(page.text),
-                "central_question": project.brief.central_question,
+                "csrf_token": _csrf(brief_page.text),
+                "central_question": "پرسش ویرایش‌شده",
                 "must_include": "زمینه تاریخی",
                 "exclusions": "",
-                "action": "confirm",
+                "action": "save",
             },
             follow_redirects=False,
         )
@@ -314,7 +322,7 @@ def test_create_and_confirm_brief(tmp_path: Path) -> None:
     assert response.status_code == 303
     project = WorkspaceStore(settings.workspace_root).load_project(project_id)
     assert project.state == ProjectState.SOURCES_COLLECTING
-    assert project.brief.scope_inclusions == ["زمینه تاریخی"]
+    assert project.brief.central_question == "پرسش ویرایش‌شده"
 
 
 def test_upload_select_queue_and_lock_confirmed_inputs(tmp_path: Path) -> None:

@@ -452,10 +452,22 @@ def test_model_runner_routes_by_prompt_contract_id_not_observability_stage(
 def test_verifier_run_raises_before_any_provider_call_when_the_reviewer_is_not_independent(
     tmp_path: Path,
 ) -> None:
-    settings = Settings(
-        _env_file=None,
-        model_routing_file=Path("config/model-routing.toml"),
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.shared]
+provider = "gemini"
+model_setting = "model_strong"
+
+[routes]
+persian_script_segment = "shared"
+script_verifier = "shared"
+""".strip(),
+        encoding="utf-8",
     )
+    settings = Settings(_env_file=None, model_routing_file=routing_file)
     router = load_model_router(settings)
 
     class RoutingFakeModel(FakeModel):

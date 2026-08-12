@@ -377,7 +377,7 @@ def test_evidence_retention_unknown_when_plan_references_missing_block(tmp_path:
     )
     statuses: dict[str, str] = {}
 
-    def capture(code: str, status: str, detail: str, evidence=None) -> None:
+    def capture(code: str, status: str, detail: str, evidence=None, reason=None) -> None:
         statuses[code] = status
 
     _evidence_results([source_dir], capture)

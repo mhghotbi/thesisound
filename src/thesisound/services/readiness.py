@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 from uuid import UUID
+
+from pydantic import ValidationError
 
 from thesisound.audio import AudioPipelineManifest, script_hash
 from thesisound.domain import Project, ProjectState
@@ -11,6 +14,11 @@ from thesisound.episode import CoverageReport
 from thesisound.ingestion import IngestionResult
 from thesisound.modeling import DeterministicValidationError
 from thesisound.services.coverage_auditor import can_plan_episode
+from thesisound.services.evidence_artifact_upgrade import (
+    EvidenceArtifactUpgradeError,
+    resolve_block_locator,
+    upgrade_block_extraction_payload,
+)
 from thesisound.services.evidence_validator import validate_evidence_collection
 from thesisound.services.gates import GATE_REGISTRY, GateActor
 from thesisound.services.parse_quality import assess_parse_quality
@@ -28,6 +36,7 @@ from thesisound.source_analysis import (
 )
 
 GateStatus = Literal["pass", "blocked", "not_reached", "unknown"]
+GateReason = Literal["schema", "io", "contract"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +47,7 @@ class GateResult:
     status: GateStatus
     detail: str
     evidence: str | None = None
+    reason: GateReason | None = None
 
 
 def project_readiness(*, project_id: UUID, workspace_root: Path) -> list[GateResult]:
@@ -60,6 +70,7 @@ def project_readiness(*, project_id: UUID, workspace_root: Path) -> list[GateRes
                 status="unknown",
                 detail=detail,
                 evidence=str(project_path),
+                reason="io",
             )
             for gate in GATE_REGISTRY
         ]
@@ -82,6 +93,7 @@ def project_readiness(*, project_id: UUID, workspace_root: Path) -> list[GateRes
         status: GateStatus,
         detail: str,
         evidence: Path | str | None = None,
+        reason: GateReason | None = None,
     ) -> None:
         gate = definitions[code]
         results[code] = GateResult(
@@ -91,6 +103,7 @@ def project_readiness(*, project_id: UUID, workspace_root: Path) -> list[GateRes
             status=status,
             detail=detail,
             evidence=str(evidence) if evidence is not None else None,
+            reason=reason,
         )
 
     brief_path = root / str(project_id) / "project.json"
@@ -255,106 +268,195 @@ def _parse_quality_results(source_dirs: list[Path], set_result) -> None:
 def _evidence_results(source_dirs: list[Path], set_result) -> None:
     validation_failures: list[str] = []
     validated_sources = 0
+    unreadable: list[tuple[str, str, GateReason, str]] = []
     retention_errors: list[str] = []
+    retention_skipped_sources: list[str] = []
     planned_tokens = kept_tokens = largest_lost_tokens = 0
     plans = 0
-    try:
-        for directory in source_dirs:
-            blocks_path = directory / "document-blocks.jsonl"
-            plan_path = directory / "evidence-extraction-plan.json"
-            extraction_dir = directory / "evidence" / "extractions"
-            if not (blocks_path.exists() and extraction_dir.exists()):
-                continue
+
+    for directory in source_dirs:
+        blocks_path = directory / "document-blocks.jsonl"
+        plan_path = directory / "evidence-extraction-plan.json"
+        extraction_dir = directory / "evidence" / "extractions"
+        if not (blocks_path.exists() and extraction_dir.exists()):
+            continue
+
+        try:
             blocks = [
                 SourceDocumentBlock.model_validate_json(line)
                 for line in blocks_path.read_text(encoding="utf-8").splitlines()
                 if line
             ]
-            records = [
-                BlockEvidenceExtraction.model_validate_json(path.read_text(encoding="utf-8"))
-                for path in sorted(extraction_dir.glob("*.json"))
+        except (OSError, ValueError) as exc:
+            unreadable.append(
+                (directory.name, blocks_path.name, "io", str(exc))
+            )
+            retention_skipped_sources.append(directory.name)
+            continue
+
+        block_locators = {block.block_id: block.locator for block in blocks}
+        records: list[BlockEvidenceExtraction] = []
+        source_unreadable = 0
+        extraction_paths = sorted(extraction_dir.glob("*.json"))
+
+        for path in extraction_paths:
+            try:
+                raw = json.loads(path.read_text(encoding="utf-8"))
+                locator = resolve_block_locator(raw, block_locators)
+                upgraded = upgrade_block_extraction_payload(
+                    raw, block_locator=locator
+                )
+                records.append(BlockEvidenceExtraction.model_validate(upgraded))
+            except EvidenceArtifactUpgradeError as exc:
+                source_unreadable += 1
+                unreadable.append((directory.name, path.name, "schema", str(exc)))
+            except (OSError, UnicodeError) as exc:
+                source_unreadable += 1
+                unreadable.append((directory.name, path.name, "io", str(exc)))
+            except (json.JSONDecodeError, ValidationError, ValueError, KeyError) as exc:
+                source_unreadable += 1
+                reason: GateReason = (
+                    "schema"
+                    if isinstance(exc, (ValidationError, json.JSONDecodeError))
+                    else "contract"
+                )
+                unreadable.append((directory.name, path.name, reason, str(exc)))
+
+        if source_unreadable:
+            retention_skipped_sources.append(directory.name)
+
+        if not records and source_unreadable:
+            # Entirely unreadable: this source alone is unknown; others continue.
+            continue
+
+        extracted = [record for record in records if record.status == "extracted"]
+        try:
+            validate_evidence_collection(extracted, blocks)
+        except DeterministicValidationError as exc:
+            validation_failures.append(f"{directory.name}: {exc}")
+        validated_sources += 1
+
+        if source_unreadable:
+            # Retention must not treat skipped artifacts as token loss.
+            continue
+        if not plan_path.exists():
+            continue
+        try:
+            plan = EvidenceExtractionPlan.model_validate_json(
+                plan_path.read_text(encoding="utf-8")
+            )
+            by_id = {block.block_id: block for block in blocks}
+            missing_block_ids = [
+                block_id for block_id in plan.selected_block_ids if block_id not in by_id
             ]
-            extracted = [record for record in records if record.status == "extracted"]
-            try:
-                validate_evidence_collection(extracted, blocks)
-            except DeterministicValidationError as exc:
-                validation_failures.append(f"{directory.name}: {exc}")
-            validated_sources += 1
-
-            if not plan_path.exists():
-                continue
-            try:
-                plan = EvidenceExtractionPlan.model_validate_json(
-                    plan_path.read_text(encoding="utf-8")
+            if missing_block_ids:
+                missing = ", ".join(missing_block_ids[:4])
+                raise ValueError(
+                    f"Extraction plan references missing source block(s): {missing}"
                 )
-                by_id = {block.block_id: block for block in blocks}
-                missing_block_ids = [
-                    block_id for block_id in plan.selected_block_ids if block_id not in by_id
-                ]
-                if missing_block_ids:
-                    missing = ", ".join(missing_block_ids[:4])
-                    raise ValueError(
-                        f"Extraction plan references missing source block(s): {missing}"
-                    )
-                planned = [by_id[block_id] for block_id in plan.selected_block_ids]
-                kept_ids = {record.block_id for record in extracted}
-                planned_tokens += sum(block.estimated_token_count for block in planned)
-                kept_tokens += sum(
-                    block.estimated_token_count for block in planned if block.block_id in kept_ids
-                )
-                # One forgiven loss per source, so aggregating sources cannot make the
-                # gate stricter than running it on each source on its own.
-                largest_lost_tokens += max(
-                    (
-                        block.estimated_token_count
-                        for block in planned
-                        if block.block_id not in kept_ids
-                    ),
-                    default=0,
-                )
-                plans += 1
-            except (OSError, ValueError, KeyError) as exc:
-                retention_errors.append(f"{directory.name}: {exc}")
-
-        if not validated_sources:
-            set_result("evidence-validation", "not_reached", "No extraction artifacts exist.")
-        else:
-            set_result(
-                "evidence-validation",
-                "blocked" if validation_failures else "pass",
-                "; ".join(validation_failures[:4])
-                if validation_failures
-                else f"Revalidated evidence for {validated_sources} source(s).",
+            planned = [by_id[block_id] for block_id in plan.selected_block_ids]
+            kept_ids = {record.block_id for record in extracted}
+            planned_tokens += sum(block.estimated_token_count for block in planned)
+            kept_tokens += sum(
+                block.estimated_token_count
+                for block in planned
+                if block.block_id in kept_ids
             )
-
-        if retention_errors:
-            set_result(
-                "evidence-retention",
-                "unknown",
-                f"Retention inputs are unreadable: {'; '.join(retention_errors[:4])}",
-            )
-        elif not plans:
-            set_result("evidence-retention", "not_reached", "No completed extraction plan exists.")
-        else:
-            retention = kept_tokens / planned_tokens if planned_tokens else 1.0
-            holds = evidence_retention_holds(
-                planned_tokens=planned_tokens,
-                kept_tokens=kept_tokens,
-                largest_lost_tokens=largest_lost_tokens,
-            )
-            set_result(
-                "evidence-retention",
-                "pass" if holds else "blocked",
+            # One forgiven loss per source, so aggregating sources cannot make the
+            # gate stricter than running it on each source on its own.
+            largest_lost_tokens += max(
                 (
-                    f"Kept {retention:.0%} of planned token mass; minimum is "
-                    f"{_MIN_PLANNED_TOKEN_RETENTION:.0%} with the largest single loss per "
-                    f"source forgiven, never below {_MIN_RETENTION_AFTER_LARGEST_LOSS:.0%}."
+                    block.estimated_token_count
+                    for block in planned
+                    if block.block_id not in kept_ids
                 ),
+                default=0,
             )
-    except (OSError, ValueError, KeyError) as exc:
-        detail = f"Evidence artifacts are unreadable: {exc}"
-        set_result("evidence-validation", "unknown", detail)
-        set_result("evidence-retention", "unknown", detail)
+            plans += 1
+        except (OSError, ValueError, KeyError) as exc:
+            retention_errors.append(f"{directory.name}: {exc}")
+
+    unread_labels = [f"{source}/{name}" for source, name, _, _ in unreadable]
+    unread_detail = ""
+    if unread_labels:
+        shown = "; ".join(unread_labels[:4])
+        extra = len(unread_labels) - 4
+        unread_detail = (
+            f" Unreadable artifact(s): {shown}"
+            + (f" (+{extra} more)" if extra > 0 else "")
+            + f" [{len(unread_labels)} total]."
+        )
+
+    if not validated_sources and unreadable:
+        primary_reason = unreadable[0][2]
+        set_result(
+            "evidence-validation",
+            "unknown",
+            f"Evidence artifacts are unreadable.{unread_detail}".strip(),
+            reason=primary_reason,
+        )
+    elif not validated_sources:
+        set_result(
+            "evidence-validation",
+            "not_reached",
+            "No extraction artifacts exist.",
+        )
+    else:
+        detail = (
+            "; ".join(validation_failures[:4])
+            if validation_failures
+            else f"Revalidated evidence for {validated_sources} source(s)."
+        )
+        if unread_detail and not validation_failures:
+            detail = detail.rstrip(".") + "." + unread_detail
+        elif unread_detail:
+            detail = detail + unread_detail
+        set_result(
+            "evidence-validation",
+            "blocked" if validation_failures else "pass",
+            detail,
+        )
+
+    if retention_skipped_sources or unreadable:
+        primary_reason = unreadable[0][2] if unreadable else "schema"
+        set_result(
+            "evidence-retention",
+            "unknown",
+            (
+                "Retention cannot be scored while extraction artifacts are unreadable."
+                + unread_detail
+            ).strip(),
+            reason=primary_reason,
+        )
+    elif retention_errors:
+        set_result(
+            "evidence-retention",
+            "unknown",
+            f"Retention inputs are unreadable: {'; '.join(retention_errors[:4])}",
+            reason="contract",
+        )
+    elif not plans:
+        set_result(
+            "evidence-retention",
+            "not_reached",
+            "No completed extraction plan exists.",
+        )
+    else:
+        retention = kept_tokens / planned_tokens if planned_tokens else 1.0
+        holds = evidence_retention_holds(
+            planned_tokens=planned_tokens,
+            kept_tokens=kept_tokens,
+            largest_lost_tokens=largest_lost_tokens,
+        )
+        set_result(
+            "evidence-retention",
+            "pass" if holds else "blocked",
+            (
+                f"Kept {retention:.0%} of planned token mass; minimum is "
+                f"{_MIN_PLANNED_TOKEN_RETENTION:.0%} with the largest single loss per "
+                f"source forgiven, never below {_MIN_RETENTION_AFTER_LARGEST_LOSS:.0%}."
+            ),
+        )
 
 
 def _script_results(project_id: UUID, root: Path, project, set_result) -> None:

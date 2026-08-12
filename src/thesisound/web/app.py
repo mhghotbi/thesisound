@@ -42,6 +42,7 @@ from thesisound.product_metrics.events import (
 from thesisound.product_metrics.store import ProductEventStore
 from thesisound.services.observability_reporting import ObservabilityReporter
 from thesisound.services.product_metrics_rollup import ProductMetricsRollup
+from thesisound.services.readiness import project_readiness
 from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
 from thesisound.web.audio_routes import register_audio_routes
 from thesisound.web.auth import NullOtpSender, OtpError, OtpSenderPort, OtpService
@@ -844,6 +845,8 @@ def create_app(
         prior_knowledge: Annotated[str, Form()] = "introductory",
         duration: Annotated[int, Form()] = 20,
         mode: Annotated[str, Form()] = "explanatory",
+        must_include: Annotated[str, Form()] = "",
+        exclusions: Annotated[str, Form()] = "",
     ) -> Response:
         if redirect := _login_redirect(request):
             return redirect
@@ -861,9 +864,21 @@ def create_app(
                 target_duration_minutes=duration,
                 modes=[mode],
                 learning_objectives=["فهم روشن موضوع و ایده‌های اصلی آن"],
+                scope_inclusions=[
+                    item.strip() for item in must_include.splitlines() if item.strip()
+                ],
+                scope_exclusions=[
+                    item.strip() for item in exclusions.splitlines() if item.strip()
+                ],
             )
             project = Project(raw_input=topic, brief=brief)
+            # This form is the whole gate: the operator wrote the question and
+            # (optionally) the scope, so submitting it is the real confirmation --
+            # there is no separate approval screen to stop at. BRIEF_READY is
+            # still visited (not skipped) because workflow rewind targets it
+            # directly; see workflow_revision.rewind().
             transition(project, ProjectState.BRIEF_READY)
+            transition(project, ProjectState.SOURCES_COLLECTING)
             workspace.save_project(project)
             try:
                 accounts.add_project_member(
@@ -889,6 +904,12 @@ def create_app(
                 user_id=request.state.account.user_id,
                 project_id=project.project_id,
             )
+            emit(
+                ProductEvent.GATE_BRIEF_CONFIRMED,
+                GateBriefConfirmed(),
+                user_id=request.state.account.user_id,
+                project_id=project.project_id,
+            )
         except ValueError as error:
             return render(
                 request,
@@ -901,12 +922,14 @@ def create_app(
                         "prior_knowledge": prior_knowledge,
                         "duration": duration,
                         "mode": mode,
+                        "must_include": must_include,
+                        "exclusions": exclusions,
                     },
                 },
                 status_code=422,
             )
         return RedirectResponse(
-            f"/projects/{project.project_id}/brief",
+            f"/projects/{project.project_id}/sources",
             status_code=HTTP_303_SEE_OTHER,
         )
 
@@ -921,10 +944,21 @@ def create_app(
             project,
             failure_action_url=failure_action_url(project),
         )
+        schema_drift = any(
+            result.reason == "schema"
+            for result in project_readiness(
+                project_id=project_id,
+                workspace_root=workspace.root,
+            )
+        )
         return render(
             request,
             "projects/overview.html",
-            {"project": project, "model": model},
+            {
+                "project": project,
+                "model": model,
+                "schema_drift": schema_drift,
+            },
         )
 
     @app.get("/projects/{project_id}/brief", response_class=HTMLResponse)

@@ -38,7 +38,7 @@
     <div>
       <p class="kicker">گفتار تازه</p>
       <h1>می‌خواهید چه چیزی را بهتر بفهمید؟</h1>
-      <p>یک سؤال واقعی بنویسید و فقط مخاطب، سطح و مدت را مشخص کنید. برداشت اولیه پیش از تحلیل منابع برای تأیید شما نمایش داده می‌شود.</p>
+      <p>یک سؤال واقعی بنویسید، مخاطب، سطح و مدت را مشخص کنید و در صورت نیاز محدودهٔ دقیق‌تری هم بنویسید. با ثبت همین فرم تحلیل منابع آغاز می‌شود؛ بعداً هم می‌توانید این برداشت را ویرایش کنید.</p>
     </div>
   </header>
 
@@ -55,6 +55,15 @@
       </p>
       {% endif %}
       <small class="field-hint" id="topic-hint">هرچه پرسش مشخص‌تر باشد، سنجش کفایت منابع دقیق‌تر می‌شود.</small>
+    </label>
+
+    <label class="field">
+      <span>حتماً پوشش داده شود <small>(اختیاری؛ هر مورد در یک خط)</small></span>
+      <textarea name="must_include" rows="2" placeholder="مثلاً: زمینهٔ تاریخی مفهوم">{{ values.must_include if values else '' }}</textarea>
+    </label>
+    <label class="field">
+      <span>خارج از این گفتار <small>(اختیاری؛ هر مورد در یک خط)</small></span>
+      <textarea name="exclusions" rows="2" placeholder="مثلاً: جزئیات فنی کم‌اهمیت">{{ values.exclusions if values else '' }}</textarea>
     </label>
 
     <div class="field-grid">
@@ -99,7 +108,7 @@
 
     <div class="form-actions form-actions--split">
       <a class="button button--secondary" href="/projects">انصراف</a>
-      <button class="button button--primary" type="submit">ساخت برداشت اولیه</button>
+      <button class="button button--primary" type="submit">تأیید و شروع تحلیل منابع</button>
     </div>
   </form>
 </div>

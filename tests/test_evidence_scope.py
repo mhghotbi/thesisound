@@ -395,9 +395,12 @@ def test_second_pass_deepens_required_section_block_once(tmp_path) -> None:
 
     service.extract_evidence(project_id, source_id, model="fake")
 
+    locators = store.load_block_locators(project_id, source_id)
     records = {
         record.block_id: record
-        for record in store.load_block_extractions(project_id, source_id)
+        for record in store.load_block_extractions(
+            project_id, source_id, block_locators=locators
+        )
     }
     # FakeRunner's DocumentMapDraft marks the first block's section required.
     assert records["block-01"].extraction_pass == 2
@@ -415,7 +418,9 @@ def test_second_pass_deepens_required_section_block_once(tmp_path) -> None:
 
     aggregate = {
         record.block_id: record
-        for record in store.load_extractions(project_id, source_id)
+        for record in store.load_extractions(
+            project_id, source_id, block_locators=locators
+        )
     }
     assert aggregate["block-01"].extraction_pass == 2
 
@@ -456,7 +461,11 @@ def test_second_pass_failure_keeps_the_pass_one_record(tmp_path) -> None:
 
     record = next(
         record
-        for record in store.load_block_extractions(project_id, source_id)
+        for record in store.load_block_extractions(
+            project_id,
+            source_id,
+            block_locators=store.load_block_locators(project_id, source_id),
+        )
         if record.block_id == "block-01"
     )
     assert record.status == "extracted"
@@ -473,7 +482,11 @@ def test_second_pass_does_not_trigger_below_extended_depth(tmp_path) -> None:
     )
     store = service.artifact_store
     service.extract_evidence(project_id, source_id, model="fake")
-    records = store.load_block_extractions(project_id, source_id)
+    records = store.load_block_extractions(
+        project_id,
+        source_id,
+        block_locators=store.load_block_locators(project_id, source_id),
+    )
     assert records
     assert all(record.extraction_pass == 1 for record in records)
 

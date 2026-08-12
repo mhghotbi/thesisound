@@ -13,7 +13,16 @@
     </div>
   </div>
 </header>
-<div class="form-actions"><a class="button button--quiet" href="/projects/{{ project.project_id }}/readiness">بررسی آمادگی گفتار</a></div>
+<div class="form-actions">
+  <a class="button button--quiet" href="/projects/{{ project.project_id }}/readiness">بررسی آمادگی گفتار</a>
+  {% if schema_drift %}
+  <span class="status-label status-label--attention status-label--pill">
+    <svg class="status-label__mark" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 2l5.5 10h-11z"/><path d="M7 6v3M7 10.6v.1"/></svg>
+    <span>اختلاف نسخهٔ شاهد</span>
+    <code class="operator-only"><bdi dir="ltr">schema</bdi></code>
+  </span>
+  {% endif %}
+</div>
 
 {{ attention_panel(
   'اقدام لازم' if model.requires_action else 'وضعیت',

@@ -105,7 +105,11 @@ def test_extract_evidence_skips_when_identity_matches(tmp_path: Path) -> None:
     plan = store.load_extraction_plan(project_id, source_id)
     assert skip_snapshots[0] == set(plan.selected_block_ids)
 
-    records = store.load_block_extractions(project_id, source_id)
+    records = store.load_block_extractions(
+        project_id,
+        source_id,
+        block_locators=store.load_block_locators(project_id, source_id),
+    )
     stamped = [r for r in records if r.status == "extracted"]
     assert stamped
     assert stamped[0].extraction_identity == evidence_extraction_identity(

@@ -34,6 +34,7 @@ def register_readiness_command(app: typer.Typer) -> None:
         else:
             table = Table(title=f"Readiness · {project_id}")
             table.add_column("Status")
+            table.add_column("Reason")
             table.add_column("Gate")
             table.add_column("Actor")
             table.add_column("Detail")
@@ -41,6 +42,7 @@ def register_readiness_command(app: typer.Typer) -> None:
             for result in results:
                 table.add_row(
                     result.status,
+                    result.reason or "—",
                     result.label,
                     result.actor,
                     result.detail,

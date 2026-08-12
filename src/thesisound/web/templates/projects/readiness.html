@@ -11,11 +11,12 @@
 <section class="section-block">
   <div class="table-wrap">
     <table>
-      <thead><tr><th>وضعیت</th><th>کنترل</th><th>مسئول</th><th>شرح</th></tr></thead>
+      <thead><tr><th>وضعیت</th><th>دلیل</th><th>کنترل</th><th>مسئول</th><th>شرح</th></tr></thead>
       <tbody>
       {% for result in gate_results %}
         <tr>
           <td><code><bdi dir="ltr">{{ result.status }}</bdi></code></td>
+          <td>{% if result.reason %}<code><bdi dir="ltr">{{ result.reason }}</bdi></code>{% else %}—{% endif %}</td>
           <td>{{ result.label }} <span class="operator-only"><code>{{ result.code }}</code></span></td>
           <td>{{ 'انسان' if result.actor == 'human' else 'سامانه' }}</td>
           <td>{{ result.detail }}{% if result.evidence %}<div class="operator-only"><code><bdi dir="ltr">{{ result.evidence }}</bdi></code></div>{% endif %}</td>

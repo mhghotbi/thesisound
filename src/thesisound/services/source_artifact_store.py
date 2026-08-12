@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from thesisound.domain import DocumentMap, EvidenceItem
+from thesisound.domain import DocumentMap, EvidenceItem, Locator
 from thesisound.ingestion import IngestionResult
+from thesisound.services.evidence_artifact_upgrade import (
+    CURRENT_EXTRACTION_SCHEMA_VERSION,
+    resolve_block_locator,
+    upgrade_block_extraction_payload,
+)
 from thesisound.source_analysis import (
     BlockBuildReport,
     BlockEvidenceExtraction,
@@ -80,6 +86,16 @@ class SourceArtifactStore:
             SourceDocumentBlock.model_validate(item) for item in self._read_jsonl(path)
         ]
 
+    def load_block_locators(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+    ) -> dict[str, Locator]:
+        return {
+            block.block_id: block.locator
+            for block in self.load_blocks(project_id, source_id)
+        }
+
     def save_document_map(
         self,
         project_id: UUID,
@@ -124,7 +140,10 @@ class SourceArtifactStore:
         record: BlockEvidenceExtraction,
     ) -> None:
         path = self.source_dir(project_id, source_id) / "evidence" / "extractions"
-        self._write_json(path / f"{_safe_id(record.block_id)}.json", record)
+        self._write_json(
+            path / f"{_safe_id(record.block_id)}.json",
+            _stamp_extraction_schema(record),
+        )
 
     def block_extractions_dir(self, project_id: UUID, source_id: UUID) -> Path:
         return self.source_dir(project_id, source_id) / "evidence" / "extractions"
@@ -133,17 +152,18 @@ class SourceArtifactStore:
         self,
         project_id: UUID,
         source_id: UUID,
+        *,
+        block_locators: Mapping[str, Locator],
     ) -> list[BlockEvidenceExtraction]:
         directory = self.block_extractions_dir(project_id, source_id)
         if not directory.exists():
             return []
         records: list[BlockEvidenceExtraction] = []
         for path in sorted(directory.glob("*.json")):
-            records.append(
-                BlockEvidenceExtraction.model_validate_json(
-                    path.read_text(encoding="utf-8")
-                )
-            )
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            locator = resolve_block_locator(raw, block_locators)
+            upgraded = upgrade_block_extraction_payload(raw, block_locator=locator)
+            records.append(BlockEvidenceExtraction.model_validate(upgraded))
         return records
 
     def prune_block_extractions(
@@ -167,8 +187,9 @@ class SourceArtifactStore:
         records: list[BlockEvidenceExtraction],
     ) -> None:
         directory = self.source_dir(project_id, source_id)
-        self._write_jsonl(directory / "evidence-extractions.jsonl", records)
-        evidence = [claim for record in records for claim in record.extraction.claims]
+        stamped = [_stamp_extraction_schema(record) for record in records]
+        self._write_jsonl(directory / "evidence-extractions.jsonl", stamped)
+        evidence = [claim for record in stamped for claim in record.extraction.claims]
         self._write_jsonl(directory / "evidence-items.jsonl", evidence)
 
     def load_evidence_items(
@@ -183,12 +204,16 @@ class SourceArtifactStore:
         self,
         project_id: UUID,
         source_id: UUID,
+        *,
+        block_locators: Mapping[str, Locator],
     ) -> list[BlockEvidenceExtraction]:
         path = self.source_dir(project_id, source_id) / "evidence-extractions.jsonl"
-        return [
-            BlockEvidenceExtraction.model_validate(item)
-            for item in self._read_jsonl(path)
-        ]
+        records: list[BlockEvidenceExtraction] = []
+        for item in self._read_jsonl(path):
+            locator = resolve_block_locator(item, block_locators)
+            upgraded = upgrade_block_extraction_payload(item, block_locator=locator)
+            records.append(BlockEvidenceExtraction.model_validate(upgraded))
+        return records
 
     def save_claim_ledger(
         self,
@@ -262,6 +287,14 @@ class SourceArtifactStore:
             for line in path.read_text(encoding="utf-8").splitlines()
             if line
         ]
+
+
+def _stamp_extraction_schema(record: BlockEvidenceExtraction) -> BlockEvidenceExtraction:
+    if record.schema_version == CURRENT_EXTRACTION_SCHEMA_VERSION:
+        return record
+    return record.model_copy(
+        update={"schema_version": CURRENT_EXTRACTION_SCHEMA_VERSION}
+    )
 
 
 def _atomic_write(path: Path, content: str) -> None:

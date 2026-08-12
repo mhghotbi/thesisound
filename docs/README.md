@@ -94,6 +94,20 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`02-server-mono-process-adoption-fa.md`](06-operations/02-server-mono-process-adoption-fa.md) | همان، روایت غیرفنی |
 | [`03-production-sop.md`](06-operations/03-production-sop.md) | رویهٔ عملیاتی، ۱۲ گیت و تصمیم‌های صرفاً انسانی |
 
+## `07-specs/` — specهای اصلاحی برخاسته از ممیزی آمادگی MVP
+
+قرارداد پیاده‌سازی، نه پیشنهاد. ۰۴ و ۰۵ از بازطراحی رابط می‌آیند؛ ۰۱–۰۳ و ۰۶–۰۷ هر کدام یک یافتهٔ [ممیزی آمادگی MVP](thesisound-mvp-readiness-audit-fa.html) را به تغییری قابل‌پیاده‌سازی تبدیل می‌کنند: مسئلهٔ اندازه‌گیری‌شده، طراحی، معیار پذیرش و برنامهٔ تست. سه بند «Simplify / Change before MVP» در ۰۳، ۰۶ و ۰۷ جداگانه پوشش داده شده‌اند.
+
+| سند | موضوع | وابستگی |
+| --- | --- | --- |
+| [`01-evidence-artifact-schema-upgrade.md`](07-specs/01-evidence-artifact-schema-upgrade.md) | خواندن دوبارهٔ artifactهای شواهد پس از schema drift؛ upgrade در read path، تخریب per-artifact، تفکیک «ناخوانا» از «بی‌کیفیت» | — |
+| [`02-script-dialogue-quality-gate.md`](07-specs/02-script-dialogue-quality-gate.md) | binding کردن کف کیفیت گفت‌وگو: filler، تکرار، عدم توازن گوینده و نکات ازدست‌رفته | بند dropped-content به ۰۱ وابسته است |
+| [`03-inline-research-brief.md`](07-specs/03-inline-research-brief.md) | brief درون‌صفحه و قابل‌ویرایش، بدون approval جدا — بدون حذف state | — |
+| [`04-evidence-traceability.md`](07-specs/04-evidence-traceability.md) | ردیابی شاهد: از گفته تا نشانی در منبع | — |
+| [`05-plan-priorities.md`](07-specs/05-plan-priorities.md) | اولویت‌های کاربر در طرح گفتار و مذاکره بر سر ظرفیت | ۰۴ §۶.۵ |
+| [`06-conditional-document-map.md`](07-specs/06-conditional-document-map.md) | حذف فراخوانی map وقتی انتخاب شواهد جامع است، با map قطعیِ جایگزین | — |
+| [`07-conditional-glossary-and-verification.md`](07-specs/07-conditional-glossary-and-verification.md) | glossary همیشه deterministic و مدل فقط در صورت نیاز؛ verifier با ثبت صریح «لازم نبود» | بعد از ۰۲ |
+
 ## افزودن سند جدید
 
 1. پوشهٔ حوزهٔ مربوطه را انتخاب کنید؛ حوزهٔ جدید = پوشهٔ جدید با پیشوند دو رقمی.

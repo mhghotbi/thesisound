@@ -65,5 +65,10 @@ claim_reconciliation = "okian_deepseek_pro"
 coverage_audit = "okian_deepseek_pro"
 episode_plan = "okian_deepseek_pro"
 persian_script_segment = "okian_luna"
+# Independence from persian_script_segment (audit R6, ModelRouter._require_reviewer_independence)
+# comes from this being a distinct Okian profile, not from THESISOUND_MODEL_REVIEWER -- that
+# setting only takes effect if a profile here uses model_setting = "model_reviewer". If you ever
+# repoint script_verifier at "okian_luna" (or any profile resolving to the same model as the
+# writer), the router refuses to resolve the route rather than let the writer grade itself.
 script_verifier = "okian_deepseek_pro"
 script_reviser = "okian_luna"

@@ -243,7 +243,13 @@ class SourceAnalysisService:
         self.artifact_store.prune_block_extractions(project_id, source_id, known_ids)
         prior = [
             record
-            for record in self.artifact_store.load_block_extractions(project_id, source_id)
+            for record in self.artifact_store.load_block_extractions(
+                project_id,
+                source_id,
+                block_locators=self.artifact_store.load_block_locators(
+                    project_id, source_id
+                ),
+            )
             if record.block_id in known_ids
         ]
         extracted_prior = [record for record in prior if record.status == "extracted"]
@@ -534,7 +540,13 @@ class SourceAnalysisService:
                 selected_ids = set(planned.selected_block_ids)
         extractions = [
             record
-            for record in self.artifact_store.load_extractions(project_id, source_id)
+            for record in self.artifact_store.load_extractions(
+                project_id,
+                source_id,
+                block_locators=self.artifact_store.load_block_locators(
+                    project_id, source_id
+                ),
+            )
             if record.status == "extracted"
             and (selected_ids is None or record.block_id in selected_ids)
         ]

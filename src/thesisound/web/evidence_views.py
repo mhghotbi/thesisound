@@ -407,7 +407,13 @@ def resolve_judgement_snapshot(
     titles = source_titles_for_project(project, source_store)
     extraction_identity = None
     try:
-        for extraction in source_store.load_extractions(project.project_id, source_id):
+        for extraction in source_store.load_extractions(
+            project.project_id,
+            source_id,
+            block_locators=source_store.load_block_locators(
+                project.project_id, source_id
+            ),
+        ):
             if any(
                 claim_item.evidence_id == evidence_id
                 for claim_item in extraction.extraction.claims

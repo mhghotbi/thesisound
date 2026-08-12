@@ -200,6 +200,9 @@ class BlockEvidenceExtraction(BaseModel):
 
     ``extraction_identity`` records model/prompt/extractor versions so reuse can
     refuse stale blocks after a semantic change (R6). Absent identity is a miss.
+
+    ``schema_version`` defaults to 1 so payloads written before the provenance
+    change still load; writers stamp the current version on save.
     """
 
     source_id: UUID
@@ -210,6 +213,7 @@ class BlockEvidenceExtraction(BaseModel):
     failure_kind: Literal["contract", "provider"] | None = None
     extraction_pass: int = Field(default=1, ge=1)
     extraction_identity: dict[str, Any] | None = None
+    schema_version: int = 1
 
 
 class ClaimDraft(BaseModel):

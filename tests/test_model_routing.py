@@ -9,7 +9,7 @@ from thesisound.model_routing import load_model_router
 from thesisound.modeling import ModelConfigurationError
 
 
-def test_evidence_extraction_still_resolves_to_the_fast_model_by_default() -> None:
+def test_checked_in_routing_file_resolves_evidence_extraction_to_okian() -> None:
     settings = Settings(_env_file=None, model_routing_file=Path("config/model-routing.toml"))
     route = load_model_router(settings).resolve(
         stage="evidence_extraction",
@@ -17,8 +17,8 @@ def test_evidence_extraction_still_resolves_to_the_fast_model_by_default() -> No
         model_tier="fast",
     )
 
-    assert route.model == settings.model_fast
-    assert route.profile == "gemini_fast"
+    assert route.provider == "okian"
+    assert route.profile == "okian_deepseek_flash"
 
 
 def test_evidence_extraction_override_resolves_the_strong_profile() -> None:
@@ -40,7 +40,6 @@ def test_evidence_extraction_override_resolves_the_strong_profile() -> None:
 def test_checked_in_routing_file_resolves_script_and_map_prompt_ids() -> None:
     settings = Settings(
         _env_file=None,
-        model_reviewer="gemini-reviewer-test",
         model_routing_file=Path("config/model-routing.toml"),
     )
     router = load_model_router(settings)
@@ -51,21 +50,22 @@ def test_checked_in_routing_file_resolves_script_and_map_prompt_ids() -> None:
             requested_model=settings.model_fast,
             model_tier="fast",
         ).provider
-        == "gemini"
+        == "okian"
     )
     script_route = router.resolve(
         stage="persian_script_segment",
         requested_model=settings.model_strong,
         model_tier="strong",
     )
-    assert script_route.provider == "gemini"
-    assert script_route.profile == "gemini_strong"
+    assert script_route.provider == "okian"
+    assert script_route.profile == "okian_luna"
     verifier_route = router.resolve(
         stage="script_verifier",
         requested_model=settings.model_strong,
         model_tier="strong",
     )
-    assert verifier_route.profile == "gemini_reviewer"
+    assert verifier_route.provider == "okian"
+    assert verifier_route.profile == "okian_deepseek_pro"
     # Observability stages like script_segment:{id} are not route keys; ModelRunner
     # must resolve via the prompt contract id instead.
     assert (
@@ -152,11 +152,30 @@ def test_unset_reviewer_model_falls_back_to_strong() -> None:
     assert settings.model_reviewer == settings.model_strong
 
 
-def test_reviewer_route_uses_the_configured_reviewer_model() -> None:
+def test_reviewer_route_uses_the_configured_reviewer_model(tmp_path: Path) -> None:
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.writer]
+provider = "gemini"
+model_setting = "model_strong"
+
+[profiles.reviewer]
+provider = "gemini"
+model_setting = "model_reviewer"
+
+[routes]
+persian_script_segment = "writer"
+script_verifier = "reviewer"
+""".strip(),
+        encoding="utf-8",
+    )
     settings = Settings(
         _env_file=None,
         model_reviewer="gemini-reviewer-test",
-        model_routing_file=Path("config/model-routing.toml"),
+        model_routing_file=routing_file,
     )
     router = load_model_router(settings)
     reviewer = router.resolve(
@@ -238,11 +257,29 @@ coverage_audit = "reviewer"
     assert load_model_router(settings).self_grading_pairs() == []
 
 
-def test_verifier_route_is_blocked_when_the_reviewer_model_is_unset() -> None:
-    settings = Settings(
-        _env_file=None,
-        model_routing_file=Path("config/model-routing.toml"),
+def test_verifier_route_is_blocked_when_the_reviewer_model_is_unset(
+    tmp_path: Path,
+) -> None:
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.writer]
+provider = "gemini"
+model_setting = "model_strong"
+
+[profiles.reviewer]
+provider = "gemini"
+model_setting = "model_reviewer"
+
+[routes]
+persian_script_segment = "writer"
+script_verifier = "reviewer"
+""".strip(),
+        encoding="utf-8",
     )
+    settings = Settings(_env_file=None, model_routing_file=routing_file)
 
     with pytest.raises(ModelConfigurationError) as excinfo:
         load_model_router(settings).resolve(
@@ -258,12 +295,32 @@ def test_verifier_route_is_blocked_when_the_reviewer_model_is_unset() -> None:
 
 
 def test_verifier_route_is_blocked_when_the_reviewer_is_explicitly_set_to_the_writer_model(
+    tmp_path: Path,
 ) -> None:
     # Model identity, not the presence of an environment variable, is the predicate.
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.writer]
+provider = "gemini"
+model_setting = "model_strong"
+
+[profiles.reviewer]
+provider = "gemini"
+model_setting = "model_reviewer"
+
+[routes]
+persian_script_segment = "writer"
+script_verifier = "reviewer"
+""".strip(),
+        encoding="utf-8",
+    )
     settings = Settings(
         _env_file=None,
         model_reviewer="gemini-3.6-flash",
-        model_routing_file=Path("config/model-routing.toml"),
+        model_routing_file=routing_file,
     )
 
     with pytest.raises(ModelConfigurationError):
@@ -306,11 +363,32 @@ script_verifier = "reviewer"
         )
 
 
-def test_verifier_route_resolves_when_the_reviewer_model_differs() -> None:
+def test_verifier_route_resolves_when_the_reviewer_model_differs(
+    tmp_path: Path,
+) -> None:
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.writer]
+provider = "gemini"
+model_setting = "model_strong"
+
+[profiles.reviewer]
+provider = "gemini"
+model_setting = "model_reviewer"
+
+[routes]
+persian_script_segment = "writer"
+script_verifier = "reviewer"
+""".strip(),
+        encoding="utf-8",
+    )
     settings = Settings(
         _env_file=None,
         model_reviewer="gemini-reviewer-test",
-        model_routing_file=Path("config/model-routing.toml"),
+        model_routing_file=routing_file,
     )
 
     route = load_model_router(settings).resolve(
@@ -320,7 +398,7 @@ def test_verifier_route_resolves_when_the_reviewer_model_differs() -> None:
     )
 
     assert route.model == "gemini-reviewer-test"
-    assert route.profile == "gemini_reviewer"
+    assert route.profile == "reviewer"
 
 
 def test_writer_route_blocks_a_per_run_override_to_the_configured_reviewer_model() -> None:
@@ -381,13 +459,40 @@ coverage_audit = "shared"
     assert router.blocked_self_grading_pairs() == []
 
 
-def test_blocked_self_grading_pairs_reports_only_the_script_verifier() -> None:
+def test_checked_in_routing_file_has_no_blocked_self_grading_pairs() -> None:
+    # script_verifier is routed to a distinct Okian profile (okian_deepseek_pro)
+    # from persian_script_segment's writer profile (okian_luna), so independence
+    # already holds without needing THESISOUND_MODEL_REVIEWER for this file.
     settings = Settings(
         _env_file=None,
         model_routing_file=Path("config/model-routing.toml"),
     )
 
-    blocked = load_model_router(settings).blocked_self_grading_pairs()
+    assert load_model_router(settings).blocked_self_grading_pairs() == []
 
-    assert len(blocked) == 1
-    assert blocked[0][0] == "script_verifier"
+
+def test_checked_in_routing_file_keeps_verifier_independent_from_writer() -> None:
+    """Regression guard for the writer-grades-its-own-script defect (audit R6):
+
+    resolve both stages from the real, checked-in routing file and require the
+    provider/model to differ, so a future edit to config/model-routing.toml that
+    collapses them back onto one model fails this test instead of shipping silently.
+    """
+    settings = Settings(
+        _env_file=None,
+        model_routing_file=Path("config/model-routing.toml"),
+    )
+    router = load_model_router(settings)
+
+    verifier = router.resolve(
+        stage="script_verifier",
+        requested_model=settings.model_strong,
+        model_tier="strong",
+    )
+    writer = router.resolve(
+        stage="persian_script_segment",
+        requested_model=settings.model_strong,
+        model_tier="strong",
+    )
+
+    assert (verifier.provider, verifier.model) != (writer.provider, writer.model)
