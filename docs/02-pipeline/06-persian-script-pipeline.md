@@ -53,6 +53,8 @@ uv run thesisound prepare-script <project-id>
 
 واژه‌نامه فقط اصطلاح‌هایی را نگه می‌دارد که روی معنا، تمایز، attribution یا تلفظ اثر دارند. ترجمه contested باید صریحاً contested باقی بماند.
 
+ساخت واژه‌نامه **ابتدا قطعی است** (`deterministic_glossary`): از `ExtractedDefinition`ها، توکن‌های لاتین در excerptها و متن claimها فهرست اصطلاح می‌سازد و فقط وقتی تصمیم ترجمه‌ای باز مانده (فرم فارسی مطمئن نیست، تعارض بین منابع، یا کاندیدای لاتین بی‌ترجمه) مدل صدا زده می‌شود. نتیجه همیشه یک `Glossary` کامل است (`build_kind` برابر `deterministic` یا `model`) تا `glossary_inconsistency` خاموش نشود. جزئیات: [`07-specs/07-conditional-glossary-and-verification.md`](../07-specs/07-conditional-glossary-and-verification.md).
+
 Artifact:
 
 ```text

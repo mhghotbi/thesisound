@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from thesisound import tracing
-from thesisound.domain import ClaimRecord, Project, ProjectState, Script, ScriptTurn
+from thesisound.domain import ClaimRecord, ExtractedDefinition, Project, ProjectState, Script, ScriptTurn
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.script import (
@@ -32,6 +32,16 @@ from thesisound.services.semantic_identity import script_pipeline_identity
 from thesisound.services.source_artifact_store import SourceArtifactStore
 
 ScriptStageCallback = Callable[[str], None]
+
+
+def revision_is_required(checks: ScriptCheckReport, verification: VerificationDraft) -> bool:
+    """Whether the targeted reviser should run.
+
+    The model verifier is unconditional (audit revision 2). This helper only
+    gates the reviser: skip when deterministic checks and verification both pass.
+    """
+
+    return checks.verdict != "pass" or verification.verdict != "pass"
 
 
 class ScriptPipelineService:
@@ -79,12 +89,15 @@ class ScriptPipelineService:
             raise ValueError("ResearchBrief and EpisodePlan are required for glossary generation.")
         packs = self.episode_store.load_evidence_packs(project_id)
         graph = self.episode_store.load_disagreement_graph(project_id)
+        definitions, claims = self._load_glossary_inputs(project_id)
         glossary, run = self.glossary_builder.build(
             project_id=project_id,
             brief=project.brief,
             episode_plan=project.episode_plan,
             evidence_packs=packs,
             disagreement_graph=graph,
+            definitions=definitions,
+            claims=claims,
             model=model,
             prompt_version=prompt_version,
         )
@@ -412,7 +425,7 @@ class ScriptPipelineService:
                                 score=verification.quality.overall,
                             )
 
-            if checks.verdict != "pass" or verification.verdict != "pass":
+            if revision_is_required(checks, verification):
                 revised = self.script_store.load_script_optional(project_id, revised=True)
                 if revised is None:
                     stage("revising")
@@ -554,6 +567,13 @@ class ScriptPipelineService:
             raise
 
     def _load_claims(self, project_id: UUID) -> list[ClaimRecord]:
+        definitions, claims = self._load_glossary_inputs(project_id)
+        del definitions
+        return claims
+
+    def _load_glossary_inputs(
+        self, project_id: UUID
+    ) -> tuple[list[ExtractedDefinition], list[ClaimRecord]]:
         project = self.workspace_store.load_project(project_id)
         claim_ready_ids = self.source_store.list_claim_ready_source_ids(project_id)
         source_ids = [source.source_id for source in project.sources if source.usable_as_evidence]
@@ -568,9 +588,12 @@ class ScriptPipelineService:
                 + ", ".join(str(source_id) for source_id in missing)
             )
         claims: list[ClaimRecord] = []
+        definitions: list[ExtractedDefinition] = []
         for source_id in source_ids:
-            claims.extend(self.source_store.load_claim_ledger(project_id, source_id).claims)
-        return claims
+            ledger = self.source_store.load_claim_ledger(project_id, source_id)
+            claims.extend(ledger.claims)
+            definitions.extend(ledger.definitions)
+        return definitions, claims
 
     def _ensure_script_drafting(self, project_id: UUID) -> None:
         project = self.workspace_store.load_project(project_id)

@@ -1,20 +1,22 @@
 # 07 — Conditional Glossary and Model Verification
 
-Date: 2026-08-12 · Status: proposed · Effort: M · Source: [MVP readiness audit](../thesisound-mvp-readiness-audit-fa.html), "Simplify / Change before MVP" — *glossary and model verifier/reviser conditional only*
+Date: 2026-08-12 · Status: **implemented (glossary + reviser)** · Effort: M · Source: [MVP readiness audit](../thesisound-mvp-readiness-audit-fa.html), "Simplify / Change before MVP" — *glossary and model verifier/reviser conditional only*
 
-Make the model-backed halves of the glossary and verification stages conditional, without letting "conditional" become "silently absent". Both stages are load-bearing for gates elsewhere, and a naive skip turns a binding check into a no-op and a release gate into a permanent block.
+Make the model-backed half of the glossary stage conditional, without letting "conditional" become "silently absent". The glossary is load-bearing for `glossary_inconsistency`; a naive skip turns that binding check into a no-op.
+
+**Adopted scope (2026-08-12):** §2 (deterministic glossary always, model sometimes) and §3.3 (explicit reviser skip). **§3 conditional verifier is superseded** by [audit revision 2](../thesisound-mvp-readiness-audit-2026-08-12-fa.html) — the model verifier stays unconditional; do not implement `verdict="not_required"`.
 
 ## 1. Position
 
-**Adopt for the verifier and reviser. Adopt for the glossary only as "deterministic always, model sometimes".**
+**Adopt for the reviser. Adopt for the glossary only as "deterministic always, model sometimes". Do not adopt conditional verification.**
 
-The cost case is real — the audit measured the historical glossary and verifier calls at roughly 50k input tokens each, on an episode whose reconstructed floor was about $1.09. But each stage has a downstream consumer that treats a missing artifact as a pass or as a block, and neither behaviour is what "conditional" is supposed to mean. Those two couplings are the substance of this spec.
+The cost case for glossary is real — the audit measured the historical glossary call at roughly 50k input tokens. But `glossary_inconsistency` treats an empty glossary as a silent pass, so "skip glossary" without a deterministic artifact would remove a binding quality check. That coupling is the substance of the shipped half of this spec.
 
 ## 2. Coupling A — an absent glossary silently disables a binding check
 
 Two facts:
 
-1. [`script_pipeline_service.py:114`](../../src/thesisound/services/script_pipeline_service.py:114) hard-loads the glossary: `glossary = self.script_store.load_glossary(project_id)`. Skipping the build raises here.
+1. [`script_pipeline_service.py`](../../src/thesisound/services/script_pipeline_service.py) hard-loads the glossary in `write_script` / checks. Skipping the build raises here.
 2. `ScriptChecker`'s `glossary_inconsistency` check iterates `for term in glossary.terms`. **An empty glossary produces zero issues.**
 
 `glossary_inconsistency` is `severity="high"` — one of the few checks that can actually move the verdict (see [`02-script-dialogue-quality-gate.md`](02-script-dialogue-quality-gate.md) §1.2 for how few there are). It is also precisely the check that guards terminology and pronunciation consistency, which is the NotebookLM complaint class the audit documents under "pronunciation of names and technical terms".
@@ -29,33 +31,29 @@ So a plain "skip glossary for simple episodes" trades a measurable model cost fo
 - Latin-script tokens appearing in evidence excerpts, which are the transliteration risk.
 - Proper nouns already present in claim text.
 
-The result is a `Glossary` with real `terms`, `model_run_id` recorded as the deterministic builder rather than a model run, and `translation_status` set to a deterministic value. `glossary_inconsistency` keeps working because `terms` is non-empty.
+The result is a `Glossary` with real `terms`, `model_run_id` recorded as the deterministic builder rather than a model run, `build_kind="deterministic"`, and confident Persian terms at `translation_status="standard"`. `glossary_inconsistency` keeps working because `terms` is non-empty when the corpus supplies confident forms.
 
-**The model pass becomes conditional.** Invoke `GlossaryBuilderService` only when the deterministic pass leaves work a model can do:
+**The model pass becomes conditional.** Invoke the model glossary path only when the deterministic pass leaves work a model can do:
 
 | Condition | Rationale |
 |---|---|
 | ≥ 1 term with no confident Persian form | the actual translation decision |
-| ≥ 1 term needing a pronunciation hint | TTS-facing, not derivable |
+| ≥ 1 unresolved Latin candidate (TTS / transliteration risk) | pronunciation / form not derivable |
 | corpus contains ≥ 2 sources with conflicting forms for one term | reconciliation |
 
 None satisfied → no call. This preserves the check, keeps the artifact well-formed, and removes the call on the episodes that never needed it.
 
-**Distinguish empty from absent.** Add `build_kind: Literal["deterministic", "model"]` to `Glossary`, defaulted to `"model"` so stored artifacts still load. `glossary_inconsistency` may then report "glossary is empty" as a `medium` issue when `build_kind == "deterministic"` and `terms` is empty on a corpus that contains Latin-script tokens — the one case where an empty glossary is itself the defect rather than an absence of work.
+**Distinguish empty from absent.** `build_kind: Literal["deterministic", "model"]` on `Glossary`, defaulted to `"model"` so stored artifacts still load. `corpus_had_latin_tokens` records whether the harvest saw Latin. `glossary_inconsistency` reports "glossary is empty" as a `medium` issue when `build_kind == "deterministic"`, `terms` is empty, and `corpus_had_latin_tokens` — the one case where an empty glossary is itself the defect rather than an absence of work.
 
-## 3. Coupling B — a skipped verifier blocks the release gate
+Implementation: [`deterministic_glossary.py`](../../src/thesisound/services/deterministic_glossary.py), wired through [`glossary_builder.py`](../../src/thesisound/services/glossary_builder.py).
 
-`readiness.py` treats the verification artifact three ways:
+## 3. Coupling B — conditional verifier (superseded)
 
-| Situation | Result |
-|---|---|
-| `load_latest_verification` raises `FileNotFoundError` | `independent-verification` → `not_reached` ([`readiness.py:466`](../../src/thesisound/services/readiness.py:466)) |
-| state is `SCRIPT_VERIFIED` or later and the artifact set is incomplete | → **`blocked`** ([`readiness.py:536`](../../src/thesisound/services/readiness.py:536)) |
-| verifier passed with `unsupported_claim_ratio == 0` | → `pass` |
+`readiness.py` treats a missing verification artifact as `not_reached`, then `blocked` once state advances. The original proposal here was `verdict="not_required"` so a skip remains a recorded decision.
 
-So an episode whose verifier was skipped as low-risk cannot reach a green gate. It sits at `not_reached` until the state advances, and then flips to `blocked` because the verified artifact set is incomplete. **Conditional verification, implemented naively, is a permanently blocked release.**
+**Not implemented.** [Audit revision 2](../thesisound-mvp-readiness-audit-2026-08-12-fa.html) retracts conditional `script_verifier`: the verifier must always run; trim inputs if cost matters. Spec 08 cites the same retraction. Sections 3.1–3.2 below are retained as historical design notes only.
 
-### 3.1 Design
+### 3.1 Design (not shipped)
 
 A skip must be **recorded as a decision**, not as a missing file. Extend the verification report with an explicit not-required outcome:
 
@@ -63,7 +61,7 @@ A skip must be **recorded as a decision**, not as a missing file. Extend the ver
 - The pipeline writes a real verification artifact carrying `not_required` plus the risk inputs that justified it. Nothing is absent; the artifact records that the check was deliberately not run.
 - `readiness.py` treats `not_required` as `pass` with a `detail` that says so plainly, so an operator reading the gate list sees "verification was not required for this episode" rather than a green tick that overstates what happened.
 
-### 3.2 Risk classification
+### 3.2 Risk classification (not shipped)
 
 Run the model verifier when any holds:
 
@@ -79,22 +77,21 @@ Single clean source, deterministic checks green, no disagreement, ≤ 20 minutes
 
 This ladder is deliberately conservative. The verifier is the mechanism behind the product's central claim, and the audit already rates trust as *not proven*; the saving is one call per episode and is not worth widening the skip.
 
-### 3.3 The reviser
+### 3.3 The reviser (shipped)
 
-The reviser is already effectively conditional — it runs when there is something to revise. Make that explicit: skip when `ScriptCheckReport.verdict == "pass"` **and** verification is `pass` or `not_required`. No new artifact semantics; the reviser produces no gate input of its own.
+The reviser is already effectively conditional — it runs when there is something to revise. Made explicit as `revision_is_required(checks, verification)` in [`script_pipeline_service.py`](../../src/thesisound/services/script_pipeline_service.py): skip when `ScriptCheckReport.verdict == "pass"` **and** verification is `pass`. No `not_required` branch (verifier always produces a real verdict). No new artifact semantics; the reviser produces no gate input of its own.
 
 ## 4. Interaction with spec 02
 
-[`02-script-dialogue-quality-gate.md`](02-script-dialogue-quality-gate.md) makes the deterministic script checks bind for the first time. That changes the input to §3.2's first condition: scripts that today report `pass` will report `revise`, and will therefore route to the model verifier.
-
-**Sequence spec 02 first.** Landing this spec first would classify the known-bad script as low-risk and skip its verification — the opposite of the intent. With spec 02 in place, the risk ladder reads a deterministic verdict that means something.
+[`02-script-dialogue-quality-gate.md`](02-script-dialogue-quality-gate.md) makes the deterministic script checks bind. That would have changed the input to §3.2's first condition; with §3 superseded, the interaction that matters for the shipped scope is only that stronger deterministic checks still feed the reviser via §3.3.
 
 ## 5. Non-goals
 
 - Removing the glossary or the verifier from the pipeline.
 - Making the deterministic script checks conditional. They are free and must always run.
+- Conditional model verification (`not_required`) — superseded by audit revision 2.
 - Ensemble or majority-vote verification — [`06-operations/01-server-mono-process-adoption.md`](../06-operations/01-server-mono-process-adoption.md) item 11.
-- Auto-approval on a skipped verification. `not_required` bypasses the model verifier, never the human gate.
+- Auto-approval on a skipped verification.
 - Retuning `unsupported_claim_ratio` thresholds.
 
 ## 6. Acceptance criteria
@@ -102,10 +99,10 @@ The reviser is already effectively conditional — it runs when there is somethi
 1. A project with no model glossary call still produces a `Glossary` with non-empty `terms` on a corpus containing Latin-script terms.
 2. `glossary_inconsistency` still fires on a script that uses a source term without its preferred Persian form, when the glossary was built deterministically.
 3. `load_glossary` never raises for a project that reached script drafting.
-4. A single-source, deterministically-clean, 10-minute episode records `verdict="not_required"` with a populated `skip_reason` and makes no verifier model call.
-5. `project_readiness` reports `independent-verification` as `pass` for that project, with a detail naming the skip.
-6. A two-source project always runs the model verifier.
-7. A project whose deterministic checks report `revise` always runs the model verifier.
+4. ~~A single-source, deterministically-clean, 10-minute episode records `verdict="not_required"`…~~ **N/A** — verifier unconditional.
+5. ~~`project_readiness` reports `independent-verification` as `pass` for that skip…~~ **N/A**.
+6. ~~A two-source project always runs the model verifier.~~ **N/A** — always runs for every project.
+7. ~~A project whose deterministic checks report `revise` always runs the model verifier.~~ **N/A**.
 8. Stored glossaries and verification reports written before this spec still load.
 
 ## 7. Test plan
@@ -117,19 +114,22 @@ The reviser is already effectively conditional — it runs when there is somethi
 | `test_glossary_build_kind_defaults_for_legacy_artifact` | §6.8 |
 | `test_model_glossary_skipped_when_no_open_decisions` | the conditional path |
 | `test_model_glossary_runs_on_conflicting_forms` | multi-source trigger |
-| `test_verification_not_required_is_recorded` | §6.4 — artifact written, not absent |
-| `test_readiness_treats_not_required_as_pass` | §6.5 |
-| `test_verifier_runs_on_multi_source` | §6.6 |
-| `test_verifier_runs_when_deterministic_checks_fail` | §6.7 |
-| `test_legacy_verification_report_loads` | §6.8 |
+| `test_empty_deterministic_glossary_flags_latin_corpus` | empty + Latin → medium |
+| `test_revision_is_required_helper` | §3.3 |
+| ~~`test_verification_not_required_is_recorded`~~ | N/A — §3 superseded |
+| ~~`test_readiness_treats_not_required_as_pass`~~ | N/A |
+| ~~`test_verifier_runs_on_multi_source`~~ | N/A |
+| ~~`test_verifier_runs_when_deterministic_checks_fail`~~ | N/A |
+| ~~`test_legacy_verification_report_loads`~~ | N/A for this change |
 
 ## 8. Sequencing
 
-[`02-script-dialogue-quality-gate.md`](02-script-dialogue-quality-gate.md) → §2 (glossary) → §3 (verifier) → §3.3 (reviser). The glossary half is independent of the verifier half and can ship alone.
+[`02-script-dialogue-quality-gate.md`](02-script-dialogue-quality-gate.md) → §2 (glossary) → §3.3 (reviser). §3 verifier skip is not on the path.
 
 ## 9. Related
 
-- [`02-script-dialogue-quality-gate.md`](02-script-dialogue-quality-gate.md) — must land first; supplies the deterministic verdict this spec routes on.
+- [`02-script-dialogue-quality-gate.md`](02-script-dialogue-quality-gate.md) — must land first for any future risk ladder; already implemented.
 - [`03-inline-research-brief.md`](03-inline-research-brief.md), [`06-conditional-document-map.md`](06-conditional-document-map.md) — the other two "simplify before MVP" items.
 - [`02-pipeline/06-persian-script-pipeline.md`](../02-pipeline/06-persian-script-pipeline.md) — the stage both halves sit in.
-- [`04-integrations/05-model-observability.md`](../04-integrations/05-model-observability.md) — where the avoided calls must show up for the cost claim to be checkable.
+- [`04-integrations/05-model-observability.md`](../04-integrations/05-model-observability.md) — where the avoided glossary calls must show up for the cost claim to be checkable.
+- [`08-batched-claim-reconciliation.md`](08-batched-claim-reconciliation.md) — cites the verifier-unconditional retraction.

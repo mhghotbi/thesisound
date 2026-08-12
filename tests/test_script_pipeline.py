@@ -477,6 +477,26 @@ def test_resumed_run_emits_a_cache_hit_instead_of_a_glossary_span(
     _approve(root, project_id)
     runner = FakeScriptRunner()
     service = _service(root, runner)
+    # Real resume: the first run() call already wrote pipeline-binding.json
+    # before building the glossary. A bare build_glossary() alone does not
+    # (and must not) invent that binding — prepare_for_pipeline would wipe it.
+    from thesisound.services.plan_approval import EpisodePlanApprovalStore
+    from thesisound.services.script_artifact_store import ScriptArtifactStore
+    from thesisound.services.semantic_identity import script_pipeline_identity
+
+    project = WorkspaceStore(root).load_project(project_id)
+    approval = EpisodePlanApprovalStore(root).require_current(project)
+    identity = script_pipeline_identity(
+        glossary_model="fake",
+        glossary_prompt_version=None,
+        writer_model="fake",
+        writer_prompt_version=None,
+        verifier_model="fake",
+        verifier_prompt_version=None,
+        reviser_model="fake",
+        reviser_prompt_version=None,
+    )
+    ScriptArtifactStore(root).prepare_for_pipeline(project_id, approval.plan_hash, identity)
     service.build_glossary(project_id, model="fake")
 
     service.run(

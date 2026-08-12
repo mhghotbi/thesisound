@@ -106,7 +106,7 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`04-evidence-traceability.md`](07-specs/04-evidence-traceability.md) | ردیابی شاهد: از گفته تا نشانی در منبع | — |
 | [`05-plan-priorities.md`](07-specs/05-plan-priorities.md) | اولویت‌های کاربر در طرح گفتار و مذاکره بر سر ظرفیت | ۰۴ §۶.۵ |
 | [`06-conditional-document-map.md`](07-specs/06-conditional-document-map.md) | حذف فراخوانی map وقتی انتخاب شواهد جامع است، با map قطعیِ جایگزین | — |
-| [`07-conditional-glossary-and-verification.md`](07-specs/07-conditional-glossary-and-verification.md) | glossary همیشه deterministic و مدل فقط در صورت نیاز؛ verifier با ثبت صریح «لازم نبود» | بعد از ۰۲ |
+| [`07-conditional-glossary-and-verification.md`](07-specs/07-conditional-glossary-and-verification.md) | glossary همیشه deterministic و مدل فقط در صورت نیاز؛ verifier unconditional (audit)؛ reviser صریح | پیاده‌شده (glossary + reviser) |
 
 ## افزودن سند جدید
 

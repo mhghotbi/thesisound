@@ -34,6 +34,11 @@ class Glossary(BaseModel):
     terms: list[GlossaryTerm] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     model_run_id: UUID
+    # Default "model" so glossaries written before conditional glossary still load.
+    build_kind: Literal["deterministic", "model"] = "model"
+    # True when the corpus scan found Latin-script tokens (checker uses this when
+    # build_kind is deterministic and terms is empty).
+    corpus_had_latin_tokens: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @model_validator(mode="after")

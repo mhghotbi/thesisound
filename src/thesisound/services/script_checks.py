@@ -273,6 +273,21 @@ class ScriptChecker:
         issues.extend(_repetition_issues(normalized_turns))
 
         joined = " ".join(turn.spoken_text_fa for turn in script.turns)
+        if (
+            glossary.build_kind == "deterministic"
+            and not glossary.terms
+            and glossary.corpus_had_latin_tokens
+        ):
+            issues.append(
+                ScriptCheckIssue(
+                    severity="medium",
+                    issue_type="glossary_inconsistency",
+                    explanation=(
+                        "Deterministic glossary is empty but the corpus contains "
+                        "Latin-script tokens."
+                    ),
+                )
+            )
         for term in glossary.terms:
             source_used = term.source_term.casefold() in joined.casefold()
             preferred_missing = term.preferred_persian not in joined
