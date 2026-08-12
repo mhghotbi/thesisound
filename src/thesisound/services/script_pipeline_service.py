@@ -450,10 +450,18 @@ class ScriptPipelineService:
                         revised_checks = self.run_checks(project_id, revised=True)
                         span.set(verdict=revised_checks.verdict)
                 original_script = self.script_store.load_script(project_id)
+                # By turn_id, not position: a cached revised script can be
+                # stale relative to a freshly (re)computed original -- e.g.
+                # after an episode_plan repair retry changes segment/turn
+                # composition upstream -- and a positional zip(strict=True)
+                # crashed on any count mismatch instead of comparing what it
+                # safely could.
+                original_by_turn_id = {turn.turn_id: turn for turn in original_script.turns}
                 changed_turn_count = sum(
                     1
-                    for before, after in zip(original_script.turns, revised.turns, strict=True)
-                    if before.spoken_text_fa != after.spoken_text_fa
+                    for after in revised.turns
+                    if (before := original_by_turn_id.get(after.turn_id)) is not None
+                    and before.spoken_text_fa != after.spoken_text_fa
                 )
                 original_overall = (
                     verification.quality.overall if verification.quality is not None else None

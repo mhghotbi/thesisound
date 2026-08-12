@@ -35,17 +35,39 @@ def test_evidence_allows_contract_repair() -> None:
     assert decision.stop_reason is None
 
 
-def test_episode_plan_rejects_contract_repair_but_allows_provider_retry() -> None:
-    contract = decide_retry(
-        DeterministicValidationError("bad duration"),
+def test_episode_plan_allows_one_contract_repair_and_provider_retry() -> None:
+    """episode_plan gets one repair chance (2026-08-13), unlike glossary/verifier/reviser.
+
+    An invented claim ID is a scoped, nameable mistake a repair instruction can
+    fix; see the _STAGE_RETRY_POLICIES comment for the audit-R7 context this
+    revises.
+    """
+
+    first_attempt = decide_retry(
+        DeterministicValidationError("references unknown claim IDs: clm-999"),
         attempt=1,
         max_attempts=2,
         prompt_id="episode_plan",
         retry_schema_errors=True,
         base_delay_seconds=0.5,
     )
-    assert not contract.should_retry
-    assert contract.stop_reason == "stage_policy"
+    assert first_attempt.should_retry
+    assert first_attempt.repair_instruction is not None
+
+    # max_attempts=5 here (vs. the contract's real 2) isolates the stage_policy
+    # ceiling from the attempt ceiling -- they coincide at the contract's real
+    # max_attempts=2, which would make this assert the wrong stop_reason.
+    second_attempt = decide_retry(
+        DeterministicValidationError("references unknown claim IDs: clm-999"),
+        attempt=2,
+        max_attempts=5,
+        prompt_id="episode_plan",
+        retry_schema_errors=True,
+        base_delay_seconds=0.5,
+        contract_repairs_used=1,
+    )
+    assert not second_attempt.should_retry
+    assert second_attempt.stop_reason == "stage_policy"
 
     provider = decide_retry(
         ModelTimeoutError("timeout"),

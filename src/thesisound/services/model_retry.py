@@ -45,7 +45,11 @@ class RetryDecision:
     stop_reason: RetryStopReason | None = None
 
 
-# Measured recovery (audit R7): evidence recovers; episode/glossary/verifier do not.
+# Measured recovery (audit R7): evidence recovers; episode/glossary/verifier
+# historically did not. episode_plan is bumped to 1 repair (2026-08-13): that
+# measurement predates routing episode_plan onto okian_gemini_strong, and an
+# invented claim ID is exactly the kind of scoped, nameable mistake a repair
+# instruction is suited to fix. Revert to 0 if it turns out not to recover.
 _STAGE_RETRY_POLICIES: dict[str, StageRetryPolicy] = {
     "evidence_extraction": StageRetryPolicy(max_contract_repairs=None),
     "evidence_extraction_batch": StageRetryPolicy(max_contract_repairs=None),
@@ -54,7 +58,7 @@ _STAGE_RETRY_POLICIES: dict[str, StageRetryPolicy] = {
     "claim_reconciliation": StageRetryPolicy(max_contract_repairs=1),
     "claim_reconciliation_merge": StageRetryPolicy(max_contract_repairs=1),
     "coverage_audit": StageRetryPolicy(max_contract_repairs=1),
-    "episode_plan": StageRetryPolicy(max_contract_repairs=0),
+    "episode_plan": StageRetryPolicy(max_contract_repairs=1),
     "glossary": StageRetryPolicy(max_contract_repairs=0),
     "script_verifier": StageRetryPolicy(max_contract_repairs=0),
     "script_reviser": StageRetryPolicy(max_contract_repairs=0),

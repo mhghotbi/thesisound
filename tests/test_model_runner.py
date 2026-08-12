@@ -582,12 +582,12 @@ def test_model_runner_stops_contract_repair_for_low_recovery_stages(tmp_path: Pa
         _runner_for_prompt(
             tmp_path,
             model,
-            prompt_id="episode_plan",
+            prompt_id="glossary",
             max_attempts=2,
         ).run(
             project_id=uuid4(),
-            stage="episode_plan",
-            prompt_name="episode_plan",
+            stage="glossary",
+            prompt_name="glossary",
             variables={"context": "safe", "topic": "Arendt"},
             output_type=ExampleOutput,
             model="fake-model",
