@@ -25,6 +25,9 @@ _INCOMPLETE_CROSS_PARTITION_MERGE_PREFIXES = (
     "Cross-partition merge was skipped:",
     "Cross-partition merge failed (",
 )
+# Synthetic maps written when selection is exhaustive (spec 06). Never share: a
+# project whose budget *does* force selection would silently lose ranking.
+EXHAUSTIVE_SELECTION_SKIP_PREFIX = "Document map skipped: selection is exhaustive"
 
 
 def is_shareable_document_map(document_map: DocumentMap) -> bool:
@@ -34,7 +37,9 @@ def is_shareable_document_map(document_map: DocumentMap) -> bool:
 
 def _warnings_are_shareable(warnings: list[str]) -> bool:
     return not any(
-        warning.startswith(_INCOMPLETE_CROSS_PARTITION_MERGE_PREFIXES) for warning in warnings
+        warning.startswith(_INCOMPLETE_CROSS_PARTITION_MERGE_PREFIXES)
+        or warning.startswith(EXHAUSTIVE_SELECTION_SKIP_PREFIX)
+        for warning in warnings
     )
 
 

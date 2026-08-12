@@ -85,8 +85,11 @@ Block builder نباید به tokenizer یک provider وابسته شود. `esti
 
 ```text
 src/thesisound/services/document_mapper.py
+src/thesisound/services/analysis_profile.py  # selection_is_exhaustive
 prompts/document_map/1.0.0/
 ```
+
+وقتی `selection_is_exhaustive` برقرار باشد — یعنی `target_tokens >= total_tokens` و نقشه نمی‌تواند مجموعهٔ بلوک‌های انتخاب‌شده را عوض کند — مدل صدا زده نمی‌شود و یک `DocumentMap` تک‌بخشیِ قطعی نوشته می‌شود (با warning خودتوضیح‌گر). این نقشه به کش مشترک وارد نمی‌شود. عمق/بودجهٔ پروفایل عوض نمی‌شود؛ فقط هزینهٔ map وقتی انتخاب کامل است حذف می‌شود. جزئیات: [`07-specs/06-conditional-document-map.md`](../07-specs/06-conditional-document-map.md).
 
 مدل blockها را به sectionهای استدلالی تقسیم می‌کند و function هر section را مشخص می‌کند:
 

@@ -121,7 +121,7 @@ Net effect on this spec: §3's design needed no rework because of this — auto-
 
 ## 8. Related
 
-- [`06-conditional-document-map.md`](06-conditional-document-map.md) and [`07-conditional-glossary-and-verification.md`](07-conditional-glossary-and-verification.md) — the other two "simplify before MVP" items; both still proposed, not yet implemented.
+- [`06-conditional-document-map.md`](06-conditional-document-map.md) and [`07-conditional-glossary-and-verification.md`](07-conditional-glossary-and-verification.md) — the other two "simplify before MVP" items; 06 is implemented, 07 is still proposed.
 - [`08-batched-claim-reconciliation.md`](08-batched-claim-reconciliation.md) — a later, unrelated addition to this same directory; no dependency either way.
 - [`03-web-ui/01-operator-user-workflow.md`](../03-web-ui/01-operator-user-workflow.md) — the operator/end-user boundary this change moves.
 - [`06-operations/03-production-sop.md`](../06-operations/03-production-sop.md) — the 12 gates and which are human-only; gate 1's `enforced_at` and `blocked_means` changed here, `actor` did not.

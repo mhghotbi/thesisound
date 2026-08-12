@@ -375,11 +375,14 @@ def test_extract_evidence_skips_only_compatible_selected_blocks(tmp_path) -> Non
 
 
 def test_second_pass_deepens_required_section_block_once(tmp_path) -> None:
+    # Token mass must exceed the extended budget so selection is not exhaustive;
+    # otherwise map_document writes a synthetic all-required map and every block
+    # would be deepened on the second pass.
     service, project_id, source_id = _prepare_equal_blocks_source(
         tmp_path,
         duration=60,
         block_count=18,
-        tokens_per_block=100,
+        tokens_per_block=7_000,
     )
     store = service.artifact_store
 
@@ -452,7 +455,7 @@ def test_second_pass_failure_keeps_the_pass_one_record(tmp_path) -> None:
         tmp_path,
         duration=60,
         block_count=18,
-        tokens_per_block=100,
+        tokens_per_block=7_000,
     )
     store = service.artifact_store
     service.evidence_extractor = EvidenceExtractorService(_FailOnSecondCall())

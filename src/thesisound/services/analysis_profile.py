@@ -147,6 +147,52 @@ def build_second_pass_profile(profile: AnalysisProfile) -> AnalysisProfile:
     )
 
 
+def eligible_blocks(blocks: list[SourceDocumentBlock]) -> list[SourceDocumentBlock]:
+    """Content blocks that participate in selection, in document order.
+
+    Front matter is excluded. Note-like blocks are dropped when any non-note
+    content remains; otherwise the content set is kept so a notes-only source
+    is never filtered to nothing.
+    """
+
+    content_blocks = [block for block in blocks if block.block_type != "front_matter"]
+    if not content_blocks:
+        return []
+    non_notes = [block for block in content_blocks if not _is_note_like(block)]
+    return non_notes if non_notes else content_blocks
+
+
+def selection_target_tokens(
+    profile: AnalysisProfile,
+    blocks: list[SourceDocumentBlock],
+) -> tuple[int, int]:
+    """Return ``(total_tokens, target_tokens)`` over the eligible block set.
+
+    ``target_tokens`` is the same ceiling ``plan_evidence_extraction`` uses, so a
+    skip decision and a plan cannot disagree about whether selection is exhaustive.
+    """
+
+    eligible = eligible_blocks(blocks)
+    total_tokens = sum(block.estimated_token_count for block in eligible)
+    if total_tokens == 0:
+        return 0, 0
+    coverage_tokens = math.ceil(
+        total_tokens * profile.block_coverage_target * (1 + _SELECTION_HEADROOM)
+    )
+    target_tokens = min(total_tokens, coverage_tokens, profile.evidence_input_token_budget)
+    return total_tokens, target_tokens
+
+
+def selection_is_exhaustive(
+    profile: AnalysisProfile,
+    blocks: list[SourceDocumentBlock],
+) -> bool:
+    """True when the plan will take every eligible block — ranking cannot change it."""
+
+    total_tokens, target_tokens = selection_target_tokens(profile, blocks)
+    return total_tokens > 0 and target_tokens >= total_tokens
+
+
 def plan_evidence_extraction(
     brief: ResearchBrief,
     document_map: DocumentMap,
@@ -170,10 +216,7 @@ def plan_evidence_extraction(
                 achieved_token_coverage=1.0,
             )
 
-        eligible = [block for block in content_blocks if not _is_note_like(block)]
-        if not eligible:
-            eligible = content_blocks  # never filter a source down to nothing
-
+        eligible = eligible_blocks(blocks)
         block_by_id = {block.block_id: block for block in eligible}
         index_by_id = {block.block_id: index for index, block in enumerate(eligible)}
         section_by_block = {
@@ -182,11 +225,7 @@ def plan_evidence_extraction(
             for block_id in section.source_block_ids
             if block_id in block_by_id
         }
-        total_tokens = sum(block.estimated_token_count for block in eligible)
-        coverage_tokens = math.ceil(
-            total_tokens * profile.block_coverage_target * (1 + _SELECTION_HEADROOM)
-        )
-        target_tokens = min(total_tokens, coverage_tokens, profile.evidence_input_token_budget)
+        total_tokens, target_tokens = selection_target_tokens(profile, blocks)
 
         required_sections = [
             section

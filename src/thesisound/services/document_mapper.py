@@ -750,3 +750,51 @@ def scope_locator(blocks: list[SourceDocumentBlock]) -> Locator:
         chapter=first_heading[0] if first_heading else None,
         section=first_heading[-1] if first_heading else None,
     )
+
+
+def build_exhaustive_document_map(
+    *,
+    source_id: UUID,
+    blocks: list[SourceDocumentBlock],
+    eligible_block_ids: list[str],
+    title: str,
+    total_tokens: int,
+    target_tokens: int,
+) -> DocumentMap:
+    """Deterministic one-section map used when selection cannot choose.
+
+    Ranking and required-section seeding are no-ops under exhaustive selection, so
+    a synthetic map preserves every downstream contract without a model call.
+    """
+
+    # Local import: document_map_cache already imports scope_locator from this module.
+    from thesisound.services.document_map_cache import EXHAUSTIVE_SELECTION_SKIP_PREFIX
+
+    n_blocks = len(eligible_block_ids)
+    warning = (
+        f"{EXHAUSTIVE_SELECTION_SKIP_PREFIX} "
+        f"({n_blocks} blocks, {total_tokens} tokens ≤ target)."
+    )
+    # target_tokens is part of the skip decision; keep it off the warning text so the
+    # artifact matches the spec's self-explaining wording, but refuse a mismatched call.
+    if target_tokens < total_tokens:
+        raise ValueError(
+            "Exhaustive synthetic maps require target_tokens >= total_tokens "
+            f"(got {target_tokens} < {total_tokens})."
+        )
+    return DocumentMap(
+        source_id=source_id,
+        scope_locator=scope_locator(blocks),
+        working_thesis=None,
+        sections=[
+            DocumentMapSection(
+                section_id="exhaustive-all",
+                source_block_ids=list(eligible_block_ids),
+                title=title.strip() or "Document",
+                function="other",
+                required_for_global_understanding=True,
+            )
+        ],
+        cross_section_threads=[],
+        warnings=[warning],
+    )

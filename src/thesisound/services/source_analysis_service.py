@@ -19,15 +19,19 @@ from thesisound.ingestion import IngestionResult
 from thesisound.modeling import ModelError, ModelRunRecord
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.analysis_profile import (
+    build_analysis_profile,
     build_second_pass_profile,
+    eligible_blocks,
     plan_evidence_extraction,
     required_section_block_ids,
+    selection_is_exhaustive,
+    selection_target_tokens,
 )
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.document_identity import block_sequence_key
 from thesisound.services.document_map_cache import DocumentMapCache, is_shareable_document_map
-from thesisound.services.document_mapper import DocumentMapperService
+from thesisound.services.document_mapper import DocumentMapperService, build_exhaustive_document_map
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.episode_duration_cost import source_needs_reextraction
 from thesisound.services.evidence_scope import extraction_profiles_compatible
@@ -175,6 +179,40 @@ class SourceAnalysisService:
                 self.artifact_store.save_document_map(project_id, source_id, shared)
                 span.set(source="shared_cache")
                 return self._mark_document_mapped(project_id, source_id)
+            project = self.workspace_store.load_project(project_id)
+            # Without a brief there is no duration-aware profile, so the skip is
+            # undefined — fall through to the model (CLI map-document path).
+            if project.brief is not None:
+                profile = build_analysis_profile(project.brief)
+                if selection_is_exhaustive(profile, blocks):
+                    total_tokens, target_tokens = selection_target_tokens(profile, blocks)
+                    source = next(
+                        (item for item in project.sources if item.source_id == source_id),
+                        None,
+                    )
+                    document_map = build_exhaustive_document_map(
+                        source_id=source_id,
+                        blocks=blocks,
+                        eligible_block_ids=[
+                            block.block_id for block in eligible_blocks(blocks)
+                        ],
+                        title=source.title if source is not None else "Document",
+                        total_tokens=total_tokens,
+                        target_tokens=target_tokens,
+                    )
+                    self.artifact_store.save_document_map(
+                        project_id, source_id, document_map
+                    )
+                    emit_cache_lookup(
+                        cache="document_map",
+                        result="skip",
+                        subject_type="source",
+                        subject_id=str(source_id),
+                        avoided_calls=1,
+                        reason="selection_exhaustive",
+                    )
+                    span.set(source="exhaustive_skip")
+                    return self._mark_document_mapped(project_id, source_id)
             document_map, run = self.document_mapper.map_document(
                 project_id=project_id,
                 source_id=source_id,

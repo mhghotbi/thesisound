@@ -1,6 +1,6 @@
 # 06 — Conditional Document Map
 
-Date: 2026-08-12 · Status: proposed · Effort: S–M · Source: [MVP readiness audit](../thesisound-mvp-readiness-audit-fa.html), "Simplify / Change before MVP" — *document map only for long documents*
+Date: 2026-08-12 · Status: **implemented** (2026-08-12, same day as this revision) · Effort: S–M · Source: [MVP readiness audit](../thesisound-mvp-readiness-audit-fa.html), "Simplify / Change before MVP" — *document map only for long documents*
 
 Skip the document-map model call when the map provably cannot change the extraction plan, and fall back to a deterministic single-section map so every downstream consumer keeps its contract.
 
