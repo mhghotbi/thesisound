@@ -177,6 +177,8 @@ QualityNoteKind = Literal[
     "citation_dropped",
     "turn_not_revised",
     "revision_rejected",
+    "grounding_repaired",
+    "turn_excised",
 ]
 QualityNoteSeverity = Literal["informational", "notable"]
 

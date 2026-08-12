@@ -64,18 +64,40 @@ A recoverable failure must not raise. It must:
 
 Silent degradation is explicitly **not** acceptable — that trades a visible dead end for an invisibly worse episode, which is a worse deal for an evidence-grounded product. The note is the price of not stopping.
 
-### D3 — Structural failures keep raising, and say something usable
+### D3 — Scope the remedy to the scope of the breach
 
-These stay fatal and are correct today:
+`severity="blocking"` is **not** by itself a reason to stop the build. This was the original error in this spec, caught by `Script rejected: Substantive turn has no evidence linked to its claim IDs.` surviving every rule above.
 
-| Check | Location | Why structural |
+An integrity breach means *do not ship the offending thing*. It does not mean *destroy the episode*. Most blocking checks in [`script_checks.py`](../../src/thesisound/services/script_checks.py) record a `turn_id` and `segment_id` — the breach is scoped to one turn, so the remedy must be too. Apply the first rung that holds:
+
+| Rung | When | Result |
+|---|---|---|
+| 1. **Repair** | The correct value is derivable from data the pipeline already holds | Fix it, note it |
+| 2. **Excise** | Not derivable, but removing the unit leaves a valid, still-grounded artifact | Drop the unit, note it |
+| 3. **Stop** | Neither — the breach is script-wide, or excision leaves nothing coherent | Raise |
+
+Rung 3 is the exception, not the default. Reaching for it requires stating why rungs 1 and 2 do not apply.
+
+#### Worked example — `missing_grounding`
+
+[`script_checks.py:179`](../../src/thesisound/services/script_checks.py:179) fires when a substantive turn's `evidence_ids` do not intersect the evidence of the claims it cites. `expected_evidence` is built from `claim.evidence_ids`, so **the grounding exists in the ledger** — the model mislabelled the link, it did not assert something unsupported. That is rung 1: set the turn's evidence to the recorded provenance of the claims it actually cites. The same repair clears `evidence_unlinked_to_claim` ([`script_checks.py:192`](../../src/thesisound/services/script_checks.py:192)), which is the mirror image of the same defect.
+
+Only when a cited claim carries **no** evidence at all is there a real grounding absence — and that is an upstream data fault, not a script fault.
+
+### D3.1 — What genuinely stops the build
+
+After the ladder, these remain fatal:
+
+| Check | Location | Why no lower rung applies |
 |---|---|---|
 | Coverage insufficient for duration | [`episode_planner.py:52`](../../src/thesisound/services/episode_planner.py:52) | Needs the user to narrow scope or add sources |
 | Deterministic budget insufficient | [`episode_planner.py:55`](../../src/thesisound/services/episode_planner.py:55) | Same |
-| `prompt_leakage` | [`script_checks.py:240`](../../src/thesisound/services/script_checks.py:240) | Shipping it breaks the product's core promise |
-| Unknown claim/evidence IDs across the whole draft | [`episode_planner.py:139`](../../src/thesisound/services/episode_planner.py:139) | No grounded artifact remains |
+| `prompt_leakage` | [`script_checks.py:240`](../../src/thesisound/services/script_checks.py:240) | Not derivable; excision unsafe when leakage is pervasive |
+| Unknown claim IDs across the whole draft | [`episode_planner.py:139`](../../src/thesisound/services/episode_planner.py:139) | Nothing to repair against; no grounded artifact remains |
 | Plan approval mismatch | [`script_run.py:223`](../../src/thesisound/services/script_run.py:223) | Consent gate |
 | Missing must-include claims | [`episode_planner.py:179`](../../src/thesisound/services/episode_planner.py:179) | Silently dropping them defeats prioritisation |
+
+Excision has a floor: if repeated excision would leave a segment with no substantive turn, or the script under its duration band, that is rung 3. The degradation ceiling in spec 11 D4 is what prevents excision from quietly hollowing out an episode.
 
 Their messages are rewritten under spec 11.
 
@@ -96,11 +118,13 @@ Every `DeterministicValidationError` gains a required stance in its immediate co
 
 ## 4. Acceptance criteria
 
-1. Each of failures 3–8, replayed from its recorded input, completes the build and emits a `QualityNote` instead of raising.
-2. Each structural check in D3 still raises on its own trigger.
-3. A revision that trips a blocking check loses `is_better()` and the original ships — no `raise` on the path between them.
-4. Two different bad excerpts in one stage produce two different `error_fingerprint` values.
-5. A clean run emits zero `QualityNote`s. **This is the regression that matters most: recovery must not become the normal path.**
+1. Each of failures 3–8, replayed from its recorded input, completes the build and emits a `QualityNote` instead of raising (7 and 8 repair silently, per the note at the top).
+2. Each structural check in D3.1 still raises on its own trigger.
+3. A turn whose `evidence_ids` miss its claims' evidence is repaired (rung 1) and the build completes; a turn citing a claim with no evidence at all still stops.
+4. No `severity="blocking"` check stops the build without a stated reason why rungs 1 and 2 do not apply.
+5. A revision that trips a blocking check loses `is_better()` and the original ships — no `raise` on the path between them.
+6. Two different bad excerpts in one stage produce two different `error_fingerprint` values.
+7. A clean run emits zero `QualityNote`s. **This is the regression that matters most: recovery must not become the normal path.**
 
 ## 5. Test plan
 
@@ -111,14 +135,17 @@ Every `DeterministicValidationError` gains a required stance in its immediate co
 | `test_ungroundable_revised_turn_falls_back_to_original` | D2 on failure 6 |
 | `test_revision_failing_checks_is_ranked_not_raised` | D2 on failure 5 |
 | `test_invalid_json_escape_is_repaired` | D2 on failure 7 |
-| `test_insufficient_coverage_still_raises` | D3 |
-| `test_prompt_leakage_still_blocks` | D3 |
-| `test_distinct_bad_excerpts_have_distinct_fingerprints` | D5 |
-| `test_clean_run_emits_no_quality_notes` | §4.5 |
+| `test_mislinked_turn_evidence_is_repaired_not_rejected` | D3 rung 1, §4.3 |
+| `test_claim_with_no_evidence_at_all_still_stops` | D3 rung 3, §4.3 |
+| `test_excision_floor_stops_when_segment_would_empty` | D3 excision floor |
+| `test_insufficient_coverage_still_raises` | D3.1, §4.2 |
+| `test_prompt_leakage_still_blocks` | D3.1, §4.2 |
+| `test_distinct_bad_excerpts_have_distinct_fingerprints` | D5, §4.6 |
+| `test_clean_run_emits_no_quality_notes` | §4.7 |
 
 ## 6. Sequencing
 
-D1 (rule) → D2 (apply to the audited set) → D5 (fingerprints) → D4 (annotate) . D3 is an audit, not a change. D2 depends on `QualityNote` from spec 11 landing first, or on a temporary warning list if spec 11 is deferred.
+D1 (rule) → D3 (remedy ladder — it changes which failures D2 even applies to) → D2 (apply to the audited set) → D5 (fingerprints) → D4 (annotate). D3.1 is an audit, not a change. D2 depends on `QualityNote` from spec 11 landing first, or on a temporary warning list if spec 11 is deferred.
 
 ## 7. Related
 

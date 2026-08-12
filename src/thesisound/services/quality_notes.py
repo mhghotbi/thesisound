@@ -18,6 +18,12 @@ _LISTENER_IMPACT: Final[dict[QualityNoteKind, str]] = {
     "revision_rejected": (
         "بازنویسی کنار گذاشته شد چون از متن اصلی بهتر نبود."
     ),
+    "grounding_repaired": (
+        "پیوند یک گفته به شواهد از دفتر شواهد اصلاح شد."
+    ),
+    "turn_excised": (
+        "یک گفته حذف شد چون به شواهد قابل دفاع وصل نبود."
+    ),
 }
 
 _SEVERITY: Final[dict[QualityNoteKind, QualityNoteSeverity]] = {
@@ -25,6 +31,8 @@ _SEVERITY: Final[dict[QualityNoteKind, QualityNoteSeverity]] = {
     "citation_dropped": "informational",
     "turn_not_revised": "notable",
     "revision_rejected": "informational",
+    "grounding_repaired": "informational",
+    "turn_excised": "notable",
 }
 
 

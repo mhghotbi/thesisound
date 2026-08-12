@@ -8,7 +8,19 @@ from uuid import uuid4
 
 import pytest
 
-from thesisound.domain import ClaimType, ResearchBrief, ScriptTurn, TopicType
+from thesisound.domain import (
+    ClaimRecord,
+    ClaimType,
+    EpisodePlan,
+    EpisodeSegment,
+    EvidenceItem,
+    Locator,
+    ResearchBrief,
+    Script,
+    ScriptTurn,
+    SupportStatus,
+    TopicType,
+)
 from thesisound.episode import (
     ClaimPriorityRecord,
     ClaimPriorityReport,
@@ -17,9 +29,11 @@ from thesisound.episode import (
     EpisodeBudgetReport,
     EpisodePlanDraft,
     EpisodeSegmentDraft,
+    SegmentEvidencePack,
 )
 from thesisound.modeling import DeterministicValidationError
 from thesisound.script import (
+    Glossary,
     QualityNote,
     QualityNotesLedger,
     RevisedTurnDraft,
@@ -39,6 +53,8 @@ from thesisound.services.quality_notes import (
     make_quality_note,
 )
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.services.script_checks import ScriptChecker
+from thesisound.services.script_grounding_remediation import remediate_script_grounding
 from thesisound.services.script_outcome import script_outcome
 from thesisound.services.script_reviser import _validate_revision
 from thesisound.services.script_run import ScriptBuildRun
@@ -215,6 +231,145 @@ def test_degradation_ceiling_forces_review_required() -> None:
     )
     assert outcome == "review_required"
     assert "degraded" in reason.casefold() or "passage" in reason.casefold()
+
+
+def _grounding_plan(*claim_ids: str, minutes: float = 5.0) -> EpisodePlan:
+    return EpisodePlan(
+        title="طرح",
+        listener_outcome="نتیجه",
+        estimated_duration_minutes=minutes,
+        segments=[
+            EpisodeSegment(
+                segment_id="seg-1",
+                title="بخش",
+                purpose="آزمون",
+                estimated_minutes=minutes,
+                claim_ids=list(claim_ids or ("claim-1",)),
+                key_question="پرسش؟",
+                speaker_dynamic="explanation",
+            )
+        ],
+    )
+
+
+def test_mislinked_turn_evidence_is_repaired_not_rejected() -> None:
+    source_id = uuid4()
+    claims = [
+        ClaimRecord(
+            claim_id="claim-1",
+            claim="مدعا",
+            claim_type=ClaimType.AUTHOR_POSITION,
+            evidence_ids=["ev-1"],
+            support_status=SupportStatus.STRONG,
+        )
+    ]
+    script = Script(
+        title="متن",
+        turns=[
+            ScriptTurn(
+                turn_id="t1",
+                segment_id="seg-1",
+                speaker="A",
+                spoken_text_fa="گفتهٔ محتوایی با شاهد نادرست است.",
+                claim_ids=["claim-1"],
+                evidence_ids=["ev-wrong"],
+            )
+        ],
+    )
+    remedied, notes = remediate_script_grounding(
+        script,
+        claims,
+        episode_plan=_grounding_plan("claim-1"),
+    )
+    assert remedied.turns[0].evidence_ids == ["ev-1"]
+    assert [note.kind for note in notes] == ["grounding_repaired"]
+    pack = SegmentEvidencePack.model_construct(
+        segment_id="seg-1",
+        claim_ids=["claim-1"],
+        evidence_items=[
+            EvidenceItem(
+                evidence_id="ev-1",
+                source_id=source_id,
+                block_id="block-1",
+                claim="مدعا",
+                claim_type=ClaimType.AUTHOR_POSITION,
+                supporting_excerpt="عبارت شاهد",
+                locator=Locator(page_start=1, page_end=1),
+                support_kind="direct",
+                confidence=0.9,
+            )
+        ],
+        original_blocks=[],
+        token_budget=100,
+        actual_tokens=2,
+    )
+    project_id = uuid4()
+    report = ScriptChecker().check(
+        project_id=project_id,
+        script=remedied,
+        episode_plan=_grounding_plan("claim-1"),
+        evidence_packs=[pack],
+        claims=claims,
+        glossary=Glossary(project_id=project_id, model_run_id=uuid4()),
+    )
+    issue_types = {issue.issue_type for issue in report.issues}
+    assert "missing_grounding" not in issue_types
+    assert "evidence_unlinked_to_claim" not in issue_types
+
+
+def test_claim_with_no_evidence_at_all_still_stops() -> None:
+    claims = [
+        ClaimRecord(
+            claim_id="claim-empty",
+            claim="مدعای بدون شاهد",
+            claim_type=ClaimType.EDITORIAL_EXPLANATION,
+            evidence_ids=[],
+            support_status=SupportStatus.UNCERTAIN,
+        )
+    ]
+    script = Script(
+        title="متن",
+        turns=[
+            ScriptTurn(
+                turn_id="t1",
+                segment_id="seg-1",
+                speaker="A",
+                spoken_text_fa="گفتهٔ محتوایی بدون شاهد واقعی.",
+                claim_ids=["claim-empty"],
+                evidence_ids=["ev-placeholder"],
+            )
+        ],
+    )
+    with pytest.raises(DeterministicValidationError, match="no supporting evidence") as raised:
+        remediate_script_grounding(
+            script,
+            claims,
+            episode_plan=_grounding_plan("claim-empty"),
+        )
+    assert raised.value.stop_reason == "integrity_breach"
+
+
+def test_excision_floor_stops_when_segment_would_empty() -> None:
+    script = Script(
+        title="متن",
+        turns=[
+            ScriptTurn(
+                turn_id="t1",
+                segment_id="seg-1",
+                speaker="A",
+                spoken_text_fa="گفتهٔ محتوایی با شناسهٔ ناشناخته.",
+                claim_ids=["claim-unknown"],
+                evidence_ids=["ev-unknown"],
+            )
+        ],
+    )
+    with pytest.raises(DeterministicValidationError, match="incomplete") as raised:
+        remediate_script_grounding(
+            script,
+            claims=[],
+            episode_plan=_grounding_plan("claim-1"),
+        )
+    assert raised.value.stop_reason == "integrity_breach"
 
 
 def test_clean_run_emits_no_quality_notes() -> None:

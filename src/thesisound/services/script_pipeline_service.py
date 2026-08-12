@@ -26,6 +26,7 @@ from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.quality_notes import make_quality_note
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
+from thesisound.services.script_grounding_remediation import remediate_script_grounding
 from thesisound.services.script_outcome import script_outcome
 from thesisound.services.script_quality import is_better
 from thesisound.services.script_reviser import TargetedScriptReviserService
@@ -208,6 +209,19 @@ class ScriptPipelineService:
         if project.episode_plan is None:
             raise ValueError("EpisodePlan is required for script checks.")
         script = self.script_store.load_script(project_id, revised=revised)
+        claims = self._load_claims(project_id)
+        script, grounding_notes = remediate_script_grounding(
+            script,
+            claims,
+            episode_plan=project.episode_plan,
+            words_per_minute=self.script_checker.words_per_minute,
+        )
+        if grounding_notes:
+            self.script_store.save_script(project_id, script, revised=revised)
+            if not revised:
+                project.script = script
+                self.workspace_store.save_project(project)
+            self.script_store.append_quality_notes(project_id, grounding_notes)
         try:
             must_not_be_lost_review = self.episode_store.load_must_not_be_lost_review(
                 project_id
@@ -219,7 +233,7 @@ class ScriptPipelineService:
             script=script,
             episode_plan=project.episode_plan,
             evidence_packs=self.episode_store.load_evidence_packs(project_id),
-            claims=self._load_claims(project_id),
+            claims=claims,
             glossary=self.script_store.load_glossary(project_id),
             speaker_balance_violations=(
                 {}
