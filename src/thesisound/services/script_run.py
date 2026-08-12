@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
@@ -16,6 +17,12 @@ from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.services.plan_approval import (
     EpisodePlanApproval,
     EpisodePlanApprovalStore,
+)
+from thesisound.services.run_recovery import (
+    RunFailureClass,
+    classify_run_failure,
+    recovery_backoff_seconds,
+    should_auto_retry,
 )
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_pipeline_service import ScriptPipelineService
@@ -34,6 +41,27 @@ ScriptBuildStage = Literal[
     "failed",
 ]
 
+_PIPELINE_STAGES: frozenset[str] = frozenset(
+    {
+        "building_glossary",
+        "writing_segments",
+        "checking_draft",
+        "verifying_draft",
+        "revising",
+        "checking_revision",
+        "verifying_revision",
+    }
+)
+
+
+class ScriptRunAttempt(BaseModel):
+    attempt: int = Field(ge=1)
+    stage: ScriptBuildStage
+    error: str
+    classification: RunFailureClass
+    invalidated: list[str] = Field(default_factory=list)
+    duration_seconds: float = Field(ge=0)
+
 
 class ScriptBuildRun(BaseModel):
     run_id: UUID = Field(default_factory=uuid4)
@@ -43,12 +71,14 @@ class ScriptBuildRun(BaseModel):
     approved_by: str = Field(min_length=1, max_length=200)
     status: ScriptBuildStatus = "queued"
     stage: ScriptBuildStage = "queued"
+    failed_stage: ScriptBuildStage | None = None
     started_at: datetime | None = None
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     finished_at: datetime | None = None
     last_error: str | None = None
     # clean = zero QualityNotes; degraded = at least one recoverable fallback fired.
     quality_disposition: Literal["clean", "degraded"] = "clean"
+    attempts: list[ScriptRunAttempt] = Field(default_factory=list)
 
 
 class ScriptBuildRunStore:
@@ -122,6 +152,9 @@ class ScriptBuildRunService:
         writer_model: str,
         verifier_model: str,
         reviser_model: str,
+        max_automatic_retries: int = 2,
+        recovery_wall_clock_seconds: float = 900,
+        provider_retry_base_seconds: float = 1,
     ) -> None:
         self.workspace_store = workspace_store
         self.run_store = run_store
@@ -132,6 +165,9 @@ class ScriptBuildRunService:
         self.writer_model = writer_model
         self.verifier_model = verifier_model
         self.reviser_model = reviser_model
+        self.max_automatic_retries = max_automatic_retries
+        self.recovery_wall_clock_seconds = recovery_wall_clock_seconds
+        self.provider_retry_base_seconds = provider_retry_base_seconds
         self._mutation_lock = Lock()
 
     def approve_and_queue(
@@ -174,6 +210,10 @@ class ScriptBuildRunService:
             if previous.status != "failed":
                 raise ValueError("The latest script run is not failed.")
             approval = self.approval_store.require_current(project)
+            invalidate_stage = previous.failed_stage
+            if invalidate_stage not in _PIPELINE_STAGES:
+                invalidate_stage = "building_glossary"
+            self.script_store.invalidate_from_stage(project_id, invalidate_stage)
             run = self._new_run(project_id, approval, previous)
             self.run_store.save(run)
             return run
@@ -247,8 +287,36 @@ class ScriptBuildRunService:
                 run.started_at = datetime.now(UTC)
                 run.finished_at = None
                 run.last_error = None
+                run.failed_stage = None
+                run.attempts = []
                 self.run_store.save(run)
 
+                return self._run_pipeline_with_recovery(run, root, project_id)
+            except Exception as exc:
+                return self._finalize_failure(
+                    run,
+                    root,
+                    project_id,
+                    exc,
+                    attempt=1,
+                    stage=_failure_stage(run),
+                    invalidated=[],
+                    duration_seconds=0.0,
+                )
+
+    def _run_pipeline_with_recovery(
+        self,
+        run: ScriptBuildRun,
+        root: tracing.Span,
+        project_id: UUID,
+    ) -> ScriptBuildRun:
+        max_attempts = 1 + max(0, self.max_automatic_retries)
+        quality_retries_used = 0
+        first_failure_at: datetime | None = None
+
+        for attempt in range(1, max_attempts + 1):
+            attempt_started = datetime.now(UTC)
+            try:
                 pipeline = self.pipeline_factory(project_id)
                 pipeline.run(
                     project_id,
@@ -266,13 +334,10 @@ class ScriptBuildRunService:
                     raise ValueError(
                         "Script pipeline ended without a verified or review-required outcome."
                     )
+                root.mark("ok")
                 self._mark_succeeded(run)
                 return run
             except Exception as exc:
-                # run() always returns a ScriptBuildRun, never raises, so the span's
-                # own automatic exception handling never fires here.
-                root.mark("error", reason=type(exc).__name__)
-                message = str(exc)[:1_000] or type(exc).__name__
                 project = self.workspace_store.load_project(project_id)
                 if (
                     project.state == ProjectState.SCRIPT_VERIFIED
@@ -290,30 +355,140 @@ class ScriptBuildRunService:
                     root.mark("ok")
                     self._mark_succeeded(run)
                     return run
-                if project.state in {
-                    ProjectState.SCRIPT_DRAFTING,
-                    ProjectState.SCRIPT_VERIFYING,
-                    ProjectState.SCRIPT_REVIEW_REQUIRED,
-                    ProjectState.SCRIPT_VERIFIED,
-                }:
-                    mark_failed(project, message)
-                    self.workspace_store.save_project(project)
-                elif project.state in {
-                    ProjectState.FAILED_RETRYABLE,
-                    ProjectState.SCRIPT_READY,
-                }:
-                    # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE.
-                    # Preserve the failure on the current state; retry() explicitly
-                    # accepts SCRIPT_READY and the resumed pipeline restores drafting.
-                    project.last_error = message
-                    project.updated_at = datetime.now(UTC)
-                    self.workspace_store.save_project(project)
-                run.status = "failed"
-                run.stage = "failed"
-                run.last_error = message
-                run.finished_at = datetime.now(UTC)
-                self.run_store.save(run)
-                return run
+
+                duration = max(
+                    0.0,
+                    (datetime.now(UTC) - attempt_started).total_seconds(),
+                )
+                stage = _failure_stage(run)
+                classification = classify_run_failure(exc)
+                message = str(exc)[:1_000] or type(exc).__name__
+                now = datetime.now(UTC)
+                if first_failure_at is None:
+                    first_failure_at = now
+                wall_elapsed = (now - first_failure_at).total_seconds()
+                wall_ok = wall_elapsed < self.recovery_wall_clock_seconds
+                retryable = should_auto_retry(
+                    classification,
+                    quality_retries_used=quality_retries_used,
+                )
+                can_retry = attempt < max_attempts and retryable and wall_ok
+
+                if can_retry:
+                    invalidated = self.script_store.invalidate_from_stage(project_id, stage)
+                    self._record_attempt(
+                        run,
+                        attempt=attempt,
+                        stage=stage,
+                        error=message,
+                        classification=classification,
+                        invalidated=invalidated,
+                        duration_seconds=duration,
+                    )
+                    if classification == "model_quality":
+                        quality_retries_used += 1
+                    run.last_error = message
+                    self.run_store.save(run)
+                    delay = recovery_backoff_seconds(
+                        attempt,
+                        self.provider_retry_base_seconds,
+                    )
+                    if delay > 0:
+                        time.sleep(delay)
+                    run.last_error = None
+                    self.run_store.save(run)
+                    continue
+
+                return self._finalize_failure(
+                    run,
+                    root,
+                    project_id,
+                    exc,
+                    attempt=attempt,
+                    stage=stage,
+                    invalidated=[],
+                    duration_seconds=duration,
+                    classification=classification,
+                )
+
+        # Unreachable: the loop always returns on success or finalizes on failure.
+        raise RuntimeError("script recovery loop exited without a result")
+
+    def _finalize_failure(
+        self,
+        run: ScriptBuildRun,
+        root: tracing.Span,
+        project_id: UUID,
+        exc: BaseException,
+        *,
+        attempt: int,
+        stage: ScriptBuildStage,
+        invalidated: list[str],
+        duration_seconds: float,
+        classification: RunFailureClass | None = None,
+    ) -> ScriptBuildRun:
+        # run() always returns a ScriptBuildRun, never raises, so the span's
+        # own automatic exception handling never fires here.
+        root.mark("error", reason=type(exc).__name__)
+        message = str(exc)[:1_000] or type(exc).__name__
+        resolved = classification or classify_run_failure(exc)
+        self._record_attempt(
+            run,
+            attempt=attempt,
+            stage=stage,
+            error=message,
+            classification=resolved,
+            invalidated=invalidated,
+            duration_seconds=duration_seconds,
+        )
+        project = self.workspace_store.load_project(project_id)
+        if project.state in {
+            ProjectState.SCRIPT_DRAFTING,
+            ProjectState.SCRIPT_VERIFYING,
+            ProjectState.SCRIPT_REVIEW_REQUIRED,
+            ProjectState.SCRIPT_VERIFIED,
+        }:
+            mark_failed(project, message)
+            self.workspace_store.save_project(project)
+        elif project.state in {
+            ProjectState.FAILED_RETRYABLE,
+            ProjectState.SCRIPT_READY,
+        }:
+            # SCRIPT_READY cannot transition directly to FAILED_RETRYABLE.
+            # Preserve the failure on the current state; retry() explicitly
+            # accepts SCRIPT_READY and the resumed pipeline restores drafting.
+            project.last_error = message
+            project.updated_at = datetime.now(UTC)
+            self.workspace_store.save_project(project)
+        run.status = "failed"
+        run.failed_stage = stage
+        run.stage = "failed"
+        run.last_error = message
+        run.finished_at = datetime.now(UTC)
+        self.run_store.save(run)
+        return run
+
+    def _record_attempt(
+        self,
+        run: ScriptBuildRun,
+        *,
+        attempt: int,
+        stage: ScriptBuildStage,
+        error: str,
+        classification: RunFailureClass,
+        invalidated: list[str],
+        duration_seconds: float,
+    ) -> None:
+        run.attempts.append(
+            ScriptRunAttempt(
+                attempt=attempt,
+                stage=stage,
+                error=error,
+                classification=classification,
+                invalidated=list(invalidated),
+                duration_seconds=duration_seconds,
+            )
+        )
 
     def recover_interrupted_runs(self) -> list[UUID]:
         recovered: list[UUID] = []
@@ -350,6 +525,8 @@ class ScriptBuildRunService:
                     self._mark_succeeded(run)
                     recovered.append(run.project_id)
                     continue
+                if run.stage in _PIPELINE_STAGES:
+                    run.failed_stage = cast(ScriptBuildStage, run.stage)
                 run.status = "failed"
                 run.stage = "failed"
                 run.finished_at = datetime.now(UTC)
@@ -362,6 +539,8 @@ class ScriptBuildRunService:
             if run.status not in {"queued", "running"}:
                 continue
 
+            if run.stage in _PIPELINE_STAGES:
+                run.failed_stage = cast(ScriptBuildStage, run.stage)
             run.status = "failed"
             run.stage = "failed"
             run.finished_at = datetime.now(UTC)
@@ -405,16 +584,7 @@ class ScriptBuildRunService:
         self.run_store.save(run)
 
     def _set_stage(self, run: ScriptBuildRun, value: str) -> None:
-        allowed = {
-            "building_glossary",
-            "writing_segments",
-            "checking_draft",
-            "verifying_draft",
-            "revising",
-            "checking_revision",
-            "verifying_revision",
-        }
-        if value not in allowed:
+        if value not in _PIPELINE_STAGES:
             raise ValueError(f"Unknown script stage: {value}")
         previous = run.stage
         run.stage = cast(ScriptBuildStage, value)
@@ -427,6 +597,12 @@ class ScriptBuildRunService:
             previous=previous,
             current=value,
         )
+
+
+def _failure_stage(run: ScriptBuildRun) -> ScriptBuildStage:
+    if run.stage in _PIPELINE_STAGES:
+        return cast(ScriptBuildStage, run.stage)
+    return "building_glossary"
 
 
 def _atomic_write(path: Path, content: str) -> None:

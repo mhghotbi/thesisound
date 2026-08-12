@@ -73,6 +73,9 @@ def create_script_builder(
         writer_model=settings.model_strong,
         verifier_model=settings.model_strong,
         reviser_model=settings.model_strong,
+        max_automatic_retries=settings.script_run_max_automatic_retries,
+        recovery_wall_clock_seconds=settings.script_run_recovery_wall_clock_seconds,
+        provider_retry_base_seconds=settings.provider_retry_base_seconds,
     )
     builder.recover_interrupted_runs()
     return builder

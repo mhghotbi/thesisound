@@ -91,6 +91,10 @@ class Settings(BaseSettings):
     asr_timeout_seconds: int = Field(default=180, ge=5, le=3_600)
     provider_max_attempts: int = Field(default=2, ge=1, le=5)
     provider_retry_base_seconds: float = Field(default=1, ge=0, le=60)
+    # Automatic in-run recovery for script builds (spec 10). Retries after the
+    # first attempt; total attempts = 1 + script_run_max_automatic_retries.
+    script_run_max_automatic_retries: int = Field(default=2, ge=0, le=5)
+    script_run_recovery_wall_clock_seconds: float = Field(default=900, ge=0, le=86_400)
     # Evidence extraction is one independent model call per selected block and dominates
     # corpus-build wall clock. Kept modest so a build does not spend its time in the key
     # pool's quota cooldown; set to 1 to restore the fully sequential behaviour.

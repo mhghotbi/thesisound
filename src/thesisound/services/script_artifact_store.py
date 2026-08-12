@@ -46,6 +46,57 @@ class ScriptArtifactStore:
         if path.exists():
             shutil.rmtree(path)
 
+    def invalidate_from_stage(self, project_id: UUID, stage: str) -> list[str]:
+        """Delete artifacts owned by ``stage`` and every later stage.
+
+        Preserves plan/pipeline bindings so a scoped retry can resume upstream
+        work (glossary, segment drafts, …) without a full wipe.
+        """
+
+        stage_order = (
+            "building_glossary",
+            "writing_segments",
+            "checking_draft",
+            "verifying_draft",
+            "revising",
+            "checking_revision",
+            "verifying_revision",
+        )
+        artifacts_by_stage: dict[str, tuple[str, ...]] = {
+            "building_glossary": ("glossary.json",),
+            "writing_segments": (
+                "segments",
+                "script-draft.json",
+                "speaker-balance-violations.json",
+            ),
+            "checking_draft": ("checks.json",),
+            "verifying_draft": ("verification.json",),
+            "revising": ("script-revised.json",),
+            "checking_revision": ("checks-revised.json",),
+            "verifying_revision": (
+                "verification-revised.json",
+                "revision-decision.json",
+            ),
+        }
+        if stage not in artifacts_by_stage:
+            raise ValueError(f"Unknown script pipeline stage for invalidation: {stage}")
+        start = stage_order.index(stage)
+        directory = self.script_dir(project_id, create=False)
+        removed: list[str] = []
+        if not directory.exists():
+            return removed
+        for name in stage_order[start:]:
+            for relative in artifacts_by_stage[name]:
+                path = directory / relative
+                if not path.exists():
+                    continue
+                if path.is_dir():
+                    shutil.rmtree(path)
+                else:
+                    path.unlink()
+                removed.append(relative)
+        return removed
+
     def prepare_for_plan(self, project_id: UUID, plan_hash: str) -> None:
         """Discard artifacts unless they belong to the exact approved plan."""
 
