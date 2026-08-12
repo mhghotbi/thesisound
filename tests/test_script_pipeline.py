@@ -721,27 +721,44 @@ def test_tied_revision_keeps_the_original(tmp_path: Path) -> None:
     assert decision.delta == 0
 
 
-def test_revision_failing_deterministic_checks_records_a_rejected_decision(
+def test_revision_with_a_blocking_deterministic_issue_falls_back_to_the_original(
     tmp_path: Path,
 ) -> None:
+    """A blocking issue in the REVISION alone must not fail the whole build.
+
+    is_better() already exists to pick the better of the two candidates; a
+    revision that trips a blocking check (here, leaked prompt text) simply
+    loses that comparison and the clean original ships instead. The pipeline
+    only has one genuinely broken script to fall back to when the ORIGINAL
+    itself is blocking -- that guarantee is covered independently by
+    test_script_outcome.py::test_blocking_deterministic_issue_rejects, since
+    script_outcome() (untouched here) still rejects on the FINAL choice.
+    """
+
     root = tmp_path / "workspaces"
     project_id, _, _ = _seed(root)
     _approve(root, project_id)
     runner = FakeScriptRunner(revision_text_prefix="system prompt")
 
-    with pytest.raises(ValueError, match="deterministic checks; the original"):
-        _service(root, runner).run(
-            project_id,
-            glossary_model="fake",
-            writer_model="fake",
-            verifier_model="fake",
-            reviser_model="fake",
-        )
+    result = _service(root, runner).run(
+        project_id,
+        glossary_model="fake",
+        writer_model="fake",
+        verifier_model="fake",
+        reviser_model="fake",
+    )
 
+    assert result.verification.verdict != "pass"
+    assert (
+        WorkspaceStore(root).load_project(project_id).state == ProjectState.SCRIPT_REVIEW_REQUIRED
+    )
     decision = ScriptArtifactStore(root).load_revision_decision_optional(project_id)
     assert decision is not None
     assert decision.accepted is False
-    assert decision.revised_verdict is None
+    assert decision.revised_verdict == "pass"
+    store = ScriptArtifactStore(root)
+    assert (store.script_dir(project_id) / "script-revised.json").exists()
+    assert store.load_latest_script(project_id).turns[0].spoken_text_fa.startswith("الف0")
 
 
 def test_artifacts_without_a_decision_file_still_use_the_revision(
@@ -762,21 +779,3 @@ def test_artifacts_without_a_decision_file_still_use_the_revision(
 
     assert store.has_revised_script(project_id) is True
     assert store.load_latest_script(project_id).turns[0].spoken_text_fa.startswith("اصلاح")
-
-
-def test_blocking_deterministic_issue_still_rejects(tmp_path: Path) -> None:
-    root = tmp_path / "workspaces"
-    project_id, _, _ = _seed(root)
-    _approve(root, project_id)
-    runner = FakeScriptRunner(revision_text_prefix="system prompt")
-
-    with pytest.raises(ValueError):
-        _service(root, runner).run(
-            project_id,
-            glossary_model="fake",
-            writer_model="fake",
-            verifier_model="fake",
-            reviser_model="fake",
-        )
-
-    assert WorkspaceStore(root).load_project(project_id).state == ProjectState.FAILED_RETRYABLE

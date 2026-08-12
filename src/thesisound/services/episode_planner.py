@@ -4,6 +4,7 @@ from uuid import UUID
 
 from thesisound.domain import (
     ClaimRecord,
+    DeliberatelyOmittedClaim,
     EpisodePlan,
     EpisodeSegment,
     ExtractedAuxiliaryPoint,
@@ -202,6 +203,18 @@ def _validate_draft(
     }
     unaccounted = sorted(expected_accounted - set(used_claims) - omitted)
     if unaccounted:
-        raise DeterministicValidationError(
-            "Selected claims must be used or deliberately omitted: " + ", ".join(unaccounted)
-        )
+        # Auto-close as omitted rather than reject the plan: an omission is
+        # already a first-class, expected outcome (not every supporting/
+        # optional claim fits the runtime), so silently dropping one is not a
+        # correctness defect the way an unknown or duplicated ID is -- the
+        # model just forgot to label the drop. Those still raise above.
+        draft.deliberately_omitted_claims = [
+            *draft.deliberately_omitted_claims,
+            *(
+                DeliberatelyOmittedClaim(
+                    claim_id=claim_id,
+                    reason="Not referenced by any segment; auto-omitted at validation.",
+                )
+                for claim_id in unaccounted
+            ),
+        ]

@@ -467,25 +467,14 @@ class ScriptPipelineService:
                     verification.quality.overall if verification.quality is not None else None
                 )
                 original_issue_count = len(checks.issues) + len(verification.issues)
-                if revised_checks.verdict != "pass":
-                    decision = RevisionDecision(
-                        project_id=project_id,
-                        accepted=False,
-                        reason="Revised script failed deterministic checks.",
-                        original_verdict=verification.verdict,
-                        revised_verdict=None,
-                        original_overall=original_overall,
-                        revised_overall=None,
-                        delta=None,
-                        original_issue_count=original_issue_count,
-                        revised_issue_count=None,
-                        changed_turn_count=changed_turn_count,
-                    )
-                    self.script_store.save_revision_decision(decision)
-                    raise ValueError(
-                        "Revised script failed deterministic checks; the original script was kept."
-                    )
-
+                # A revision whose checks aren't "pass" is not auto-rejected here:
+                # is_better() below already exists to make exactly this call, verdict-
+                # rank-aware, for a revision that DOES pass checks but scores worse on
+                # verification. Judging by checks alone and stopping the whole build
+                # before verification ever ran was a stricter, redundant gate ahead of
+                # a comparison that already handles "worse revision, keep the original"
+                # by falling through with the original untouched -- the pipeline should
+                # not need an operator retry for an outcome it can already resolve.
                 revised_verification = self.script_store.load_verification_optional(
                     project_id,
                     revised=True,

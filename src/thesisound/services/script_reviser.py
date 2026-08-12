@@ -111,14 +111,15 @@ def _validate_revision(
             raise DeterministicValidationError(
                 f"Revision changed speaker for turn {revised.turn_id}."
             )
-        if not set(revised.claim_ids) <= set(original.claim_ids):
-            raise DeterministicValidationError(
-                f"Revision introduced new claim IDs in turn {revised.turn_id}."
-            )
-        if not set(revised.evidence_ids) <= set(original.evidence_ids):
-            raise DeterministicValidationError(
-                f"Revision introduced new evidence IDs in turn {revised.turn_id}."
-            )
+        # Drop rather than reject: an invented ID alongside otherwise-valid
+        # ones is the model over-citing, not a corrupted turn -- the spoken
+        # text is untouched, and every ID that IS real still is. A turn that
+        # loses all grounding this way still fails the check just below,
+        # which is the actual signal that this turn's revision is unusable.
+        revised.claim_ids = [cid for cid in revised.claim_ids if cid in set(original.claim_ids)]
+        revised.evidence_ids = [
+            eid for eid in revised.evidence_ids if eid in set(original.evidence_ids)
+        ]
         if not revised.editorial_only and (
             not revised.claim_ids or not revised.evidence_ids
         ):

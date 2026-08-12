@@ -44,7 +44,7 @@ def test_create_set_password_and_activation_round_trip(
 
     store = AccountStore(database)
     account = store.verify_password("operator", "first-secret")
-    assert account.role == "operator"
+    assert account.role == "member"
 
     changed = runner.invoke(
         cli_app,
@@ -63,6 +63,57 @@ def test_create_set_password_and_activation_round_trip(
     activated = runner.invoke(cli_app, ["activate-user", "operator"])
     assert activated.exit_code == 0, activated.output
     assert store.get_active_user(account.user_id) == account
+
+
+def test_create_user_role_defaults_to_member(
+    cli_app: typer.Typer,
+    configured_paths: tuple[Path, Path],
+) -> None:
+    _, database = configured_paths
+
+    created = runner.invoke(
+        cli_app,
+        ["create-user", "plain-member"],
+        input="secret123\nsecret123\n",
+    )
+    assert created.exit_code == 0, created.output
+    assert "Created member" in created.output
+
+    store = AccountStore(database)
+    account = store.verify_password("plain-member", "secret123")
+    assert account.role == "member"
+
+
+def test_create_user_role_operator_requires_explicit_flag(
+    cli_app: typer.Typer,
+    configured_paths: tuple[Path, Path],
+) -> None:
+    _, database = configured_paths
+
+    created = runner.invoke(
+        cli_app,
+        ["create-user", "--role", "operator", "admin"],
+        input="secret123\nsecret123\n",
+    )
+    assert created.exit_code == 0, created.output
+    assert "Created operator" in created.output
+
+    store = AccountStore(database)
+    account = store.verify_password("admin", "secret123")
+    assert account.role == "operator"
+
+
+def test_create_user_rejects_invalid_role(
+    cli_app: typer.Typer,
+    configured_paths: tuple[Path, Path],
+) -> None:
+    created = runner.invoke(
+        cli_app,
+        ["create-user", "--role", "superuser", "someone"],
+        input="secret123\nsecret123\n",
+    )
+    assert created.exit_code != 0
+    assert "نقش حساب معتبر نیست" in created.output
 
 
 def test_adopt_orphan_projects_is_idempotent(

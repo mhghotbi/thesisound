@@ -21,21 +21,32 @@ def register_accounts_commands(app: typer.Typer) -> None:
 
 
 def _create_user(
-    username: Annotated[str, typer.Argument(help="Unique operator username")],
+    username: Annotated[str, typer.Argument(help="Unique username for the new account")],
+    role: Annotated[
+        str,
+        typer.Option(
+            "--role",
+            help=(
+                "Account role: 'member' is isolated to their own projects; "
+                "'operator' can see and manage every project."
+            ),
+        ),
+    ] = "member",
 ) -> None:
     password = typer.prompt("Password", hide_input=True, confirmation_prompt=True)
     try:
         account = accounts_store_from_settings(Settings()).create_password_user(
             username,
             password,
+            role=role,
         )
     except (AccountError, OSError, RuntimeError) as exc:
         _fail(exc)
-    console.print(f"Created operator [bold]{account.username}[/bold] (id={account.user_id}).")
+    console.print(f"Created {account.role} [bold]{account.username}[/bold] (id={account.user_id}).")
 
 
 def _set_password(
-    username: Annotated[str, typer.Argument(help="Existing operator username")],
+    username: Annotated[str, typer.Argument(help="Existing username")],
 ) -> None:
     password = typer.prompt("Password", hide_input=True, confirmation_prompt=True)
     try:
@@ -46,7 +57,7 @@ def _set_password(
 
 
 def _deactivate_user(
-    username: Annotated[str, typer.Argument(help="Existing operator username")],
+    username: Annotated[str, typer.Argument(help="Existing username")],
 ) -> None:
     try:
         accounts_store_from_settings(Settings()).set_active(username, False)
@@ -56,7 +67,7 @@ def _deactivate_user(
 
 
 def _activate_user(
-    username: Annotated[str, typer.Argument(help="Existing operator username")],
+    username: Annotated[str, typer.Argument(help="Existing username")],
 ) -> None:
     try:
         accounts_store_from_settings(Settings()).set_active(username, True)
@@ -66,7 +77,7 @@ def _activate_user(
 
 
 def _adopt_orphan_projects(
-    username: Annotated[str, typer.Argument(help="Operator who will own legacy projects")],
+    username: Annotated[str, typer.Argument(help="Username who will own legacy projects")],
 ) -> None:
     settings = Settings()
     accounts = accounts_store_from_settings(settings)
@@ -87,5 +98,5 @@ def _adopt_orphan_projects(
 
 
 def _fail(exc: Exception) -> NoReturn:
-    console.print(f"[red]{exc}[/red]", stderr=True)
+    Console(stderr=True).print(f"[red]{exc}[/red]")
     raise typer.Exit(code=1) from exc
