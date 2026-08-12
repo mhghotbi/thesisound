@@ -4,14 +4,36 @@ import re
 from collections import Counter
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, EpisodePlan, Script
-from thesisound.episode import SegmentEvidencePack
+from thesisound.domain import ClaimRecord, EpisodePlan, Script, ScriptTurn
+from thesisound.episode import MustNotBeLostReview, SegmentEvidencePack
 from thesisound.script import Glossary, ScriptCheckIssue, ScriptCheckReport
 
 _WORD = re.compile(r"\w+", re.UNICODE)
-_AFFIRMATIVE_OPENERS = tuple(
+_ZWNJ = "\u200c"
+_SENTENCE_END = re.compile(r"[.!?؟۔…]")
+
+
+def _normalize_spoken(text: str) -> str:
+    collapsed = text.replace(_ZWNJ, "").casefold()
+    return " ".join(collapsed.split())
+
+
+_FILLER_PHRASES = tuple(
     sorted(
-        ("بله، دقیقاً", "دقیقاً همین‌طور است", "دقیقاً", "کاملاً درست است"),
+        (
+            _normalize_spoken(phrase)
+            for phrase in (
+                "بله، دقیقاً",
+                "دقیقاً همین‌طور است",
+                "کاملاً درست است",
+                "همین‌طور است",
+                "نکته جالب",
+                "بسیار خوب",
+                "درست است",
+                "در واقع",
+                "دقیقاً",
+            )
+        ),
         key=len,
         reverse=True,
     )
@@ -24,6 +46,47 @@ _PROMPT_LEAKAGE = (
     "as an ai",
     "به عنوان یک مدل زبانی",
 )
+
+_EDITORIAL_RATIO_MAX = 0.25
+_SPEAKER_SKEW_MAX = 2.0
+_SPEAKER_B_SUBSTANTIVE_MIN_RATIO = 0.25
+_FILLER_RATE_HIGH = 0.20
+_TRIGRAM_JACCARD_HIGH = 0.6
+_OPENING_TOKEN_COUNT = 4
+_DROPPED_CONTENT_HIGH_RATIO = 0.25
+
+
+def _first_sentence(normalized: str) -> str:
+    match = _SENTENCE_END.search(normalized)
+    if match is None:
+        return normalized
+    return normalized[: match.start()].strip()
+
+
+def _tokens(normalized: str) -> list[str]:
+    return _WORD.findall(normalized)
+
+
+def _trigrams(tokens: list[str]) -> set[tuple[str, str, str]]:
+    if len(tokens) < 3:
+        return set()
+    return {(tokens[i], tokens[i + 1], tokens[i + 2]) for i in range(len(tokens) - 2)}
+
+
+def _jaccard(left: set[tuple[str, str, str]], right: set[tuple[str, str, str]]) -> float:
+    if not left or not right:
+        return 0.0
+    union = left | right
+    return len(left & right) / len(union)
+
+
+def _is_substantive_turn(turn: ScriptTurn) -> bool:
+    return bool(turn.claim_ids or turn.evidence_ids)
+
+
+def _filler_in_first_sentence(normalized: str) -> str | None:
+    first = _first_sentence(normalized)
+    return next((phrase for phrase in _FILLER_PHRASES if phrase in first), None)
 
 
 class ScriptChecker:
@@ -40,17 +103,21 @@ class ScriptChecker:
         claims: list[ClaimRecord],
         glossary: Glossary,
         speaker_balance_violations: dict[str, list[str]] | None = None,
+        must_not_be_lost_review: MustNotBeLostReview | None = None,
     ) -> ScriptCheckReport:
         issues: list[ScriptCheckIssue] = []
         segment_by_id = {segment.segment_id: segment for segment in episode_plan.segments}
         pack_by_segment = {pack.segment_id: pack for pack in evidence_packs}
         claim_by_id = {claim.claim_id: claim for claim in claims}
 
-        seen_text: Counter[str] = Counter()
         consecutive_speaker = 0
         previous_speaker: str | None = None
         speaker_words: Counter[str] = Counter()
+        speaker_b_turn_count = 0
         speaker_b_substantive_turn_count = 0
+        filler_open_count = 0
+        normalized_turns: list[tuple[ScriptTurn, str, list[str]]] = []
+
         for turn in script.turns:
             segment = segment_by_id.get(turn.segment_id)
             pack = pack_by_segment.get(turn.segment_id)
@@ -136,29 +203,32 @@ class ScriptChecker:
                     )
                 )
 
-            normalized = " ".join(turn.spoken_text_fa.casefold().split())
+            normalized = _normalize_spoken(turn.spoken_text_fa)
+            tokens = _tokens(normalized)
+            normalized_turns.append((turn, normalized, tokens))
             speaker_words[turn.speaker] += len(_WORD.findall(turn.spoken_text_fa))
-            if turn.speaker == "B" and not turn.editorial_only:
-                speaker_b_substantive_turn_count += 1
-            if turn.speaker == "A":
-                opener = next(
-                    (item for item in _AFFIRMATIVE_OPENERS if normalized.startswith(item)),
-                    None,
-                )
+            if turn.speaker == "B":
+                speaker_b_turn_count += 1
+                if not turn.editorial_only:
+                    speaker_b_substantive_turn_count += 1
+
+            if not _is_substantive_turn(turn):
+                opener = _filler_in_first_sentence(normalized)
                 if opener is not None:
+                    filler_open_count += 1
                     issues.append(
                         ScriptCheckIssue(
                             turn_id=turn.turn_id,
                             segment_id=turn.segment_id,
-                            severity="low",
+                            severity="medium",
                             issue_type="restatement",
                             explanation=(
-                                "Speaker A opens with a bare affirmation that can signal "
-                                f"restatement: {opener}."
+                                "Turn opens with filler that can signal restatement: "
+                                f"{opener}."
                             ),
                         )
                     )
-            seen_text[normalized] += 1
+
             if any(marker in normalized for marker in _PROMPT_LEAKAGE):
                 issues.append(
                     ScriptCheckIssue(
@@ -187,15 +257,20 @@ class ScriptChecker:
                     )
                 )
 
-        for normalized, count in seen_text.items():
-            if count > 1 and len(normalized) > 20:
-                issues.append(
-                    ScriptCheckIssue(
-                        severity="high",
-                        issue_type="repetition",
-                        explanation=f"A spoken turn is repeated {count} times.",
-                    )
+        turn_count = len(script.turns)
+        if turn_count and filler_open_count / turn_count > _FILLER_RATE_HIGH:
+            issues.append(
+                ScriptCheckIssue(
+                    severity="high",
+                    issue_type="restatement",
+                    explanation=(
+                        f"Filler openers appear in {filler_open_count} of {turn_count} turns "
+                        f"({filler_open_count / turn_count:.0%}); maximum is 20%."
+                    ),
                 )
+            )
+
+        issues.extend(_repetition_issues(normalized_turns))
 
         joined = " ".join(turn.spoken_text_fa for turn in script.turns)
         for term in glossary.terms:
@@ -233,11 +308,73 @@ class ScriptChecker:
                 issues.append(
                     ScriptCheckIssue(
                         segment_id=segment_id,
-                        severity="low",
+                        severity="high",
                         issue_type="speaker_balance",
                         explanation=violation,
                     )
                 )
+
+        editorial_word_count = sum(
+            len(_WORD.findall(turn.spoken_text_fa))
+            for turn in script.turns
+            if turn.editorial_only
+        )
+        editorial_word_ratio = (
+            round(editorial_word_count / word_count, 4) if word_count else 0.0
+        )
+        speaker_a_word_count = speaker_words["A"]
+        speaker_b_word_count = speaker_words["B"]
+
+        if editorial_word_ratio > _EDITORIAL_RATIO_MAX:
+            issues.append(
+                ScriptCheckIssue(
+                    severity="high",
+                    issue_type="editorial_ratio",
+                    explanation=(
+                        f"Editorial word ratio is {editorial_word_ratio:.1%}; "
+                        f"maximum is {_EDITORIAL_RATIO_MAX:.0%}."
+                    ),
+                )
+            )
+
+        if speaker_a_word_count and speaker_b_word_count:
+            skew = max(speaker_a_word_count, speaker_b_word_count) / min(
+                speaker_a_word_count, speaker_b_word_count
+            )
+            if skew > _SPEAKER_SKEW_MAX:
+                issues.append(
+                    ScriptCheckIssue(
+                        severity="high",
+                        issue_type="speaker_skew",
+                        explanation=(
+                            f"Speaker word skew is {skew:.2f}× "
+                            f"({speaker_a_word_count}:{speaker_b_word_count}); "
+                            f"maximum is {_SPEAKER_SKEW_MAX:.1f}×."
+                        ),
+                    )
+                )
+
+        if speaker_b_turn_count and (
+            speaker_b_substantive_turn_count / speaker_b_turn_count
+            < _SPEAKER_B_SUBSTANTIVE_MIN_RATIO
+        ):
+            issues.append(
+                ScriptCheckIssue(
+                    severity="high",
+                    issue_type="speaker_b_substantive",
+                    explanation=(
+                        f"Speaker B has {speaker_b_substantive_turn_count} substantive "
+                        f"of {speaker_b_turn_count} turns "
+                        f"({speaker_b_substantive_turn_count / speaker_b_turn_count:.0%}); "
+                        f"minimum is {_SPEAKER_B_SUBSTANTIVE_MIN_RATIO:.0%}."
+                    ),
+                )
+            )
+
+        if must_not_be_lost_review is not None:
+            issues.extend(
+                _dropped_content_issues(script, must_not_be_lost_review)
+            )
 
         if any(issue.severity == "blocking" for issue in issues):
             verdict = "reject"
@@ -252,21 +389,9 @@ class ScriptChecker:
             word_count=word_count,
             estimated_minutes=round(estimated_minutes, 2),
             substantive_turn_count=sum(not turn.editorial_only for turn in script.turns),
-            editorial_word_ratio=(
-                round(
-                    sum(
-                        len(_WORD.findall(turn.spoken_text_fa))
-                        for turn in script.turns
-                        if turn.editorial_only
-                    )
-                    / word_count,
-                    4,
-                )
-                if word_count
-                else 0.0
-            ),
-            speaker_a_word_count=speaker_words["A"],
-            speaker_b_word_count=speaker_words["B"],
+            editorial_word_ratio=editorial_word_ratio,
+            speaker_a_word_count=speaker_a_word_count,
+            speaker_b_word_count=speaker_b_word_count,
             speaker_b_substantive_turn_count=speaker_b_substantive_turn_count,
             claims_per_segment_minute=(
                 round(
@@ -284,3 +409,105 @@ class ScriptChecker:
                 else 0.0
             ),
         )
+
+
+def _repetition_issues(
+    normalized_turns: list[tuple[ScriptTurn, str, list[str]]],
+) -> list[ScriptCheckIssue]:
+    issues: list[ScriptCheckIssue] = []
+    by_text: dict[str, list[ScriptTurn]] = {}
+    for turn, normalized, _tokens_for_turn in normalized_turns:
+        by_text.setdefault(normalized, []).append(turn)
+    for normalized, turns in by_text.items():
+        if len(turns) > 1 and len(normalized) > 20:
+            issues.append(
+                ScriptCheckIssue(
+                    turn_id=turns[0].turn_id,
+                    segment_id=turns[0].segment_id,
+                    severity="blocking",
+                    issue_type="repetition",
+                    explanation=f"A spoken turn is repeated exactly {len(turns)} times.",
+                )
+            )
+
+    flagged_pairs: set[tuple[str, str]] = set()
+    for index, (left_turn, left_norm, left_tokens) in enumerate(normalized_turns):
+        left_trigrams = _trigrams(left_tokens)
+        left_opening = tuple(left_tokens[:_OPENING_TOKEN_COUNT])
+        for right_turn, right_norm, right_tokens in normalized_turns[index + 1 :]:
+            pair_key = tuple(sorted((left_turn.turn_id, right_turn.turn_id)))
+            if pair_key in flagged_pairs:
+                continue
+            if left_norm == right_norm and len(left_norm) > 20:
+                continue
+            similarity = _jaccard(left_trigrams, _trigrams(right_tokens))
+            if similarity >= _TRIGRAM_JACCARD_HIGH:
+                flagged_pairs.add(pair_key)
+                issues.append(
+                    ScriptCheckIssue(
+                        turn_id=left_turn.turn_id,
+                        segment_id=left_turn.segment_id,
+                        severity="high",
+                        issue_type="repetition",
+                        explanation=(
+                            f"Near-duplicate turns {left_turn.turn_id} and "
+                            f"{right_turn.turn_id} (trigram Jaccard {similarity:.2f})."
+                        ),
+                    )
+                )
+                continue
+            right_opening = tuple(right_tokens[:_OPENING_TOKEN_COUNT])
+            if (
+                len(left_opening) == _OPENING_TOKEN_COUNT
+                and left_opening == right_opening
+            ):
+                flagged_pairs.add(pair_key)
+                issues.append(
+                    ScriptCheckIssue(
+                        turn_id=left_turn.turn_id,
+                        segment_id=left_turn.segment_id,
+                        severity="medium",
+                        issue_type="repetition",
+                        explanation=(
+                            f"Turns {left_turn.turn_id} and {right_turn.turn_id} share "
+                            "the same four-token opening."
+                        ),
+                    )
+                )
+    return issues
+
+
+def _dropped_content_issues(
+    script: Script,
+    review: MustNotBeLostReview,
+) -> list[ScriptCheckIssue]:
+    cited_claims = {
+        claim_id for turn in script.turns for claim_id in turn.claim_ids
+    }
+    plan_used = [item for item in review.items if item.used_in_plan]
+    if not plan_used:
+        return []
+    unreached = [
+        item
+        for item in plan_used
+        if not set(item.reflected_in_claims) & cited_claims
+    ]
+    if not unreached:
+        return []
+    prefixes = [item.point.text[:40] for item in unreached[:4]]
+    listed = "; ".join(prefixes)
+    severity = (
+        "high"
+        if len(unreached) / len(plan_used) > _DROPPED_CONTENT_HIGH_RATIO
+        else "medium"
+    )
+    return [
+        ScriptCheckIssue(
+            severity=severity,
+            issue_type="dropped_content",
+            explanation=(
+                f"{len(unreached)} of {len(plan_used)} plan-used must-not-be-lost "
+                f"points reach no turn claim_ids: {listed}."
+            ),
+        )
+    ]

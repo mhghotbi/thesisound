@@ -166,7 +166,7 @@ def _validate_segment_draft(
     if counter["n"] < max_attempts:
         raise DeterministicValidationError("; ".join(failures))
     # Final attempt: a stylistic floor must never abort a script build. Record it instead;
-    # ScriptChecker turns these into low-severity issues the G10 reviewer sees.
+    # ScriptChecker turns these into high-severity issues so the gate revises rather than ships.
     recorded_violations.extend(failures)
 
 

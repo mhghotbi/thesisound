@@ -82,6 +82,10 @@ class ScriptCheckIssue(BaseModel):
         "speaker_pattern",
         "speaker_balance",
         "restatement",
+        "editorial_ratio",
+        "speaker_skew",
+        "speaker_b_substantive",
+        "dropped_content",
         "other",
     ]
     explanation: str = Field(min_length=1)

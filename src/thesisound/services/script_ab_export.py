@@ -9,7 +9,11 @@ from uuid import UUID
 from thesisound.domain import Script
 from thesisound.script import ScriptCheckReport
 from thesisound.services.script_artifact_store import ScriptArtifactStore
-from thesisound.services.script_checks import _AFFIRMATIVE_OPENERS
+from thesisound.services.script_checks import (
+    _filler_in_first_sentence,
+    _is_substantive_turn,
+    _normalize_spoken,
+)
 
 _ARTIFACTS = ("arm-1.md", "arm-2.md", "key.json", "metrics.md")
 
@@ -124,10 +128,7 @@ def _claim_repeats(script: Script) -> int:
 
 def _affirmative_openers(script: Script) -> int:
     return sum(
-        turn.speaker == "A"
-        and any(
-            " ".join(turn.spoken_text_fa.casefold().split()).startswith(opener)
-            for opener in _AFFIRMATIVE_OPENERS
-        )
+        not _is_substantive_turn(turn)
+        and _filler_in_first_sentence(_normalize_spoken(turn.spoken_text_fa)) is not None
         for turn in script.turns
     )

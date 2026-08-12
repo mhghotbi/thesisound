@@ -1,6 +1,6 @@
 # 02 — Script Dialogue Quality Gate
 
-Date: 2026-08-12 · Status: proposed · Effort: M · Source: [MVP readiness audit](../thesisound-mvp-readiness-audit-fa.html), finding "generic dialogue, filler, template repetition, and dropped points in long documents"
+Date: 2026-08-12 · Status: implemented · Effort: M · Source: [MVP readiness audit](../thesisound-mvp-readiness-audit-fa.html), finding "generic dialogue, filler, template repetition, and dropped points in long documents"
 
 The measurements that would catch generic dialogue already exist and are already computed. None of them can change a verdict. This spec makes the existing floor binding, widens two checks that are scoped too narrowly to fire, and connects the dropped-content signal the pipeline already extracts to the gate that ships the script.
 

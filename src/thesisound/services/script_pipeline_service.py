@@ -193,6 +193,12 @@ class ScriptPipelineService:
         if project.episode_plan is None:
             raise ValueError("EpisodePlan is required for script checks.")
         script = self.script_store.load_script(project_id, revised=revised)
+        try:
+            must_not_be_lost_review = self.episode_store.load_must_not_be_lost_review(
+                project_id
+            )
+        except FileNotFoundError:
+            must_not_be_lost_review = None
         report = self.script_checker.check(
             project_id=project_id,
             script=script,
@@ -205,6 +211,7 @@ class ScriptPipelineService:
                 if revised
                 else self.script_store.load_speaker_balance_violations_optional(project_id)
             ),
+            must_not_be_lost_review=must_not_be_lost_review,
         )
         self.script_store.save_checks(report, revised=revised)
         manifest = self.script_store.load_manifest(project_id)
