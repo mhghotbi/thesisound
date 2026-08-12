@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Thesisound — MVP Readiness Audit</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1c1c1e;
+    --muted: #68686f;
+    --border: #e4e4e7;
+    --card-bg: #f7f7f8;
+    --accent: #2563eb;
+    --ok: #15803d;
+    --warn: #b45309;
+    --danger: #b91c1c;
+    --code-bg: #f2f2f4;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16161a;
+      --fg: #e9e9ec;
+      --muted: #a1a1aa;
+      --border: #303036;
+      --card-bg: #1f1f24;
+      --accent: #60a5fa;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+      --danger: #f87171;
+      --code-bg: #232328;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body {
+    font-family: Vazirmatn, Tahoma, "Segoe UI", sans-serif;
+    line-height: 1.95;
+    font-size: 16px;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 6rem;
+  }
+  h1, h2, h3 { font-weight: 800; line-height: 1.55; }
+  h1 {
+    font-size: clamp(1.7rem, 4vw, 2.15rem);
+    margin: 0 0 0.5rem;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 0.85rem;
+  }
+  h2 {
+    font-size: 1.35rem;
+    margin: 2.8rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 1.08rem; margin: 1.7rem 0 0.7rem; color: var(--accent); }
+  p { margin: 0.8rem 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  ul, ol { margin: 0.8rem 0; padding-inline-start: 1.65rem; }
+  li { margin: 0.4rem 0; }
+  code, .ltr {
+    direction: ltr;
+    unicode-bidi: embed;
+    font-family: "Cascadia Code", Consolas, monospace;
+  }
+  code {
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 0.08rem 0.35rem;
+    font-size: 0.88em;
+  }
+  .meta { color: var(--muted); font-size: 0.93rem; margin-bottom: 1.8rem; }
+  .meta p { margin: 0.2rem 0; }
+  .toc, .card, .action, .verdict-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+  .toc { padding: 1.1rem 1.4rem; margin: 1.5rem 0 2rem; }
+  .toc h3 { margin-top: 0; color: var(--fg); }
+  .toc ol { columns: 2; column-gap: 2rem; }
+  .toc a { color: var(--fg); }
+  .toc a:hover { color: var(--accent); }
+  .verdict-box {
+    border-inline-start: 5px solid var(--danger);
+    padding: 1.1rem 1.3rem;
+    margin: 1rem 0;
+  }
+  .verdict {
+    display: block;
+    color: var(--danger);
+    font-size: 1.15rem;
+    font-weight: 800;
+    direction: ltr;
+    text-align: left;
+  }
+  .value-rating { color: var(--warn); font-weight: 800; }
+  .journey {
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    border-inline-start: 4px solid var(--accent);
+    background: var(--card-bg);
+    border-radius: 8px;
+    font-weight: 700;
+  }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+  .card { padding: 1rem 1.15rem; }
+  .card strong { display: block; margin-bottom: 0.2rem; }
+  .ok { border-inline-start: 4px solid var(--ok); }
+  .warn { border-inline-start: 4px solid var(--warn); }
+  .danger { border-inline-start: 4px solid var(--danger); }
+  .table-wrap { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: 9px; }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 0.91rem; }
+  th, td { padding: 0.65rem 0.85rem; border-bottom: 1px solid var(--border); text-align: right; vertical-align: top; }
+  th { background: var(--card-bg); font-weight: 800; }
+  tr:last-child td { border-bottom: 0; }
+  .status { display: inline-block; border-radius: 999px; padding: 0.05rem 0.5rem; font-size: 0.78rem; font-weight: 800; white-space: nowrap; }
+  .status.ok { border: 0; color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+  .status.partial { color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+  .status.blocked { color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); }
+  .action { padding: 1rem 1.2rem; margin: 0.85rem 0; }
+  .action .title { display: block; font-weight: 800; margin-bottom: 0.35rem; }
+  .action p { margin: 0.3rem 0; }
+  .effort { display: inline-block; margin-inline-start: 0.35rem; padding: 0.03rem 0.5rem; border-radius: 999px; background: var(--accent); color: white; font-size: 0.76rem; font-weight: 800; direction: ltr; }
+  .note { color: var(--muted); font-size: 0.91rem; }
+  .foot { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.88rem; }
+  @media (max-width: 700px) {
+    body { padding: 1.4rem 1rem 4rem; }
+    .grid { grid-template-columns: 1fr; }
+    .toc ol { columns: 1; }
+  }
+  @media print {
+    body { max-width: 100%; padding: 1rem; font-size: 11pt; }
+    .toc { display: none; }
+    a { color: inherit; text-decoration: none; }
+    h2, .action, .card, .table-wrap { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Thesisound — MVP Readiness Audit</h1>
+<div class="meta">
+  <p><strong>تاریخ audit:</strong> ۲۰۲۶-۰۸-۱۳</p>
+  <p><strong>Baseline:</strong> commit <code>e431304</code> روی branch <code>main</code></p>
+  <p><strong>دامنه:</strong> بررسی read-only از repo، workflowها، تست‌ها، artifactهای واقعی، runtime ledger و قیمت رسمی providerها. هیچ کد محصولی تغییر نکرد.</p>
+</div>
+
+<div class="toc">
+  <h3>فهرست</h3>
+  <ol>
+    <li><a href="#verdict">MVP Verdict</a></li>
+    <li><a href="#mvp">MVP واقعی محصول</a></li>
+    <li><a href="#value">Product Value</a></li>
+    <li><a href="#features">Core Features</a></li>
+    <li><a href="#e2e">End-to-End Reliability</a></li>
+    <li><a href="#quality">Quality</a></li>
+    <li><a href="#efficiency">Backend Efficiency</a></li>
+    <li><a href="#cost">Cost per Episode</a></li>
+    <li><a href="#scope">Recommended MVP Scope</a></li>
+    <li><a href="#actions">Next Actions</a></li>
+  </ol>
+</div>
+
+<h2 id="verdict">MVP Verdict</h2>
+<div class="verdict-box">
+  <span class="verdict">NOT READY — CORE GAPS</span>
+  <p>Thesisound از نظر معماری مسیر کاملی دارد، اما شواهد runtime فقط رسیدن تا <code>script_verified</code> را نشان می‌دهند. فایل صوتی نهاییِ قابل پخش برای پروژه‌های جاری وجود ندارد و کنترل coverage نیز می‌تواند حذف مفاهیم مرکزی را سالم اعلام کند.</p>
+</div>
+<p><strong>نتیجه‌ی تصمیمی:</strong> محصول برای release محدود به کاربر واقعی هنوز آماده نیست. با تمرکز روی سه مسیر digital، اصلاح coverage/verifier و اثبات audio قابل تحویل، می‌تواند به یک MVP کوچک ولی کامل تبدیل شود.</p>
+
+<h2 id="mvp">۱. MVP واقعی محصول</h2>
+<p>ارزش اصلی محصول تعداد stageها نیست؛ یک اپیزود فارسی قابل اعتماد و واقعاً شنیدنی است:</p>
+<div class="journey">موضوع یا منبع ← استخراج معتبر ← انتخاب و سازمان‌دهی مفاهیم مهم ← script فارسی شنیدنی ← فایل صوتی قابل پخش و دانلود</div>
+<p>این مسیر در design و serviceها وجود دارد، ولی end-to-end فعلی اثبات نشده است: دو پروژه‌ی جاری تا script موفق‌اند، درحالی‌که هیچ‌کدام audio نهایی ندارند. تنها audio ثبت‌شده در archive شامل metadata، ASR و QA JSON است؛ خود <code>final.wav</code> یا <code>final.mp3</code> در repo موجود نیست.</p>
+
+<h2 id="value">۲. Product Value</h2>
+<p class="value-rating">ارزیابی فعلی: Weak value — با ظرفیت رسیدن به Acceptable MVP value</p>
+<div class="grid">
+  <div class="card ok"><strong>تمایز واقعی</strong>evidence excerpt، locator، source binding، duration gate و امتناع از padding مزیتی معنادار نسبت به summary ساده‌اند.</div>
+  <div class="card danger"><strong>اعتماد هنوز شکننده است</strong>اپیزود ۲۰ دقیقه‌ای درباره‌ی <span class="ltr">The Human Condition</span> مفاهیم مرکزی action، plurality و natality را حذف کرده، اما coverage آن را <code>well_covered</code> و verifier همه‌ی ابعاد را ۱٫۰ اعلام کرده است.</div>
+  <div class="card warn"><strong>فارسی قابل فهم ولی نوشتاری</strong>جمله‌ها متراکم و طولانی‌اند؛ سؤال‌وجواب‌ها گاهی مصنوعی و شبیه prompt پاسخ‌دهی LLM هستند، نه گفت‌وگوی مناسب شنیدن.</div>
+  <div class="card warn"><strong>تنوع محصول اثبات نشده</strong>فقط نمونه‌های ۱۰ و ۲۰ دقیقه‌ای در mode توضیحی داریم؛ تفاوت معنایی durationها و چهار content mode با artifact واقعی نشان داده نشده است.</div>
+</div>
+<p><strong>So what:</strong> اگر fidelity و coverage قابل اعتماد نشوند، پیچیدگی provenance برای کاربر به مزیت واقعی تبدیل نمی‌شود و استفاده از یک LLM عمومی همچنان انتخاب ساده‌تر خواهد بود.</p>
+
+<h2 id="features">۳. Core Features</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>دسته</th><th>اجزا</th><th>تصمیم MVP</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Must work</strong></td><td>brief کوتاه، digital document ingestion، parse quality، evidence extraction، claim prioritization، plan، Persian script، fidelity verifier، TTS، playable/downloadable output، cache و retry/resume</td><td>هسته‌ی release؛ هرکدام باید با اجرای واقعی اثبات شوند.</td></tr>
+    <tr><td><strong>Useful, not essential</strong></td><td>web/URL ingestion محدود، deterministic glossary، document map برای اسناد بلند، MP3 کنار WAV، coverage audit اصلاح‌شده</td><td>بماند فقط اگر happy path اصلی را پیچیده یا گران نکند.</td></tr>
+    <tr><td><strong>Premature / Overengineered</strong></td><td>reviser تقریباً دائمی، reconciliation/disagreement چندلایه، routing پیچیده، artifactهای operator-level زیاد، approvalهای متعدد</td><td>conditional یا ساده شود؛ provenance پایه حفظ شود.</td></tr>
+    <tr><td><strong>Future feature</strong></td><td>Persian scanned OCR، چهار content mode، ۳۰/۴۵/۶۰ دقیقه، web authority ranking گسترده، full cross-source reconciliation</td><td>تا مشاهده‌ی نیاز کاربر و اثبات economics defer شود.</td></tr>
+  </tbody>
+</table></div>
+<p><strong>Approval پیشنهادی:</strong> corpus/source confirmation بماند؛ plan approval فقط هنگام warning یا کمبود پوشش؛ شروع audio برای کنترل هزینه صریح بماند. Research Brief بهتر است همان فرم کوتاه اولیه باشد، نه یک gate جدا.</p>
+
+<h2 id="e2e">۴. End-to-End Reliability</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>مسیر</th><th>وضعیت واقعی</th><th>ریسک / failure</th><th>حکم MVP</th></tr></thead>
+  <tbody>
+    <tr><td>English digital PDF</td><td><span class="status partial">PARTIAL</span> parser benchmark و artifact تحلیل وجود دارد؛ اجرای جاری PDF→audio وجود ندارد.</td><td>benchmark parser به‌تنهایی UX، retry و audio را اثبات نمی‌کند.</td><td>یک fixture release-gating لازم است.</td></tr>
+    <tr><td>Persian digital PDF</td><td><span class="status partial">PARTIAL</span> دو PDF تا claims/evidence رسیده‌اند، ولی script نهایی فقط evidenceهای EPUB انگلیسی را استفاده کرده است.</td><td>ممکن است ingestion ظاهراً موفق باشد ولی منبع فارسی عملاً در خروجی غایب بماند.</td><td>مسیر Persian-source→script→audio هنوز اثبات نشده.</td></tr>
+    <tr><td>Persian scanned PDF</td><td><span class="status blocked">BLOCKED</span> production artifact و runtime benchmark وجود ندارد.</td><td>OCR stack پیچیده است، اما reliability و Persian reading order معلوم نیست.</td><td>از scope نسخه‌ی اول خارج و صریحاً unsupported شود.</td></tr>
+    <tr><td>سند بلند</td><td><span class="status partial">PARTIAL</span> EPUB بلند تا map، ۸۱ claim و script ۲۰ دقیقه‌ای کامل شده است.</td><td>coverage کل claim ledger را می‌سنجد، نه claimهای انتخاب‌شده برای plan.</td><td>technical path کار می‌کند؛ content path قابل اعتماد نیست.</td></tr>
+    <tr><td>تولید script</td><td><span class="status partial">PARTIAL</span> دو script جاری ۱۰ و ۲۰ دقیقه‌ای تولید شده‌اند.</td><td>چند rerun، فارسی متراکم، inference فراتر از excerpt و verifier غیرکالیبره.</td><td>قابل demo، نه release-gating.</td></tr>
+    <tr><td>تولید audio</td><td><span class="status blocked">BLOCKED</span> فقط metadata آرشیوی؛ binary نهایی وجود ندارد. FFmpeg نیز در محیط audit نصب نبود.</td><td>ASR پیش‌فرض خاموش و پذیرش <code>manual_review</code> روشن است؛ <code>verified</code> تضمین spoken completeness نیست.</td><td>بزرگ‌ترین blocker محصول.</td></tr>
+  </tbody>
+</table></div>
+<p>run recovery و cache نسبت به audit قبلی بهتر شده‌اند، ولی داده‌ی واقعی همچنان چند episode/script failure، rerun و interrupted run نشان می‌دهد. کاربر نباید برای recovery به workspace یا CLI دست بزند.</p>
+
+<h2 id="quality">۵. Quality</h2>
+<div class="grid">
+  <div class="card warn"><strong>Source fidelity</strong>زیرساخت excerpt و locator خوب است، اما برخی claimها از excerpt وسیع‌ترند و script نیز interpretation را به‌عنوان نتیجه‌ی منبع بیان می‌کند. verifier این موارد را عبور داده است.</div>
+  <div class="card danger"><strong>Coverage</strong>مهم‌ترین defect محتواست: must-not-be-lost review مفاهیم مرکزی حذف‌شده را ثبت می‌کند، ولی coverage هیچ gapی گزارش نمی‌دهد.</div>
+  <div class="card warn"><strong>Script</strong>فارسی رسمی و قابل فهم است، اما جمله‌های چندبخشی، پرسش‌های ساختگی، filler editorial و تکرار ساختار آموزشی حس LLM-like ایجاد می‌کنند.</div>
+  <div class="card danger"><strong>Audio</strong>بدون binary قابل شنیدن، pronunciation، prosody، segment loss/repetition و کیفیت واقعی قابل قضاوت نیست.</div>
+</div>
+<p>golden-set repo هنوز <strong>not ready to freeze</strong> است و صراحتاً هیچ gold یا expected answer تولید نشده؛ بنابراین تعداد زیاد unit/contract test جای ارزیابی انسانی محتوای فارسی را نمی‌گیرد.</p>
+
+<h2 id="efficiency">۶. Backend Efficiency و Overengineering</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>مشاهده</th><th>شاهد runtime</th><th>اثر</th><th>تصمیم</th></tr></thead>
+  <tbody>
+    <tr><td>LLM stageهای متعدد</td><td>نمونه‌ی ۱۰ دقیقه‌ای ۵۹ call و نمونه‌ی ۲۰ دقیقه‌ای ۷۲ call تا artifact جاری مصرف کرده‌اند.</td><td>cost و latency بالا برای beta کم‌کاربر</td><td>evidence batching و حذف callهای کم‌ارزش</td></tr>
+    <tr><td>ریز بودن evidence extraction</td><td>سند بلند ۳۱ evidence call داشته است.</td><td>overhead و context تکراری</td><td>batch بزرگ‌تر با validation deterministic</td></tr>
+    <tr><td>reviser کم‌اثر</td><td>در نمونه‌ی ۲۰ دقیقه‌ای چند بار اجرا شده؛ verifier قبل و بعد کامل و quality delta صفر بوده است.</td><td>هزینه بدون بهبود قابل سنجش</td><td>فقط برای failure مشخص اجرا شود.</td></tr>
+    <tr><td>reuse ناقص در rerun</td><td>segment generation، verifier و reviser در اجراهای شکست‌خورده تکرار شده‌اند.</td><td>هزینه‌ی episode موفق تابع تعداد شکست‌هاست.</td><td>resume از آخرین artifact معتبر</td></tr>
+    <tr><td>TTS parallel</td><td><code>tts_workers=4</code> و chunkهای pending موازی‌اند.</td><td>latency صوت بهتر از طراحی قبلی</td><td>برای MVP کافی است.</td></tr>
+    <tr><td>OCR/model routing پیچیده</td><td>چند backend OCR و provider route وجود دارد، اما مسیر OCR واقعی نداریم و Okian قیمت عمومی ندارد.</td><td>maintenance و economics نامعلوم</td><td>OCR defer؛ routing release محدود شود.</td></tr>
+  </tbody>
+</table></div>
+<p><strong>اجزایی که نبودشان احتمالاً برای کاربر MVP محسوس نیست:</strong> چهار mode، full disagreement graph، challenge benchmarkهای گسترده، approvalهای operator-level و observability چندلایه. اما excerpt validation، provenance و یک verifier مستقل جزو correctness هستند و نباید صرفاً برای سادگی حذف شوند.</p>
+
+<h2 id="cost">۷. Cost per Episode</h2>
+<p>هزینه‌ی دقیق episode قابل محاسبه نیست: اکثر callها به Okian route شده‌اند، Okian نرخ عمومی ندارد، ledger همه‌ی callها را synthetic ثبت کرده و search/OCR/ASR/infrastructure نیز قیمت کامل ندارند. تنها کف قابل اتکا، TTS صوتی است.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>مدت</th><th>حداقل قابل محاسبه‌ی TTS</th><th>LLM + Search + OCR + ASR + Infra</th></tr></thead>
+  <tbody>
+    <tr><td>۵ دقیقه</td><td class="ltr">$0.15</td><td>نامعلوم</td></tr>
+    <tr><td>۱۵ دقیقه</td><td class="ltr">$0.45</td><td>نامعلوم</td></tr>
+    <tr><td>۳۰ دقیقه</td><td class="ltr">$0.90</td><td>نامعلوم</td></tr>
+    <tr><td>۶۰ دقیقه</td><td class="ltr">$1.80</td><td>نامعلوم</td></tr>
+  </tbody>
+</table></div>
+<p>این کف از نرخ رسمی Gemini TTS، تقریباً <span class="ltr">$0.03/minute</span>، محاسبه شده است. در یک سناریوی صرفاً مقایسه‌ای با نرخ‌های عمومی Google، history نمونه‌ی ۱۰ دقیقه‌ای حدود <span class="ltr">$2.05 LLM + $0.30 TTS</span> و نمونه‌ی ۲۰ دقیقه‌ای حدود <span class="ltr">$3.55 LLM + $0.60 TTS</span> می‌شود. این اعداد bill واقعی نیستند و failed/rejected rerunها را نیز دربر می‌گیرند.</p>
+<p><strong>Cost / Performance Verdict:</strong> برای شروع بدون paid subscriber، معماری فعلی به‌اندازه‌ی کافی قابل پیش‌بینی یا ارزان نیست. مسئله‌ی اصلی TTS نیست؛ call count، rerun و provider بی‌قیمت‌اند.</p>
+
+<h2 id="scope">۸. Recommended MVP Scope</h2>
+<h3>Keep for MVP</h3>
+<ul>
+  <li>upload-first برای English/Persian digital PDF و EPUB؛</li>
+  <li>brief کوتاه inline، parse-quality check و document map فقط برای سند بلند؛</li>
+  <li>evidence extraction، excerpt/locator validation، claim prioritization و provenance؛</li>
+  <li>plan coverage واقعی، script فارسی، deterministic checks و verifier کالیبره؛</li>
+  <li>TTS، فایل playable/downloadable، cache و retry/resume امن.</li>
+</ul>
+
+<h3>Simplify / Change before MVP</h3>
+<ul>
+  <li>فقط mode توضیحی و دو مدت ۱۰ و ۲۰ دقیقه؛ تغییر duration نباید corpus را دوباره تحلیل کند.</li>
+  <li>corpus confirmation و شروع audio بمانند؛ plan approval فقط هنگام warning.</li>
+  <li>verifier یک‌بار روی script نهایی؛ reviser فقط در پاسخ به failure مشخص.</li>
+  <li>evidenceها batch شوند و وضعیت <code>verified audio</code> فقط پس از validation واقعی استفاده شود.</li>
+</ul>
+
+<h3>Defer until real users</h3>
+<ul>
+  <li>Persian scanned PDF و OCR production؛</li>
+  <li>web discovery و authority ranking گسترده؛</li>
+  <li>critical، comparative و debate و مدت‌های ۳۰/۴۵/۶۰ دقیقه؛</li>
+  <li>full cross-source reconciliation و disagreement graph؛</li>
+  <li>infrastructure مربوط به scale و benchmarkهای challenge گسترده.</li>
+</ul>
+
+<h2 id="actions">۹. Next Actions</h2>
+<div class="action">
+  <span class="title">۱. سه fixture واقعی را تا MP3 به release gate تبدیل کن <span class="effort">Effort: M</span></span>
+  <p><strong>Why:</strong> English PDF، Persian PDF و long document هنوز end-to-end اثبات نشده‌اند.</p>
+  <p><strong>Expected impact:</strong> رفع بزرگ‌ترین ریسک release و مشخص شدن failure UX واقعی.</p>
+</div>
+<div class="action">
+  <span class="title">۲. coverage را روی plan/script و must-not-be-lost items اعمال کن <span class="effort">Effort: M</span></span>
+  <p><strong>Why:</strong> وجود claim در ledger امروز با حضور آن در اپیزود اشتباه گرفته می‌شود.</p>
+  <p><strong>Expected impact:</strong> جلوگیری از حذف مفاهیم مرکزی با وضعیت سالم.</p>
+</div>
+<div class="action">
+  <span class="title">۳. verifier را با نمونه‌های human-reviewed فارسی کالیبره کن <span class="effort">Effort: M</span></span>
+  <p><strong>Why:</strong> امتیازهای کامل فعلی unsupported inference، repetition و نثر غیرشنیدنی را تشخیص نمی‌دهند.</p>
+  <p><strong>Expected impact:</strong> افزایش source fidelity و کیفیت شنیداری.</p>
+</div>
+<div class="action">
+  <span class="title">۴. audio prerequisites و معنای verified را اصلاح کن <span class="effort">Effort: S</span></span>
+  <p><strong>Why:</strong> FFmpeg غایب، ASR خاموش و manual review قابل پذیرش است.</p>
+  <p><strong>Expected impact:</strong> خروجی واقعاً قابل پخش و قابل اعتماد.</p>
+</div>
+<div class="action">
+  <span class="title">۵. تست‌های شکست‌خورده‌ی runtime پشتیبانی‌شده را صفر کن <span class="effort">Effort: M</span></span>
+  <p><strong>Why:</strong> اجرای audit برابر ۹۷۸ pass، ۲۱ fail و ۱ skip بود؛ failureها audio، login/UI، upload و contractهای دیگر را شامل می‌شدند.</p>
+  <p><strong>Expected impact:</strong> کاهش دخالت فنی و failure نامفهوم برای کاربر.</p>
+</div>
+<div class="action">
+  <span class="title">۶. evidence batching، conditional reviser و reuse در تغییر duration را اعمال کن <span class="effort">Effort: M</span></span>
+  <p><strong>Why:</strong> بیشترین waste قابل رفع در همین سه نقطه دیده می‌شود.</p>
+  <p><strong>Expected impact:</strong> کاهش محسوس cost، latency و rerun.</p>
+</div>
+<div class="action">
+  <span class="title">۷. UI نسخه‌ی اول را به upload-first، explanatory 10/20 و دو approval ضروری محدود کن <span class="effort">Effort: S</span></span>
+  <p><strong>Why:</strong> تنظیمات و gateهای فعلی پیش از اثبات value اصطکاک ایجاد می‌کنند.</p>
+  <p><strong>Expected impact:</strong> onboarding ساده‌تر و release کوچک‌تر ولی کامل.</p>
+</div>
+
+<h2>۱۰. شواهد و محدودیت‌های تصمیم</h2>
+<ul>
+  <li>artifactهای جاری: <a href="../workspaces/00a0aea1-518a-4162-bc9b-f36e2737f8ab/script/script-draft.json">script ده‌دقیقه‌ای</a> و <a href="../workspaces/9c4e58b0-9701-4483-9c85-a225b3e7c838/script/script-revised.json">script بیست‌دقیقه‌ای</a>.</li>
+  <li>شاهد coverage: <a href="../workspaces/9c4e58b0-9701-4483-9c85-a225b3e7c838/episode/coverage-report.json">coverage report</a> در کنار <a href="../workspaces/9c4e58b0-9701-4483-9c85-a225b3e7c838/episode/must-not-be-lost-review.json">must-not-be-lost review</a>.</li>
+  <li>وضعیت benchmark: <a href="../benchmarks/eval/v1/pre-freeze/PRE-FREEZE-READINESS.md">PRE-FREEZE-READINESS</a> — freeze مجاز نیست و gold تولید نشده است.</li>
+  <li>تنظیمات هزینه و مدل: <a href="../config/model-routing.toml">model routing</a> و <a href="../config/model-pricing.toml">model pricing</a>.</li>
+  <li>قیمت provider: <a href="https://ai.google.dev/gemini-api/docs/pricing">Gemini API pricing</a> و <a href="https://ai.google.dev/gemini-api/docs/google-search">Google Search grounding pricing</a>.</li>
+</ul>
+<p class="note">عدم وجود binary صوتی مانع ارزیابی مستقل pronunciation و prosody شد. برآورد هزینه‌های Google-equivalent سناریوی مقایسه‌ای است، نه invoice واقعی Okian. تست‌ها در محیط audit با Python 3.14 اجرا شدند؛ CI repo از Python 3.12 استفاده می‌کند.</p>
+
+<div class="foot">
+  <p><strong>پاسخ نهایی:</strong> امروز باید coverage، verifier، audio delivery و سه happy path دیجیتال حتماً درست شوند. ingestion، provenance، budget gate، cache و ساخت script همین حالا پایه‌ی کافی دارند. OCR فارسی، modeهای متعدد، reconciliation کامل و architecture مربوط به scale زودتر از نیاز واقعی ساخته شده‌اند.</p>
+</div>
+
+</body>
+</html>

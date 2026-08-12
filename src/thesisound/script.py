@@ -179,6 +179,7 @@ QualityNoteKind = Literal[
     "revision_rejected",
     "grounding_repaired",
     "turn_excised",
+    "duration_shortfall",
 ]
 QualityNoteSeverity = Literal["informational", "notable"]
 

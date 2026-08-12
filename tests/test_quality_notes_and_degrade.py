@@ -317,57 +317,119 @@ def test_mislinked_turn_evidence_is_repaired_not_rejected() -> None:
     assert "evidence_unlinked_to_claim" not in issue_types
 
 
-def test_claim_with_no_evidence_at_all_still_stops() -> None:
-    claims = [
-        ClaimRecord(
-            claim_id="claim-empty",
-            claim="مدعای بدون شاهد",
-            claim_type=ClaimType.EDITORIAL_EXPLANATION,
-            evidence_ids=[],
-            support_status=SupportStatus.UNCERTAIN,
-        )
-    ]
+_GROUNDED_TEXT = "این گفته به شاهد واقعی وصل است و متن آن به اندازهٔ کافی بلند است."
+
+
+def _grounded_claim() -> ClaimRecord:
+    return ClaimRecord(
+        claim_id="claim-1",
+        claim="مدعا",
+        claim_type=ClaimType.AUTHOR_POSITION,
+        evidence_ids=["ev-1"],
+        support_status=SupportStatus.STRONG,
+    )
+
+
+def _evidence_less_claim() -> ClaimRecord:
+    return ClaimRecord(
+        claim_id="claim-empty",
+        claim="مدعای بدون شاهد",
+        claim_type=ClaimType.EDITORIAL_EXPLANATION,
+        evidence_ids=[],
+        support_status=SupportStatus.UNCERTAIN,
+    )
+
+
+def _grounded_turn(turn_id: str = "t1", segment_id: str = "seg-1") -> ScriptTurn:
+    return ScriptTurn(
+        turn_id=turn_id,
+        segment_id=segment_id,
+        speaker="A",
+        spoken_text_fa=_GROUNDED_TEXT,
+        claim_ids=["claim-1"],
+        evidence_ids=["ev-1"],
+    )
+
+
+def _ungrounded_turn(turn_id: str = "t2", segment_id: str = "seg-2") -> ScriptTurn:
+    return ScriptTurn(
+        turn_id=turn_id,
+        segment_id=segment_id,
+        speaker="B",
+        spoken_text_fa="این گفته به مدعایی ارجاع می‌دهد که هیچ شاهدی ندارد.",
+        claim_ids=["claim-empty"],
+        evidence_ids=["ev-placeholder"],
+    )
+
+
+def test_evidence_less_claim_is_excised_not_raised() -> None:
+    """Spec 12 D3: the passage must not be spoken, but the episode survives."""
+
+    script = Script(title="متن", turns=[_grounded_turn(), _ungrounded_turn()])
+    remedied, notes = remediate_script_grounding(
+        script,
+        [_grounded_claim(), _evidence_less_claim()],
+        episode_plan=_grounding_plan("claim-1", minutes=0.1),
+    )
+    assert [turn.turn_id for turn in remedied.turns] == ["t1"]
+    assert [(note.kind, note.subject) for note in notes] == [("turn_excised", "t2")]
+
+
+def test_emptied_segment_is_excised_whole() -> None:
+    editorial = ScriptTurn(
+        turn_id="t2",
+        segment_id="seg-2",
+        speaker="A",
+        spoken_text_fa="حالا به نکتهٔ بعدی می‌رسیم.",
+        editorial_only=True,
+    )
     script = Script(
         title="متن",
-        turns=[
-            ScriptTurn(
-                turn_id="t1",
-                segment_id="seg-1",
-                speaker="A",
-                spoken_text_fa="گفتهٔ محتوایی بدون شاهد واقعی.",
-                claim_ids=["claim-empty"],
-                evidence_ids=["ev-placeholder"],
-            )
-        ],
+        turns=[_grounded_turn(), editorial, _ungrounded_turn("t3", "seg-2")],
     )
-    with pytest.raises(DeterministicValidationError, match="no supporting evidence") as raised:
+    remedied, notes = remediate_script_grounding(
+        script,
+        [_grounded_claim(), _evidence_less_claim()],
+        episode_plan=_grounding_plan("claim-1", minutes=0.1),
+    )
+    # The editorial turn introduces a point the script no longer makes.
+    assert [turn.turn_id for turn in remedied.turns] == ["t1"]
+    assert [note.kind for note in notes] == ["turn_excised"]
+
+
+def test_duration_shortfall_notes_instead_of_raising() -> None:
+    script = Script(title="متن", turns=[_grounded_turn(), _ungrounded_turn()])
+    remedied, notes = remediate_script_grounding(
+        script,
+        [_grounded_claim(), _evidence_less_claim()],
+        episode_plan=_grounding_plan("claim-1", minutes=5.0),
+    )
+    assert [turn.turn_id for turn in remedied.turns] == ["t1"]
+    assert [note.kind for note in notes] == ["turn_excised", "duration_shortfall"]
+    assert notes[-1].severity == "notable"
+
+
+def test_unknown_claim_id_alongside_a_real_one_is_dropped() -> None:
+    turn = _grounded_turn().model_copy(update={"claim_ids": ["claim-1", "claim-ghost"]})
+    remedied, notes = remediate_script_grounding(
+        Script(title="متن", turns=[turn]),
+        [_grounded_claim()],
+        episode_plan=_grounding_plan("claim-1", minutes=0.1),
+    )
+    assert remedied.turns[0].claim_ids == ["claim-1"]
+    assert remedied.turns[0].evidence_ids == ["ev-1"]
+    assert [note.kind for note in notes] == ["citation_dropped"]
+
+
+def test_empty_script_is_the_only_grounding_raise() -> None:
+    script = Script(title="متن", turns=[_ungrounded_turn("t1", "seg-1")])
+    with pytest.raises(
+        DeterministicValidationError, match="linked to the evidence ledger"
+    ) as raised:
         remediate_script_grounding(
             script,
-            claims,
+            [_evidence_less_claim()],
             episode_plan=_grounding_plan("claim-empty"),
-        )
-    assert raised.value.stop_reason == "integrity_breach"
-
-
-def test_excision_floor_stops_when_segment_would_empty() -> None:
-    script = Script(
-        title="متن",
-        turns=[
-            ScriptTurn(
-                turn_id="t1",
-                segment_id="seg-1",
-                speaker="A",
-                spoken_text_fa="گفتهٔ محتوایی با شناسهٔ ناشناخته.",
-                claim_ids=["claim-unknown"],
-                evidence_ids=["ev-unknown"],
-            )
-        ],
-    )
-    with pytest.raises(DeterministicValidationError, match="incomplete") as raised:
-        remediate_script_grounding(
-            script,
-            claims=[],
-            episode_plan=_grounding_plan("claim-1"),
         )
     assert raised.value.stop_reason == "integrity_breach"
 

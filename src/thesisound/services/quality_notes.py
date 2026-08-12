@@ -24,6 +24,9 @@ _LISTENER_IMPACT: Final[dict[QualityNoteKind, str]] = {
     "turn_excised": (
         "یک گفته حذف شد چون به شواهد قابل دفاع وصل نبود."
     ),
+    "duration_shortfall": (
+        "اپیزود از مدت درخواستی کوتاه‌تر شد چون بخش‌های بدون پشتوانه حذف شدند."
+    ),
 }
 
 _SEVERITY: Final[dict[QualityNoteKind, QualityNoteSeverity]] = {
@@ -33,6 +36,7 @@ _SEVERITY: Final[dict[QualityNoteKind, QualityNoteSeverity]] = {
     "revision_rejected": "informational",
     "grounding_repaired": "informational",
     "turn_excised": "notable",
+    "duration_shortfall": "notable",
 }
 
 
