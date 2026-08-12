@@ -85,7 +85,9 @@ def register_episode_routes(
         default_duration = None
         if run is not None and run.supported_duration_minutes is not None:
             if run.status == "blocked":
-                default_duration = int(run.supported_duration_minutes)
+                candidate = int(run.supported_duration_minutes)
+                if candidate >= 5:
+                    default_duration = candidate
             elif (
                 run.status == "succeeded"
                 and project.state == ProjectState.EPISODE_PLANNED

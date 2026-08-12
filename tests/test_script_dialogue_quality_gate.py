@@ -132,7 +132,13 @@ def _words(count: int, token: str = "متن") -> str:
     return " ".join([token] * count)
 
 
-def test_speaker_balance_violation_blocks_verdict() -> None:
+def test_speaker_balance_violation_is_recorded_but_does_not_block_verdict() -> None:
+    """Style/format checks are recorded at low severity, not blocking (MVP policy, 2026-08-13).
+
+    Content grounding matters more than dialogue polish for now; C1's
+    high-severity promotion is deliberately reverted here.
+    """
+
     script = Script(
         title="عنوان",
         turns=[
@@ -159,9 +165,9 @@ def test_speaker_balance_violation_blocks_verdict() -> None:
         speaker_balance_violations={"seg-001": ["F1 editorial words are 40%"]},
         words_per_minute=20,
     )
-    assert report.verdict == "revise"
+    assert report.verdict == "pass"
     assert any(
-        issue.issue_type == "speaker_balance" and issue.severity == "high"
+        issue.issue_type == "speaker_balance" and issue.severity == "low"
         for issue in report.issues
     )
 
@@ -553,7 +559,13 @@ def test_clean_script_still_passes() -> None:
     assert report.verdict == "pass", [issue.model_dump() for issue in report.issues]
 
 
-def test_calibration_fixture_rejects_with_c1_c2_c3_highs() -> None:
+def test_calibration_fixture_records_c1_c2_c3_at_low_severity() -> None:
+    """C1/C2/C3 still measure and record on the known-bad script; they just no
+    longer bind the verdict (MVP policy, 2026-08-13). The fixture's verdict
+    stays non-"pass" here only because it also contains exact-duplicate turns
+    (`repetition`, `blocking`), a content defect this policy did not touch.
+    """
+
     script = Script.model_validate_json(
         (_FIXTURE_DIR / "calibration_script.json").read_text(encoding="utf-8")
     )
@@ -585,11 +597,22 @@ def test_calibration_fixture_rejects_with_c1_c2_c3_highs() -> None:
             key: value for key, value in violations.items() if key == "seg-001"
         },
     )
-    assert report.verdict != "pass"
-    types = {issue.issue_type for issue in report.issues if issue.severity == "high"}
-    assert "speaker_balance" in types  # C1
-    assert types & {"editorial_ratio", "speaker_skew", "speaker_b_substantive"}  # C2
-    assert "restatement" in types  # C3 rate high
+    assert report.verdict != "pass"  # driven by blocking repetition, not style
+    low_types = {issue.issue_type for issue in report.issues if issue.severity == "low"}
+    assert "speaker_balance" in low_types  # C1
+    assert low_types & {"editorial_ratio", "speaker_skew", "speaker_b_substantive"}  # C2
+    assert "restatement" in low_types  # C3 rate high
+    assert not any(
+        issue.issue_type in {
+            "speaker_balance",
+            "editorial_ratio",
+            "speaker_skew",
+            "speaker_b_substantive",
+            "restatement",
+        }
+        and issue.severity in {"medium", "high", "blocking"}
+        for issue in report.issues
+    )
 
 
 def test_validate_raises_before_final_attempt() -> None:

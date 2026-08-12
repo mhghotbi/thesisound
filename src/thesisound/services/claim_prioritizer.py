@@ -52,16 +52,16 @@ class ClaimPrioritizer:
             ]
             scored.sort(key=lambda item: (-item[1], item[0].claim_id))
 
-            must_count = max(1, min(len(scored), round(brief.target_duration_minutes / 10)))
+            must_count = max(1, min(len(scored), round(brief.target_duration_minutes / 3)))
             supporting_count = max(
                 1,
-                min(len(scored) - must_count, round(brief.target_duration_minutes / 6)),
+                min(len(scored) - must_count, round(brief.target_duration_minutes / 2)),
             )
             optional_count = max(
                 0,
                 min(
                     len(scored) - must_count - supporting_count,
-                    round(brief.target_duration_minutes / 8),
+                    round(brief.target_duration_minutes / 4),
                 ),
             )
 

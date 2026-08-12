@@ -157,7 +157,7 @@ class Settings(BaseSettings):
     # TTS WPM paces synthesis timing.
     episode_budget_words_per_minute: int = Field(default=130, ge=80, le=220)
     episode_budget_explanation_expansion_factor: float = Field(
-        default=4.0, ge=1.0, le=10.0
+        default=1.35, ge=1.0, le=10.0
     )
     episode_budget_evidence_tokens_per_output_minute: float = Field(
         default=20.0, ge=1.0, le=500.0

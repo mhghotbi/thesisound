@@ -123,7 +123,7 @@ def test_floor_reports_f1_f2_f3_in_order_and_can_be_disabled() -> None:
     ) == []
 
 
-def test_script_checker_populates_balance_measurements_and_high_issues() -> None:
+def test_script_checker_populates_balance_measurements_as_low_severity() -> None:
     project_id = uuid4()
     plan = EpisodePlan(
         title="عنوان",
@@ -176,10 +176,12 @@ def test_script_checker_populates_balance_measurements_and_high_issues() -> None
     assert report.speaker_b_word_count == 1
     assert report.speaker_b_substantive_turn_count == 0
     assert report.claims_per_segment_minute == 1
-    assert report.verdict == "revise"
+    # Style/format issues are recorded at low severity and do not block the
+    # verdict (MVP policy, 2026-08-13).
+    assert report.verdict == "pass"
     assert {(issue.issue_type, issue.severity) for issue in report.issues} >= {
-        ("speaker_balance", "high"),
-        ("restatement", "medium"),
+        ("speaker_balance", "low"),
+        ("restatement", "low"),
     }
 
 

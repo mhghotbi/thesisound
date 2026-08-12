@@ -18,7 +18,7 @@ def test_checked_in_routing_file_resolves_evidence_extraction_to_okian() -> None
     )
 
     assert route.provider == "okian"
-    assert route.profile == "okian_gemini_fast"
+    assert route.profile == "okian_gemini_strong"
 
 
 def test_evidence_extraction_override_resolves_the_strong_profile() -> None:

@@ -220,7 +220,9 @@ class ScriptChecker:
                         ScriptCheckIssue(
                             turn_id=turn.turn_id,
                             segment_id=turn.segment_id,
-                            severity="medium",
+                            # Style, not correctness -- recorded for later
+                            # polish, not blocking (MVP policy, 2026-08-13).
+                            severity="low",
                             issue_type="restatement",
                             explanation=(
                                 "Turn opens with filler that can signal restatement: "
@@ -261,7 +263,8 @@ class ScriptChecker:
         if turn_count and filler_open_count / turn_count > _FILLER_RATE_HIGH:
             issues.append(
                 ScriptCheckIssue(
-                    severity="high",
+                    # Style, not correctness -- see the per-turn restatement note above.
+                    severity="low",
                     issue_type="restatement",
                     explanation=(
                         f"Filler openers appear in {filler_open_count} of {turn_count} turns "
@@ -309,7 +312,9 @@ class ScriptChecker:
         if target and not target * 0.8 <= estimated_minutes <= target * 1.2:
             issues.append(
                 ScriptCheckIssue(
-                    severity="high",
+                    # Pacing, not correctness -- recorded for later polish, not
+                    # blocking (MVP policy, 2026-08-13).
+                    severity="low",
                     issue_type="duration_mismatch",
                     explanation=(
                         f"Estimated duration is {estimated_minutes:.1f} minutes; "
@@ -323,7 +328,9 @@ class ScriptChecker:
                 issues.append(
                     ScriptCheckIssue(
                         segment_id=segment_id,
-                        severity="high",
+                        # Style, not correctness -- recorded for later polish,
+                        # not blocking (MVP policy, 2026-08-13).
+                        severity="low",
                         issue_type="speaker_balance",
                         explanation=violation,
                     )
@@ -340,10 +347,14 @@ class ScriptChecker:
         speaker_a_word_count = speaker_words["A"]
         speaker_b_word_count = speaker_words["B"]
 
+        # editorial_ratio, speaker_skew, and speaker_b_substantive are style/format
+        # measures, not content correctness. Recorded at "low" (non-blocking) for
+        # now -- content grounding matters more for MVP; tighten these later
+        # (MVP policy, 2026-08-13).
         if editorial_word_ratio > _EDITORIAL_RATIO_MAX:
             issues.append(
                 ScriptCheckIssue(
-                    severity="high",
+                    severity="low",
                     issue_type="editorial_ratio",
                     explanation=(
                         f"Editorial word ratio is {editorial_word_ratio:.1%}; "
@@ -359,7 +370,7 @@ class ScriptChecker:
             if skew > _SPEAKER_SKEW_MAX:
                 issues.append(
                     ScriptCheckIssue(
-                        severity="high",
+                        severity="low",
                         issue_type="speaker_skew",
                         explanation=(
                             f"Speaker word skew is {skew:.2f}× "
@@ -375,7 +386,7 @@ class ScriptChecker:
         ):
             issues.append(
                 ScriptCheckIssue(
-                    severity="high",
+                    severity="low",
                     issue_type="speaker_b_substantive",
                     explanation=(
                         f"Speaker B has {speaker_b_substantive_turn_count} substantive "

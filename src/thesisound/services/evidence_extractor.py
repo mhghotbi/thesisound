@@ -644,8 +644,15 @@ def _validate_claim_excerpt(claim: EvidenceClaimDraft, block_text: str) -> None:
         raise DeterministicValidationError("supporting_excerpt is too short to audit.")
     verbatim = locate_excerpt(claim.supporting_excerpt, block_text)
     if verbatim is None:
+        # The offending excerpt travels in the message on purpose: retry's
+        # identical_repair guard (model_retry.error_fingerprint) compares
+        # stringified messages, and a bare constant string collides on every
+        # second failure regardless of which claim actually failed this time
+        # -- cutting a 3-attempt budget down to 2 even when each attempt was a
+        # genuinely different (and sometimes salvageable) mistake.
         raise ExcerptNotFoundError(
-            "supporting_excerpt must be copied from the supplied source block."
+            "supporting_excerpt must be copied from the supplied source block "
+            f"(got: {claim.supporting_excerpt[:60]!r})"
         )
     if _normalize(verbatim) != excerpt:
         # Repair typographic drift so downstream auditing stays byte-exact.
