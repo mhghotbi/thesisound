@@ -3,6 +3,7 @@ from __future__ import annotations
 import platform
 import re
 import sys
+import unicodedata
 from pathlib import Path
 from xml.etree import ElementTree
 from zipfile import BadZipFile, ZipFile
@@ -106,7 +107,7 @@ def _parse_pdf(path: Path) -> tuple[list[ParsedBlock], list[str]]:
         except Exception as exc:
             warnings.append(f"Page {page_index} extraction failed: {type(exc).__name__}")
             continue
-        for paragraph in _paragraphs(text):
+        for paragraph in _paragraphs(_normalize_pdf_text(text)):
             blocks.append(
                 ParsedBlock(
                     source_block_key=f"page-{page_index}-block-{len(blocks) + 1}",
@@ -117,6 +118,21 @@ def _parse_pdf(path: Path) -> tuple[list[ParsedBlock], list[str]]:
                 )
             )
     return blocks, warnings
+
+
+def _normalize_pdf_text(text: str) -> str:
+    """Fold Arabic/Persian presentation-form glyphs back to logical letters.
+
+    Some embedded PDF fonts (seen on a Persian-typeset source) map glyph IDs
+    straight to Unicode Arabic Presentation Forms (U+FB50-FDFF, U+FE70-FEFF)
+    instead of shaping standard letters at render time; pypdf then extracts
+    exactly those codepoints. The text reads fine to a human but never equals
+    a model's reconstructed logical text, so every verbatim-quote comparison
+    downstream fails. NFKC decomposes presentation forms to their canonical
+    letters and is a no-op on text that is already canonical.
+    """
+
+    return unicodedata.normalize("NFKC", text)
 
 
 def _parse_docx(path: Path) -> tuple[list[ParsedBlock], list[str]]:
