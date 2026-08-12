@@ -105,6 +105,7 @@ def _validate_revision(
         raise DeterministicValidationError(
             f"Revision must return exactly targeted turns; missing={missing}, extra={extra}."
         )
+    ungroundable_turn_ids: list[str] = []
     for revised in draft.revised_turns:
         original = original_by_id[revised.turn_id]
         if revised.speaker != original.speaker:
@@ -113,9 +114,7 @@ def _validate_revision(
             )
         # Drop rather than reject: an invented ID alongside otherwise-valid
         # ones is the model over-citing, not a corrupted turn -- the spoken
-        # text is untouched, and every ID that IS real still is. A turn that
-        # loses all grounding this way still fails the check just below,
-        # which is the actual signal that this turn's revision is unusable.
+        # text is untouched, and every ID that IS real still is.
         revised.claim_ids = [cid for cid in revised.claim_ids if cid in set(original.claim_ids)]
         revised.evidence_ids = [
             eid for eid in revised.evidence_ids if eid in set(original.evidence_ids)
@@ -123,9 +122,17 @@ def _validate_revision(
         if not revised.editorial_only and (
             not revised.claim_ids or not revised.evidence_ids
         ):
-            raise DeterministicValidationError(
-                f"Revised substantive turn {revised.turn_id} lost grounding."
-            )
+            # The model replaced its only real ID with an invented one rather
+            # than citing alongside it, so nothing salvageable is left for
+            # this one turn. Drop it from the revision instead of failing the
+            # whole build: _materialize_revision already falls back to the
+            # original (still-grounded) turn for any turn_id missing here,
+            # exactly like a turn that was never targeted for revision.
+            ungroundable_turn_ids.append(revised.turn_id)
+    if ungroundable_turn_ids:
+        draft.revised_turns = [
+            turn for turn in draft.revised_turns if turn.turn_id not in ungroundable_turn_ids
+        ]
 
 
 def _materialize_revision(
