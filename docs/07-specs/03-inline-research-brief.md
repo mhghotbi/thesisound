@@ -107,7 +107,7 @@ Net effect on this spec: §3's design needed no rework because of this — auto-
 3. Saving an edited brief on a project already past `BRIEF_READY` succeeds, changes the brief, and does not attempt a transition. ✅ verified by the same test's second half.
 4. A blank central question is still rejected with the existing message. ✅ unchanged validation in `save_brief`; covered by `test_brief_validation_preserves_all_submitted_values`.
 5. `GATE_BRIEF_CONFIRMED` is emitted exactly once per project. ✅ [`app.py:906-911`](../../src/thesisound/web/app.py:906).
-6. A project rewound to `brief` genuinely re-enters `BRIEF_READY` and shows the blocking confirmation copy again, not the non-blocking one. ✅ by construction (§3.3) — **not yet covered by an automated test**; see §7's added row.
+6. A project rewound to `brief` genuinely re-enters `BRIEF_READY` and shows the blocking confirmation copy again, not the non-blocking one. ✅ verified by `test_rewind_to_brief_reblocks_with_the_confirmation_copy`.
 7. `ALLOWED_TRANSITIONS` is unchanged. ✅ no edits to `pipeline.py`.
 
 ## 7. Test plan
@@ -117,7 +117,7 @@ Net effect on this spec: §3's design needed no rework because of this — auto-
 | `test_create_project_confirms_the_brief_in_one_step` | §6.1, §6.3 — implemented, in [`tests/test_web_project_flow.py:278`](../../tests/test_web_project_flow.py:278) |
 | `test_brief_validation_preserves_all_submitted_values` | §6.4 — implemented, in `tests/test_web_brief_validation.py` |
 | `test_gate_codes_are_unique_and_kebab_case`, `test_every_enforced_at_reference_resolves`, `test_human_only_gates_match_the_documented_set`, `test_sop_document_lists_every_*` | §3.4's registry edits stay internally consistent and SOP-synced — implemented, in `tests/test_gates.py` |
-| `test_rewind_to_brief_reblocks_with_the_confirmation_copy` | §6.6 — **not implemented.** Should create a project, add a source (or otherwise leave `BRIEF_READY`), POST `/workflow/rewind` with `target=brief`, then assert the returned `/brief` page contains "این تأیید واقعی است" and that `project.state == ProjectState.BRIEF_READY`. `tests/test_workflow_revision.py` covers the state and artifact side of rewind-to-brief already; this would close the UI-copy gap specifically. |
+| `test_rewind_to_brief_reblocks_with_the_confirmation_copy` | §6.6 — implemented, in [`tests/test_web_project_flow.py`](../../tests/test_web_project_flow.py). Creates a project (already past `BRIEF_READY`), POSTs `/workflow/rewind` with `target=brief`, then asserts the `/brief` page shows the blocking confirmation copy and `project.state == BRIEF_READY`. State/artifact side remains covered by `tests/test_workflow_revision.py`. |
 
 ## 8. Related
 

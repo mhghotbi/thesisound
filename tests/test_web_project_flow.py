@@ -325,6 +325,38 @@ def test_create_project_confirms_the_brief_in_one_step(tmp_path: Path) -> None:
     assert project.brief.central_question == "پرسش ویرایش‌شده"
 
 
+def test_rewind_to_brief_reblocks_with_the_confirmation_copy(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    with TestClient(_app(settings)) as client:
+        _login(client)
+        project_id = _create_project(client)
+        assert workspace.load_project(project_id).state == ProjectState.SOURCES_COLLECTING
+
+        brief_page = client.get(f"/projects/{project_id}/brief")
+        assert "این تأیید واقعی است" not in brief_page.text
+        assert "هر زمان لازم بود می‌توانید ویرایشش کنید" in brief_page.text
+
+        sources_page = client.get(f"/projects/{project_id}/sources")
+        response = client.post(
+            f"/projects/{project_id}/workflow/rewind",
+            data={
+                "csrf_token": _csrf(sources_page.text),
+                "target": "brief",
+                "reason": "بازگشت برای تأیید دوباره",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert response.headers["location"].endswith("/brief?rewound=1")
+
+        brief_page = client.get(f"/projects/{project_id}/brief")
+        assert "این تأیید واقعی است" in brief_page.text
+        assert "هر زمان لازم بود می‌توانید ویرایشش کنید" not in brief_page.text
+
+    assert workspace.load_project(project_id).state == ProjectState.BRIEF_READY
+
+
 def test_upload_select_queue_and_lock_confirmed_inputs(tmp_path: Path) -> None:
     settings = _settings(tmp_path)
     with TestClient(_app(settings)) as client:
