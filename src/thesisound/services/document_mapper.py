@@ -623,7 +623,12 @@ def _validate_merge_draft(
 ) -> None:
     updated_ids = [update.section_id for update in draft.section_updates]
     if len(updated_ids) != len(set(updated_ids)):
-        raise DeterministicValidationError("Document-map merge contains duplicate section updates.")
+        duplicates = sorted({sid for sid in updated_ids if updated_ids.count(sid) > 1})
+        # Embed offending IDs so identical_repair fingerprints differ.
+        raise DeterministicValidationError(
+            "Document-map merge contains duplicate section updates: "
+            + ", ".join(duplicates)
+        )
     referenced = set(updated_ids) | set(draft.globally_required_section_ids)
     for update in draft.section_updates:
         referenced.update(update.depends_on_section_ids)
@@ -650,7 +655,11 @@ def _validate_map_draft(
 ) -> None:
     section_ids = [section.section_id for section in draft.sections]
     if len(section_ids) != len(set(section_ids)):
-        raise DeterministicValidationError("Document map section IDs must be unique.")
+        duplicates = sorted({sid for sid in section_ids if section_ids.count(sid) > 1})
+        # Embed offending IDs so identical_repair fingerprints differ.
+        raise DeterministicValidationError(
+            "Document map section IDs must be unique: " + ", ".join(duplicates)
+        )
     known_sections = set(section_ids)
     mapped: list[str] = []
     for section in draft.sections:

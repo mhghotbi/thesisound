@@ -759,6 +759,17 @@ def test_revision_with_a_blocking_deterministic_issue_falls_back_to_the_original
     store = ScriptArtifactStore(root)
     assert (store.script_dir(project_id) / "script-revised.json").exists()
     assert store.load_latest_script(project_id).turns[0].spoken_text_fa.startswith("الف0")
+    ledger = store.load_quality_notes_optional(project_id)
+    assert ledger is not None
+    assert any(note.kind == "revision_rejected" for note in ledger.notes)
+
+
+def test_revision_failing_checks_is_ranked_not_raised(
+    tmp_path: Path,
+) -> None:
+    """Spec 09 name for the blocking-revision fallback path."""
+
+    test_revision_with_a_blocking_deterministic_issue_falls_back_to_the_original(tmp_path)
 
 
 def test_artifacts_without_a_decision_file_still_use_the_revision(

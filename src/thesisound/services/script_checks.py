@@ -237,9 +237,12 @@ class ScriptChecker:
                         turn_id=turn.turn_id,
                         segment_id=turn.segment_id,
                         severity="blocking",
+                        # Structural / integrity_breach: shipping prompt text
+                        # breaks the product's core promise — still blocking.
                         issue_type="prompt_leakage",
                         explanation=(
-                            "Turn appears to expose pipeline instructions or prompt markers."
+                            "A spoken line looks like internal instructions rather than "
+                            "episode dialogue. Regenerate that passage before shipping."
                         ),
                     )
                 )

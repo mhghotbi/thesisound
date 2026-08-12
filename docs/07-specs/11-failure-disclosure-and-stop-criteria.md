@@ -1,6 +1,6 @@
 # 11 — Failure Disclosure and Stop Criteria
 
-Date: 2026-08-13 · Status: proposed · Effort: S–M · Source: the same nine failures as spec 09, read as product surface rather than as control flow
+Date: 2026-08-13 · Status: implemented · Effort: S–M · Source: the same nine failures as spec 09, read as product surface rather than as control flow
 
 Specs 09 and 10 remove most user-visible failures. That creates two new obligations, and neither is optional.
 

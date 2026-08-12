@@ -10,6 +10,7 @@ from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.script import (
     Glossary,
+    QualityNote,
     RevisionDecision,
     ScriptCheckReport,
     ScriptPipelineManifest,
@@ -22,6 +23,7 @@ from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.lineage_events import emit_cache_lookup, emit_quality_label
 from thesisound.services.persian_script_writer import PersianScriptWriterService
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
+from thesisound.services.quality_notes import make_quality_note
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_checks import ScriptChecker
 from thesisound.services.script_outcome import script_outcome
@@ -282,7 +284,7 @@ class ScriptPipelineService:
         original = self.script_store.load_script(project_id)
         checks = self.script_store.load_checks(project_id)
         verification = self.script_store.load_verification(project_id)
-        revised, draft, run = self.reviser.revise(
+        revised, draft, run, notes = self.reviser.revise(
             project_id=project_id,
             script=original,
             checks=checks,
@@ -292,6 +294,7 @@ class ScriptPipelineService:
             model=model,
             prompt_version=prompt_version,
         )
+        self.script_store.append_quality_notes(project_id, notes)
         transition(project, ProjectState.SCRIPT_DRAFTING)
         self.script_store.save_script(project_id, revised, revised=True)
         project.script = revised
@@ -335,6 +338,7 @@ class ScriptPipelineService:
                 approval.plan_hash,
                 identity,
             )
+            self._seed_quality_notes_from_episode(project_id)
             if project.state == ProjectState.SCRIPT_VERIFIED and pipeline_matched:
                 return ScriptPipelineResult(
                     glossary=self.script_store.load_glossary(project_id),
@@ -530,11 +534,31 @@ class ScriptPipelineService:
                     script = revised
                     checks = revised_checks
                     verification = revised_verification
+                else:
+                    # Recoverable: is_better() already chose the original; record it.
+                    self.script_store.append_quality_notes(
+                        project_id,
+                        [
+                            make_quality_note(
+                                stage="script_pipeline",
+                                kind="revision_rejected",
+                                subject=str(project_id),
+                            )
+                        ],
+                    )
 
+            quality_ledger = self.script_store.load_quality_notes_optional(project_id)
+            quality_notes = quality_ledger.notes if quality_ledger is not None else []
+            project = self.workspace_store.load_project(project_id)
+            segment_count = (
+                len(project.episode_plan.segments) if project.episode_plan is not None else 0
+            )
             outcome, reason = script_outcome(
                 checks,
                 verification,
                 min_overall=(self.min_quality_overall if self.quality_gate_enabled else None),
+                quality_notes=quality_notes,
+                segment_count=segment_count,
             )
             if outcome == "rejected":
                 raise ValueError(f"Script rejected: {reason}")
@@ -562,6 +586,15 @@ class ScriptPipelineService:
         except (FileNotFoundError, ModelError, ValueError) as exc:
             self._mark_failed(project_id, str(exc))
             raise
+
+    def _seed_quality_notes_from_episode(self, project_id: UUID) -> None:
+        """Copy plan-time notes into the script ledger once per pipeline binding."""
+
+        if self.script_store.load_quality_notes_optional(project_id) is not None:
+            return
+        episode_ledger = self.episode_store.load_quality_notes_optional(project_id)
+        notes: list[QualityNote] = episode_ledger.notes if episode_ledger is not None else []
+        self.script_store.replace_quality_notes(project_id, notes)
 
     def _load_claims(self, project_id: UUID) -> list[ClaimRecord]:
         definitions, claims = self._load_glossary_inputs(project_id)

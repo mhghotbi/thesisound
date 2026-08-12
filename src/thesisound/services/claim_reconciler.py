@@ -403,7 +403,11 @@ def _validate_draft(
             )
         normalized = _normalize(claim.claim).casefold()
         if normalized in normalized_claims:
-            raise DeterministicValidationError("Reconciled claims must not be duplicates.")
+            # Embed the duplicate text so identical_repair fingerprints differ.
+            raise DeterministicValidationError(
+                "Reconciled claims must not be duplicates "
+                f"(got: {claim.claim[:80]!r})."
+            )
         normalized_claims.add(normalized)
         referenced.extend(claim.evidence_ids)
 

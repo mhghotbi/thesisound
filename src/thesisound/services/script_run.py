@@ -47,6 +47,8 @@ class ScriptBuildRun(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     finished_at: datetime | None = None
     last_error: str | None = None
+    # clean = zero QualityNotes; degraded = at least one recoverable fallback fired.
+    quality_disposition: Literal["clean", "degraded"] = "clean"
 
 
 class ScriptBuildRunStore:
@@ -219,8 +221,12 @@ class ScriptBuildRunService:
             try:
                 project = self.workspace_store.load_project(project_id)
                 approval = self.approval_store.require_current(project)
+                # Structural / consent: script generation is bound to an approved plan.
                 if approval.plan_hash != run.approved_plan_hash:
-                    raise ValueError("Queued script run does not match the approved Episode Plan.")
+                    raise ValueError(
+                        "This script run no longer matches the approved episode plan. "
+                        "Approve the current plan again, then regenerate."
+                    )
                 if project.state in {
                     ProjectState.EPISODE_PLANNED,
                     ProjectState.FAILED_RETRYABLE,
@@ -392,6 +398,10 @@ class ScriptBuildRunService:
         run.stage = "complete"
         run.finished_at = datetime.now(UTC)
         run.last_error = None
+        ledger = self.script_store.load_quality_notes_optional(run.project_id)
+        run.quality_disposition = (
+            "degraded" if ledger is not None and ledger.notes else "clean"
+        )
         self.run_store.save(run)
 
     def _set_stage(self, run: ScriptBuildRun, value: str) -> None:

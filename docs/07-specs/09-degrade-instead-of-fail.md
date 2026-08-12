@@ -1,6 +1,8 @@
 # 09 — Degrade Instead of Fail
 
-Date: 2026-08-13 · Status: proposed · Effort: M · Source: nine consecutive user-visible build failures on 2026-08-12, every one caused by an imperfect model output that the pipeline could already have resolved
+Date: 2026-08-13 · Status: implemented · Effort: M · Source: nine consecutive user-visible build failures on 2026-08-12, every one caused by an imperfect model output that the pipeline could already have resolved
+
+Note: failures 7 (JSON escape repair) and 8 (turn_id compare) are silent correct repairs with no listener impact — no `QualityNote`. Failures 3–6 emit notes.
 
 A deterministic validator that raises stops the whole build and parks the project in `FAILED_RETRYABLE`. That is the correct response to a defect the pipeline cannot resolve. It is the wrong response to a defect the pipeline **can** resolve, and the second case is the overwhelming majority of what actually fires.
 

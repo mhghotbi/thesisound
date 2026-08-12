@@ -172,6 +172,30 @@ class TargetedRevisionDraft(BaseModel):
     revised_turns: list[RevisedTurnDraft] = Field(default_factory=list)
 
 
+QualityNoteKind = Literal[
+    "claim_omitted",
+    "citation_dropped",
+    "turn_not_revised",
+    "revision_rejected",
+]
+QualityNoteSeverity = Literal["informational", "notable"]
+
+
+class QualityNote(BaseModel):
+    """Structured disclosure for a recoverable degradation (specs 09/11)."""
+
+    stage: str = Field(min_length=1)
+    kind: QualityNoteKind
+    subject: str = Field(min_length=1)
+    listener_impact: str = Field(min_length=1)
+    severity: QualityNoteSeverity
+
+
+class QualityNotesLedger(BaseModel):
+    project_id: UUID
+    notes: list[QualityNote] = Field(default_factory=list)
+
+
 class ScriptPipelineManifest(BaseModel):
     project_id: UUID
     status: Literal[

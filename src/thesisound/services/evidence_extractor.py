@@ -641,7 +641,12 @@ def _validate_profile_budget(
 def _validate_claim_excerpt(claim: EvidenceClaimDraft, block_text: str) -> None:
     excerpt = _normalize(claim.supporting_excerpt)
     if len(excerpt) < 12:
-        raise DeterministicValidationError("supporting_excerpt is too short to audit.")
+        # Offending excerpt in the message: constant strings collide under
+        # identical_repair (see ExcerptNotFoundError below).
+        raise DeterministicValidationError(
+            "supporting_excerpt is too short to audit "
+            f"(got: {claim.supporting_excerpt[:60]!r})"
+        )
     verbatim = locate_excerpt(claim.supporting_excerpt, block_text)
     if verbatim is None:
         # The offending excerpt travels in the message on purpose: retry's

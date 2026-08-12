@@ -120,6 +120,30 @@
   {% endif %}
 </div>
 
+{% if notable_quality_notes or informational_quality_notes %}
+<section class="section-block" aria-labelledby="degradation-title">
+  <div class="section-heading"><h2 id="degradation-title">نکته‌های کیفیت در این ساخت</h2></div>
+  {% if notable_quality_notes %}
+  <ul class="quality-notes quality-notes--notable">
+    {% for note in notable_quality_notes %}
+    <li>{{ note.listener_impact }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>نکتهٔ مهمی برای بازبینی ثبت نشده است.</p>
+  {% endif %}
+  {% if informational_quality_notes %}
+  {% call technical_details('سایر تنظیم‌های خودکار') %}
+    <ul class="quality-notes quality-notes--informational">
+      {% for note in informational_quality_notes %}
+      <li>{{ note.listener_impact }} <span class="operator-only">· <code><bdi dir="ltr">{{ note.kind }}</bdi></code> · <code><bdi dir="ltr">{{ note.subject }}</bdi></code></span></li>
+      {% endfor %}
+    </ul>
+  {% endcall %}
+  {% endif %}
+</section>
+{% endif %}
+
 <section class="section-block" aria-labelledby="quality-title">
   <div class="section-heading"><h2 id="quality-title">گزارش کیفیت</h2></div>
   <div class="quality-summary">
@@ -138,6 +162,7 @@
     {% if checks.issues %}<ul>{% for issue in checks.issues %}<li><code><bdi dir="ltr">{{ issue.turn_id if issue.turn_id is defined else '' }}</bdi></code> — {{ issue.explanation }}</li>{% endfor %}</ul>{% endif %}
     <p>Verifier verdict: <code><bdi dir="ltr">{{ verification.verdict }}</bdi></code> · unsupported claim ratio: <code><bdi dir="ltr">{{ (verification.unsupported_claim_ratio * 100) | round(2) }}%</bdi></code></p>
     {% if verification.issues %}<ul>{% for issue in verification.issues %}<li><code><bdi dir="ltr">{{ issue.turn_id }}</bdi></code> — {{ issue.explanation }}</li>{% endfor %}</ul>{% endif %}
+    {% if quality_notes %}<p class="operator-only">Quality notes: <code><bdi dir="ltr">{{ quality_notes | length }}</bdi></code>{% if script_run %} · disposition: <code><bdi dir="ltr">{{ script_run.quality_disposition }}</bdi></code>{% endif %}</p>{% endif %}
   {% endcall %}
 </section>
 

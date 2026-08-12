@@ -19,6 +19,7 @@ from thesisound.episode import (
     MustNotBeLostReview,
     SegmentEvidencePack,
 )
+from thesisound.script import QualityNotesLedger
 
 
 class EpisodeArtifactStore:
@@ -95,6 +96,19 @@ class EpisodeArtifactStore:
         directory = self.episode_dir(project_id)
         self._write_json(directory / "episode-plan.json", plan)
         self._write_json(directory / "episode-plan-draft.json", draft)
+
+    def save_quality_notes(self, ledger: QualityNotesLedger) -> None:
+        self._write_json(
+            self.episode_dir(ledger.project_id) / "quality-notes.json",
+            ledger,
+        )
+
+    def load_quality_notes_optional(self, project_id: UUID) -> QualityNotesLedger | None:
+        path = self.episode_dir(project_id) / "quality-notes.json"
+        try:
+            return QualityNotesLedger.model_validate_json(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
 
     def load_plan(self, project_id: UUID) -> EpisodePlan:
         return EpisodePlan.model_validate_json(

@@ -52,6 +52,9 @@ def _settings(tmp_path: Path, *, model_reviewer: str = "gemini-reviewer-test") -
         otp_resend_cooldown_seconds=5,
         ui_demo_mode=False,
         gemini_api_key="test-api-key",
+        # Script stages route through Okian; send_back preflight requires both.
+        okian_base_url="https://okian.test/v1",
+        okian_api_key="test-okian-key",
         model_reviewer=model_reviewer,
     )
 
@@ -661,7 +664,30 @@ def test_send_back_returns_to_drafting_and_queues_retry(tmp_path: Path) -> None:
 def test_sending_a_script_back_is_refused_when_the_reviewer_is_not_independent(
     tmp_path: Path,
 ) -> None:
+    # Force the enforced script_verifier/writer pair onto one Gemini model so
+    # send_back is blocked. Checked-in Okian routing keeps that pair independent
+    # without THESISOUND_MODEL_REVIEWER, so this test uses a local routing file.
+    routing_file = tmp_path / "routing.toml"
+    routing_file.write_text(
+        """
+version = 1
+
+[profiles.writer]
+provider = "gemini"
+model_setting = "model_strong"
+
+[profiles.reviewer]
+provider = "gemini"
+model_setting = "model_reviewer"
+
+[routes]
+persian_script_segment = "writer"
+script_verifier = "reviewer"
+""".strip(),
+        encoding="utf-8",
+    )
     settings = _settings(tmp_path, model_reviewer="")
+    settings = settings.model_copy(update={"model_routing_file": routing_file})
     project = _seed_review_required(settings)
     app = create_app(
         settings,

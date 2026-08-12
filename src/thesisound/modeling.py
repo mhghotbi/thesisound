@@ -159,8 +159,25 @@ class SchemaValidationError(StructuredOutputError):
     pass
 
 
+StopReason = Literal[
+    "information_asymmetry",
+    "changeable_input",
+    "consent",
+    "integrity_breach",
+]
+
+
 class DeterministicValidationError(StructuredOutputError):
-    pass
+    def __init__(
+        self,
+        message: str,
+        *,
+        stop_reason: StopReason | None = None,
+        retryable: bool | None = None,
+        usage: ModelUsage | None = None,
+    ) -> None:
+        super().__init__(message, retryable=retryable, usage=usage)
+        self.stop_reason = stop_reason
 
 
 class ModelConfigurationError(ModelError):

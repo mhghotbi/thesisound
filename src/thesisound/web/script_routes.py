@@ -426,6 +426,12 @@ def _render_script_page(
         else None
     )
     manifest = script_store.load_manifest_optional(project_id) if artifacts_current else None
+    quality_ledger = (
+        script_store.load_quality_notes_optional(project_id) if artifacts_current else None
+    )
+    quality_notes = quality_ledger.notes if quality_ledger is not None else []
+    notable_notes = [note for note in quality_notes if note.severity == "notable"]
+    informational_notes = [note for note in quality_notes if note.severity == "informational"]
     return render(
         request,
         template_name,
@@ -438,6 +444,9 @@ def _render_script_page(
             "script": script,
             "checks": checks,
             "verification": verification,
+            "quality_notes": quality_notes,
+            "notable_quality_notes": notable_notes,
+            "informational_quality_notes": informational_notes,
             "revision_decision": (
                 script_store.load_revision_decision_optional(project_id)
                 if artifacts_current

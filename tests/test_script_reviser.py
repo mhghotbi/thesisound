@@ -46,11 +46,15 @@ def test_invented_id_alongside_a_real_one_is_dropped_and_turn_survives() -> None
     draft = TargetedRevisionDraft(
         revised_turns=[_revised("seg-004-turn-001", claim_ids=["clm-real", "clm-INVENTED"])]
     )
+    notes = []
 
-    _validate_revision(draft, target_ids=["seg-004-turn-001"], original_by_id=original)
+    _validate_revision(
+        draft, target_ids=["seg-004-turn-001"], original_by_id=original, notes=notes
+    )
 
     assert len(draft.revised_turns) == 1
     assert draft.revised_turns[0].claim_ids == ["clm-real"]
+    assert [note.kind for note in notes] == ["citation_dropped"]
 
 
 def test_invented_id_replacing_the_only_real_one_drops_the_whole_turn() -> None:
@@ -65,10 +69,14 @@ def test_invented_id_replacing_the_only_real_one_drops_the_whole_turn() -> None:
     draft = TargetedRevisionDraft(
         revised_turns=[_revised("seg-004-turn-001", claim_ids=["clm-INVENTED"])]
     )
+    notes = []
 
-    _validate_revision(draft, target_ids=["seg-004-turn-001"], original_by_id=original)
+    _validate_revision(
+        draft, target_ids=["seg-004-turn-001"], original_by_id=original, notes=notes
+    )
 
     assert draft.revised_turns == []
+    assert [note.kind for note in notes] == ["turn_not_revised"]
 
 
 def test_only_the_ungroundable_turn_is_dropped_others_are_kept() -> None:
@@ -82,14 +90,17 @@ def test_only_the_ungroundable_turn_is_dropped_others_are_kept() -> None:
             _revised("seg-004-turn-002", claim_ids=["clm-other"]),
         ]
     )
+    notes = []
 
     _validate_revision(
         draft,
         target_ids=["seg-004-turn-001", "seg-004-turn-002"],
         original_by_id=original,
+        notes=notes,
     )
 
     assert [turn.turn_id for turn in draft.revised_turns] == ["seg-004-turn-002"]
+    assert [note.kind for note in notes] == ["turn_not_revised"]
 
 
 def test_editorial_only_turn_may_lose_all_grounding() -> None:

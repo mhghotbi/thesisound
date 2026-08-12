@@ -11,6 +11,8 @@ from pydantic import BaseModel
 from thesisound.domain import Script
 from thesisound.script import (
     Glossary,
+    QualityNote,
+    QualityNotesLedger,
     RevisionDecision,
     ScriptCheckReport,
     ScriptPipelineManifest,
@@ -257,6 +259,36 @@ class ScriptArtifactStore:
         except FileNotFoundError:
             return None
 
+    def save_quality_notes(self, ledger: QualityNotesLedger) -> None:
+        self._write_json(
+            self.script_dir(ledger.project_id) / "quality-notes.json",
+            ledger,
+        )
+
+    def load_quality_notes_optional(self, project_id: UUID) -> QualityNotesLedger | None:
+        path = self.script_dir(project_id, create=False) / "quality-notes.json"
+        try:
+            return QualityNotesLedger.model_validate_json(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+
+    def append_quality_notes(self, project_id: UUID, notes: list[QualityNote]) -> QualityNotesLedger:
+        if not notes:
+            existing = self.load_quality_notes_optional(project_id)
+            return existing or QualityNotesLedger(project_id=project_id, notes=[])
+        existing = self.load_quality_notes_optional(project_id)
+        merged = QualityNotesLedger(
+            project_id=project_id,
+            notes=[*(existing.notes if existing is not None else []), *notes],
+        )
+        self.save_quality_notes(merged)
+        return merged
+
+    def replace_quality_notes(self, project_id: UUID, notes: list[QualityNote]) -> QualityNotesLedger:
+        ledger = QualityNotesLedger(project_id=project_id, notes=list(notes))
+        self.save_quality_notes(ledger)
+        return ledger
+
     def save_revision_decision(self, decision: RevisionDecision) -> None:
         self._write_json(
             self.script_dir(decision.project_id) / "revision-decision.json",
@@ -419,7 +451,9 @@ class ScriptArtifactStore:
             return False
         from thesisound.services.script_outcome import script_outcome
 
-        outcome, _ = script_outcome(checks, verification)
+        ledger = self.load_quality_notes_optional(project_id)
+        notes = ledger.notes if ledger is not None else []
+        outcome, _ = script_outcome(checks, verification, quality_notes=notes)
         return outcome == "review_required" and manifest.status == "review_required"
 
     def _current_run_plan_hash(self, project_id: UUID) -> str | None:

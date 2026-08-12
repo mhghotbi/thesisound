@@ -29,6 +29,7 @@ from thesisound.episode import (
 )
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
+from thesisound.script import QualityNotesLedger
 from thesisound.services.analysis_profile import plan_evidence_extraction
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
 from thesisound.services.coverage_auditor import CoverageAuditorService, can_plan_episode
@@ -249,7 +250,7 @@ class EpisodePreparationService:
             budget = self.episode_store.load_budget(project_id)
             priorities = self.episode_store.load_priorities(project_id)
             disagreement_graph = self.episode_store.load_disagreement_graph(project_id)
-            plan, draft, run = self.episode_planner.plan(
+            plan, draft, run, quality_notes = self.episode_planner.plan(
                 project_id=project_id,
                 brief=project.brief,
                 claims=corpus.claims,
@@ -267,6 +268,9 @@ class EpisodePreparationService:
                 prompt_version=prompt_version,
             )
             self.episode_store.save_plan(project_id, plan, draft)
+            self.episode_store.save_quality_notes(
+                QualityNotesLedger(project_id=project_id, notes=quality_notes)
+            )
             self.episode_store.save_stage_inputs(
                 project_id,
                 stored_inputs.model_copy(

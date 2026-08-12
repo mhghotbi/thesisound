@@ -7,11 +7,13 @@ from thesisound.episode import SegmentEvidencePack
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.script import (
     Glossary,
+    QualityNote,
     ScriptCheckReport,
     TargetedRevisionDraft,
     VerificationDraft,
 )
 from thesisound.services.model_runner import ModelRunner
+from thesisound.services.quality_notes import make_quality_note
 
 
 class TargetedScriptReviserService:
@@ -29,7 +31,7 @@ class TargetedScriptReviserService:
         glossary: Glossary,
         model: str,
         prompt_version: str | None = None,
-    ) -> tuple[Script, TargetedRevisionDraft, ModelRunRecord]:
+    ) -> tuple[Script, TargetedRevisionDraft, ModelRunRecord, list[QualityNote]]:
         target_ids = _target_turn_ids(script, checks, verification)
         if not target_ids:
             raise ValueError("No turn-specific or global revision targets were found.")
@@ -39,6 +41,7 @@ class TargetedScriptReviserService:
         relevant_packs = [
             pack for pack in evidence_packs if pack.segment_id in target_segments
         ]
+        notes: list[QualityNote] = []
         execution = self.model_runner.run(
             project_id=project_id,
             stage="script_reviser",
@@ -57,6 +60,7 @@ class TargetedScriptReviserService:
                 draft,
                 target_ids=target_ids,
                 original_by_id=original_by_id,
+                notes=notes,
             ),
         )
         revised_by_id = {turn.turn_id: turn for turn in execution.output.revised_turns}
@@ -68,7 +72,7 @@ class TargetedScriptReviserService:
             ],
             glossary_terms_used=script.glossary_terms_used,
         )
-        return merged, execution.output, execution.record
+        return merged, execution.output, execution.record, notes
 
 
 def _target_turn_ids(
@@ -95,13 +99,16 @@ def _validate_revision(
     *,
     target_ids: list[str],
     original_by_id: dict[str, ScriptTurn],
+    notes: list[QualityNote] | None = None,
 ) -> None:
     revised_ids = [turn.turn_id for turn in draft.revised_turns]
     if len(revised_ids) != len(set(revised_ids)):
+        # Structural: duplicate turn IDs need model repair.
         raise DeterministicValidationError("Revision contains duplicate turn IDs.")
     if set(revised_ids) != set(target_ids):
         missing = sorted(set(target_ids) - set(revised_ids))
         extra = sorted(set(revised_ids) - set(target_ids))
+        # Structural: reviser must return exactly the targeted set.
         raise DeterministicValidationError(
             f"Revision must return exactly targeted turns; missing={missing}, extra={extra}."
         )
@@ -109,30 +116,47 @@ def _validate_revision(
     for revised in draft.revised_turns:
         original = original_by_id[revised.turn_id]
         if revised.speaker != original.speaker:
+            # Structural: speaker identity is a consent/integrity contract.
             raise DeterministicValidationError(
                 f"Revision changed speaker for turn {revised.turn_id}."
             )
-        # Drop rather than reject: an invented ID alongside otherwise-valid
-        # ones is the model over-citing, not a corrupted turn -- the spoken
-        # text is untouched, and every ID that IS real still is.
-        revised.claim_ids = [cid for cid in revised.claim_ids if cid in set(original.claim_ids)]
-        revised.evidence_ids = [
-            eid for eid in revised.evidence_ids if eid in set(original.evidence_ids)
-        ]
+        # Recoverable: drop invented IDs — keep real ones and the spoken text.
+        original_claims = set(original.claim_ids)
+        original_evidence = set(original.evidence_ids)
+        kept_claims = [cid for cid in revised.claim_ids if cid in original_claims]
+        kept_evidence = [eid for eid in revised.evidence_ids if eid in original_evidence]
+        dropped_citation = kept_claims != list(revised.claim_ids) or kept_evidence != list(
+            revised.evidence_ids
+        )
+        revised.claim_ids = kept_claims
+        revised.evidence_ids = kept_evidence
         if not revised.editorial_only and (
             not revised.claim_ids or not revised.evidence_ids
         ):
-            # The model replaced its only real ID with an invented one rather
-            # than citing alongside it, so nothing salvageable is left for
-            # this one turn. Drop it from the revision instead of failing the
-            # whole build: _materialize_revision already falls back to the
-            # original (still-grounded) turn for any turn_id missing here,
-            # exactly like a turn that was never targeted for revision.
+            # Recoverable: drop this turn from the revision; _materialize_revision
+            # falls back to the original grounded turn.
             ungroundable_turn_ids.append(revised.turn_id)
+        elif dropped_citation and notes is not None:
+            notes.append(
+                make_quality_note(
+                    stage="script_reviser",
+                    kind="citation_dropped",
+                    subject=revised.turn_id,
+                )
+            )
     if ungroundable_turn_ids:
         draft.revised_turns = [
             turn for turn in draft.revised_turns if turn.turn_id not in ungroundable_turn_ids
         ]
+        if notes is not None:
+            notes.extend(
+                make_quality_note(
+                    stage="script_reviser",
+                    kind="turn_not_revised",
+                    subject=turn_id,
+                )
+                for turn_id in ungroundable_turn_ids
+            )
 
 
 def _materialize_revision(
