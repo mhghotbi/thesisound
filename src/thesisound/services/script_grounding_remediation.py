@@ -12,14 +12,28 @@ Cumulative degradation is bounded by ``exceeds_degradation_ceiling``, not here.
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
 from thesisound.domain import ClaimRecord, EpisodePlan, Script, ScriptTurn
 from thesisound.modeling import DeterministicValidationError
-from thesisound.script import QualityNote, QualityNoteKind
+from thesisound.script import (
+    AbsorbedFault,
+    AbsorbedFaultKind,
+    QualityNote,
+    QualityNoteKind,
+)
 from thesisound.services.quality_notes import make_quality_note
 
 _WORD = re.compile(r"\w+", re.UNICODE)
 _DURATION_FLOOR = 0.8
+
+
+@dataclass(frozen=True, slots=True)
+class GroundingRemediationResult:
+    script: Script
+    notes: list[QualityNote]
+    faults: list[AbsorbedFault]
+    substantive_turn_count: int
 
 
 def _provenance_evidence_ids(claim_ids: list[str], claim_by_id: dict[str, ClaimRecord]) -> list[str]:
@@ -57,13 +71,16 @@ def remediate_script_grounding(
     *,
     episode_plan: EpisodePlan,
     words_per_minute: int = 130,
-) -> tuple[Script, list[QualityNote]]:
+) -> GroundingRemediationResult:
     """Apply the D3 ladder: repair mislinked evidence, excise what cannot be grounded."""
 
     claim_by_id = {claim.claim_id: claim for claim in claims}
     notes: list[QualityNote] = []
+    faults: list[AbsorbedFault] = []
     kept: list[ScriptTurn] = []
-    excise_ids: list[str] = []
+    # turn_id -> fault kind that caused excision (one bucket per turn).
+    excise_cause: dict[str, AbsorbedFaultKind] = {}
+    substantive_turn_count = sum(1 for turn in script.turns if not turn.editorial_only)
 
     for turn in script.turns:
         if turn.editorial_only:
@@ -74,15 +91,31 @@ def remediate_script_grounding(
         ungrounded = [
             claim_id for claim_id in known_ids if not claim_by_id[claim_id].evidence_ids
         ]
-        if ungrounded or not known_ids:
-            # Rung 2. Either the writer invented every id it cited, or a cited
-            # claim carries no evidence in the ledger. The passage must not be
-            # spoken -- but removing it keeps the promise, and removing is not
-            # the same as destroying the episode, which is why rung 3 no longer
-            # applies here. An evidence-less claim is an upstream extraction
-            # fault: excision hides it from the listener, which is correct, and
-            # not from the ledger, which is what matters for fixing it.
-            excise_ids.append(turn.turn_id)
+        if ungrounded:
+            # Rung 2 / Case B. A cited claim carries no evidence in the ledger.
+            # Removing the passage keeps the promise; the upstream fault is
+            # recorded separately so D6 can see it.
+            excise_cause[turn.turn_id] = "ungrounded_claim"
+            for claim_id in ungrounded:
+                faults.append(
+                    AbsorbedFault(
+                        kind="ungrounded_claim",
+                        subject=claim_id,
+                        detail=turn.turn_id,
+                    )
+                )
+            kept.append(turn)
+            continue
+        if not known_ids:
+            # Rung 2 / Case unknown-id. The writer invented every id it cited.
+            excise_cause[turn.turn_id] = "unknown_claim"
+            faults.append(
+                AbsorbedFault(
+                    kind="unknown_claim",
+                    subject=turn.turn_id,
+                    detail=",".join(turn.claim_ids) if turn.claim_ids else None,
+                )
+            )
             kept.append(turn)
             continue
 
@@ -105,8 +138,8 @@ def remediate_script_grounding(
             notes.append(_note("grounding_repaired", turn.turn_id))
         kept.append(repaired)
 
-    if excise_ids:
-        excised = set(excise_ids)
+    if excise_cause:
+        excised = set(excise_cause)
         remaining = [turn for turn in kept if turn.turn_id not in excised]
         affected = {turn.segment_id for turn in kept if turn.turn_id in excised}
         emptied = affected - _substantive_segment_ids(remaining)
@@ -124,7 +157,7 @@ def remediate_script_grounding(
                 "No passage in this script could be linked to the evidence ledger.",
                 stop_reason="integrity_breach",
             )
-        notes.extend(_note("turn_excised", turn_id) for turn_id in excise_ids)
+        notes.extend(_note("turn_excised", turn_id) for turn_id in excise_cause)
 
         target = episode_plan.estimated_duration_minutes
         minutes = _estimated_minutes(remaining, words_per_minute=words_per_minute)
@@ -137,6 +170,10 @@ def remediate_script_grounding(
             )
         kept = remaining
 
-    if notes:
-        return script.model_copy(update={"turns": kept}), notes
-    return script, notes
+    result_script = script.model_copy(update={"turns": kept}) if notes or faults else script
+    return GroundingRemediationResult(
+        script=result_script,
+        notes=notes,
+        faults=faults,
+        substantive_turn_count=substantive_turn_count,
+    )

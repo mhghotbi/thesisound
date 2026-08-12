@@ -18,6 +18,11 @@ from thesisound.services.plan_approval import (
     EpisodePlanApproval,
     EpisodePlanApprovalStore,
 )
+from thesisound.services.absorption_triggers import (
+    DegradationCounters,
+    count_degradation,
+    evaluate_absorption_triggers,
+)
 from thesisound.services.run_recovery import (
     RunFailureClass,
     classify_run_failure,
@@ -79,6 +84,7 @@ class ScriptBuildRun(BaseModel):
     # clean = zero QualityNotes; degraded = at least one recoverable fallback fired.
     quality_disposition: Literal["clean", "degraded"] = "clean"
     attempts: list[ScriptRunAttempt] = Field(default_factory=list)
+    degradation_counters: DegradationCounters = Field(default_factory=DegradationCounters)
 
 
 class ScriptBuildRunStore:
@@ -581,7 +587,42 @@ class ScriptBuildRunService:
         run.quality_disposition = (
             "degraded" if ledger is not None and ledger.notes else "clean"
         )
+        self._record_degradation_counters(run)
         self.run_store.save(run)
+        self._emit_absorption_trigger_warnings(run)
+
+    def _record_degradation_counters(self, run: ScriptBuildRun) -> None:
+        notes_ledger = self.script_store.load_quality_notes_optional(run.project_id)
+        faults_ledger = self.script_store.load_absorbed_faults_optional(run.project_id)
+        notes = notes_ledger.notes if notes_ledger is not None else []
+        faults = faults_ledger.faults if faults_ledger is not None else []
+        substantive = (
+            faults_ledger.substantive_turn_count if faults_ledger is not None else 0
+        )
+        run.degradation_counters = count_degradation(
+            notes=notes,
+            faults=faults,
+            substantive_turn_count=substantive,
+            automatic_retries=max(0, len(run.attempts)),
+        )
+
+    def _emit_absorption_trigger_warnings(self, run: ScriptBuildRun) -> None:
+        history = [
+            item
+            for item in self.run_store.load_history(run.project_id)
+            if item.run_id != run.run_id
+        ]
+        recent = [*history, run]
+        for hit in evaluate_absorption_triggers(recent):
+            tracing.event(
+                "absorption.trigger",
+                component="script",
+                project_id=run.project_id,
+                workflow_run_id=run.run_id,
+                trigger_id=hit.trigger_id,
+                detail=hit.detail,
+                level="warning",
+            )
 
     def _set_stage(self, run: ScriptBuildRun, value: str) -> None:
         if value not in _PIPELINE_STAGES:

@@ -33,6 +33,7 @@ from thesisound.episode import (
 )
 from thesisound.modeling import DeterministicValidationError
 from thesisound.script import (
+    AbsorbedFault,
     Glossary,
     QualityNote,
     QualityNotesLedger,
@@ -42,6 +43,11 @@ from thesisound.script import (
     ScriptQualityScore,
     TargetedRevisionDraft,
     VerificationDraft,
+)
+from thesisound.services.absorption_triggers import (
+    DegradationCounters,
+    count_degradation,
+    evaluate_absorption_triggers,
 )
 from thesisound.services.evidence_extractor import _validate_claim_excerpt
 from thesisound.services.episode_planner import EpisodePlannerService, _validate_draft
@@ -276,13 +282,15 @@ def test_mislinked_turn_evidence_is_repaired_not_rejected() -> None:
             )
         ],
     )
-    remedied, notes = remediate_script_grounding(
+    result = remediate_script_grounding(
         script,
         claims,
         episode_plan=_grounding_plan("claim-1"),
     )
+    remedied, notes = result.script, result.notes
     assert remedied.turns[0].evidence_ids == ["ev-1"]
     assert [note.kind for note in notes] == ["grounding_repaired"]
+    assert result.faults == []
     pack = SegmentEvidencePack.model_construct(
         segment_id="seg-1",
         claim_ids=["claim-1"],
@@ -366,13 +374,16 @@ def test_evidence_less_claim_is_excised_not_raised() -> None:
     """Spec 12 D3: the passage must not be spoken, but the episode survives."""
 
     script = Script(title="متن", turns=[_grounded_turn(), _ungrounded_turn()])
-    remedied, notes = remediate_script_grounding(
+    result = remediate_script_grounding(
         script,
         [_grounded_claim(), _evidence_less_claim()],
         episode_plan=_grounding_plan("claim-1", minutes=0.1),
     )
-    assert [turn.turn_id for turn in remedied.turns] == ["t1"]
-    assert [(note.kind, note.subject) for note in notes] == [("turn_excised", "t2")]
+    assert [turn.turn_id for turn in result.script.turns] == ["t1"]
+    assert [(note.kind, note.subject) for note in result.notes] == [("turn_excised", "t2")]
+    assert [(fault.kind, fault.subject) for fault in result.faults] == [
+        ("ungrounded_claim", "claim-empty")
+    ]
 
 
 def test_emptied_segment_is_excised_whole() -> None:
@@ -387,38 +398,40 @@ def test_emptied_segment_is_excised_whole() -> None:
         title="متن",
         turns=[_grounded_turn(), editorial, _ungrounded_turn("t3", "seg-2")],
     )
-    remedied, notes = remediate_script_grounding(
+    result = remediate_script_grounding(
         script,
         [_grounded_claim(), _evidence_less_claim()],
         episode_plan=_grounding_plan("claim-1", minutes=0.1),
     )
     # The editorial turn introduces a point the script no longer makes.
-    assert [turn.turn_id for turn in remedied.turns] == ["t1"]
-    assert [note.kind for note in notes] == ["turn_excised"]
+    assert [turn.turn_id for turn in result.script.turns] == ["t1"]
+    assert [note.kind for note in result.notes] == ["turn_excised"]
+    assert [fault.kind for fault in result.faults] == ["ungrounded_claim"]
 
 
 def test_duration_shortfall_notes_instead_of_raising() -> None:
     script = Script(title="متن", turns=[_grounded_turn(), _ungrounded_turn()])
-    remedied, notes = remediate_script_grounding(
+    result = remediate_script_grounding(
         script,
         [_grounded_claim(), _evidence_less_claim()],
         episode_plan=_grounding_plan("claim-1", minutes=5.0),
     )
-    assert [turn.turn_id for turn in remedied.turns] == ["t1"]
-    assert [note.kind for note in notes] == ["turn_excised", "duration_shortfall"]
-    assert notes[-1].severity == "notable"
+    assert [turn.turn_id for turn in result.script.turns] == ["t1"]
+    assert [note.kind for note in result.notes] == ["turn_excised", "duration_shortfall"]
+    assert result.notes[-1].severity == "notable"
 
 
 def test_unknown_claim_id_alongside_a_real_one_is_dropped() -> None:
     turn = _grounded_turn().model_copy(update={"claim_ids": ["claim-1", "claim-ghost"]})
-    remedied, notes = remediate_script_grounding(
+    result = remediate_script_grounding(
         Script(title="متن", turns=[turn]),
         [_grounded_claim()],
         episode_plan=_grounding_plan("claim-1", minutes=0.1),
     )
-    assert remedied.turns[0].claim_ids == ["claim-1"]
-    assert remedied.turns[0].evidence_ids == ["ev-1"]
-    assert [note.kind for note in notes] == ["citation_dropped"]
+    assert result.script.turns[0].claim_ids == ["claim-1"]
+    assert result.script.turns[0].evidence_ids == ["ev-1"]
+    assert [note.kind for note in result.notes] == ["citation_dropped"]
+    assert result.faults == []
 
 
 def test_empty_script_is_the_only_grounding_raise() -> None:
@@ -432,6 +445,122 @@ def test_empty_script_is_the_only_grounding_raise() -> None:
             episode_plan=_grounding_plan("claim-empty"),
         )
     assert raised.value.stop_reason == "integrity_breach"
+
+
+def test_heavy_excision_ends_review_required_not_rejected() -> None:
+    """Spec 12 §4.4: length lost to excision routes to review, never rejected."""
+
+    notes = [
+        make_quality_note(stage="script_grounding", kind="turn_excised", subject=f"t{i}")
+        for i in range(3)
+    ] + [
+        make_quality_note(
+            stage="script_grounding",
+            kind="duration_shortfall",
+            subject="script:7.0/10min",
+        )
+    ]
+    outcome, reason = script_outcome(
+        _checks(),
+        VerificationDraft(
+            verdict="pass",
+            unsupported_claim_ratio=0,
+            quality=_quality(),
+        ),
+        quality_notes=notes,
+        segment_count=4,
+    )
+    assert outcome == "review_required"
+    assert outcome != "rejected"
+    assert "degraded" in reason
+
+
+def test_repair_and_excise_are_counted_separately() -> None:
+    """Spec 12 D6: a flood of Case A repairs must not inflate Case B."""
+
+    notes = [
+        make_quality_note(stage="script_grounding", kind="grounding_repaired", subject=f"t{i}")
+        for i in range(8)
+    ] + [
+        make_quality_note(stage="script_grounding", kind="turn_excised", subject="t-x")
+    ]
+    faults = [
+        AbsorbedFault(kind="ungrounded_claim", subject="claim-empty", detail="t-x")
+    ]
+    counters = count_degradation(
+        notes=notes,
+        faults=faults,
+        substantive_turn_count=10,
+        automatic_retries=0,
+    )
+    assert counters.grounding_repaired == 8
+    assert counters.turn_excised_ungrounded_claim == 1
+    assert counters.turn_excised_unknown_claim == 0
+
+
+def test_unknown_claim_excision_records_unknown_fault() -> None:
+    turn = ScriptTurn(
+        turn_id="t1",
+        segment_id="seg-1",
+        speaker="A",
+        spoken_text_fa=_GROUNDED_TEXT,
+        claim_ids=["claim-ghost"],
+        evidence_ids=["ev-1"],
+    )
+    keeper = _grounded_turn("t2", "seg-2")
+    result = remediate_script_grounding(
+        Script(title="متن", turns=[turn, keeper]),
+        [_grounded_claim()],
+        episode_plan=_grounding_plan("claim-1", minutes=0.1),
+    )
+    assert [turn.turn_id for turn in result.script.turns] == ["t2"]
+    assert [fault.kind for fault in result.faults] == ["unknown_claim"]
+    assert [note.kind for note in result.notes] == ["turn_excised"]
+
+
+def _run_with_counters(**counter_fields: int) -> ScriptBuildRun:
+    return ScriptBuildRun(
+        project_id=uuid4(),
+        approved_plan_hash="a" * 64,
+        approved_by="tester",
+        status="succeeded",
+        degradation_counters=DegradationCounters(**counter_fields),
+    )
+
+
+def test_unknown_claim_trigger_fires_immediately() -> None:
+    hits = evaluate_absorption_triggers(
+        [_run_with_counters(turn_excised_unknown_claim=1, substantive_turn_count=4)]
+    )
+    assert [hit.trigger_id for hit in hits] == ["unknown_claim_any"]
+
+
+def test_ungrounded_claim_trigger_needs_two_consecutive_runs() -> None:
+    first = _run_with_counters(turn_excised_ungrounded_claim=1, substantive_turn_count=4)
+    alone = evaluate_absorption_triggers([first])
+    assert "ungrounded_claim_consecutive" not in {hit.trigger_id for hit in alone}
+
+    second = _run_with_counters(turn_excised_ungrounded_claim=1, substantive_turn_count=4)
+    both = evaluate_absorption_triggers([first, second])
+    assert "ungrounded_claim_consecutive" in {hit.trigger_id for hit in both}
+
+
+def test_repaired_ratio_trigger_over_five_runs() -> None:
+    # 3 repairs / 10 substantive each → 30% over 5 runs, above 20%.
+    runs = [
+        _run_with_counters(grounding_repaired=3, substantive_turn_count=10)
+        for _ in range(5)
+    ]
+    hits = evaluate_absorption_triggers(runs)
+    assert "grounding_repaired_ratio" in {hit.trigger_id for hit in hits}
+
+    quiet = [
+        _run_with_counters(grounding_repaired=1, substantive_turn_count=10)
+        for _ in range(5)
+    ]
+    assert "grounding_repaired_ratio" not in {
+        hit.trigger_id for hit in evaluate_absorption_triggers(quiet)
+    }
 
 
 def test_clean_run_emits_no_quality_notes() -> None:

@@ -183,6 +183,9 @@ QualityNoteKind = Literal[
 ]
 QualityNoteSeverity = Literal["informational", "notable"]
 
+# Operator-facing absorbed faults (spec 12 D6). Not listener QualityNotes.
+AbsorbedFaultKind = Literal["ungrounded_claim", "unknown_claim"]
+
 
 class QualityNote(BaseModel):
     """Structured disclosure for a recoverable degradation (specs 09/11)."""
@@ -197,6 +200,21 @@ class QualityNote(BaseModel):
 class QualityNotesLedger(BaseModel):
     project_id: UUID
     notes: list[QualityNote] = Field(default_factory=list)
+
+
+class AbsorbedFault(BaseModel):
+    """Upstream/writer fault absorbed by grounding remediation (spec 12 D3/D6)."""
+
+    kind: AbsorbedFaultKind
+    subject: str = Field(min_length=1)
+    detail: str | None = None
+
+
+class AbsorbedFaultsLedger(BaseModel):
+    project_id: UUID
+    faults: list[AbsorbedFault] = Field(default_factory=list)
+    # Non-editorial turns in the draft that entered remediation (D6 denominator).
+    substantive_turn_count: int = Field(default=0, ge=0)
 
 
 class ScriptPipelineManifest(BaseModel):

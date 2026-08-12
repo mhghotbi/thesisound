@@ -210,18 +210,33 @@ class ScriptPipelineService:
             raise ValueError("EpisodePlan is required for script checks.")
         script = self.script_store.load_script(project_id, revised=revised)
         claims = self._load_claims(project_id)
-        script, grounding_notes = remediate_script_grounding(
+        remediation = remediate_script_grounding(
             script,
             claims,
             episode_plan=project.episode_plan,
             words_per_minute=self.script_checker.words_per_minute,
         )
-        if grounding_notes:
+        script = remediation.script
+        if remediation.notes or remediation.faults:
             self.script_store.save_script(project_id, script, revised=revised)
             if not revised:
                 project.script = script
                 self.workspace_store.save_project(project)
-            self.script_store.append_quality_notes(project_id, grounding_notes)
+            if remediation.notes:
+                self.script_store.append_quality_notes(project_id, remediation.notes)
+        # Draft remediation owns the per-run fault ledger; revision appends.
+        if revised:
+            self.script_store.append_absorbed_faults(
+                project_id,
+                remediation.faults,
+                substantive_turn_count=remediation.substantive_turn_count,
+            )
+        else:
+            self.script_store.replace_absorbed_faults(
+                project_id,
+                remediation.faults,
+                substantive_turn_count=remediation.substantive_turn_count,
+            )
         try:
             must_not_be_lost_review = self.episode_store.load_must_not_be_lost_review(
                 project_id
@@ -609,6 +624,8 @@ class ScriptPipelineService:
         episode_ledger = self.episode_store.load_quality_notes_optional(project_id)
         notes: list[QualityNote] = episode_ledger.notes if episode_ledger is not None else []
         self.script_store.replace_quality_notes(project_id, notes)
+        # Fresh script binding: clear prior absorption telemetry so D6 is per-run.
+        self.script_store.replace_absorbed_faults(project_id, [], substantive_turn_count=0)
 
     def _load_claims(self, project_id: UUID) -> list[ClaimRecord]:
         definitions, claims = self._load_glossary_inputs(project_id)

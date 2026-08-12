@@ -10,6 +10,8 @@ from pydantic import BaseModel
 
 from thesisound.domain import Script
 from thesisound.script import (
+    AbsorbedFault,
+    AbsorbedFaultsLedger,
     Glossary,
     QualityNote,
     QualityNotesLedger,
@@ -339,6 +341,54 @@ class ScriptArtifactStore:
         ledger = QualityNotesLedger(project_id=project_id, notes=list(notes))
         self.save_quality_notes(ledger)
         return ledger
+
+    def save_absorbed_faults(self, ledger: AbsorbedFaultsLedger) -> None:
+        self._write_json(
+            self.script_dir(ledger.project_id) / "absorbed-faults.json",
+            ledger,
+        )
+
+    def load_absorbed_faults_optional(self, project_id: UUID) -> AbsorbedFaultsLedger | None:
+        path = self.script_dir(project_id, create=False) / "absorbed-faults.json"
+        try:
+            return AbsorbedFaultsLedger.model_validate_json(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+
+    def replace_absorbed_faults(
+        self,
+        project_id: UUID,
+        faults: list[AbsorbedFault],
+        *,
+        substantive_turn_count: int = 0,
+    ) -> AbsorbedFaultsLedger:
+        ledger = AbsorbedFaultsLedger(
+            project_id=project_id,
+            faults=list(faults),
+            substantive_turn_count=substantive_turn_count,
+        )
+        self.save_absorbed_faults(ledger)
+        return ledger
+
+    def append_absorbed_faults(
+        self,
+        project_id: UUID,
+        faults: list[AbsorbedFault],
+        *,
+        substantive_turn_count: int | None = None,
+    ) -> AbsorbedFaultsLedger:
+        existing = self.load_absorbed_faults_optional(project_id)
+        merged = AbsorbedFaultsLedger(
+            project_id=project_id,
+            faults=[*(existing.faults if existing is not None else []), *faults],
+            substantive_turn_count=(
+                substantive_turn_count
+                if substantive_turn_count is not None
+                else (existing.substantive_turn_count if existing is not None else 0)
+            ),
+        )
+        self.save_absorbed_faults(merged)
+        return merged
 
     def save_revision_decision(self, decision: RevisionDecision) -> None:
         self._write_json(
