@@ -1,4 +1,7 @@
+import threading
 from pathlib import Path
+
+import pytest
 
 from thesisound.audio import AudioPipelineManifest
 from thesisound.domain import Project, ProjectState, Script, ScriptTurn
@@ -191,3 +194,47 @@ def test_retry_preserves_direction_from_previous_run(tmp_path: Path) -> None:
 
     retried = service.retry(project.project_id)
     assert retried.direction == direction
+
+
+def test_retry_blocked_while_prior_run_thread_still_inflight(tmp_path: Path) -> None:
+    """Stale on-disk 'failed' must not start a second overlapping pipeline."""
+    workspace, project, service, _, _ = _service(tmp_path)
+    release = threading.Event()
+    started = threading.Event()
+
+    class BlockingPipeline(FakePipeline):
+        def run(self, project_id, *, on_stage=None):
+            started.set()
+            assert release.wait(timeout=5)
+            return super().run(project_id, on_stage=on_stage)
+
+    service.pipeline_factory = (  # type: ignore[method-assign]
+        lambda _project_id, _direction, _workflow_run_id: BlockingPipeline(
+            workspace,
+            service.audio_store,  # type: ignore[arg-type]
+        )
+    )
+
+    service.queue(project.project_id)
+    worker = threading.Thread(target=service.run, args=(project.project_id,))
+    worker.start()
+    assert started.wait(timeout=5)
+
+    # Simulate recover_interrupted_runs() writing failed while the thread lives.
+    current = service.run_store.load(project.project_id)
+    current.status = "failed"
+    current.stage = "failed"
+    current.last_error = "interrupted"
+    service.run_store.save(current)
+    failed_project = workspace.load_project(project.project_id)
+    mark_failed(failed_project, "interrupted")
+    workspace.save_project(failed_project)
+
+    with pytest.raises(ValueError, match="already active"):
+        service.retry(project.project_id)
+
+    release.set()
+    worker.join(timeout=5)
+    assert not worker.is_alive()
+    assert service.run_store.load(project.project_id).status == "succeeded"
+    assert project.project_id not in service._inflight

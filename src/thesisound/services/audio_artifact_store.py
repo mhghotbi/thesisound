@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel
 
@@ -265,7 +265,10 @@ class AudioArtifactStore:
         command = shutil.which(ffmpeg_command)
         if command is None:
             raise RuntimeError("FFmpeg is required to build the streamable MP3.")
-        temporary = mp3_path.with_name(mp3_path.name + ".partial")
+        # Unique name so concurrent encodes (overlapping runs/retries) cannot
+        # steal or delete each other's partial output — that used to surface as
+        # the empty-stderr "FFmpeg did not create streamable MP3" failure.
+        temporary = mp3_path.with_name(f"{mp3_path.name}.{uuid4().hex}.partial")
         with tracing.span(
             "audio.transcode_mp3.ffmpeg", component="audio", kind="subprocess",
             project_id=project_id,
@@ -297,9 +300,17 @@ class AudioArtifactStore:
                 check=False,
             )
             span.set(exit_code=completed.returncode)
-            if completed.returncode != 0 or not temporary.exists():
+            output_ok = (
+                temporary.exists()
+                and temporary.stat().st_size > 0
+                and completed.returncode == 0
+            )
+            if not output_ok:
                 temporary.unlink(missing_ok=True)
-                detail = completed.stderr.strip() or "FFmpeg did not create streamable MP3."
+                detail = completed.stderr.strip() or (
+                    f"FFmpeg did not create streamable MP3 "
+                    f"(exit {completed.returncode})."
+                )
                 span.set(stderr_tail=detail[:700])
                 raise RuntimeError(detail)
             temporary.replace(mp3_path)

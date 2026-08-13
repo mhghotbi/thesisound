@@ -126,6 +126,10 @@ class AudioBuildRunService:
         self.asr_enabled = asr_enabled
         self.qa_identity = qa_identity
         self._mutation_lock = Lock()
+        # project_id -> run_id for threads currently inside run(). Survives a
+        # stale on-disk "failed" marker (e.g. recover while a worker still
+        # lives) so queue/retry cannot start a second overlapping pipeline.
+        self._inflight: dict[UUID, UUID] = {}
 
     def queue(
         self,
@@ -134,6 +138,7 @@ class AudioBuildRunService:
         direction: AudioDirectionSettings | None = None,
     ) -> AudioBuildRun:
         with self._mutation_lock:
+            self._reject_if_inflight(project_id)
             project = self.workspace_store.load_project(project_id)
             if project.state != ProjectState.SCRIPT_VERIFIED:
                 raise ValueError("Audio generation can only start from SCRIPT_VERIFIED.")
@@ -155,6 +160,7 @@ class AudioBuildRunService:
 
     def retry(self, project_id: UUID) -> AudioBuildRun:
         with self._mutation_lock:
+            self._reject_if_inflight(project_id)
             project = self.workspace_store.load_project(project_id)
             if project.state != ProjectState.FAILED_RETRYABLE:
                 raise ValueError("Only a retryable audio failure can be retried.")
@@ -177,11 +183,14 @@ class AudioBuildRunService:
             return run
 
     def run(self, project_id: UUID) -> AudioBuildRun:
-        run = self.run_store.load(project_id)
-        if run.status == "succeeded":
-            return run
-        if run.status != "queued":
-            raise ValueError(f"Cannot start audio run with status {run.status}.")
+        with self._mutation_lock:
+            run = self.run_store.load(project_id)
+            if run.status == "succeeded":
+                return run
+            if run.status != "queued":
+                raise ValueError(f"Cannot start audio run with status {run.status}.")
+            self._reject_if_inflight(project_id)
+            self._inflight[project_id] = run.run_id
         # new_root=True: runs from a BackgroundTasks callback after the request that
         # queued it has already returned, so there is no live parent span to attach to.
         with tracing.span(
@@ -246,6 +255,10 @@ class AudioBuildRunService:
                 run.finished_at = datetime.now(UTC)
                 self.run_store.save(run)
                 return run
+            finally:
+                with self._mutation_lock:
+                    if self._inflight.get(project_id) == run.run_id:
+                        del self._inflight[project_id]
 
     def recover_interrupted_runs(self) -> list[UUID]:
         recovered: list[UUID] = []
@@ -291,6 +304,10 @@ class AudioBuildRunService:
                 self.workspace_store.save_project(project)
             recovered.append(run.project_id)
         return recovered
+
+    def _reject_if_inflight(self, project_id: UUID) -> None:
+        if project_id in self._inflight:
+            raise ValueError("An audio-building run is already active.")
 
     def _has_verified_artifacts(self, project_id: UUID, script_hash: str) -> bool:
         return self.audio_store.has_verified_artifacts(
