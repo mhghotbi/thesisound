@@ -200,7 +200,7 @@ def test_old_script_check_report_defaults_r10_fields() -> None:
     assert report.claims_per_segment_minute == 0
 
 
-def test_latest_script_prompt_is_1_1_0_and_renders_position() -> None:
+def test_latest_script_prompt_is_1_2_0_and_renders_position() -> None:
     loader = PromptLoader()
     variables = {
         "research_brief": {},
@@ -213,7 +213,7 @@ def test_latest_script_prompt_is_1_1_0_and_renders_position() -> None:
         "segment_count": 4,
     }
     bundle = loader.load_bundle("persian_script_segment", variables)
-    assert bundle.contract.version == "1.1.0"
+    assert bundle.contract.version == "1.2.0"
     assert "2 of 4" in bundle.user_prompt
     assert "{{" not in bundle.system_prompt + bundle.user_prompt
     assert "untrusted data" in bundle.system_prompt
