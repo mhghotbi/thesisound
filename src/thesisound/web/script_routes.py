@@ -40,6 +40,14 @@ LoginRedirect = Callable[[Request], RedirectResponse | None]
 ProjectRedirect = Callable[[Request, UUID], RedirectResponse | None]
 ValidateCsrf = Callable[[Request, str], None]
 
+# The review record still names a reviewer and a disposition; only the typed
+# justification became optional. `send_back` is the one shown back to the user,
+# as the manifest's last_error while the rebuild runs.
+_DEFAULT_REVIEW_REASON = {
+    "accept": "پذیرفته شد؛ یادداشت‌های کیفیت پیش از ادامه نمایش داده شده بود.",
+    "send_back": "برای بازنویسی فرستاده شد.",
+}
+
 
 def register_script_routes(
     app: FastAPI,
@@ -147,7 +155,10 @@ def register_script_routes(
         project_id: UUID,
         csrf_token: Annotated[str, Form()],
         decision: Annotated[str, Form()],
-        reason: Annotated[str, Form()],
+        # Optional: a degraded script is disclosed, not interrogated. Requiring
+        # a typed justification to continue taxed the reviewer for a defect the
+        # pipeline already absorbed and described.
+        reason: Annotated[str, Form()] = "",
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
@@ -158,11 +169,9 @@ def register_script_routes(
             project = workspace.load_project(project_id)
             if project.state != ProjectState.SCRIPT_REVIEW_REQUIRED:
                 raise ValueError("This script is not awaiting a review decision.")
-            clean_reason = reason.strip()
-            if not clean_reason:
-                raise ValueError("A review reason is required.")
             if decision not in {"accept", "send_back"}:
                 raise ValueError("Unknown script review decision.")
+            clean_reason = reason.strip() or _DEFAULT_REVIEW_REASON[decision]
             if decision == "send_back":
                 # Queues a fresh build; /script/approve and /script/retry are
                 # gated by the preflight middleware, this branch is not.

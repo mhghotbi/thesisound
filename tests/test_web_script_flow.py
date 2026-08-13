@@ -605,7 +605,13 @@ def test_review_decision_bound_to_stale_plan_hash_is_not_verified(
     )
 
 
-def test_accepting_review_without_reason_is_rejected(tmp_path: Path) -> None:
+def test_accepting_review_without_reason_records_a_default_one(tmp_path: Path) -> None:
+    """Continuing past a disclosed degradation must not require typing a justification.
+
+    The review record still names the reviewer and the disposition -- only the
+    free-text field became optional.
+    """
+
     settings = _settings(tmp_path)
     project = _seed_review_required(settings)
     app = create_app(
@@ -620,14 +626,21 @@ def test_accepting_review_without_reason_is_rejected(tmp_path: Path) -> None:
         page = client.get(f"/projects/{project.project_id}/script")
         response = client.post(
             f"/projects/{project.project_id}/script/review",
-            data={"csrf_token": _csrf(page.text), "decision": "accept", "reason": ""},
+            data={"csrf_token": _csrf(page.text), "decision": "accept"},
         )
 
-    assert response.status_code == 422
+    assert response.status_code in {200, 303}
     assert (
         WorkspaceStore(settings.workspace_root).load_project(project.project_id).state
-        == ProjectState.SCRIPT_REVIEW_REQUIRED
+        == ProjectState.SCRIPT_VERIFIED
     )
+    review = ScriptArtifactStore(settings.workspace_root).load_review_decision_optional(
+        project.project_id
+    )
+    assert review is not None
+    assert review.decision == "accepted"
+    assert review.reviewer
+    assert review.reason.strip()
 
 
 def test_send_back_returns_to_drafting_and_queues_retry(tmp_path: Path) -> None:

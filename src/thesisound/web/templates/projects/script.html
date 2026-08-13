@@ -50,19 +50,26 @@
 {% if project.state.value == 'script_review_required' %}
 <section class="attention-panel" aria-labelledby="script-review-title">
   <div class="attention-panel__line">
-    <h2 class="attention-panel__label" id="script-review-title">بازبینی متن گفتار</h2>
-    {{ status_label('متن گفتار نیازمند بازبینی است', 'تصمیم شما لازم است', 'attention', project.state.value) }}
+    <h2 class="attention-panel__label" id="script-review-title">یادداشت کیفیت</h2>
+    {{ status_label('متن گفتار آماده است', 'با یادداشت', 'attention', project.state.value) }}
   </div>
   <p>{{ outcome_reason or 'راستی‌آزمایی مستقل نکته‌هایی باقی گذاشته است.' }}</p>
-  <form method="post" action="/projects/{{ project.project_id }}/script/review">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <label for="review-reason">دلیل تصمیم</label>
-    <textarea id="review-reason" name="reason" required maxlength="2000"></textarea>
-    <div class="form-actions">
-      <button class="button button--primary" type="submit" name="decision" value="accept">پذیرش با ثبت دلیل</button>
+  {% if notable_quality_notes %}
+  <ul>
+    {% for note in notable_quality_notes %}<li>{{ note.listener_impact }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <p class="simple-only">می‌توانید ادامه دهید. اگر این نکته برایتان مهم است، متن را برای بازنویسی بفرستید؛ در آن صورت متن گفتار از نو ساخته می‌شود.</p>
+  <div class="attention-panel__actions">
+    <form method="post" action="/projects/{{ project.project_id }}/script/review">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="button button--primary" type="submit" name="decision" value="accept">ادامه</button>
+    </form>
+    <form method="post" action="/projects/{{ project.project_id }}/script/review">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button class="button button--secondary" type="submit" name="decision" value="send_back">بازگرداندن برای اصلاح</button>
-    </div>
-  </form>
+    </form>
+  </div>
 </section>
 {% endif %}
 
