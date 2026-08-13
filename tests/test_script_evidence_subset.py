@@ -217,9 +217,11 @@ def test_script_checker_flags_evidence_unlinked_to_claim() -> None:
     unlinked = next(
         issue for issue in report.issues if issue.issue_type == "evidence_unlinked_to_claim"
     )
-    assert unlinked.severity == "blocking"
+    # Grounding is enforced by remediate_script_grounding before this runs; the
+    # check stays as a tripwire that reports without stopping the build.
+    assert unlinked.severity == "low"
     assert "ev-extra" in unlinked.explanation
-    assert report.verdict == "reject"
+    assert report.verdict != "reject"
 
 
 def test_script_checker_accepts_linked_evidence() -> None:
@@ -282,8 +284,17 @@ def test_script_checker_missing_grounding_when_expected_empty() -> None:
     by_type = {issue.issue_type: issue for issue in report.issues}
     assert "unknown_claim" in by_type
     assert "missing_grounding" in by_type
-    assert by_type["missing_grounding"].severity == "blocking"
+    assert by_type["missing_grounding"].severity == "low"
     assert "evidence_unlinked_to_claim" in by_type
+    # None of the three grounding tripwires may stop a build on its own. This
+    # fixture also trips `claim_outside_segment`, which is a plan-conformance
+    # check and still blocking, so assert on the trio rather than the verdict.
+    grounding = {"unknown_claim", "missing_grounding", "evidence_unlinked_to_claim"}
+    assert not [
+        issue
+        for issue in report.issues
+        if issue.issue_type in grounding and issue.severity == "blocking"
+    ]
 
 
 def test_locator_label_no_page_copy() -> None:

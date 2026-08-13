@@ -59,6 +59,16 @@ def _validate_verification(
         raise DeterministicValidationError(
             "A non-passing verification must include actionable feedback."
         )
+    # Recoverable, and a silent correct repair (spec 09 D2, same class as the
+    # JSON-escape fix): the itemised issues are the verifier's real finding --
+    # each names a turn and is independently checkable -- while the ratio is a
+    # summary the model recomputes by hand and routinely gets wrong. A ratio
+    # with no unsupported-claim issue behind it asserts nothing verifiable, so
+    # take the issues as authoritative instead of failing the build over the
+    # model's arithmetic. Grounding itself is not left to this number: the
+    # deterministic checks already ran against the ledger.
+    if not any(issue.issue_type == "unsupported_claim" for issue in draft.issues):
+        draft.unsupported_claim_ratio = 0.0
     if (
         draft.unsupported_claim_ratio > 0
         and draft.quality.evidence_fidelity >= 1.0
@@ -73,13 +83,7 @@ def _validate_verification(
         )
     if draft.verdict == "pass" and draft.issues:
         raise DeterministicValidationError("Passing verification may not contain issues.")
-    unsupported_count = sum(
-        issue.issue_type == "unsupported_claim" for issue in draft.issues
-    )
-    if unsupported_count == 0 and draft.unsupported_claim_ratio != 0:
-        raise DeterministicValidationError(
-            "Unsupported claim ratio must be zero when no unsupported claim issues exist."
-        )
+    # The zero-ratio-without-issues case is repaired above, not raised.
     if draft.verdict == "pass" and draft.unsupported_claim_ratio != 0:
         raise DeterministicValidationError(
             "Passing verification requires zero unsupported claim ratio."

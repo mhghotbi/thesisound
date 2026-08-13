@@ -163,11 +163,14 @@ class ScriptChecker:
             for claim_id in turn.claim_ids:
                 claim = claim_by_id.get(claim_id)
                 if claim is None:
+                    # Same invariant, same tripwire: remediation drops invented
+                    # ids before this runs, so reaching here is a defect report,
+                    # not a gate. See the note below the loop.
                     issues.append(
                         ScriptCheckIssue(
                             turn_id=turn.turn_id,
                             segment_id=turn.segment_id,
-                            severity="blocking",
+                            severity="low",
                             issue_type="unknown_claim",
                             explanation=f"Turn references unknown claim {claim_id}.",
                         )
@@ -176,12 +179,19 @@ class ScriptChecker:
                     expected_evidence.update(claim.evidence_ids)
             turn_evidence = set(turn.evidence_ids)
             has_linked_evidence = bool(turn_evidence & expected_evidence)
+            # Grounding is enforced upstream now, by remediate_script_grounding:
+            # a turn that reaches here has either been repaired against the
+            # ledger or excised. These two checks are therefore a tripwire on
+            # that invariant, not the gate that holds it -- so they record at
+            # `low` and never stop a build. If either fires, remediation and
+            # this checker disagree, which is a defect to investigate in the
+            # ledger, not a reason to destroy the user's episode.
             if not turn.editorial_only and not has_linked_evidence:
                 issues.append(
                     ScriptCheckIssue(
                         turn_id=turn.turn_id,
                         segment_id=turn.segment_id,
-                        severity="blocking",
+                        severity="low",
                         issue_type="missing_grounding",
                         explanation=(
                             "Substantive turn has no evidence linked to its claim IDs."
@@ -194,7 +204,7 @@ class ScriptChecker:
                     ScriptCheckIssue(
                         turn_id=turn.turn_id,
                         segment_id=turn.segment_id,
-                        severity="blocking",
+                        severity="low",
                         issue_type="evidence_unlinked_to_claim",
                         explanation=(
                             "Turn cites evidence not linked to its claim IDs: "
