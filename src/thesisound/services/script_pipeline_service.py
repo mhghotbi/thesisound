@@ -420,13 +420,18 @@ class ScriptPipelineService:
                     avoided_calls=1,
                 )
 
-            checks = self.script_store.load_checks_optional(project_id)
-            if checks is None:
-                stage("checking_draft")
-                self._ensure_script_ready(project_id, script)
-                with tracing.span("script.checking_draft", component="script") as span:
-                    checks = self.run_checks(project_id)
-                    span.set(verdict=checks.verdict)
+            # Never cached. run_checks() is model-free and deterministic, so the
+            # cache saved no provider call -- and it is also where grounding
+            # remediation runs, so a hit skipped the repair and replayed a stale
+            # verdict. That made a retry a no-op and a code fix invisible: one
+            # production run reached attempt 13 re-reading the same checks.json,
+            # each time rejecting on a `missing_grounding` that the remediation
+            # in the deployed build would have repaired.
+            stage("checking_draft")
+            self._ensure_script_ready(project_id, script)
+            with tracing.span("script.checking_draft", component="script") as span:
+                checks = self.run_checks(project_id)
+                span.set(verdict=checks.verdict)
 
             verification = self.script_store.load_verification_optional(project_id)
             if verification is None:
@@ -472,16 +477,12 @@ class ScriptPipelineService:
                 else:
                     self._ensure_script_ready(project_id, revised)
 
-                revised_checks = self.script_store.load_checks_optional(
-                    project_id,
-                    revised=True,
-                )
-                if revised_checks is None:
-                    stage("checking_revision")
-                    self._ensure_script_ready(project_id, revised)
-                    with tracing.span("script.checking_revision", component="script") as span:
-                        revised_checks = self.run_checks(project_id, revised=True)
-                        span.set(verdict=revised_checks.verdict)
+                # Not cached, for the same reason as the draft checks above.
+                stage("checking_revision")
+                self._ensure_script_ready(project_id, revised)
+                with tracing.span("script.checking_revision", component="script") as span:
+                    revised_checks = self.run_checks(project_id, revised=True)
+                    span.set(verdict=revised_checks.verdict)
                 original_script = self.script_store.load_script(project_id)
                 # By turn_id, not position: a cached revised script can be
                 # stale relative to a freshly (re)computed original -- e.g.
