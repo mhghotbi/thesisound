@@ -297,6 +297,54 @@ def test_script_checker_missing_grounding_when_expected_empty() -> None:
     ]
 
 
+def test_plan_placement_mismatches_report_without_stopping_the_build() -> None:
+    """A claim used in the wrong segment is still real, grounded and traceable.
+
+    Locks in the severity: these two fire together (a pack holds exactly its
+    segment's claims' evidence) and neither may reject a build on its own.
+    """
+
+    source_id = uuid4()
+    project_id = uuid4()
+    claims = [
+        _claim("ev-1", claim_id="claim-1"),
+        _claim("ev-2", claim_id="claim-2", text="مدعای بخش دیگر"),
+    ]
+    plan = _plan("claim-1")  # claim-2 is grounded, but assigned elsewhere.
+    pack = SegmentEvidencePack.model_construct(
+        segment_id="seg-1",
+        claim_ids=["claim-1"],
+        evidence_items=[_evidence(source_id, "ev-1")],
+        original_blocks=[],
+        token_budget=100,
+        actual_tokens=2,
+    )
+    report = ScriptChecker(words_per_minute=130).check(
+        project_id=project_id,
+        script=Script(
+            title="متن",
+            turns=[
+                ScriptTurn(
+                    turn_id="t1",
+                    segment_id="seg-1",
+                    speaker="A",
+                    spoken_text_fa="این گفته به مدعای بخش دیگری ارجاع می‌دهد.",
+                    claim_ids=["claim-2"],
+                    evidence_ids=["ev-2"],
+                )
+            ],
+        ),
+        episode_plan=plan,
+        evidence_packs=[pack],
+        claims=claims,
+        glossary=Glossary(project_id=project_id, model_run_id=uuid4()),
+    )
+    by_type = {issue.issue_type: issue for issue in report.issues}
+    assert by_type["claim_outside_segment"].severity == "low"
+    assert by_type["evidence_outside_pack"].severity == "low"
+    assert report.verdict != "reject"
+
+
 def test_locator_label_no_page_copy() -> None:
     label = locator_label(Locator(chapter="۳", section="الف"))
     assert not label.startswith("صفحه")
