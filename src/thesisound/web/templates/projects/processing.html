@@ -12,7 +12,7 @@
   {% if corpus_active or planning_active %}
     {{ status_label('در حال انجام', 'اقدامی از شما لازم نیست', 'running') }}
   {% elif project.state.value == 'corpus_ready' %}
-    {{ status_label('تحلیل منابع آماده است', 'منتظر سنجش کفایت منابع', 'attention') }}
+    {{ status_label('تحلیل منابع آماده است', 'سنجش کفایت در صف است', 'running') }}
   {% else %}
     {{ status_label('وضعیت ثبت‌شده', '', 'neutral', project.state.value) }}
   {% endif %}
@@ -69,8 +69,8 @@
 {% elif planning_run and planning_run.status in ['blocked', 'succeeded', 'failed'] %}
 <div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/episode">مشاهدهٔ کفایت منابع و طرح گفتار</a></div>
 {% elif project.state.value == 'corpus_ready' %}
-<div class="notice notice--info">تحلیل منابع آماده است. سنجش کفایت و ساخت طرح گفتار هنوز شروع نشده است.</div>
-<div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/episode">رفتن به طرح گفتار</a></div>
+<div class="notice notice--info">تحلیل منابع آماده است. سنجش کفایت و ساخت طرح گفتار به‌صورت خودکار در صف است.</div>
+<div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/episode">دیدن کفایت منابع</a></div>
 {% endif %}
 
 <div class="form-actions section-block">

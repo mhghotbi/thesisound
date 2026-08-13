@@ -14,16 +14,25 @@ from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState
 from thesisound.pipeline import WorkspaceStore
 from thesisound.product_metrics import ProductEvent, emit
-from thesisound.product_metrics.events import EpisodeAudioDownloaded
+from thesisound.product_metrics.events import EpisodeAudioDownloaded, GateScriptReviewRequested
 from thesisound.services.audio_artifact_store import AudioArtifactStore
 from thesisound.services.audio_direction import (
     DEFAULT_ACCENT,
     DEFAULT_PACE,
     DEFAULT_TONE,
+    DEFAULT_VOICE_A,
+    DEFAULT_VOICE_B,
     AudioDirectionSettings,
 )
 from thesisound.services.audio_run import AudioBuildRunService
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.services.script_review_decision import (
+    ACCEPTED_WITH_NOTES,
+    apply_script_review_decision,
+    load_quality_notes,
+    notable_notes_disclosure_token,
+    require_notable_notes_disclosed,
+)
 from thesisound.tts_voices import GEMINI_TTS_VOICES
 from thesisound.web.error_messages import user_facing_error
 
@@ -93,14 +102,15 @@ def register_audio_routes(
         background_tasks: BackgroundTasks,
         project_id: UUID,
         csrf_token: Annotated[str, Form()],
-        voice_a: Annotated[str, Form()],
-        voice_b: Annotated[str, Form()],
+        voice_a: Annotated[str, Form()] = DEFAULT_VOICE_A,
+        voice_b: Annotated[str, Form()] = DEFAULT_VOICE_B,
         pace: Annotated[str, Form()] = DEFAULT_PACE,
         tone: Annotated[str, Form()] = DEFAULT_TONE,
         accent: Annotated[str, Form()] = DEFAULT_ACCENT,
         # Empty Form() values are "missing" unless defaults exist (notes are optional).
         speaker_a_notes: Annotated[str, Form()] = "",
         speaker_b_notes: Annotated[str, Form()] = "",
+        notes_disclosure: Annotated[str, Form()] = "",
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
@@ -117,6 +127,25 @@ def register_audio_routes(
         }
         try:
             validate_csrf(request, csrf_token)
+            project = workspace.load_project(project_id)
+            quality_notes = load_quality_notes(script_store, project_id)
+            require_notable_notes_disclosed(quality_notes, notes_disclosure)
+            if project.state == ProjectState.SCRIPT_REVIEW_REQUIRED:
+                apply_script_review_decision(
+                    workspace=workspace,
+                    script_store=script_store,
+                    project=project,
+                    decision="accept",
+                    reviewer=request.state.account.label,
+                    reason=ACCEPTED_WITH_NOTES,
+                    reason_code=ACCEPTED_WITH_NOTES,
+                )
+                emit(
+                    ProductEvent.GATE_SCRIPT_REVIEW_REQUESTED,
+                    GateScriptReviewRequested(decision="accept"),
+                    user_id=getattr(request.state.account, "user_id", None),
+                    project_id=project_id,
+                )
             direction = AudioDirectionSettings(**submitted)
             builder.queue(project_id, direction=direction)
             background_tasks.add_task(execute, project_id)
@@ -335,8 +364,8 @@ def _render_audio_page(
                 }
             )
     defaults = {
-        "voice_a": settings.tts_voice_a,
-        "voice_b": settings.tts_voice_b,
+        "voice_a": settings.tts_voice_a or DEFAULT_VOICE_A,
+        "voice_b": settings.tts_voice_b or DEFAULT_VOICE_B,
         "pace": DEFAULT_PACE,
         "tone": DEFAULT_TONE,
         "accent": DEFAULT_ACCENT,
@@ -349,6 +378,8 @@ def _render_audio_page(
         manifest if current else None,
         silence_seconds=settings.audio_silence_milliseconds / 1000,
     )
+    quality_notes = load_quality_notes(script_store, project_id)
+    notable_notes = [note for note in quality_notes if note.severity == "notable"]
     return render(
         request,
         template_name,
@@ -360,7 +391,11 @@ def _render_audio_page(
             "manifest": manifest if current else None,
             "segment_views": segment_views,
             "chapters": chapters,
-            "can_generate": project.state == ProjectState.SCRIPT_VERIFIED,
+            "can_generate": project.state
+            in {ProjectState.SCRIPT_VERIFIED, ProjectState.SCRIPT_REVIEW_REQUIRED},
+            "review_required": project.state == ProjectState.SCRIPT_REVIEW_REQUIRED,
+            "notable_quality_notes": notable_notes,
+            "notes_disclosure": notable_notes_disclosure_token(quality_notes),
             "can_retry": bool(
                 run
                 and run.status == "failed"

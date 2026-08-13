@@ -15,6 +15,8 @@
     {{ status_label('ساخت نسخهٔ شنیداری متوقف شد', 'قابل بررسی و ادامه', 'danger', audio_run.status) }}
   {% elif project.state.value == 'complete' %}
     {{ status_label('آمادهٔ شنیدن', 'وارسی شنیداری انجام شده است', 'success', project.state.value) }}
+  {% elif review_required %}
+    {{ status_label('متن گفتار با یادداشت کیفیت', 'تصمیم شما لازم است', 'attention', project.state.value) }}
   {% else %}
     {{ status_label('آمادهٔ ساخت نسخهٔ شنیداری', 'شروع ساخت به تأیید شما نیاز دارد', 'attention', project.state.value) }}
   {% endif %}
@@ -28,69 +30,105 @@
 <section class="attention-panel" aria-labelledby="audio-start-title">
   <div class="attention-panel__line">
     <h2 class="attention-panel__label" id="audio-start-title">اقدام لازم</h2>
-    {{ status_label('متن گفتار آمادهٔ ساخت نسخهٔ شنیداری است', '', 'attention') }}
+    {% if review_required %}
+      {{ status_label('متن گفتار آماده است', 'با یادداشت', 'attention') }}
+    {% else %}
+      {{ status_label('متن گفتار آمادهٔ ساخت نسخهٔ شنیداری است', '', 'attention') }}
+    {% endif %}
     <span aria-hidden="true" class="attention-panel__dot">·</span>
     <span class="attention-panel__ask">تصمیم شما لازم است</span>
   </div>
-  <div>
-    <p class="simple-only">صدا، ریتم، لحن و لهجه را برای هر گوینده مشخص کنید؛ این تنظیمات فقط روی همین اجرا اثر می‌گذارد.</p>
-    <p class="operator-only">Run به hash نسخهٔ فعلی Script متصل است. پیش از queue، کلید Gemini، SDK، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
+
+  {% if notable_quality_notes %}
+  <div class="quality-notes-disclosure" aria-labelledby="audio-notes-title">
+    <h3 id="audio-notes-title">یادداشت‌های کیفیت</h3>
+    <ul class="quality-notes quality-notes--notable">
+      {% for note in notable_quality_notes %}
+      <li>{{ note.listener_impact }}</li>
+      {% endfor %}
+    </ul>
+    <p class="simple-only">می‌توانید با همین متن صدا بسازید، یا آن را برای بازنویسی بفرستید.</p>
   </div>
+  {% endif %}
+
   <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/audio/generate" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    {% if notes_disclosure %}
+    <input type="hidden" name="notes_disclosure" value="{{ notes_disclosure }}">
+    {% endif %}
 
-    <div class="field-grid">
-      <label class="field">
-        <span>صدای گویندهٔ اول</span>
-        <select name="voice_a">
-          {% for name, label in voices %}
-          <option value="{{ name }}" {% if selected.voice_a == name %}selected{% endif %}>{{ name }} — {{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <label class="field">
-        <span>صدای گویندهٔ دوم</span>
-        <select name="voice_b">
-          {% for name, label in voices %}
-          <option value="{{ name }}" {% if selected.voice_b == name %}selected{% endif %}>{{ name }} — {{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
-    </div>
+    <details class="disclosure">
+      <summary>تنظیم صدا، ریتم و لحن (اختیاری)</summary>
+      <p class="simple-only">اگر باز نکنید، تنظیمات پیش‌فرض همین اجرا اعمال می‌شود.</p>
+      <p class="operator-only">Run به hash نسخهٔ فعلی Script متصل است. پیش از queue، کلید Gemini، SDK، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
 
-    <fieldset class="choice-group">
-      <legend>ریتم خواندن</legend>
-      <label><input type="radio" name="pace" value="slow" {% if selected.pace == 'slow' %}checked{% endif %}><span>آهسته</span></label>
-      <label><input type="radio" name="pace" value="moderate" {% if selected.pace == 'moderate' %}checked{% endif %}><span>متوسط</span></label>
-      <label><input type="radio" name="pace" value="energetic" {% if selected.pace == 'energetic' %}checked{% endif %}><span>پرانرژی</span></label>
-    </fieldset>
+      <div class="field-grid">
+        <label class="field">
+          <span>صدای گویندهٔ اول</span>
+          <select name="voice_a">
+            {% for name, label in voices %}
+            <option value="{{ name }}" {% if selected.voice_a == name %}selected{% endif %}>{{ name }} — {{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="field">
+          <span>صدای گویندهٔ دوم</span>
+          <select name="voice_b">
+            {% for name, label in voices %}
+            <option value="{{ name }}" {% if selected.voice_b == name %}selected{% endif %}>{{ name }} — {{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
 
-    <div class="field-grid">
-      <label class="field">
-        <span>لحن</span>
-        <input type="text" name="tone" value="{{ selected.tone }}" maxlength="200">
-      </label>
-      <label class="field">
-        <span>لهجه</span>
-        <input type="text" name="accent" value="{{ selected.accent }}" maxlength="200">
-      </label>
-    </div>
+      <fieldset class="choice-group">
+        <legend>ریتم خواندن</legend>
+        <label><input type="radio" name="pace" value="slow" {% if selected.pace == 'slow' %}checked{% endif %}><span>آهسته</span></label>
+        <label><input type="radio" name="pace" value="moderate" {% if selected.pace == 'moderate' %}checked{% endif %}><span>متوسط</span></label>
+        <label><input type="radio" name="pace" value="energetic" {% if selected.pace == 'energetic' %}checked{% endif %}><span>پرانرژی</span></label>
+      </fieldset>
 
-    <div class="field-grid">
-      <label class="field">
-        <span>ویژگی گویندهٔ اول</span>
-        <textarea name="speaker_a_notes" rows="3" maxlength="600" placeholder="مثلاً: کنجکاو و کمی شوخ‌طبع">{{ selected.speaker_a_notes }}</textarea>
-      </label>
-      <label class="field">
-        <span>ویژگی گویندهٔ دوم</span>
-        <textarea name="speaker_b_notes" rows="3" maxlength="600" placeholder="مثلاً: آرام و تحلیل‌گر">{{ selected.speaker_b_notes }}</textarea>
-      </label>
-    </div>
+      <div class="field-grid">
+        <label class="field">
+          <span>لحن</span>
+          <input type="text" name="tone" value="{{ selected.tone }}" maxlength="200">
+        </label>
+        <label class="field">
+          <span>لهجه</span>
+          <input type="text" name="accent" value="{{ selected.accent }}" maxlength="200">
+        </label>
+      </div>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>ویژگی گویندهٔ اول</span>
+          <textarea name="speaker_a_notes" rows="3" maxlength="600" placeholder="مثلاً: کنجکاو و کمی شوخ‌طبع">{{ selected.speaker_a_notes }}</textarea>
+        </label>
+        <label class="field">
+          <span>ویژگی گویندهٔ دوم</span>
+          <textarea name="speaker_b_notes" rows="3" maxlength="600" placeholder="مثلاً: آرام و تحلیل‌گر">{{ selected.speaker_b_notes }}</textarea>
+        </label>
+      </div>
+    </details>
 
     <div class="form-actions">
-      <button class="button button--primary" type="submit">ساخت و وارسی نسخهٔ شنیداری</button>
+      <button class="button button--primary" type="submit">صدا بساز</button>
     </div>
   </form>
+
+  {% if review_required %}
+  <form class="form-sheet section-block" method="post" action="/projects/{{ project.project_id }}/script/review" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="decision" value="send_back">
+    <label class="field">
+      <span>دلیل بازنویسی</span>
+      <textarea name="reason" rows="3" maxlength="2000" required placeholder="چه چیزی باید اصلاح شود؟"></textarea>
+    </label>
+    <div class="form-actions">
+      <button class="button button--secondary" type="submit">بازنویسی کن</button>
+    </div>
+  </form>
+  {% endif %}
 </section>
 <div class="form-actions operator-only"><a class="button button--secondary" href="/system-check?scope=audio">بررسی پیش‌نیازهای صوت</a></div>
 {% endif %}

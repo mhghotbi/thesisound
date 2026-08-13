@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -16,6 +17,7 @@ from thesisound.services.corpus_building import (
     CorpusBuildRunStore,
     CorpusSourceInput,
 )
+from thesisound.services.episode_planning_run import EpisodePlanningRunService
 from thesisound.services.document_map_part_cache import DocumentMapPartCache
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
@@ -123,3 +125,29 @@ def corpus_source_inputs(
             )
         )
     return inputs
+
+
+def run_corpus_then_queue_planning(
+    *,
+    run_corpus: Callable[[UUID], object],
+    workspace: WorkspaceStore,
+    planner: EpisodePlanningRunService,
+    run_episode: Callable[[UUID], None],
+) -> Callable[[UUID], None]:
+    """After a successful corpus build, queue coverage/planning automatically (spec 12 D2)."""
+
+    def execute(project_id: UUID) -> None:
+        result = run_corpus(project_id)
+        status = getattr(result, "status", None)
+        if status is not None and status != "succeeded":
+            return
+        project = workspace.load_project(project_id)
+        if project.state != ProjectState.CORPUS_READY:
+            return
+        try:
+            planner.queue(project_id)
+        except ValueError:
+            return
+        run_episode(project_id)
+
+    return execute

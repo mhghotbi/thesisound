@@ -227,7 +227,7 @@ def project_readiness(*, project_id: UUID, workspace_root: Path) -> list[GateRes
             )
 
     _script_results(project_id, root, project, set_result)
-    _audio_results(project_id, root, set_result)
+    _audio_results(project_id, root, project, set_result)
 
     if project.state == ProjectState.COMPLETE:
         set_result(
@@ -591,7 +591,7 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
         set_result(
             "script-review-decision",
             "blocked",
-            "A named reviewer must accept or send back this script.",
+            "A named reviewer must accept (on the audio screen) or send back this script.",
             script_dir,
         )
     elif decision is None:
@@ -656,7 +656,34 @@ def _script_results(project_id: UUID, root: Path, project, set_result) -> None:
             )
 
 
-def _audio_results(project_id: UUID, root: Path, set_result) -> None:
+def _audio_results(project_id: UUID, root: Path, project, set_result) -> None:
+    if project.state in {
+        ProjectState.SCRIPT_VERIFIED,
+        ProjectState.SCRIPT_REVIEW_REQUIRED,
+    }:
+        set_result(
+            "audio-start",
+            "blocked",
+            "The operator has not started audio generation.",
+        )
+    elif project.state in {
+        ProjectState.AUDIO_GENERATING,
+        ProjectState.AUDIO_READY,
+        ProjectState.AUDIO_VERIFYING,
+        ProjectState.COMPLETE,
+    }:
+        set_result(
+            "audio-start",
+            "pass",
+            "Audio generation was started for the current script.",
+        )
+    else:
+        set_result(
+            "audio-start",
+            "not_reached",
+            "The script is not ready for audio generation.",
+        )
+
     path = root / str(project_id) / "audio" / "manifest.json"
     if not path.exists():
         set_result("audio-qa", "not_reached", "No audio QA manifest exists.", path)

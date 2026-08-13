@@ -71,7 +71,8 @@ def _project(state: ProjectState, *, duration: int = 20) -> Project:
     )
 
 
-def test_web_queues_episode_planning_from_corpus_ready(tmp_path: Path) -> None:
+def test_web_prepare_still_queues_when_planning_stalled(tmp_path: Path) -> None:
+    """Recovery: POST /episode/prepare still works when corpus is ready but planning never started."""
     settings = _settings(tmp_path)
     workspace = WorkspaceStore(settings.workspace_root)
     project = _project(ProjectState.CORPUS_READY)
@@ -85,7 +86,8 @@ def test_web_queues_episode_planning_from_corpus_ready(tmp_path: Path) -> None:
     with _client(app) as client:
         _login(client)
         page = client.get(f"/projects/{project.project_id}/episode")
-        assert "سنجش کفایت منابع و ساخت طرح" in page.text
+        assert "سنجش کفایت منابع و ساخت طرح" not in page.text
+        assert "به‌صورت خودکار" in page.text
         response = client.post(
             f"/projects/{project.project_id}/episode/prepare",
             data={"csrf_token": _csrf(page.text)},
@@ -96,6 +98,66 @@ def test_web_queues_episode_planning_from_corpus_ready(tmp_path: Path) -> None:
     run = EpisodePlanningRunStore(settings.workspace_root).load(project.project_id)
     assert run.status == "queued"
     assert run.target_duration_minutes == 20
+
+
+def test_corpus_confirmation_queues_planning(tmp_path: Path) -> None:
+    from thesisound.web.corpus_runtime import run_corpus_then_queue_planning
+    from thesisound.web.episode_runtime import create_episode_planner
+
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.CORPUS_BUILDING)
+    workspace.save_project(project)
+    planned: list = []
+
+    def _to_ready(project_id) -> None:
+        loaded = workspace.load_project(project_id)
+        loaded.state = ProjectState.CORPUS_READY
+        workspace.save_project(loaded)
+
+    execute = run_corpus_then_queue_planning(
+        run_corpus=_to_ready,
+        workspace=workspace,
+        planner=create_episode_planner(settings, workspace),
+        run_episode=planned.append,
+    )
+    execute(project.project_id)
+
+    run = EpisodePlanningRunStore(settings.workspace_root).load(project.project_id)
+    assert run.status == "queued"
+    assert run.target_duration_minutes == 20
+    assert planned == [project.project_id]
+
+
+def test_insufficient_coverage_still_stops_with_its_message(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.EPISODE_PLANNING, duration=20)
+    workspace.save_project(project)
+    run_store = EpisodePlanningRunStore(settings.workspace_root)
+    blocked = EpisodePlanningRun(
+        run_id=uuid4(),
+        project_id=project.project_id,
+        status="blocked",
+        stage="blocked",
+        target_duration_minutes=20,
+        max_supported_minutes=10,
+        material_gaps=["زمینه تاریخی کافی نیست"],
+        last_error="منابع برای مدت درخواستی کافی نیستند.",
+    )
+    run_store.save(blocked)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+    )
+
+    with _client(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/episode")
+        assert "ادامه‌دادن با corpus ناکافی مجاز نیست." in page.text
+        assert f"/projects/{project.project_id}/episode/duration" in page.text
+        assert f"/projects/{project.project_id}/episode/reopen-inputs" in page.text
 
 
 def test_blocked_web_flow_has_no_continue_anyway_and_can_reduce_duration(

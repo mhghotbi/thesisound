@@ -52,3 +52,10 @@ def test_defaults_apply_when_only_voices_given() -> None:
     assert direction.speaker_a_notes == ""
     assert direction.speaker_b_notes == ""
     assert direction.voices_map == {"A": "Kore", "B": "Puck"}
+
+
+def test_defaults_include_voices() -> None:
+    direction = AudioDirectionSettings()
+    assert direction.voice_a == "Kore"
+    assert direction.voice_b == "Puck"
+    assert direction.pace == DEFAULT_PACE

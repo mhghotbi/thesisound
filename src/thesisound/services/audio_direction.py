@@ -11,6 +11,8 @@ Pace = Literal["slow", "moderate", "energetic"]
 DEFAULT_PACE: Pace = "moderate"
 DEFAULT_TONE = "جدی و صمیمی، گفت‌وگوی طبیعی"
 DEFAULT_ACCENT = "فارسی معیار (تهرانی)"
+DEFAULT_VOICE_A = "Kore"
+DEFAULT_VOICE_B = "Puck"
 
 _PACE_PHRASES: dict[Pace, str] = {
     "slow": "با سرعت آهسته و شمرده بخوان",
@@ -23,8 +25,8 @@ _NOTES_MAX = 600
 
 
 class AudioDirectionSettings(BaseModel):
-    voice_a: str
-    voice_b: str
+    voice_a: str = DEFAULT_VOICE_A
+    voice_b: str = DEFAULT_VOICE_B
     pace: Pace = DEFAULT_PACE
     tone: str = Field(default=DEFAULT_TONE, max_length=_TEXT_FIELD_MAX)
     accent: str = Field(default=DEFAULT_ACCENT, max_length=_TEXT_FIELD_MAX)

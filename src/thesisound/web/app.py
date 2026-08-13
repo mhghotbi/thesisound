@@ -46,7 +46,7 @@ from thesisound.services.readiness import project_readiness
 from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
 from thesisound.web.audio_routes import register_audio_routes
 from thesisound.web.auth import NullOtpSender, OtpError, OtpSenderPort, OtpService
-from thesisound.web.corpus_runtime import create_corpus_builder
+from thesisound.web.corpus_runtime import create_corpus_builder, run_corpus_then_queue_planning
 from thesisound.web.episode_routes import register_episode_routes
 from thesisound.web.episode_runtime import create_episode_planner
 from thesisound.web.error_messages import user_facing_error
@@ -304,10 +304,15 @@ def create_app(
     episode_planner = create_episode_planner(runtime, workspace)
     script_builder = create_script_builder(runtime, workspace)
     audio_builder = create_audio_builder(runtime, workspace)
-    execute_corpus = corpus_executor or corpus_builder.run
     execute_episode = episode_executor or episode_planner.run
     execute_script = script_executor or script_builder.run
     execute_audio = audio_executor or audio_builder.run
+    execute_corpus = run_corpus_then_queue_planning(
+        run_corpus=corpus_executor or corpus_builder.run,
+        workspace=workspace,
+        planner=episode_planner,
+        run_episode=execute_episode,
+    )
 
     docs_url = "/api/docs" if runtime.environment != "production" else None
     app = FastAPI(title="مقال", docs_url=docs_url)

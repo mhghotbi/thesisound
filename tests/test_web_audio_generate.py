@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -19,7 +20,13 @@ from thesisound.domain import (
     TopicType,
 )
 from thesisound.pipeline import WorkspaceStore
-from thesisound.script import ScriptCheckReport, ScriptPipelineManifest, VerificationDraft
+from thesisound.script import (
+    QualityNote,
+    QualityNotesLedger,
+    ScriptCheckReport,
+    ScriptPipelineManifest,
+    VerificationDraft,
+)
 from thesisound.services.audio_run import AudioBuildRunStore
 from thesisound.services.plan_approval import (
     EpisodePlanApproval,
@@ -27,6 +34,10 @@ from thesisound.services.plan_approval import (
     episode_plan_hash,
 )
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.services.script_review_decision import (
+    ACCEPTED_WITH_NOTES,
+    notable_notes_disclosure_token,
+)
 from thesisound.services.script_run import ScriptBuildRun, ScriptBuildRunStore
 from thesisound.web.app import create_app
 
@@ -162,7 +173,7 @@ def test_audio_generate_accepts_empty_optional_notes(tmp_path: Path) -> None:
     with TestClient(app) as client:
         _login(client)
         page = client.get(f"/projects/{project.project_id}/audio")
-        assert "ساخت و وارسی نسخهٔ شنیداری" in page.text
+        assert "صدا بساز" in page.text
         body = urlencode(
             {
                 "csrf_token": _csrf(page.text),
@@ -189,3 +200,220 @@ def test_audio_generate_accepts_empty_optional_notes(tmp_path: Path) -> None:
     assert run.direction is not None
     assert run.direction.speaker_a_notes == ""
     assert run.direction.speaker_b_notes == ""
+
+
+def test_audio_starts_with_no_direction_fields(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    project = _seed_script_verified(settings)
+    app = create_app(settings, audio_executor=lambda _: None)
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/audio")
+        assert "تنظیم صدا، ریتم و لحن (اختیاری)" in page.text
+        response = client.post(
+            f"/projects/{project.project_id}/audio/generate",
+            data={"csrf_token": _csrf(page.text)},
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 303
+    run = AudioBuildRunStore(settings.workspace_root).load(project.project_id)
+    assert run.status == "queued"
+    assert run.direction is not None
+    assert run.direction.voice_a == "Kore"
+    assert run.direction.voice_b == "Puck"
+
+
+def _seed_review_required_with_notes(settings: Settings) -> Project:
+    workspace = WorkspaceStore(settings.workspace_root)
+    script = Script(
+        title="گفتار آزمون",
+        turns=[
+            ScriptTurn(
+                turn_id="turn-1",
+                segment_id="seg-1",
+                speaker="A",
+                spoken_text_fa="متن آزمون.",
+                claim_ids=["claim-1"],
+                evidence_ids=["evidence-1"],
+            )
+        ],
+    )
+    project = Project(
+        raw_input="موضوع",
+        state=ProjectState.SCRIPT_REVIEW_REQUIRED,
+        brief=ResearchBrief(
+            normalized_topic="موضوع",
+            topic_type=TopicType.CONCEPT,
+            central_question="سؤال مرکزی چیست؟",
+            target_duration_minutes=5,
+        ),
+        episode_plan=EpisodePlan(
+            title="طرح آزمون",
+            listener_outcome="فهم موضوع",
+            estimated_duration_minutes=5,
+            segments=[
+                EpisodeSegment(
+                    segment_id="seg-1",
+                    title="بخش اول",
+                    purpose="شرح موضوع",
+                    estimated_minutes=5,
+                    claim_ids=["claim-1"],
+                    key_question="سؤال؟",
+                    speaker_dynamic="explanation",
+                )
+            ],
+        ),
+        script=script,
+    )
+    workspace.save_project(project)
+    plan_hash = episode_plan_hash(project.episode_plan)
+    EpisodePlanApprovalStore(settings.workspace_root).save(
+        EpisodePlanApproval(
+            project_id=project.project_id,
+            plan_hash=plan_hash,
+            approved_by="09120000000",
+        )
+    )
+    ScriptBuildRunStore(settings.workspace_root).save(
+        ScriptBuildRun(
+            project_id=project.project_id,
+            approved_plan_hash=plan_hash,
+            approved_by="09120000000",
+            status="succeeded",
+            stage="complete",
+        )
+    )
+    store = ScriptArtifactStore(settings.workspace_root)
+    store.save_script(project.project_id, script)
+    store.save_checks(
+        ScriptCheckReport(
+            project_id=project.project_id,
+            verdict="pass",
+            word_count=2,
+            estimated_minutes=0.05,
+            substantive_turn_count=1,
+        )
+    )
+    store.save_verification(
+        project.project_id,
+        VerificationDraft(verdict="revise", unsupported_claim_ratio=0.1),
+    )
+    store.save_manifest(
+        ScriptPipelineManifest(
+            project_id=project.project_id,
+            status="review_required",
+            last_error="Independent verification left a non-blocking issue.",
+        )
+    )
+    store.save_quality_notes(
+        QualityNotesLedger(
+            project_id=project.project_id,
+            notes=[
+                QualityNote(
+                    stage="script_grounding",
+                    kind="turn_excised",
+                    subject="turn-x",
+                    listener_impact="یک گفته حذف شد چون به شواهد قابل دفاع وصل نبود.",
+                    severity="notable",
+                )
+            ],
+        )
+    )
+    return project
+
+
+def test_audio_screen_accept_writes_the_review_record(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    project = _seed_review_required_with_notes(settings)
+    app = create_app(settings, audio_executor=lambda _: None)
+    notes = ScriptArtifactStore(settings.workspace_root).load_quality_notes_optional(
+        project.project_id
+    )
+    assert notes is not None
+    token = notable_notes_disclosure_token(notes.notes)
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/audio")
+        assert "یادداشت‌های کیفیت" in page.text
+        assert "صدا بساز" in page.text
+        assert "بازنویسی کن" in page.text
+        response = client.post(
+            f"/projects/{project.project_id}/audio/generate",
+            data={
+                "csrf_token": _csrf(page.text),
+                "notes_disclosure": token,
+            },
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 303
+    workspace = WorkspaceStore(settings.workspace_root)
+    assert workspace.load_project(project.project_id).state == ProjectState.SCRIPT_VERIFIED
+    review = ScriptArtifactStore(settings.workspace_root).load_review_decision_optional(
+        project.project_id
+    )
+    assert review is not None
+    assert review.decision == "accepted"
+    assert review.reviewer == "09120000000"
+    assert review.reason == ACCEPTED_WITH_NOTES
+    run = AudioBuildRunStore(settings.workspace_root).load(project.project_id)
+    assert run.status == "queued"
+
+
+def test_audio_start_requires_rendered_notes_when_degraded(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    project = _seed_review_required_with_notes(settings)
+    app = create_app(settings, audio_executor=lambda _: None)
+
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/audio")
+        assert 'name="notes_disclosure"' in page.text
+        response = client.post(
+            f"/projects/{project.project_id}/audio/generate",
+            data={"csrf_token": _csrf(page.text)},
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 422
+    assert (
+        WorkspaceStore(settings.workspace_root).load_project(project.project_id).state
+        == ProjectState.SCRIPT_REVIEW_REQUIRED
+    )
+    assert (
+        ScriptArtifactStore(settings.workspace_root).load_review_decision_optional(
+            project.project_id
+        )
+        is None
+    )
+
+
+def test_happy_path_takes_exactly_three_user_actions() -> None:
+    """Spec 12 D1: sources, plan, and audio are the only blocking human build stops."""
+    from thesisound.services.gates import GATE_REGISTRY
+
+    blocking_human = [
+        gate.code for gate in GATE_REGISTRY if gate.actor == "human" and gate.blocking
+    ]
+    assert blocking_human == [
+        "source-selection-confirmed",
+        "episode-plan-approval",
+        "audio-start",
+    ]
+    assert "script-review-decision" not in blocking_human
+    assert "episode/prepare" not in "".join(
+        gate.enforced_at for gate in GATE_REGISTRY if gate.actor == "human"
+    )
+    # Disclosure token is bound to note identity, not free text.
+    note = QualityNote(
+        stage="script_grounding",
+        kind="duration_shortfall",
+        subject="script:3/10min",
+        listener_impact="اپیزود از مدت درخواستی کوتاه‌تر شد چون بخش‌های بدون پشتوانه حذف شدند.",
+        severity="notable",
+    )
+    token = notable_notes_disclosure_token([note])
+    assert re.fullmatch(r"[0-9a-f]{64}", token)

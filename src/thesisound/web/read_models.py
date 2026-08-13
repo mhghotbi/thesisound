@@ -166,16 +166,16 @@ def build_project_read_model(
     if project.state == ProjectState.CORPUS_READY:
         return _read_model(
             project,
-            attention_label="کفایت منابع را بسنجید و ساخت طرح گفتار را شروع کنید",
-            primary_action_label="رفتن به طرح گفتار",
+            attention_label="اقدامی از شما لازم نیست",
+            primary_action_label="دیدن کفایت منابع",
             primary_action_url=f"/projects/{project_id}/episode",
-            tone="attention",
-            group_key="attention",
-            group_label="منتظر شما",
-            requires_action=True,
+            tone="running",
+            group_key="running",
+            group_label="در حال انجام",
+            requires_action=False,
             overview_summary=(
-                "تحلیل منابع آماده است؛ اکنون باید روشن شود "
-                "منابع برای چه مدت گفتار، شاهد کافی دارند."
+                "تحلیل منابع آماده است؛ سنجش کفایت و ساخت طرح گفتار "
+                "به‌صورت خودکار در صف قرار گرفته است."
             ),
         )
 
@@ -228,15 +228,15 @@ def build_project_read_model(
         return _read_model(
             project,
             attention_label="متن گفتار نیازمند بازبینی است",
-            primary_action_label="بازبینی متن گفتار",
-            primary_action_url=f"/projects/{project_id}/script",
+            primary_action_label="ساخت صدا یا بازنویسی",
+            primary_action_url=f"/projects/{project_id}/audio",
             tone="attention",
             group_key="attention",
             group_label="منتظر شما",
             requires_action=True,
             overview_summary=(
                 "راستی‌آزمایی نکته‌ای غیرمسدودکننده باقی گذاشته است؛ "
-                "پذیرش یا بازگرداندن متن باید با دلیل ثبت شود."
+                "یادداشت‌ها روی صفحهٔ ساخت صدا نمایش داده می‌شوند."
             ),
         )
 

@@ -17,7 +17,6 @@ from thesisound.product_metrics.events import (
     GateScriptApproved,
     GateScriptReviewRequested,
 )
-from thesisound.script import ScriptReviewDecision
 from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
     episode_plan_hash,
@@ -25,6 +24,7 @@ from thesisound.services.plan_approval import (
 from thesisound.services.lineage_events import emit_review_decision
 from thesisound.services.runtime_preflight import RuntimePreflight
 from thesisound.services.script_artifact_store import ScriptArtifactStore
+from thesisound.services.script_review_decision import apply_script_review_decision
 from thesisound.services.script_run import ScriptBuildRunService
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.error_messages import user_facing_error
@@ -39,14 +39,6 @@ Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]
 ProjectRedirect = Callable[[Request, UUID], RedirectResponse | None]
 ValidateCsrf = Callable[[Request, str], None]
-
-# The review record still names a reviewer and a disposition; only the typed
-# justification became optional. `send_back` is the one shown back to the user,
-# as the manifest's last_error while the rebuild runs.
-_DEFAULT_REVIEW_REASON = {
-    "accept": "پذیرفته شد؛ یادداشت‌های کیفیت پیش از ادامه نمایش داده شده بود.",
-    "send_back": "برای بازنویسی فرستاده شد.",
-}
 
 
 def register_script_routes(
@@ -167,54 +159,17 @@ def register_script_routes(
         try:
             validate_csrf(request, csrf_token)
             project = workspace.load_project(project_id)
-            if project.state != ProjectState.SCRIPT_REVIEW_REQUIRED:
-                raise ValueError("This script is not awaiting a review decision.")
-            if decision not in {"accept", "send_back"}:
-                raise ValueError("Unknown script review decision.")
-            clean_reason = reason.strip() or _DEFAULT_REVIEW_REASON[decision]
-            if decision == "send_back":
-                # Queues a fresh build; /script/approve and /script/retry are
-                # gated by the preflight middleware, this branch is not.
-                # This must happen before persisting the review/state changes.
-                preflight.require("script")
-            plan_hash = episode_plan_hash(project.episode_plan) if project.episode_plan else ""
-            checks = script_store.load_latest_checks(project_id)
-            verification = script_store.load_latest_verification(project_id)
-            review = ScriptReviewDecision(
-                project_id=project_id,
-                decision="accepted" if decision == "accept" else "sent_back",
+            apply_script_review_decision(
+                workspace=workspace,
+                script_store=script_store,
+                project=project,
+                decision=decision,
                 reviewer=request.state.account.label,
-                reason=clean_reason,
-                plan_hash=plan_hash,
-                checks_verdict=checks.verdict,
-                verification_verdict=verification.verdict,
-                unsupported_claim_ratio=verification.unsupported_claim_ratio,
-                quality_overall=(
-                    verification.quality.overall if verification.quality is not None else None
-                ),
+                reason=reason,
+                builder=builder,
+                require_preflight=lambda: preflight.require("script"),
+                on_send_back=lambda: background_tasks.add_task(execute, project_id),
             )
-            script_store.save_review_decision(review)
-            emit_review_decision(
-                disposition=review.decision,
-                subject_type="script",
-                subject_id=str(project_id),
-                reviewer=review.reviewer,
-                reason_code=clean_reason[:120],
-                regenerated_stage="script" if decision == "send_back" else None,
-            )
-            manifest = script_store.load_manifest(project_id)
-            if decision == "accept":
-                transition(project, ProjectState.SCRIPT_VERIFIED)
-                manifest.status = "verified"
-                manifest.last_error = None
-            else:
-                transition(project, ProjectState.SCRIPT_DRAFTING)
-                manifest.last_error = clean_reason
-            workspace.save_project(project)
-            script_store.save_manifest(manifest)
-            if decision == "send_back":
-                builder.send_back(project_id)
-                background_tasks.add_task(execute, project_id)
             emit(
                 ProductEvent.GATE_SCRIPT_REVIEW_REQUESTED,
                 GateScriptReviewRequested(decision=decision),  # type: ignore[arg-type]

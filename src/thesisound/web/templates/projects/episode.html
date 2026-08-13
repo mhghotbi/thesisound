@@ -21,13 +21,9 @@
 {% if can_start and not planning_active and not episode_plan %}
 <section class="coverage-verdict">
   <p class="kicker">گام بعد</p>
-  <h2>منابع آماده‌اند؛ حالا سقف واقعی گفتار را محاسبه می‌کنیم</h2>
-  <p>مدت درخواستی {{ project.brief.target_duration_minutes | fa_num }} دقیقه است. اگر شاهدها برای این مدت کافی نباشند، مقال مدت کوتاه‌تر یا افزودن منبع را پیشنهاد می‌دهد.</p>
+  <h2>منابع آماده‌اند؛ سنجش کفایت به‌زودی شروع می‌شود</h2>
+  <p>مدت درخواستی {{ project.brief.target_duration_minutes | fa_num }} دقیقه است. پس از تأیید منابع، سنجش کفایت و ساخت طرح به‌صورت خودکار در صف قرار می‌گیرد.</p>
 </section>
-<form method="post" action="/projects/{{ project.project_id }}/episode/prepare" class="form-actions section-block">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-  <button class="button button--primary" type="submit">سنجش کفایت منابع و ساخت طرح</button>
-</form>
 {% endif %}
 
 {# Polled live region; see projects/processing.html for how the swap works. #}
