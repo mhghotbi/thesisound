@@ -95,11 +95,12 @@ def register_audio_routes(
         csrf_token: Annotated[str, Form()],
         voice_a: Annotated[str, Form()],
         voice_b: Annotated[str, Form()],
-        pace: Annotated[str, Form()],
-        tone: Annotated[str, Form()],
-        accent: Annotated[str, Form()],
-        speaker_a_notes: Annotated[str, Form()],
-        speaker_b_notes: Annotated[str, Form()],
+        pace: Annotated[str, Form()] = DEFAULT_PACE,
+        tone: Annotated[str, Form()] = DEFAULT_TONE,
+        accent: Annotated[str, Form()] = DEFAULT_ACCENT,
+        # Empty Form() values are "missing" unless defaults exist (notes are optional).
+        speaker_a_notes: Annotated[str, Form()] = "",
+        speaker_b_notes: Annotated[str, Form()] = "",
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect

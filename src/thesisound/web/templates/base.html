@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="fa" dir="rtl" data-theme="{{ ui_theme or 'olive' }}" data-mode="{{ ui_mode or 'simple' }}">
+<html lang="fa" dir="rtl" data-theme="{{ ui_theme or 'cobalt' }}" data-mode="{{ ui_mode or 'simple' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#5a6140">
+  <meta name="theme-color" content="#1d4268">
   <meta name="csrf-token" content="{{ csrf_token }}">
   <title>{% block title %}مقال{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', path='/favicon.ico') }}" sizes="any">
@@ -17,10 +17,10 @@
       try {
         const theme = localStorage.getItem("maqaal-theme") || localStorage.getItem("thesisound-theme");
         const mode = localStorage.getItem("maqaal-mode") || localStorage.getItem("thesisound-mode");
-        document.documentElement.dataset.theme = themes.has(theme) ? theme : "{{ ui_theme or 'olive' }}";
+        document.documentElement.dataset.theme = themes.has(theme) ? theme : "{{ ui_theme or 'cobalt' }}";
         document.documentElement.dataset.mode = modes.has(mode) ? mode : "{{ ui_mode or 'simple' }}";
       } catch (_) {
-        document.documentElement.dataset.theme = "{{ ui_theme or 'olive' }}";
+        document.documentElement.dataset.theme = "{{ ui_theme or 'cobalt' }}";
         document.documentElement.dataset.mode = "{{ ui_mode or 'simple' }}";
       }
     })();

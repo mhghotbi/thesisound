@@ -63,7 +63,7 @@ def test_all_templates_compile() -> None:
         environment.get_template(template_name)
 
 
-def test_theme_tokens_are_complete_and_olive_is_default() -> None:
+def test_theme_tokens_are_complete_and_cobalt_is_default() -> None:
     css = (STATIC_ROOT / "app.css").read_text(encoding="utf-8")
     base = (TEMPLATES_ROOT / "base.html").read_text(encoding="utf-8")
 
@@ -80,7 +80,7 @@ def test_theme_tokens_are_complete_and_olive_is_default() -> None:
 
     assert set(blocks) == {"cobalt", "wood", "olive", "slate"}
     assert blocks["cobalt"] == blocks["wood"] == blocks["olive"] == blocks["slate"]
-    assert 'data-theme="{{ ui_theme or \'olive\' }}"' in base
+    assert 'data-theme="{{ ui_theme or \'cobalt\' }}"' in base
     assert 'data-mode="{{ ui_mode or \'simple\' }}"' in base
     assert "workflow.css" not in base
 
@@ -223,7 +223,7 @@ def test_default_theme_mode_preferences_and_overview_route(tmp_path: Path) -> No
     with TestClient(app) as client:
         login = client.get("/login")
         assert login.status_code == 200
-        assert 'data-theme="olive"' in login.text
+        assert 'data-theme="cobalt"' in login.text
         assert 'data-mode="simple"' in login.text
 
         _login(client)
@@ -284,7 +284,7 @@ def test_invalid_preferences_keep_safe_defaults(tmp_path: Path) -> None:
         projects = client.get("/projects")
 
     assert response.status_code == 204
-    assert 'data-theme="olive"' in projects.text
+    assert 'data-theme="cobalt"' in projects.text
     assert 'data-mode="simple"' in projects.text
 
 

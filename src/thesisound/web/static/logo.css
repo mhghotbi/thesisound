@@ -22,11 +22,11 @@
   display: block;
   width: clamp(168px, 22vw, 228px);
   aspect-ratio: 504 / 328;
-  background: url("maghal-logo-full-reverse-olive.webp") center top / 100% auto no-repeat;
+  background: url("maghal-logo-full-reverse-cobalt.webp") center top / 100% auto no-repeat;
 }
 
-html[data-theme="cobalt"] .auth-brand__logo {
-  background-image: url("maghal-logo-full-reverse-cobalt.webp");
+html[data-theme="olive"] .auth-brand__logo {
+  background-image: url("maghal-logo-full-reverse-olive.webp");
 }
 
 html[data-theme="wood"] .auth-brand__logo {

@@ -483,10 +483,10 @@ def create_app(
         *,
         status_code: int = 200,
     ) -> HTMLResponse:
-        theme = request.session.get("ui_theme", "olive")
+        theme = request.session.get("ui_theme", "cobalt")
         mode = request.session.get("ui_mode", "simple")
         if theme not in _VALID_UI_THEMES:
-            theme = "olive"
+            theme = "cobalt"
         if mode not in _VALID_UI_MODES:
             mode = "simple"
         account = _current_account(request)
