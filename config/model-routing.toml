@@ -20,7 +20,9 @@ model_setting = "model_reviewer"
 
 # Okian is available as an OpenAI-compatible provider. Grounded stages must stay
 # on Gemini (Google Search / URL Context). Requires OKIAN_BASE_URL and
-# OKIAN_API_KEY.
+# OKIAN_API_KEY. Ungrounded Gemini failures automatically retry on Okian with
+# the same model ID when those credentials are set; the Okian profiles below
+# remain available for explicit stage routing or THESISOUND_MODEL_ROUTE_OVERRIDES.
 
 [profiles.okian_qwen]
 provider = "okian"
@@ -56,16 +58,18 @@ research_brief = "gemini_fast"
 glossary = "gemini_strong"
 web_source_capture = "gemini_fast"
 
-# Text-only stages run on the two Okian Gemini profiles. The DeepSeek profiles are
-# left defined but unrouted: deepseek-v4-flash is a reasoning model and its thinking
-# length is not stable across identical inputs. Measured on the 9-block / 53k-char
-# document_map call for source 046bbfdb at temperature 0 -- 3,112 / 5,168 / 18,940
-# stream lines across three runs, and one run that spent the whole completion budget
-# reasoning and returned finish_reason=length with zero answer tokens after 547s.
-# gemini-3.5-flash-lite answered the same call in 6.1s with no reasoning tokens.
+# Text-only stages on Gemini. Okian is the automatic failure fallback when
+# credentials are set (same model ID). The Okian Gemini / DeepSeek profiles are
+# left defined but unrouted: deepseek-v4-flash is a reasoning model and its
+# thinking length is not stable across identical inputs. Measured on the
+# 9-block / 53k-char document_map call for source 046bbfdb at temperature 0 --
+# 3,112 / 5,168 / 18,940 stream lines across three runs, and one run that spent
+# the whole completion budget reasoning and returned finish_reason=length with
+# zero answer tokens after 547s. gemini-3.5-flash-lite answered the same call
+# in 6.1s with no reasoning tokens.
 
-document_map = "okian_gemini_fast"
-document_map_merge = "okian_gemini_strong"
+document_map = "gemini_fast"
+document_map_merge = "gemini_strong"
 
 # evidence_extraction requires supporting_excerpt to be copied character-for-
 # character from the source block (excerpt_matching.locate_excerpt gate).
@@ -75,26 +79,25 @@ document_map_merge = "okian_gemini_strong"
 # real blocks from source 2bb3ca40. gemini-3.6-flash matched 6/6 on the same
 # blocks. Costs ~5x the latency per block (~5s vs ~25s measured), paid on
 # every block in the corpus, not just the ones that would have failed.
-evidence_extraction = "okian_gemini_strong"
-evidence_extraction_batch = "okian_gemini_strong"
-claim_reconciliation = "okian_gemini_strong"
-claim_reconciliation_merge = "okian_gemini_strong"
+evidence_extraction = "gemini_strong"
+evidence_extraction_batch = "gemini_strong"
+claim_reconciliation = "gemini_strong"
+claim_reconciliation_merge = "gemini_strong"
 
 # Reviewer of claim_reconciliation (REVIEWER_PAIRS, warn-only). Kept on the other
 # profile so the auditor is not the model that wrote the claims.
 
-coverage_audit = "okian_gemini_fast"
-episode_plan = "okian_gemini_strong"
-persian_script_segment = "okian_gemini_strong"
+coverage_audit = "gemini_fast"
+episode_plan = "gemini_strong"
+persian_script_segment = "gemini_strong"
 
 # Independence from persian_script_segment (audit R6, ModelRouter._require_reviewer_independence)
-# comes from this being a distinct Okian profile, not from THESISOUND_MODEL_REVIEWER -- that
+# comes from this being a distinct Gemini profile, not from THESISOUND_MODEL_REVIEWER -- that
 # setting only takes effect if a profile here uses model_setting = "model_reviewer". If you ever
-# repoint script_verifier at "okian_gemini_strong" (or any profile resolving to the same model as
+# repoint script_verifier at "gemini_strong" (or any profile resolving to the same model as
 # the writer), the router refuses to resolve the route rather than let the writer grade itself.
-# Only two Okian Gemini models are in play, so the enforced pair has to split them: the writer
-# takes the stronger one because the script is the deliverable, and the verifier takes flash-lite.
-# Swap the two if you would rather have the stronger grader than the stronger writer.
+# The writer takes the stronger tier because the script is the deliverable, and the verifier
+# takes fast. Swap the two if you would rather have the stronger grader than the stronger writer.
 
-script_verifier = "okian_gemini_fast"
-script_reviser = "okian_gemini_strong"
+script_verifier = "gemini_fast"
+script_reviser = "gemini_strong"

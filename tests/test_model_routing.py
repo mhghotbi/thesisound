@@ -9,8 +9,24 @@ from thesisound.model_routing import load_model_router
 from thesisound.modeling import ModelConfigurationError
 
 
-def test_checked_in_routing_file_resolves_evidence_extraction_to_okian() -> None:
+def test_checked_in_routing_file_resolves_evidence_extraction_to_gemini() -> None:
     settings = Settings(_env_file=None, model_routing_file=Path("config/model-routing.toml"))
+    route = load_model_router(settings).resolve(
+        stage="evidence_extraction",
+        requested_model=settings.model_fast,
+        model_tier="fast",
+    )
+
+    assert route.provider == "gemini"
+    assert route.profile == "gemini_strong"
+
+
+def test_evidence_extraction_override_resolves_an_okian_profile() -> None:
+    settings = Settings(
+        _env_file=None,
+        model_routing_file=Path("config/model-routing.toml"),
+        model_route_overrides={"evidence_extraction": "okian_gemini_strong"},
+    )
     route = load_model_router(settings).resolve(
         stage="evidence_extraction",
         requested_model=settings.model_fast,
@@ -19,22 +35,6 @@ def test_checked_in_routing_file_resolves_evidence_extraction_to_okian() -> None
 
     assert route.provider == "okian"
     assert route.profile == "okian_gemini_strong"
-
-
-def test_evidence_extraction_override_resolves_the_strong_profile() -> None:
-    settings = Settings(
-        _env_file=None,
-        model_routing_file=Path("config/model-routing.toml"),
-        model_route_overrides={"evidence_extraction": "gemini_strong"},
-    )
-    route = load_model_router(settings).resolve(
-        stage="evidence_extraction",
-        requested_model=settings.model_fast,
-        model_tier="fast",
-    )
-
-    assert route.model == settings.model_strong
-    assert route.profile == "gemini_strong"
 
 
 def test_checked_in_routing_file_resolves_script_and_map_prompt_ids() -> None:
@@ -50,22 +50,22 @@ def test_checked_in_routing_file_resolves_script_and_map_prompt_ids() -> None:
             requested_model=settings.model_fast,
             model_tier="fast",
         ).provider
-        == "okian"
+        == "gemini"
     )
     script_route = router.resolve(
         stage="persian_script_segment",
         requested_model=settings.model_strong,
         model_tier="strong",
     )
-    assert script_route.provider == "okian"
-    assert script_route.profile == "okian_gemini_strong"
+    assert script_route.provider == "gemini"
+    assert script_route.profile == "gemini_strong"
     verifier_route = router.resolve(
         stage="script_verifier",
         requested_model=settings.model_strong,
         model_tier="strong",
     )
-    assert verifier_route.provider == "okian"
-    assert verifier_route.profile == "okian_gemini_fast"
+    assert verifier_route.provider == "gemini"
+    assert verifier_route.profile == "gemini_fast"
     # The enforced pair must stay on two different models, not merely two profiles.
     assert verifier_route.model != script_route.model
     # Observability stages like script_segment:{id} are not route keys; ModelRunner
