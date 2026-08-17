@@ -21,10 +21,8 @@ Do not silently promote claims from agent outputs into the canonical map. Extern
 - `research/decolonial-ai/deep-research/inputs/2026-08-17-batch-02.md`
 - `research/decolonial-ai/deep-research/inputs/2026-08-17-batch-03.md`
 
-Existing working map:
+Canonical field map:
 - `research/decolonial-ai/field-map.md`
-
-The existing `field-map.md` is provisional and must be replaced only after the synthesis and verification stages are complete.
 
 ## Project objective
 
@@ -35,7 +33,7 @@ Build a canonical field map suitable for subsequent Thesisound episode research.
 - Which terms are established in scholarship versus emerging policy language or agent-created synthesis labels?
 - Where is diagnosis strong, and where do implementable institutional/technical alternatives live?
 
-The current goal is field mapping, not episode planning and not a reading list.
+The current goal remains research-axis design from the completed field map, not final episode planning or a production schedule.
 
 ## Quality rules
 
@@ -56,10 +54,10 @@ The current goal is field mapping, not episode planning and not a reading list.
 Status: COMPLETE
 Output: `research/decolonial-ai/synthesis/step-01-source-audit.md`
 Goal: compare the three agent outputs and isolate areas of agreement, disagreement, conflation, and uncertainty.
-Completion criterion: a bounded list of disputes to resolve before source verification.
+Completion criterion: MET.
 
 Key finding:
-The main disagreement is not about whether the phenomena exist. The agents mix different ontological levels: literatures, AI stack layers, mechanisms of power, and responses. Therefore taxonomy cannot be resolved by voting across the three agent outputs.
+The main disagreement was not about whether the phenomena exist. The agents mixed different ontological levels: literatures, AI stack layers, mechanisms of power, and responses. Therefore taxonomy could not be resolved by voting across the three agent outputs.
 
 Main disputes isolated:
 1. taxonomic status of Data/Digital Colonialism
@@ -72,42 +70,20 @@ Main disputes isolated:
 8. four-dimension versus five-dimension model of power
 
 ### Step 2 — Resolve ontology and taxonomy
-Status: COMPLETE — PROVISIONAL PENDING VERIFICATION
+Status: COMPLETE
 Output: `research/decolonial-ai/synthesis/step-02-ontology.md`
 Goal: define a clean ontology before verification and resolve the eight disputes from Step 1 provisionally.
-Method constraint: only stored research inputs + Step 1 audit; no external verification.
 Completion criterion: MET.
 
 Key structural decision:
-Do not use one mixed taxonomy tree. Use five linked views:
+Use five linked views:
 - `L` literatures / intellectual traditions
 - `S` AI stack / empirical sites
 - `P` mechanisms of power
 - `R` responses / alternatives
 - `C` case/geopolitical positions
 
-Provisional literature families:
-1. Political Economy of Digital / AI Capitalism
-2. Critical AI / Critical Data Studies / STS
-3. Infrastructure Studies / Material AI / Political Ecology
-4. Postcolonial / Decolonial Technology Studies & Computing
-5. Dependency / Development / Technological Capability
-6. IPE / Geoeconomics / Security of Technology
-7. Digital / Technological / Data / AI Sovereignty & Strategic Autonomy
-8. Indigenous Data Sovereignty / Community Data Governance
-9. Public / Commons / Industrial Alternative-Building Literatures
-
-Important provisional placements:
-- Data/Digital Colonialism: named second-order interface spanning Political Economy, Critical Data/STS, and Decolonial/Postcolonial technology studies; canonical status to verify.
-- Political Economy and Infrastructure: separate.
-- Dependency/Development/Capability: first-order.
-- Labor: central empirical site + neighboring literature, not a top-level peer field.
-- Language/epistemic domain: empirical site + epistemic mechanism, not a peer field.
-- Military-tech: cross-cutting interface.
-- Standards: explicit stack/governance interface + neighboring literature to verify.
-- Power model: four mechanism families retained provisionally; material/labor/ecological components remain sites/substrates.
-
-Full rationale: `research/decolonial-ai/synthesis/step-02-ontology.md`.
+Provisional placements from Step 2 were later verified/refined in Step 3.
 
 ### Step 3 — Primary-source verification
 Status: COMPLETE
@@ -117,114 +93,136 @@ Completion criterion: MET for field-map-blocking claims.
 
 Verified structural results:
 - L1 Political Economy: established first-order literature.
-- L2 Critical AI/Data/STS: valid composite family, but maturity differs — STS established, Critical Data Studies established, Critical AI Studies emerging.
-- L3 Infrastructure/Material AI: substantive first-order problem family is justified, but the name is composite rather than one bounded discipline.
+- L2 Critical AI/Data/STS: valid composite family; STS established, Critical Data Studies established, Critical AI Studies emerging.
+- L3 Infrastructure/Material AI: substantive first-order problem family justified, but composite rather than one bounded discipline.
 - L4 Postcolonial/Decolonial Technology & Computing: established genealogy from Postcolonial Computing to Decolonial AI.
-- L5 Dependency/Development/Technological Capability: independent historical lineage verified; direct AI-specific application remains emerging.
-- L6 IPE/Geoeconomics/Security: first-order distinction verified, especially through Weaponized Interdependence.
-- L7 Sovereignty/Strategic Autonomy: established but contested family; AI sovereignty and compute sovereignty are emerging/unstable variants.
+- L5 Dependency/Development/Technological Capability: independent historical lineage verified; direct AI application emerging.
+- L6 IPE/Geoeconomics/Security: first-order distinction verified.
+- L7 Sovereignty/Strategic Autonomy: established but contested; AI sovereignty and compute sovereignty emerging/unstable.
 - L8 Indigenous Data Sovereignty: distinct literature and operational governance tradition verified; CARE complements rather than simply opposes FAIR.
-- L9 alternatives: constituent work is real, but this must be labeled a response umbrella, not represented as one coherent discipline.
+- L9 alternatives: constituent work real, but response umbrella rather than coherent discipline.
 
 Verified interface decisions:
-- Data Colonialism and Digital Colonialism are established concept-families/subliteratures, but not parent disciplines. Keep as named second-order interface across L1/L2/L4.
-- `Digital Extractivism` remains adjacent vocabulary rather than an independently verified canon.
-- Standards/private rule-making is a real cross-cutting governance literature/interface; keep S13 and link it to L3/L6/L7 rather than creating L10.
-- Big Tech–military nexus is a real growing subliterature/interface, but cross-cutting placement among L1/L3/L6 + P3 remains best.
+- Data Colonialism and Digital Colonialism: established concept-families/subliteratures; not parent disciplines.
+- Digital Extractivism: adjacent vocabulary, not independently verified canon.
+- Standards/private rule-making: real cross-cutting governance literature/interface.
+- Big Tech–military nexus: real growing subliterature/interface, best kept cross-cutting.
 - Open weights ≠ open source AI ≠ public infrastructure ≠ sovereignty.
 
-Disputed/synthetic terms resolved:
-- `Sovereignty Trap`: real phrase/book framing, but non-canonical as a generic concept; attribution required.
-- `Cloud Empires`: real book framing; attribution required, not taxonomy category.
-- `Polycentric Dependency`: not verified as established term; synthetic/project shorthand only.
-- `Sub-hegemonic Tech Hubs`: not verified as established term; synthetic/project shorthand only.
-- `Grassroots Sovereignty`: not verified as stable field term; use only with attribution/project labeling.
-
 Power-model refinement:
-- No new P5 is required for domestic surveillance/disciplinary power.
-- Refine P3 into:
-  - P3a external/geopolitical coercion
-  - P3b internal administrative/security coercion
-- Link P3b to P4 where classification/legibility/normalization is involved.
-
-Deliberately deferred from Step 3 because they do not block taxonomy:
-- volatile cloud/GPU market shares and capex numbers;
-- exact geography/scale of RLHF and annotation labor;
-- Persian/low-resource tokenizer cost penalties;
-- Gulf-state compute/model-hub claims;
-- comparative public/private compute budgets;
-- technical feasibility of SLMs, mesh, federated learning, RISC-V, or local inference as sovereignty strategies.
-
-Full source trail and rationale: `research/decolonial-ai/synthesis/step-03-verification.md`.
+- P3a external/geopolitical coercion
+- P3b internal administrative/security coercion
+- no separate P5 required
 
 ### Step 4 — Canonical field map
-Status: NEXT — NOT STARTED
-Output target: replace/rewrite `research/decolonial-ai/field-map.md`
-Goal: synthesize verified traditions, mechanisms, layers, relations, debates, and alternatives into one durable map.
-Completion criterion:
-- no mixed ontological levels in top-level taxonomy
-- provenance for anchor claims
-- confidence/status labels for emerging areas
-- clear diagnosis/response distinction
-- incorporation of Step-03 corrections and maturity labels
+Status: COMPLETE
+Outputs:
+- `research/decolonial-ai/field-map.md`
+- `research/decolonial-ai/synthesis/step-04-canonicalization.md`
 
-Required structure for Step 4:
-1. orientation / central research problem
-2. L — literature map, with maturity/status labels
-3. named second-order interfaces (especially Data/Digital Colonialism)
-4. S — AI stack/sites
-5. P — power mechanisms, including P3a/P3b
-6. R — response/alternative families
-7. C — case-position overlay
-8. cross-map relations and major conceptual distinctions
-9. verified debates and cautions
-10. boundaries: what this field map does not yet establish
+Goal: synthesize verified traditions, mechanisms, layers, relations, debates, and alternatives into one durable map.
+Completion criterion: MET.
+
+Canonical structure:
+- orientation and core research problem
+- L literature map with maturity/type labels
+- named second-order interfaces
+- S AI stack/sites
+- P power mechanisms including P3a/P3b
+- R response/alternative families
+- C case-position overlay
+- cross-map relations
+- verified debates/cautions
+- explicit scope limits
+
+Key Step-04 decisions and reasons:
+
+1. **No single-cluster taxonomy.**
+   Reason: mixing literatures, empirical sites, power mechanisms, and alternatives caused the original inconsistency. Canonical map uses `L/S/P/R/C`.
+
+2. **Political Economy remains separate from Infrastructure.**
+   Reason: ownership/rents/accumulation and material-organizational dependency are different causal mechanisms.
+
+3. **Dependency/Capability remains distinct from Sovereignty.**
+   Reason: dependency explains reproduced asymmetry; sovereignty is a response/agency vocabulary. This prevents the map from jumping directly from concentration to “sovereignty.”
+
+4. **Data/Digital Colonialism becomes a named second-order interface.**
+   Reason: the concepts and subliteratures are established, but not parent disciplines equivalent in scope to Political Economy or STS.
+
+5. **Labor and language are central without becoming top-level sibling fields.**
+   Reason: labor is primarily S10 + neighboring literature; linguistic/epistemic inequality is S11 + P4 + linked literatures.
+
+6. **Standards receives stronger cross-cutting representation.**
+   Reason: standards can shape interoperability, defaults, market access, lock-in, and geopolitical influence without ownership.
+
+7. **Military-tech remains cross-cutting.**
+   Reason: the literature is real but distributed across Political Economy, Infrastructure, IPE/Security, and coercive-power analysis.
+
+8. **Four power families retained; coercion split into P3a/P3b.**
+   Reason: labor/materiality are sites/substrates, while ownership, dependency, coercion, and epistemic constitution are mechanisms. Internal coercion must remain visible alongside external coercion.
+
+9. **Response umbrella is explicitly not a discipline.**
+   Reason: Public Compute, Public AI, industrial policy, commons, interoperability, and open ecosystems are real but come from multiple traditions with different maturity levels.
+
+10. **Canonical map records strong distinctions:**
+   - concentration ≠ dependency
+   - dependency ≠ vulnerability
+   - vulnerability ≠ coercibility
+   - access ≠ endogenous capability
+   - open weights ≠ open source ≠ public infrastructure ≠ sovereignty
+   - public ownership ≠ democratic governance
+   - localization ≠ sovereignty
+   - state sovereignty ≠ Indigenous/community self-determination
+   - colonialism ≠ coloniality
+
+Deliberately excluded from canonical claims because they were not necessary for taxonomy and remain case/time-specific:
+- current GPU/cloud market shares and capex figures
+- exact geography/scale of RLHF/annotation labor
+- Persian/low-resource tokenizer penalties
+- Gulf-state AI-hub claims
+- public/private compute-budget comparisons
+- claims that SLMs, mesh, federated learning, RISC-V, or local inference create sovereignty at system level
 
 ### Step 5 — Thesisound research axes
-Status: NOT STARTED
+Status: NEXT — NOT STARTED
 Output target: `research/decolonial-ai/thesisound-research-axes.md`
-Goal: convert canonical field map into a small number of research axes that can later be decomposed into evidence-grounded episodes.
+Goal: convert the canonical field map into a small number of research axes that can later be decomposed into evidence-grounded episodes.
 Constraint: define research axes, not final episode titles or a production schedule.
-Completion criterion: each axis has scope, exclusions, central questions, likely source families, and dependencies on other axes.
+Completion criterion: each axis has:
+- scope
+- exclusions
+- central research questions
+- mapped L/S/P/R/C components
+- likely source families
+- dependency on other axes
+- reason it deserves an independent deep dive
 
 ## Progress log
 
 ### 2026-08-17 — Workflow formalized
 Decision: persist process state in this file and step outputs in separate files.
-Reason: multiple long external-agent inputs and nontrivial taxonomic disputes make chat-memory-based continuation too drift-prone and hard to audit.
+Reason: multiple long external-agent inputs and nontrivial taxonomic disputes made chat-memory-based continuation too drift-prone and hard to audit.
 
 ### 2026-08-17 — Step 1 completed
 See `synthesis/step-01-source-audit.md`.
-Reason for next step: ontology had to be resolved before verification or external research would reinforce inconsistent categories.
+Key result: identified ontological mixing as the main structural problem.
 
 ### 2026-08-17 — Step 2 completed
 See `synthesis/step-02-ontology.md`.
 Decision: use a five-view ontology (`L/S/P/R/C`) rather than a single tree.
-Reason: agent outputs mixed intellectual traditions, empirical sites, power mechanisms, response families, and geopolitical positions. Separating these dimensions resolves most apparent contradictions while keeping substantive differences visible.
-
-Decision reasons recorded in Step 2 include:
-- ownership/accumulation differs causally from infrastructural dependence;
-- dependency/capability must be separated from sovereignty so the map does not jump from concentration directly to policy response;
-- labor/language/standards can be central without being the same ontological type as an intellectual tradition;
-- military-tech is better treated as an interface among political economy, infrastructure, and security/IPE unless verification proves a coherent independent canon;
-- material/labor/ecological components are sites/substrates, not a fifth mechanism of power merely because they are important.
 
 ### 2026-08-17 — Step 3 completed
 See `synthesis/step-03-verification.md`.
+Key result: verified/refined literature status, interfaces, maturity labels, and disputed terminology.
 
-Main outcome: the five-view ontology survives primary-source verification, but the literature map now needs explicit maturity/type labels. In particular:
-- Data/Digital Colonialism is stronger than a speculative agent label but weaker than a parent discipline: established subliterature/interface.
-- Critical AI Studies, Public AI, Public Compute, AI Sovereignty, and Compute Sovereignty are real but emerging.
-- L9 is not a discipline; it is an intentional response umbrella.
-- Standards deserves stronger cross-cutting representation.
-- Military-tech remains cross-cutting rather than top-level.
-- no P5 is needed; internal coercion becomes P3b.
-
-Reason for next step: source verification has now resolved the field-map-blocking taxonomy questions, so the provisional `field-map.md` can be rewritten without relying on agent consensus or unverified labels.
+### 2026-08-17 — Step 4 completed
+See `field-map.md` and `synthesis/step-04-canonicalization.md`.
+Key result: provisional 9-cluster working map replaced by canonical v1 with separate literature, stack, mechanism, response, and case-position views.
+Reason for next step: conceptual structure is now stable enough to derive Thesisound research trajectories without prematurely designing episodes.
 
 ## Current step
 
-STEP 4 — Canonical field map.
+STEP 5 — Thesisound research axes.
 
-Before starting Step 4, read this file and `research/decolonial-ai/synthesis/step-03-verification.md`.
-Do not start Step 5 until the canonical `field-map.md` is saved and this file is updated to mark Step 4 complete.
+Before starting Step 5, read this file and `research/decolonial-ai/field-map.md`.
+Do not design final episode titles or a production schedule in Step 5.
