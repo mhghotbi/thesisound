@@ -39,11 +39,7 @@ The current goal is field mapping, not episode planning and not a reading list.
 
 ## Quality rules
 
-1. Separate four ontological categories:
-   - intellectual traditions / literatures
-   - AI system layers / empirical sites
-   - mechanisms / forms of power
-   - responses / alternatives
+1. Separate intellectual traditions/literatures, AI system layers/empirical sites, mechanisms/forms of power, responses/alternatives, and case/geopolitical positions.
 2. Preserve disagreement instead of averaging agent outputs.
 3. Prefer causal and conceptual precision over a visually neat taxonomy.
 4. Distinguish established terminology from emerging or synthetic terminology.
@@ -76,25 +72,52 @@ Main disputes isolated:
 8. four-dimension versus five-dimension model of power
 
 ### Step 2 — Resolve ontology and taxonomy
-Status: IN PROGRESS
-Output target: `research/decolonial-ai/synthesis/step-02-ontology.md`
-Goal: define a clean ontology before verification. Decide which objects belong to which level and resolve the eight disputes from Step 1 provisionally.
-Method constraint: use only the three stored research inputs and Step 1 audit. Do not use web verification yet.
-Completion criterion:
-- a proposed canonical ontology with explicit levels
-- placement of all major candidate concepts
-- decision log with reasons
-- list of decisions that remain provisional pending Step 3 verification
+Status: COMPLETE — PROVISIONAL PENDING VERIFICATION
+Output: `research/decolonial-ai/synthesis/step-02-ontology.md`
+Goal: define a clean ontology before verification and resolve the eight disputes from Step 1 provisionally.
+Method constraint: only stored research inputs + Step 1 audit; no external verification.
+Completion criterion: MET.
+
+Key structural decision:
+Do not use one mixed taxonomy tree. Use five linked views:
+- `L` literatures / intellectual traditions
+- `S` AI stack / empirical sites
+- `P` mechanisms of power
+- `R` responses / alternatives
+- `C` case/geopolitical positions
+
+Provisional literature families:
+1. Political Economy of Digital / AI Capitalism
+2. Critical AI / Critical Data Studies / STS
+3. Infrastructure Studies / Material AI / Political Ecology
+4. Postcolonial / Decolonial Technology Studies & Computing
+5. Dependency / Development / Technological Capability
+6. IPE / Geoeconomics / Security of Technology
+7. Digital / Technological / Data / AI Sovereignty & Strategic Autonomy
+8. Indigenous Data Sovereignty / Community Data Governance
+9. Public / Commons / Industrial Alternative-Building Literatures
+
+Important provisional placements:
+- Data/Digital Colonialism: named second-order interface spanning Political Economy, Critical Data/STS, and Decolonial/Postcolonial technology studies; canonical status to verify.
+- Political Economy and Infrastructure: separate.
+- Dependency/Development/Capability: first-order.
+- Labor: central empirical site + neighboring literature, not a top-level peer field.
+- Language/epistemic domain: empirical site + epistemic mechanism, not a peer field.
+- Military-tech: cross-cutting interface.
+- Standards: explicit stack/governance interface + neighboring literature to verify.
+- Power model: four mechanism families retained provisionally; material/labor/ecological components remain sites/substrates.
+
+Full rationale: `research/decolonial-ai/synthesis/step-02-ontology.md`.
 
 ### Step 3 — Primary-source verification
-Status: NOT STARTED
+Status: NEXT — NOT STARTED
 Output target: `research/decolonial-ai/synthesis/step-03-verification.md`
-Goal: verify the conceptual anchors, bibliographic details, taxonomic claims, disputed terminology, and a small number of critical empirical claims.
+Goal: verify conceptual anchors, bibliographic details, taxonomic claims, disputed terminology, and selected critical empirical claims.
 Method:
 - prioritize original papers/books, academic publishers, official policy documents, and primary technical/policy sources
-- verify canonicality/status, not just existence
-- verify recent claims separately from historical concepts
-Completion criterion: each canonical node and contested term gets a verification status and source trail.
+- verify canonicality/status, not merely existence
+- verify recent empirical claims separately from historical concepts
+Completion criterion: each canonical node and contested term receives a verification status, rationale, and source trail.
 
 Minimum verification queue:
 - Data Colonialism / Digital Colonialism taxonomic status
@@ -108,37 +131,50 @@ Minimum verification queue:
 - AI sovereignty / compute sovereignty status
 - critiques of colonialism-as-metaphor
 - open weights vs open source vs public infrastructure
-- whether named synthetic terms from agents are established: `Sovereignty Trap`, `Polycentric Dependency`, `Sub-hegemonic Tech Hubs`, `Cloud Empires`, `Grassroots Sovereignty`
+- named synthetic terms from agents: `Sovereignty Trap`, `Polycentric Dependency`, `Sub-hegemonic Tech Hubs`, `Cloud Empires`, `Grassroots Sovereignty`
+- whether domestic surveillance/disciplinary power requires a separate power category
 
 ### Step 4 — Canonical field map
 Status: NOT STARTED
 Output target: replace/rewrite `research/decolonial-ai/field-map.md`
 Goal: synthesize verified traditions, mechanisms, layers, relations, debates, and alternatives into one durable map.
 Completion criterion:
-- no mixed ontological levels in the top-level taxonomy
+- no mixed ontological levels in top-level taxonomy
 - provenance for anchor claims
-- explicit confidence/status labels where the field is emerging
-- clear distinction between diagnosis and response
+- confidence/status labels for emerging areas
+- clear diagnosis/response distinction
 
 ### Step 5 — Thesisound research axes
 Status: NOT STARTED
 Output target: `research/decolonial-ai/thesisound-research-axes.md`
-Goal: convert the canonical field map into a small number of research axes that can later be decomposed into evidence-grounded episodes.
-Constraint: this step defines research axes, not final episode titles or a production schedule.
-Completion criterion: each axis has scope, exclusions, central questions, likely source families, and dependency on other axes.
+Goal: convert canonical field map into a small number of research axes that can later be decomposed into evidence-grounded episodes.
+Constraint: define research axes, not final episode titles or a production schedule.
+Completion criterion: each axis has scope, exclusions, central questions, likely source families, and dependencies on other axes.
 
 ## Progress log
 
 ### 2026-08-17 — Workflow formalized
 Decision: persist process state in this file and step outputs in separate files.
-Reason: the project now has multiple long external-agent inputs and several nontrivial taxonomic disputes. Reliance on conversational memory would create drift and make it difficult to audit why a later map took a particular shape.
+Reason: multiple long external-agent inputs and nontrivial taxonomic disputes make chat-memory-based continuation too drift-prone and hard to audit.
 
 ### 2026-08-17 — Step 1 completed
 See `synthesis/step-01-source-audit.md`.
-Key consequence: Step 2 must solve ontology before any large-scale source verification. Otherwise source research would reinforce an inconsistent taxonomy.
+Reason for next step: ontology had to be resolved before verification or external research would reinforce inconsistent categories.
+
+### 2026-08-17 — Step 2 completed
+See `synthesis/step-02-ontology.md`.
+Decision: use a five-view ontology (`L/S/P/R/C`) rather than a single tree.
+Reason: agent outputs mixed intellectual traditions, empirical sites, power mechanisms, response families, and geopolitical positions. Separating these dimensions resolves most apparent contradictions while keeping substantive differences visible.
+
+Decision reasons recorded in Step 2 include:
+- ownership/accumulation differs causally from infrastructural dependence;
+- dependency/capability must be separated from sovereignty so the map does not jump from concentration directly to policy response;
+- labor/language/standards can be central without being the same ontological type as an intellectual tradition;
+- military-tech is better treated as an interface among political economy, infrastructure, and security/IPE unless Step 3 proves a coherent independent canon;
+- material/labor/ecological components are sites/substrates, not a fifth mechanism of power merely because they are important.
 
 ## Current step
 
-STEP 2 — Resolve ontology and taxonomy.
+STEP 3 — Primary-source verification.
 
-Do not start Step 3 until Step 2 is saved and this file is updated to mark it complete.
+Do not start Step 4 until Step 3 is saved and this file is updated to mark it complete.
