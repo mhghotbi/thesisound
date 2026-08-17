@@ -32,6 +32,7 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`07-junior-guide.md`](01-foundations/07-junior-guide.md) | نقشهٔ کد، ترتیب افزودن feature و قواعدی که زیاد نقض می‌شوند |
 | [`08-security-privacy-copyright.md`](01-foundations/08-security-privacy-copyright.md) | کلاس‌های داده، حق نشر، SSRF، prompt injection |
 | [`09-open-questions.md`](01-foundations/09-open-questions.md) | تصمیم‌های باز OQ-001…OQ-010 (سند زنده) |
+| [`10-personal-research-companion-development-plan.md`](01-foundations/10-personal-research-companion-development-plan.md) | برنامهٔ گام‌به‌گام تبدیل Thesisound به همراه پژوهشی صوتی شخصی و تجمعی |
 
 ## `02-pipeline/` — خط لولهٔ شواهد و تولید محتوا
 
