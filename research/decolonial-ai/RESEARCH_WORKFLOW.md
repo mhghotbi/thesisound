@@ -110,32 +110,55 @@ Important provisional placements:
 Full rationale: `research/decolonial-ai/synthesis/step-02-ontology.md`.
 
 ### Step 3 — Primary-source verification
-Status: NEXT — NOT STARTED
-Output target: `research/decolonial-ai/synthesis/step-03-verification.md`
-Goal: verify conceptual anchors, bibliographic details, taxonomic claims, disputed terminology, and selected critical empirical claims.
-Method:
-- prioritize original papers/books, academic publishers, official policy documents, and primary technical/policy sources
-- verify canonicality/status, not merely existence
-- verify recent empirical claims separately from historical concepts
-Completion criterion: each canonical node and contested term receives a verification status, rationale, and source trail.
+Status: COMPLETE
+Output: `research/decolonial-ai/synthesis/step-03-verification.md`
+Goal: verify conceptual anchors, bibliographic details, taxonomic claims, disputed terminology, and selected critical response/empirical claims.
+Completion criterion: MET for field-map-blocking claims.
 
-Minimum verification queue:
-- Data Colonialism / Digital Colonialism taxonomic status
-- Political Economy vs Infrastructure distinction
-- technological dependency / capability literature as an independent lineage
-- Postcolonial Computing / Decolonial AI genealogy
-- Standards/private rule-making literature relevance
-- military-tech / national-security nexus status
-- Indigenous Data Sovereignty and CARE
-- Public Compute / Public AI canonicality and maturity
-- AI sovereignty / compute sovereignty status
-- critiques of colonialism-as-metaphor
-- open weights vs open source vs public infrastructure
-- named synthetic terms from agents: `Sovereignty Trap`, `Polycentric Dependency`, `Sub-hegemonic Tech Hubs`, `Cloud Empires`, `Grassroots Sovereignty`
-- whether domestic surveillance/disciplinary power requires a separate power category
+Verified structural results:
+- L1 Political Economy: established first-order literature.
+- L2 Critical AI/Data/STS: valid composite family, but maturity differs — STS established, Critical Data Studies established, Critical AI Studies emerging.
+- L3 Infrastructure/Material AI: substantive first-order problem family is justified, but the name is composite rather than one bounded discipline.
+- L4 Postcolonial/Decolonial Technology & Computing: established genealogy from Postcolonial Computing to Decolonial AI.
+- L5 Dependency/Development/Technological Capability: independent historical lineage verified; direct AI-specific application remains emerging.
+- L6 IPE/Geoeconomics/Security: first-order distinction verified, especially through Weaponized Interdependence.
+- L7 Sovereignty/Strategic Autonomy: established but contested family; AI sovereignty and compute sovereignty are emerging/unstable variants.
+- L8 Indigenous Data Sovereignty: distinct literature and operational governance tradition verified; CARE complements rather than simply opposes FAIR.
+- L9 alternatives: constituent work is real, but this must be labeled a response umbrella, not represented as one coherent discipline.
+
+Verified interface decisions:
+- Data Colonialism and Digital Colonialism are established concept-families/subliteratures, but not parent disciplines. Keep as named second-order interface across L1/L2/L4.
+- `Digital Extractivism` remains adjacent vocabulary rather than an independently verified canon.
+- Standards/private rule-making is a real cross-cutting governance literature/interface; keep S13 and link it to L3/L6/L7 rather than creating L10.
+- Big Tech–military nexus is a real growing subliterature/interface, but cross-cutting placement among L1/L3/L6 + P3 remains best.
+- Open weights ≠ open source AI ≠ public infrastructure ≠ sovereignty.
+
+Disputed/synthetic terms resolved:
+- `Sovereignty Trap`: real phrase/book framing, but non-canonical as a generic concept; attribution required.
+- `Cloud Empires`: real book framing; attribution required, not taxonomy category.
+- `Polycentric Dependency`: not verified as established term; synthetic/project shorthand only.
+- `Sub-hegemonic Tech Hubs`: not verified as established term; synthetic/project shorthand only.
+- `Grassroots Sovereignty`: not verified as stable field term; use only with attribution/project labeling.
+
+Power-model refinement:
+- No new P5 is required for domestic surveillance/disciplinary power.
+- Refine P3 into:
+  - P3a external/geopolitical coercion
+  - P3b internal administrative/security coercion
+- Link P3b to P4 where classification/legibility/normalization is involved.
+
+Deliberately deferred from Step 3 because they do not block taxonomy:
+- volatile cloud/GPU market shares and capex numbers;
+- exact geography/scale of RLHF and annotation labor;
+- Persian/low-resource tokenizer cost penalties;
+- Gulf-state compute/model-hub claims;
+- comparative public/private compute budgets;
+- technical feasibility of SLMs, mesh, federated learning, RISC-V, or local inference as sovereignty strategies.
+
+Full source trail and rationale: `research/decolonial-ai/synthesis/step-03-verification.md`.
 
 ### Step 4 — Canonical field map
-Status: NOT STARTED
+Status: NEXT — NOT STARTED
 Output target: replace/rewrite `research/decolonial-ai/field-map.md`
 Goal: synthesize verified traditions, mechanisms, layers, relations, debates, and alternatives into one durable map.
 Completion criterion:
@@ -143,6 +166,19 @@ Completion criterion:
 - provenance for anchor claims
 - confidence/status labels for emerging areas
 - clear diagnosis/response distinction
+- incorporation of Step-03 corrections and maturity labels
+
+Required structure for Step 4:
+1. orientation / central research problem
+2. L — literature map, with maturity/status labels
+3. named second-order interfaces (especially Data/Digital Colonialism)
+4. S — AI stack/sites
+5. P — power mechanisms, including P3a/P3b
+6. R — response/alternative families
+7. C — case-position overlay
+8. cross-map relations and major conceptual distinctions
+9. verified debates and cautions
+10. boundaries: what this field map does not yet establish
 
 ### Step 5 — Thesisound research axes
 Status: NOT STARTED
@@ -170,11 +206,25 @@ Decision reasons recorded in Step 2 include:
 - ownership/accumulation differs causally from infrastructural dependence;
 - dependency/capability must be separated from sovereignty so the map does not jump from concentration directly to policy response;
 - labor/language/standards can be central without being the same ontological type as an intellectual tradition;
-- military-tech is better treated as an interface among political economy, infrastructure, and security/IPE unless Step 3 proves a coherent independent canon;
+- military-tech is better treated as an interface among political economy, infrastructure, and security/IPE unless verification proves a coherent independent canon;
 - material/labor/ecological components are sites/substrates, not a fifth mechanism of power merely because they are important.
+
+### 2026-08-17 — Step 3 completed
+See `synthesis/step-03-verification.md`.
+
+Main outcome: the five-view ontology survives primary-source verification, but the literature map now needs explicit maturity/type labels. In particular:
+- Data/Digital Colonialism is stronger than a speculative agent label but weaker than a parent discipline: established subliterature/interface.
+- Critical AI Studies, Public AI, Public Compute, AI Sovereignty, and Compute Sovereignty are real but emerging.
+- L9 is not a discipline; it is an intentional response umbrella.
+- Standards deserves stronger cross-cutting representation.
+- Military-tech remains cross-cutting rather than top-level.
+- no P5 is needed; internal coercion becomes P3b.
+
+Reason for next step: source verification has now resolved the field-map-blocking taxonomy questions, so the provisional `field-map.md` can be rewritten without relying on agent consensus or unverified labels.
 
 ## Current step
 
-STEP 3 — Primary-source verification.
+STEP 4 — Canonical field map.
 
-Do not start Step 4 until Step 3 is saved and this file is updated to mark it complete.
+Before starting Step 4, read this file and `research/decolonial-ai/synthesis/step-03-verification.md`.
+Do not start Step 5 until the canonical `field-map.md` is saved and this file is updated to mark Step 4 complete.
