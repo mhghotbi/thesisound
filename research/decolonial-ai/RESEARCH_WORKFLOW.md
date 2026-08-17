@@ -1,19 +1,20 @@
 # Decolonial AI Research Workflow
 
-Status: active
+Status: **PHASE COMPLETE**
 Last updated: 2026-08-17
 Purpose: persistent working memory for the Thesisound research project on AI power, coloniality, dependency, sovereignty, and alternative infrastructure.
 
 ## Operating rule
 
-This file is the source of truth for process and progress. Do not rely on chat memory for project state. Before starting any new step:
+This file is the source of truth for process and progress. Do not rely on chat memory for project state. Before starting any future phase:
 1. Read this file.
-2. Read the output file from the immediately preceding step.
-3. Execute only the current step.
-4. Save the step output as a separate file under `research/decolonial-ai/synthesis/`.
-5. Update this file with status, decisions, rationale, unresolved questions, and the next step.
+2. Read `research/decolonial-ai/field-map.md`.
+3. Read `research/decolonial-ai/thesisound-research-axes.md`.
+4. Define the new phase and completion criteria here before executing it.
+5. Save major intermediate outputs under `research/decolonial-ai/synthesis/` or a clearly named future research subdirectory.
+6. Record decisions, rationale, unresolved questions, and progress here.
 
-Do not silently promote claims from agent outputs into the canonical map. External-agent batches are research inputs, not verified evidence.
+Do not silently promote claims from agent outputs into canonical material. External-agent batches are research inputs, not verified evidence.
 
 ## Persistent source inputs
 
@@ -24,16 +25,20 @@ Do not silently promote claims from agent outputs into the canonical map. Extern
 Canonical field map:
 - `research/decolonial-ai/field-map.md`
 
-## Project objective
+Research-axis map:
+- `research/decolonial-ai/thesisound-research-axes.md`
 
-Build a canonical field map suitable for subsequent Thesisound episode research. The map should answer:
+## Project objective for this completed phase
+
+Build a canonical field map and derive a small number of durable Thesisound research axes. The completed artifacts should answer:
 - What established literatures actually constitute this field?
 - Which concepts are parent traditions, subfields, mechanisms, empirical layers, or proposed responses?
 - How do coloniality, political economy, infrastructure, dependency, coercion, sovereignty, and alternatives relate without being conflated?
 - Which terms are established in scholarship versus emerging policy language or agent-created synthesis labels?
 - Where is diagnosis strong, and where do implementable institutional/technical alternatives live?
+- What broad research trajectories can later be decomposed into evidence-grounded source packs and episodes?
 
-The current goal remains research-axis design from the completed field map, not final episode planning or a production schedule.
+This phase deliberately stops before final episode planning, episode titles, production scheduling, and source-pack construction.
 
 ## Quality rules
 
@@ -184,11 +189,13 @@ Deliberately excluded from canonical claims because they were not necessary for 
 - claims that SLMs, mesh, federated learning, RISC-V, or local inference create sovereignty at system level
 
 ### Step 5 — Thesisound research axes
-Status: NEXT — NOT STARTED
-Output target: `research/decolonial-ai/thesisound-research-axes.md`
+Status: COMPLETE
+Output: `research/decolonial-ai/thesisound-research-axes.md`
 Goal: convert the canonical field map into a small number of research axes that can later be decomposed into evidence-grounded episodes.
 Constraint: define research axes, not final episode titles or a production schedule.
-Completion criterion: each axis has:
+Completion criterion: MET.
+
+Each axis now includes:
 - scope
 - exclusions
 - central research questions
@@ -196,6 +203,47 @@ Completion criterion: each axis has:
 - likely source families
 - dependency on other axes
 - reason it deserves an independent deep dive
+
+Six research axes selected:
+
+1. **From Concentration to Dependency: The AI Capability Stack**
+   - asks how concentration across chips/compute/cloud/software/models/standards becomes structural dependency and capability asymmetry.
+
+2. **Extraction and the Hidden Human Production of AI**
+   - separates data appropriation, hidden labor, resource extraction, and related colonial/extractive framings.
+
+3. **Epistemic Infrastructure: Language, Knowledge, Benchmarks, and Standards**
+   - isolates epistemic/constitutive power and rule-setting from both labor extraction and hardware dependence.
+
+4. **From Dependency to Coercion: Geoeconomics, Sanctions, and the Security–Technology Nexus**
+   - asks when dependencies become weaponizable and how state–corporate–military infrastructures create coercive power.
+
+5. **Sovereignty after Autarky: Control, Self-Determination, and Managed Interdependence**
+   - decomposes sovereignty by object/actor/mode and tests autonomy, resilience, exit capacity, community self-determination, and risks of domestic coercion.
+
+6. **Building Alternatives: Public Infrastructure, Commons, Openness, and Capability**
+   - compares concrete technical/institutional response families by problem addressed, maturity, residual dependency, and governance risk.
+
+Why six rather than the earlier thematic clusters:
+- concentration/dependency must remain distinct from active coercion;
+- data/labor extraction must remain distinct from epistemic/language/standards power;
+- dependency diagnosis must remain distinct from sovereignty vocabulary;
+- sovereignty concepts must remain distinct from implementation alternatives;
+- state sovereignty must remain analytically distinct from community/Indigenous self-determination.
+
+Research dependency graph:
+- Axis 1 is foundational for Axes 4, 5, and 6.
+- Axes 2 and 3 can run in parallel and broaden the field beyond infrastructure.
+- Axis 4 supplies the coercive threat model for Axis 5.
+- Axis 5 supplies evaluation criteria for Axis 6.
+- Axis 6 is the synthesis/alternative-building axis and should not be researched as technology solutionism detached from the diagnostic axes.
+
+Recommended **research** sequence, explicitly not episode/production order:
+1. Axis 1
+2. Axes 2 and 3 in parallel
+3. Axis 4
+4. Axis 5
+5. Axis 6
 
 ## Progress log
 
@@ -218,11 +266,14 @@ Key result: verified/refined literature status, interfaces, maturity labels, and
 ### 2026-08-17 — Step 4 completed
 See `field-map.md` and `synthesis/step-04-canonicalization.md`.
 Key result: provisional 9-cluster working map replaced by canonical v1 with separate literature, stack, mechanism, response, and case-position views.
-Reason for next step: conceptual structure is now stable enough to derive Thesisound research trajectories without prematurely designing episodes.
 
-## Current step
+### 2026-08-17 — Step 5 completed
+See `thesisound-research-axes.md`.
+Key result: canonical field map decomposed into six problem-oriented research trajectories without creating episode titles or production plans.
+Reason for six-axis structure: it preserves the field map's causal distinctions while creating units large enough for independent deep research and later small enough to decompose into source-backed Thesisound work.
 
-STEP 5 — Thesisound research axes.
+## Current state
 
-Before starting Step 5, read this file and `research/decolonial-ai/field-map.md`.
-Do not design final episode titles or a production schedule in Step 5.
+**THIS PHASE IS COMPLETE.**
+
+No next research/production phase is implicitly authorized by this workflow. Before continuing into source-pack construction, country case studies, episode architecture, or production planning, define that next phase explicitly in this file so the same audit/progress discipline is preserved.
