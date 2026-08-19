@@ -78,11 +78,12 @@ class DocumentMapperService:
         blocks: list[SourceDocumentBlock],
         model: str,
         prompt_version: str | None = None,
+        partitions: list[list[SourceDocumentBlock]] | None = None,
     ) -> tuple[DocumentMap, ModelRunRecord | None]:
         if not blocks:
             raise ValueError("Cannot map a document without semantic blocks.")
 
-        partitions = _partition_blocks(blocks, self.maximum_input_characters)
+        partitions = _resolve_partitions(blocks, self.maximum_input_characters, partitions)
         if len(partitions) == 1:
             draft, run = self._map_partition(
                 project_id=project_id,
@@ -355,6 +356,34 @@ class DocumentMapperService:
         if self.part_cache is None:
             return
         self.part_cache.save(partition_block_key(partition), partition, draft)
+
+
+def _resolve_partitions(
+    blocks: list[SourceDocumentBlock],
+    maximum_characters: int,
+    given_partitions: list[list[SourceDocumentBlock]] | None,
+) -> list[list[SourceDocumentBlock]]:
+    """Chapter partitions (Pass 1) or the default size-based split.
+
+    A chapter is itself sub-partitioned by the existing size logic if it alone
+    exceeds ``maximum_characters`` -- ``_partition_blocks`` already does exactly
+    that and returns the chapter untouched as a single partition when it fits,
+    so reusing it per chapter needs no new splitting logic.
+    """
+
+    if given_partitions is None:
+        return _partition_blocks(blocks, maximum_characters)
+
+    resolved = [
+        sub_partition
+        for chapter_blocks in given_partitions
+        for sub_partition in _partition_blocks(chapter_blocks, maximum_characters)
+    ]
+    flattened_ids = [block.block_id for part in resolved for block in part]
+    expected_ids = [block.block_id for block in blocks]
+    if flattened_ids != expected_ids:
+        raise AssertionError("Chapter partitions changed block order or coverage.")
+    return resolved
 
 
 def _partition_blocks(
