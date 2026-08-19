@@ -85,3 +85,63 @@ def test_consolidate_missing_placeholder_raises() -> None:
     message = str(exc_info.value)
     assert "target_count" in message
     assert "cells" in message
+
+
+def test_concept_edges_1_0_0_renders_intra_and_cross_chapter() -> None:
+    loader = PromptLoader()
+    contract = loader.load_contract("concept_edges")
+    assert contract.version == "1.0.0"
+    assert contract.model_tier == "fast"
+    assert contract.output_model == "ConceptEdgesDraft"
+    assert contract.max_attempts == 2
+
+    intra = loader.load_bundle(
+        "concept_edges",
+        {
+            "scope": "chapter 0: فصل یکم",
+            "cells": [
+                {
+                    "cell_key": "ch00-c001",
+                    "label_fa": "تمایز کنش و ساخت",
+                    "kind": "distinction",
+                    "tier": 1,
+                    "chapter_index": 0,
+                    "section_titles": ["کنش"],
+                }
+            ],
+            "edge_cap": 6,
+            "return_instruction": "Return the edges between these cells.",
+        },
+    )
+    assert "<SCOPE>" in intra.user_prompt
+    assert "chapter 0: فصل یکم" in intra.user_prompt
+    assert "ch00-c001" in intra.user_prompt
+    assert "Return the edges between these cells." in intra.user_prompt
+    assert "{{" not in intra.system_prompt + intra.user_prompt
+    assert "No cycles among prerequisite" in intra.system_prompt
+    assert "Do not fill the graph" in intra.system_prompt
+
+    cross = loader.load_bundle(
+        "concept_edges",
+        {
+            "scope": "chapters 0 and 1",
+            "cells": [{"cell_key": "ch00-c001"}, {"cell_key": "ch01-c001"}],
+            "edge_cap": 10,
+            "return_instruction": (
+                "Return only edges that cross the two chapters; edges inside one "
+                "chapter are already recorded. Usually there are few (2–10). "
+                "Prefer quality over quantity."
+            ),
+        },
+    )
+    assert "chapters 0 and 1" in cross.user_prompt
+    assert "Return only edges that cross the two chapters" in cross.user_prompt
+
+
+def test_edges_missing_placeholder_raises() -> None:
+    with pytest.raises(PromptRenderError, match="missing prompt variables") as exc_info:
+        PromptLoader().load_bundle("concept_edges", {"scope": "chapter 0: x"})
+    message = str(exc_info.value)
+    assert "cells" in message
+    assert "edge_cap" in message
+    assert "return_instruction" in message

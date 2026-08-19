@@ -59,6 +59,8 @@ _STAGE_RETRY_POLICIES: dict[str, StageRetryPolicy] = {
     "concept_cells": StageRetryPolicy(max_contract_repairs=2),
     # Contract max_attempts is 2: one repair, then a strict second attempt.
     "concept_cells_consolidate": StageRetryPolicy(max_contract_repairs=1),
+    # Attempt 1 errors on a cycle; the final attempt drops the weakest cycle edge.
+    "concept_edges": StageRetryPolicy(max_contract_repairs=1),
     "claim_reconciliation": StageRetryPolicy(max_contract_repairs=1),
     "claim_reconciliation_merge": StageRetryPolicy(max_contract_repairs=1),
     "coverage_audit": StageRetryPolicy(max_contract_repairs=1),

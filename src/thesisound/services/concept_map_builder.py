@@ -1,9 +1,12 @@
-"""Concept-map pipeline: Pass 0 (chapters), Pass 2/2.5 (cells), Pass 3 (consolidate).
+"""Concept-map pipeline: Pass 0 (chapters), Pass 2–5 (cells, edges, stats).
 
 Pass 0 (`detect_chapters`) is deterministic. Pass 2 calls `concept_cells/1.0.0`
 through `ModelRunner` with `_validate_cells_draft`; Pass 2.5 (`normalise_cells`)
 is pure. Pass 3 calls `concept_cells_consolidate/1.0.0` only when a chapter's
 cell count exceeds its budget; applying keep/merge/remove is deterministic.
+Pass 4 calls `concept_edges/1.0.0` per chapter and per chapter pair within
+window 2; `_validate_edges` repairs cycles on the last attempt. Pass 4.5
+(`promote_tiers`) and Pass 5 (`compute_statistics`) are pure.
 Orchestration that loops chapters arrives in a later step.
 """
 
@@ -20,13 +23,20 @@ from uuid import UUID
 from thesisound.concepts import (
     ConceptCell,
     ConceptCellDraft,
+    ConceptCellTier,
     ConceptCellsConsolidateDraft,
     ConceptCellsDraft,
+    ConceptEdge,
+    ConceptEdgeDraft,
+    ConceptEdgesDraft,
+    ConceptMapStatistics,
     ConsolidateActionDraft,
     DetectedFrom,
     DetectionAgreement,
     SourceChapter,
+    SourceConceptMap,
     cell_label_jaccard,
+    cell_label_tokens,
     is_banned_or_smell_label,
     normalise_cell_label,
 )
@@ -239,6 +249,8 @@ _PROMPT_NAME = "concept_cells"
 _PROMPT_VERSION = "1.0.0"
 _CONSOLIDATE_PROMPT_NAME = "concept_cells_consolidate"
 _CONSOLIDATE_PROMPT_VERSION = "1.0.0"
+_EDGES_PROMPT_NAME = "concept_edges"
+_EDGES_PROMPT_VERSION = "1.0.0"
 _MODE = "extraction"
 _MIN_CHAPTER_BUDGET = 6
 _MAX_CHAPTER_BUDGET = 40
@@ -251,6 +263,34 @@ _TIER1_SHARE_MAX = 0.45
 _TIER3_SHARE_MIN = 0.10
 _SECTIONS_EXEMPT_FROM_COVERAGE = frozenset({"front_matter", "transition"})
 _NEEDS_REVIEW_PREFIX = "needs_review: "
+_EDGE_TYPES = frozenset(
+    {
+        "prerequisite",
+        "depends_on",
+        "related",
+        "extends",
+        "contrasts",
+        "objects_to",
+        "responds_to",
+        "instance_of",
+    }
+)
+_CYCLE_EDGE_TYPES = frozenset({"prerequisite", "depends_on", "extends"})
+_INTRA_EDGE_CAP_PER_CELL = 2
+_INTRA_EDGE_CAP_MAX = 60
+_DEFAULT_CROSS_CHAPTER_CAP = 10
+_CROSS_CHAPTER_WINDOW = 2
+_PREREQ_OUTDEGREE_TIER2 = 2
+_PREREQ_OUTDEGREE_TIER1 = 4
+_LABEL_BLOCK_OVERLAP_MIN = 0.15
+_CELLS_PER_SECTION_RATIO_MAX = 3.0
+_CELLS_PER_SECTION_RATIO_MIN = 0.5
+_OVERSIZE_CELL_MINUTES = 30.0
+_INTRA_RETURN_INSTRUCTION = "Return the edges between these cells."
+_CROSS_RETURN_INSTRUCTION = (
+    "Return only edges that cross the two chapters; edges inside one chapter "
+    "are already recorded. Usually there are few (2–10). Prefer quality over quantity."
+)
 
 
 @dataclass(frozen=True)
@@ -280,6 +320,20 @@ class ConsolidateChapterResult:
     skipped: bool
     warnings: tuple[str, ...]
     record: ModelRunRecord | None
+
+
+@dataclass(frozen=True)
+class ChapterEdgesResult:
+    """Pass 4 output: validated edges for one chapter or one chapter pair."""
+
+    edges: tuple[ConceptEdge, ...]
+    warnings: tuple[str, ...]
+    record: ModelRunRecord | None
+    skipped: bool = False
+
+
+class ConceptMapIntegrityError(ValueError):
+    """Pass 5 critical failure: the map cannot be used as a teaching graph."""
 
 
 def chapter_budget(sections: Sequence[DocumentMapSection]) -> int:
@@ -562,6 +616,323 @@ def consolidate_chapter(
         skipped=False,
         warnings=_consolidate_action_warnings(execution.output),
         record=execution.record,
+    )
+
+
+def chapter_edge_cap(cell_count: int) -> int:
+    """Intra-chapter edge cap: min(2 × N_cells, 60)."""
+
+    return min(_INTRA_EDGE_CAP_MAX, _INTRA_EDGE_CAP_PER_CELL * max(0, cell_count))
+
+
+def default_cross_chapter_cap(cell_count_a: int, cell_count_b: int) -> int:
+    """Supplied cap for a chapter pair: usually 2–10, never above 10."""
+
+    _ = cell_count_a, cell_count_b
+    return _DEFAULT_CROSS_CHAPTER_CAP
+
+
+def iter_chapter_pairs_within_window(
+    chapters: Sequence[SourceChapter],
+    *,
+    window: int = _CROSS_CHAPTER_WINDOW,
+) -> list[tuple[SourceChapter, SourceChapter]]:
+    """Consecutive chapter pairs whose index distance is 1..``window`` (always built)."""
+
+    ordered = sorted(chapters, key=lambda chapter: chapter.chapter_index)
+    pairs: list[tuple[SourceChapter, SourceChapter]] = []
+    for index, left in enumerate(ordered):
+        for right in ordered[index + 1 : index + 1 + window]:
+            pairs.append((left, right))
+    return pairs
+
+
+def build_edges_for_chapter(
+    cells: Sequence[ConceptCell],
+    *,
+    model_runner: ModelRunner,
+    project_id: UUID,
+    model: str,
+    chapter_title: str,
+    section_titles: Mapping[str, str] | None = None,
+    prompt_version: str | None = None,
+) -> ChapterEdgesResult:
+    """Pass 4 intra-chapter: always called; skipped only when fewer than two cells."""
+
+    cap = chapter_edge_cap(len(cells))
+    if len(cells) < 2:
+        return ChapterEdgesResult(edges=(), warnings=(), record=None, skipped=True)
+    chapter_index = cells[0].chapter_index
+    return _run_edges_prompt(
+        cells,
+        cap=cap,
+        scope=f"chapter {chapter_index}: {chapter_title}",
+        return_instruction=_INTRA_RETURN_INSTRUCTION,
+        stage=f"concept_edges:ch{chapter_index:02d}",
+        require_cross_chapter=False,
+        model_runner=model_runner,
+        project_id=project_id,
+        model=model,
+        section_titles=section_titles,
+        prompt_version=prompt_version,
+    )
+
+
+def build_cross_chapter_edges(
+    cells_a: Sequence[ConceptCell],
+    cells_b: Sequence[ConceptCell],
+    cap: int,
+    *,
+    model_runner: ModelRunner,
+    project_id: UUID,
+    model: str,
+    chapter_a_index: int | None = None,
+    chapter_b_index: int | None = None,
+    section_titles: Mapping[str, str] | None = None,
+    prompt_version: str | None = None,
+) -> ChapterEdgesResult:
+    """Pass 4 cross-chapter for one pair inside window 2. Always invoked by the builder."""
+
+    if not cells_a or not cells_b:
+        return ChapterEdgesResult(edges=(), warnings=(), record=None, skipped=True)
+    index_a = chapter_a_index if chapter_a_index is not None else cells_a[0].chapter_index
+    index_b = chapter_b_index if chapter_b_index is not None else cells_b[0].chapter_index
+    cells = [*cells_a, *cells_b]
+    return _run_edges_prompt(
+        cells,
+        cap=max(0, cap),
+        scope=f"chapters {index_a} and {index_b}",
+        return_instruction=_CROSS_RETURN_INSTRUCTION,
+        stage=f"concept_edges:ch{index_a:02d}-ch{index_b:02d}",
+        require_cross_chapter=True,
+        model_runner=model_runner,
+        project_id=project_id,
+        model=model,
+        section_titles=section_titles,
+        prompt_version=prompt_version,
+    )
+
+
+def _run_edges_prompt(
+    cells: Sequence[ConceptCell],
+    *,
+    cap: int,
+    scope: str,
+    return_instruction: str,
+    stage: str,
+    require_cross_chapter: bool,
+    model_runner: ModelRunner,
+    project_id: UUID,
+    model: str,
+    section_titles: Mapping[str, str] | None,
+    prompt_version: str | None,
+) -> ChapterEdgesResult:
+    titles = dict(section_titles or {})
+    known_keys = {cell.cell_key for cell in cells}
+    chapter_by_key = {cell.cell_key: cell.chapter_index for cell in cells}
+    attempt = {"n": 0}
+    max_attempts = _edges_max_attempts(model_runner, prompt_version)
+
+    def validate(draft: ConceptEdgesDraft) -> None:
+        attempt["n"] += 1
+        _validate_edges(
+            draft,
+            known_keys=known_keys,
+            cap=cap,
+            attempt=attempt["n"],
+            max_attempts=max_attempts,
+            chapter_by_key=chapter_by_key,
+            require_cross_chapter=require_cross_chapter,
+        )
+
+    execution = model_runner.run(
+        project_id=project_id,
+        stage=stage,
+        prompt_name=_EDGES_PROMPT_NAME,
+        prompt_version=prompt_version or _EDGES_PROMPT_VERSION,
+        variables={
+            "scope": scope,
+            "cells": [_cell_edge_payload(cell, titles) for cell in cells],
+            "edge_cap": cap,
+            "return_instruction": return_instruction,
+        },
+        output_type=ConceptEdgesDraft,
+        model=model,
+        validator=validate,
+    )
+    edges = _edges_from_draft(execution.output, chapter_by_key)
+    return ChapterEdgesResult(
+        edges=tuple(edges),
+        warnings=tuple(execution.output.warnings),
+        record=execution.record,
+        skipped=False,
+    )
+
+
+def _validate_edges(
+    draft: ConceptEdgesDraft,
+    *,
+    known_keys: set[str],
+    cap: int,
+    attempt: int,
+    max_attempts: int,
+    chapter_by_key: Mapping[str, int] | None = None,
+    require_cross_chapter: bool = False,
+) -> None:
+    """Deterministic Pass 4 gate. Last attempt drops the weakest edge of each cycle."""
+
+    unknown: list[str] = []
+    invalid_types: list[str] = []
+    self_loops: list[str] = []
+    for edge in draft.edges:
+        if edge.source_key not in known_keys:
+            unknown.append(edge.source_key)
+        if edge.target_key not in known_keys:
+            unknown.append(edge.target_key)
+        if edge.type not in _EDGE_TYPES:
+            invalid_types.append(str(edge.type))
+        if edge.source_key == edge.target_key:
+            self_loops.append(edge.source_key)
+        edge.weight = min(1.0, max(0.0, edge.weight))
+        edge.confidence = min(1.0, max(0.0, edge.confidence))
+    if unknown:
+        raise DeterministicValidationError(
+            "Unknown cell keys in edges: " + ", ".join(_unique(unknown))
+        )
+    if invalid_types:
+        raise DeterministicValidationError(
+            "Invalid edge type(s): " + ", ".join(_unique(invalid_types))
+        )
+    if self_loops:
+        raise DeterministicValidationError(
+            "Self-loop edges are not allowed: " + ", ".join(_unique(self_loops))
+        )
+
+    if require_cross_chapter and chapter_by_key is not None:
+        kept_cross: list[ConceptEdgeDraft] = []
+        dropped_intra = 0
+        for edge in draft.edges:
+            if chapter_by_key.get(edge.source_key) != chapter_by_key.get(edge.target_key):
+                kept_cross.append(edge)
+            else:
+                dropped_intra += 1
+        if dropped_intra:
+            draft.warnings.append(
+                f"Dropped {dropped_intra} intra-chapter edge(s) from a cross-chapter call."
+            )
+        draft.edges[:] = kept_cross
+
+    _dedup_edges(draft)
+
+    last_attempt = attempt >= max_attempts
+    while True:
+        cycle = _find_cycle_edge_indices(draft.edges)
+        if cycle is None:
+            break
+        path = _cycle_path(draft.edges, cycle)
+        if not last_attempt:
+            raise DeterministicValidationError(
+                "Cycle among prerequisite/depends_on/extends on attempt "
+                f"{attempt}: {path}. Remove or reverse one of those edges."
+            )
+        drop_at = _lowest_weight_index(draft.edges, cycle)
+        dropped = draft.edges.pop(drop_at)
+        draft.warnings.append(
+            f"Dropped {dropped.source_key}→{dropped.target_key} ({dropped.type}, "
+            f"weight={dropped.weight}) to break cycle {path}."
+        )
+
+    if len(draft.edges) > cap:
+        ranked = sorted(
+            range(len(draft.edges)),
+            key=lambda index: (
+                -draft.edges[index].weight,
+                -draft.edges[index].confidence,
+                draft.edges[index].source_key,
+                draft.edges[index].target_key,
+                draft.edges[index].type,
+            ),
+        )
+        keep = set(ranked[:cap])
+        dropped_count = len(draft.edges) - cap
+        draft.edges[:] = [edge for index, edge in enumerate(draft.edges) if index in keep]
+        draft.warnings.append(
+            f"Dropped {dropped_count} edge(s) to meet cap {cap} (kept highest weight)."
+        )
+
+
+def promote_tiers(
+    cells: Sequence[ConceptCell],
+    edges: Sequence[ConceptEdge],
+    sections: Sequence[DocumentMapSection],
+    *,
+    tier_overrides: Mapping[str, ConceptCellTier] | None = None,
+) -> list[ConceptCell]:
+    """Pass 4.5: raise cells that others depend on, or that sit in a required section."""
+
+    required_sections = {
+        section.section_id
+        for section in sections
+        if section.required_for_global_understanding
+    }
+    prereq_out: dict[str, int] = {}
+    for edge in edges:
+        if edge.type == "prerequisite":
+            prereq_out[edge.source_key] = prereq_out.get(edge.source_key, 0) + 1
+    overrides = dict(tier_overrides or {})
+    promoted: list[ConceptCell] = []
+    for cell in cells:
+        out_degree = prereq_out.get(cell.cell_key, 0)
+        required = any(section_id in required_sections for section_id in cell.section_ids)
+        new_tier = _promoted_tier(cell.tier, required=required, prereq_out=out_degree)
+        auto_promoted = new_tier < cell.tier
+        if cell.cell_key in overrides:
+            new_tier = overrides[cell.cell_key]
+            auto_promoted = False
+        if new_tier == cell.tier and auto_promoted == cell.tier_promoted:
+            promoted.append(cell)
+            continue
+        promoted.append(
+            cell.model_copy(update={"tier": new_tier, "tier_promoted": auto_promoted})
+        )
+    return promoted
+
+
+def compute_statistics(
+    concept_map: SourceConceptMap,
+    *,
+    sections: Sequence[DocumentMapSection] = (),
+    block_texts: Mapping[str, str] | None = None,
+) -> ConceptMapStatistics:
+    """Pass 5: counts, orphans, needs_review. Critical gaps raise ConceptMapIntegrityError."""
+
+    cells = list(concept_map.cells)
+    edges = list(concept_map.edges)
+    chapters = list(concept_map.chapters)
+    _reject_map_integrity(cells, edges, chapters, sections)
+
+    texts = dict(block_texts or {})
+    incident = {edge.source_key for edge in edges} | {edge.target_key for edge in edges}
+    orphans = [cell.cell_key for cell in cells if cell.cell_key not in incident]
+    cells_per_tier = {1: 0, 2: 0, 3: 0}
+    cells_per_chapter = {chapter.chapter_index: 0 for chapter in chapters}
+    for cell in cells:
+        cells_per_tier[cell.tier] = cells_per_tier.get(cell.tier, 0) + 1
+        cells_per_chapter[cell.chapter_index] = cells_per_chapter.get(cell.chapter_index, 0) + 1
+    edges_per_type = {edge_type: 0 for edge_type in sorted(_EDGE_TYPES)}
+    for edge in edges:
+        edges_per_type[edge.type] = edges_per_type.get(edge.type, 0) + 1
+    promoted_keys = [cell.cell_key for cell in cells if cell.tier_promoted]
+    needs_review = _needs_review_flags(concept_map, sections, texts)
+    return ConceptMapStatistics(
+        cell_count=len(cells),
+        cells_per_tier=cells_per_tier,
+        cells_per_chapter=cells_per_chapter,
+        edges_per_type=edges_per_type,
+        orphan_cell_keys=orphans,
+        cross_chapter_edge_count=sum(1 for edge in edges if edge.is_cross_chapter),
+        promoted_cell_keys=promoted_keys,
+        needs_review=needs_review,
     )
 
 
@@ -976,3 +1347,285 @@ def _tier_distribution_failure(
 
 def _unique(values: Iterable[str]) -> list[str]:
     return list(dict.fromkeys(values))
+
+
+def _edges_max_attempts(model_runner: ModelRunner, prompt_version: str | None) -> int:
+    loader = getattr(model_runner, "prompt_loader", None)
+    if loader is None:
+        return 2
+    version = prompt_version or _EDGES_PROMPT_VERSION
+    return loader.load_contract(_EDGES_PROMPT_NAME, version=version).max_attempts
+
+
+def _cell_edge_payload(cell: ConceptCell, section_titles: Mapping[str, str]) -> dict[str, Any]:
+    """Metadata only: key, labels, kind, tier, chapter, section titles — no block text."""
+
+    return {
+        "cell_key": cell.cell_key,
+        "label_fa": cell.label_fa,
+        "label_source": cell.label_source,
+        "kind": cell.kind,
+        "tier": cell.tier,
+        "chapter_index": cell.chapter_index,
+        "section_titles": [
+            section_titles.get(section_id, section_id) for section_id in cell.section_ids
+        ],
+    }
+
+
+def _edges_from_draft(
+    draft: ConceptEdgesDraft,
+    chapter_by_key: Mapping[str, int],
+) -> list[ConceptEdge]:
+    converted: list[ConceptEdge] = []
+    for edge in draft.edges:
+        converted.append(
+            ConceptEdge(
+                source_key=edge.source_key,
+                target_key=edge.target_key,
+                type=edge.type,
+                weight=edge.weight,
+                confidence=edge.confidence,
+                rationale_fa=edge.rationale_fa,
+                created_by="ai",
+                is_cross_chapter=chapter_by_key.get(edge.source_key)
+                != chapter_by_key.get(edge.target_key),
+            )
+        )
+    return converted
+
+
+def _dedup_edges(draft: ConceptEdgesDraft) -> None:
+    """Keep the strongest edge for each (source, target, type)."""
+
+    best: dict[tuple[str, str, str], ConceptEdgeDraft] = {}
+    order: list[tuple[str, str, str]] = []
+    for edge in draft.edges:
+        key = (edge.source_key, edge.target_key, edge.type)
+        current = best.get(key)
+        if current is None:
+            best[key] = edge
+            order.append(key)
+            continue
+        if (edge.weight, edge.confidence) > (current.weight, current.confidence):
+            best[key] = edge
+    if len(best) != len(draft.edges):
+        dropped = len(draft.edges) - len(best)
+        draft.edges[:] = [best[key] for key in order]
+        draft.warnings.append(
+            f"Removed {dropped} duplicate edge(s) sharing (source, target, type)."
+        )
+
+
+def _find_cycle_edge_indices(edges: Sequence[ConceptEdgeDraft]) -> list[int] | None:
+    """Return one directed cycle among prerequisite/depends_on/extends, as edge indices."""
+
+    adjacency: dict[str, list[tuple[str, int]]] = {}
+    nodes: set[str] = set()
+    for index, edge in enumerate(edges):
+        if edge.type not in _CYCLE_EDGE_TYPES:
+            continue
+        adjacency.setdefault(edge.source_key, []).append((edge.target_key, index))
+        nodes.add(edge.source_key)
+        nodes.add(edge.target_key)
+
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color: dict[str, int] = {}
+    parent_edge: dict[str, tuple[str, int]] = {}
+
+    def dfs(node: str) -> list[int] | None:
+        color[node] = GRAY
+        for neighbor, edge_index in adjacency.get(node, []):
+            state = color.get(neighbor, WHITE)
+            if state == WHITE:
+                parent_edge[neighbor] = (node, edge_index)
+                found = dfs(neighbor)
+                if found is not None:
+                    return found
+            elif state == GRAY:
+                cycle = [edge_index]
+                current = node
+                while current != neighbor:
+                    origin, via = parent_edge[current]
+                    cycle.append(via)
+                    current = origin
+                cycle.reverse()
+                return cycle
+        color[node] = BLACK
+        return None
+
+    for node in nodes:
+        if color.get(node, WHITE) == WHITE:
+            found = dfs(node)
+            if found is not None:
+                return found
+    return None
+
+
+def _cycle_path(edges: Sequence[ConceptEdgeDraft], indices: Sequence[int]) -> str:
+    if not indices:
+        return ""
+    keys = [edges[index].source_key for index in indices]
+    keys.append(edges[indices[-1]].target_key)
+    return " → ".join(keys)
+
+
+def _lowest_weight_index(edges: Sequence[ConceptEdgeDraft], indices: Sequence[int]) -> int:
+    return min(
+        indices,
+        key=lambda index: (
+            edges[index].weight,
+            edges[index].confidence,
+            edges[index].source_key,
+            edges[index].target_key,
+            edges[index].type,
+        ),
+    )
+
+
+def _promoted_tier(current: int, *, required: bool, prereq_out: int) -> int:
+    tier = current
+    if required or prereq_out >= _PREREQ_OUTDEGREE_TIER2:
+        tier = min(tier, 2)
+    if prereq_out >= _PREREQ_OUTDEGREE_TIER1:
+        tier = min(tier, 1)
+    return tier
+
+
+def _reject_map_integrity(
+    cells: Sequence[ConceptCell],
+    edges: Sequence[ConceptEdge],
+    chapters: Sequence[SourceChapter],
+    sections: Sequence[DocumentMapSection],
+) -> None:
+    empty_blocks = [cell.cell_key for cell in cells if not cell.block_ids]
+    if empty_blocks:
+        raise ConceptMapIntegrityError(
+            "Cell(s) with no source block: " + ", ".join(empty_blocks)
+        )
+
+    known_blocks = {block_id for chapter in chapters for block_id in chapter.block_ids}
+    unknown_blocks = sorted(
+        {
+            block_id
+            for cell in cells
+            for block_id in cell.block_ids
+            if known_blocks and block_id not in known_blocks
+        }
+    )
+    known_keys = {cell.cell_key for cell in cells}
+    unknown_edge_keys = sorted(
+        {
+            key
+            for edge in edges
+            for key in (edge.source_key, edge.target_key)
+            if key not in known_keys
+        }
+    )
+    unknown_sections: list[str] = []
+    if sections:
+        known_sections = {section.section_id for section in sections}
+        unknown_sections = sorted(
+            {
+                section_id
+                for cell in cells
+                for section_id in cell.section_ids
+                if section_id not in known_sections
+            }
+        )
+    unknown_bits = []
+    if unknown_blocks:
+        unknown_bits.append("block_id " + ", ".join(unknown_blocks))
+    if unknown_sections:
+        unknown_bits.append("section_id " + ", ".join(unknown_sections))
+    if unknown_edge_keys:
+        unknown_bits.append("cell_key " + ", ".join(unknown_edge_keys))
+    if unknown_bits:
+        raise ConceptMapIntegrityError("Unknown IDs: " + "; ".join(unknown_bits))
+
+    if not sections:
+        return
+    covered = {section_id for cell in cells for section_id in cell.section_ids}
+    missing = sorted(
+        section.section_id
+        for section in sections
+        if section.function not in _SECTIONS_EXEMPT_FROM_COVERAGE
+        and section.section_id not in covered
+    )
+    if missing:
+        raise ConceptMapIntegrityError(
+            "Section(s) with no cell after consolidation: " + ", ".join(missing)
+        )
+
+
+def _needs_review_flags(
+    concept_map: SourceConceptMap,
+    sections: Sequence[DocumentMapSection],
+    block_texts: Mapping[str, str],
+) -> list[str]:
+    flags: list[str] = []
+    disagreed = [
+        chapter
+        for chapter in concept_map.chapters
+        if chapter.detection_agreement == "disagreed"
+    ]
+    if disagreed:
+        summary = ", ".join(
+            f"{chapter.chapter_index}:{chapter.title}" for chapter in disagreed
+        )
+        flags.append(f"chapter detection disagreed: used TOC as source of truth ({summary})")
+
+    cells_by_chapter: dict[int, list[ConceptCell]] = {}
+    for cell in concept_map.cells:
+        cells_by_chapter.setdefault(cell.chapter_index, []).append(cell)
+
+    for chapter in concept_map.chapters:
+        chapter_cells = cells_by_chapter.get(chapter.chapter_index, [])
+        if len(chapter_cells) >= 2:
+            tiers = {cell.tier for cell in chapter_cells}
+            if len(tiers) == 1:
+                flags.append(
+                    f"single-tier chapter {chapter.chapter_index} (all tier {next(iter(tiers))})"
+                )
+        if sections:
+            chapter_sections = _sections_for_chapter(chapter, sections)
+            countable = [
+                section
+                for section in chapter_sections
+                if section.function not in _SECTIONS_EXEMPT_FROM_COVERAGE
+            ]
+            if countable:
+                ratio = len(chapter_cells) / len(countable)
+                if ratio > _CELLS_PER_SECTION_RATIO_MAX or ratio < _CELLS_PER_SECTION_RATIO_MIN:
+                    flags.append(
+                        f"cells/sections ratio {ratio:.2f} in chapter {chapter.chapter_index} "
+                        f"(cells={len(chapter_cells)}, sections={len(countable)})"
+                    )
+
+    for cell in concept_map.cells:
+        if cell.estimated_minutes >= _OVERSIZE_CELL_MINUTES:
+            flags.append(
+                f"{cell.cell_key} is oversize ({cell.estimated_minutes} min)"
+            )
+        if not cell.label_source or not block_texts:
+            continue
+        text = " ".join(block_texts.get(block_id, "") for block_id in cell.block_ids)
+        if not text.strip():
+            continue
+        overlap = _label_block_overlap(cell.label_source, text)
+        if overlap < _LABEL_BLOCK_OVERLAP_MIN:
+            flags.append(
+                f"{cell.cell_key} label_source {cell.label_source!r} lexical overlap "
+                f"{overlap:.2f} with block text"
+            )
+    return flags
+
+
+def _label_block_overlap(label: str, text: str) -> float:
+    """Share of label tokens that appear in the cell's block text (recall, not Jaccard)."""
+
+    label_tokens = cell_label_tokens(label)
+    if not label_tokens:
+        return 1.0
+    text_tokens = cell_label_tokens(text)
+    return len(label_tokens & text_tokens) / len(label_tokens)

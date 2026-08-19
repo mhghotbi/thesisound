@@ -31,6 +31,7 @@ prompts/script_reviser/1.0.0/ … 1.1.0/ (فعال: 1.1.0)
 prompts/web_source_capture/1.0.0/
 prompts/concept_cells/1.0.0/              (P1 Pass 2; سلول‌های مفهومی یک فصل)
 prompts/concept_cells_consolidate/1.0.0/  (P1 Pass 3; ادغام سلول‌های هم‌پوشان یک فصل)
+prompts/concept_edges/1.0.0/              (P1 Pass 4; یال‌های درون‌فصل و بین‌فصل)
 ```
 
 `prompt_loader` بدون pin بالاترین نسخه را انتخاب می‌کند.
@@ -202,4 +203,4 @@ Persian Script:
 
 ## Planned versions (سند ۱۰، ضمیمهٔ A)
 
-نسخه‌های زیر در برنامه‌اند و هنوز منتشر نشده‌اند؛ متن کامل‌شان در ضمیمهٔ A سند ۱۰ است: `evidence_extraction/2.0.0` و `evidence_extraction_batch/2.0.0` (یک انبارهٔ واحد claim با excerpt)، `claim_reconciliation/1.1.0`، `claim_reconciliation_merge/1.1.0`، `episode_plan/1.3.0`، `glossary/1.1.0`، `document_map/1.1.0`، و promptهای جدید `concept_cells/1.0.0`، `concept_cells_consolidate/1.0.0`، `concept_edges/1.0.0`، `persian_lesson_prose/1.0.0`. `persian_script_segment/1.3.0`، `script_verifier/1.2.0` و `script_reviser/1.1.0` در P0.5 منتشر شدند.
+نسخه‌های زیر در برنامه‌اند و هنوز منتشر نشده‌اند؛ متن کامل‌شان در ضمیمهٔ A سند ۱۰ است: `evidence_extraction/2.0.0` و `evidence_extraction_batch/2.0.0` (یک انبارهٔ واحد claim با excerpt)، `claim_reconciliation/1.1.0`، `claim_reconciliation_merge/1.1.0`، `episode_plan/1.3.0`، `glossary/1.1.0`، `document_map/1.1.0`، و prompt جدید `persian_lesson_prose/1.0.0`. `persian_script_segment/1.3.0`، `script_verifier/1.2.0` و `script_reviser/1.1.0` در P0.5 منتشر شدند؛ `concept_cells/1.0.0`، `concept_cells_consolidate/1.0.0` و `concept_edges/1.0.0` در P1 منتشر شدند.
