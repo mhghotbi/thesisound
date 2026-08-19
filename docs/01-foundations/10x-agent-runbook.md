@@ -39,7 +39,7 @@
 
 | گام | فاز | عنوان | وضعیت |
 |---|---|---|---|
-| 0 | — | آشنایی و baseline | |
+| 0 | — | آشنایی و baseline | انجام‌شده 2026-08-19 |
 | 1 | P0.5 | نویسندهٔ `persian_script_segment/1.3.0` | |
 | 2 | P0.5 | `ClaimRecord` در evidence pack + verifier 1.2.0 + reviser 1.1.0 | |
 | 3 | P0.5 | چک قطعی `unsupported_specifics` | |
