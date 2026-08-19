@@ -230,6 +230,10 @@ class Settings(BaseSettings):
 
     ui_demo_mode: bool = True
 
+    # Off until P3 (step 18) turns source_coverage analysis on. When off, source
+    # analysis never builds a concept map even if a builder is wired.
+    concept_map_on_analysis_enabled: bool = False
+
     @property
     def gemini_api_keys(self) -> tuple[str, ...]:
         values = _parse_gemini_api_keys(self.gemini_api_keys_value)

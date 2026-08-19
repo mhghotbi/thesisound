@@ -11,15 +11,16 @@ from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
+from thesisound.services.concept_map_builder import ConceptMapBuilder
 from thesisound.services.corpus_building import (
     SETTLED_SOURCE_STATUSES,
     CorpusBuildingService,
     CorpusBuildRunStore,
     CorpusSourceInput,
 )
-from thesisound.services.episode_planning_run import EpisodePlanningRunService
 from thesisound.services.document_map_part_cache import DocumentMapPartCache
 from thesisound.services.document_mapper import DocumentMapperService
+from thesisound.services.episode_planning_run import EpisodePlanningRunService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
@@ -63,6 +64,8 @@ def create_corpus_builder(
                 runner,
                 max_workers=settings.claim_reconciliation_workers,
             ),
+            concept_map_builder=ConceptMapBuilder(runner, workspace_root=workspace.root),
+            concept_map_enabled=settings.concept_map_on_analysis_enabled,
         )
 
     builder = CorpusBuildingService(

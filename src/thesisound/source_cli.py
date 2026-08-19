@@ -16,6 +16,7 @@ from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
+from thesisound.services.concept_map_builder import ConceptMapBuilder
 from thesisound.services.document_map_part_cache import DocumentMapPartCache
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.evidence_extractor import EvidenceExtractorService
@@ -206,6 +207,8 @@ def _model_service(settings: Settings, root: Path) -> SourceAnalysisService:
             runner,
             max_workers=settings.claim_reconciliation_workers,
         ),
+        concept_map_builder=ConceptMapBuilder(runner, workspace_root=root),
+        concept_map_enabled=settings.concept_map_on_analysis_enabled,
     )
 
 

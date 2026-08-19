@@ -8,8 +8,10 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from thesisound.concepts import SourceConceptMap
 from thesisound.domain import DocumentMap, EvidenceItem, Locator
 from thesisound.ingestion import IngestionResult
+from thesisound.ports import ParsedDocument
 from thesisound.services.evidence_artifact_upgrade import (
     CURRENT_EXTRACTION_SCHEMA_VERSION,
     resolve_block_locator,
@@ -108,6 +110,28 @@ class SourceArtifactStore:
             block.block_id: block.locator
             for block in self.load_blocks(project_id, source_id)
         }
+
+    def load_parsed_document(self, project_id: UUID, source_id: UUID) -> ParsedDocument:
+        path = self.source_dir(project_id, source_id) / "parsed-document.json"
+        return ParsedDocument.model_validate_json(path.read_text(encoding="utf-8"))
+
+    def save_concept_map(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        concept_map: SourceConceptMap,
+    ) -> None:
+        self._write_json(
+            self.source_dir(project_id, source_id) / "concept-map.json",
+            concept_map,
+        )
+
+    def load_concept_map(self, project_id: UUID, source_id: UUID) -> SourceConceptMap:
+        return SourceConceptMap.model_validate_json(
+            (self.source_dir(project_id, source_id) / "concept-map.json").read_text(
+                encoding="utf-8"
+            )
+        )
 
     def save_document_map(
         self,

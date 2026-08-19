@@ -7,25 +7,30 @@ cell count exceeds its budget; applying keep/merge/remove is deterministic.
 Pass 4 calls `concept_edges/1.0.0` per chapter and per chapter pair within
 window 2; `_validate_edges` repairs cycles on the last attempt. Pass 4.5
 (`promote_tiers`) and Pass 5 (`compute_statistics`) are pure.
-Orchestration that loops chapters arrives in a later step.
+`ConceptMapBuilder.build` loops chapters with a project checkpoint, shared
+cache, and per-chapter sub-entries.
 """
 
 from __future__ import annotations
 
+import json
 import math
 from bisect import bisect_right
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from statistics import median
 from typing import Any
 from uuid import UUID
 
+from pydantic import BaseModel, Field
+
 from thesisound.concepts import (
     ConceptCell,
     ConceptCellDraft,
-    ConceptCellTier,
     ConceptCellsConsolidateDraft,
     ConceptCellsDraft,
+    ConceptCellTier,
     ConceptEdge,
     ConceptEdgeDraft,
     ConceptEdgesDraft,
@@ -40,9 +45,17 @@ from thesisound.concepts import (
     is_banned_or_smell_label,
     normalise_cell_label,
 )
-from thesisound.domain import DocumentMapSection
+from thesisound.domain import DocumentMap, DocumentMapSection
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.ports import ParsedDocument
+from thesisound.services.concept_map_cache import (
+    CONCEPT_MAP_BUILDER_VERSION,
+    CachedChapterConceptMap,
+    ConceptMapCache,
+    chapter_hash,
+)
+from thesisound.services.document_identity import block_sequence_key
+from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import SourceDocumentBlock
 
@@ -334,6 +347,275 @@ class ChapterEdgesResult:
 
 class ConceptMapIntegrityError(ValueError):
     """Pass 5 critical failure: the map cannot be used as a teaching graph."""
+
+
+class ConceptMapPartial(BaseModel):
+    """Project-local checkpoint written after each finished chapter."""
+
+    source_fingerprint: str
+    builder_version: int = CONCEPT_MAP_BUILDER_VERSION
+    chapters: list[SourceChapter] = Field(default_factory=list)
+    completed_chapter_indexes: list[int] = Field(default_factory=list)
+    cells: list[ConceptCell] = Field(default_factory=list)
+    intra_edges: list[ConceptEdge] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class ConceptMapBuilder:
+    """Run Pass 0–5 with shared cache, per-chapter sub-entries, and resume."""
+
+    def __init__(
+        self,
+        model_runner: ModelRunner,
+        *,
+        workspace_root: Path,
+        cache: ConceptMapCache | None = None,
+    ) -> None:
+        self.model_runner = model_runner
+        self.workspace_root = workspace_root.expanduser().resolve()
+        self.cache = cache or ConceptMapCache(self.workspace_root)
+
+    def build(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        blocks: list[SourceDocumentBlock],
+        document_map: DocumentMap,
+        parsed_document: ParsedDocument,
+        *,
+        model_fast: str,
+    ) -> SourceConceptMap:
+        fingerprint = block_sequence_key(blocks)
+        cached = self.cache.load_source(fingerprint)
+        emit_cache_lookup(
+            cache="shared_concept_map",
+            result="hit" if cached is not None else "miss",
+            project_id=project_id,
+            subject_type="source",
+            subject_id=str(source_id),
+            lookup_key=fingerprint[:16],
+            artifact_hash=fingerprint[:16] if cached is not None else None,
+            avoided_calls=1 if cached is not None else None,
+        )
+        if cached is not None:
+            self._clear_partial(project_id, source_id)
+            return cached
+
+        chapters = detect_chapters(blocks, parsed_document)
+        partial = self._load_matching_partial(project_id, source_id, fingerprint)
+        completed_indexes = set(partial.completed_chapter_indexes) if partial else set()
+        cells = list(partial.cells) if partial else []
+        intra_edges = list(partial.intra_edges) if partial else []
+        warnings = list(partial.warnings) if partial else []
+        if partial is not None:
+            chapters = partial.chapters or chapters
+
+        section_titles = {section.section_id: section.title for section in document_map.sections}
+        for chapter in chapters:
+            if chapter.chapter_index in completed_indexes:
+                continue
+            chapter_cells, chapter_edges, chapter_warnings = self._build_or_load_chapter(
+                project_id=project_id,
+                source_id=source_id,
+                fingerprint=fingerprint,
+                chapter=chapter,
+                blocks=blocks,
+                document_map=document_map,
+                section_titles=section_titles,
+                prior_cells=cells,
+                model_fast=model_fast,
+            )
+            minutes = sum(cell.estimated_minutes for cell in chapter_cells)
+            chapter.estimated_minutes = minutes
+            cells.extend(chapter_cells)
+            intra_edges.extend(chapter_edges)
+            warnings.extend(chapter_warnings)
+            completed_indexes.add(chapter.chapter_index)
+            self._write_partial(
+                project_id,
+                source_id,
+                ConceptMapPartial(
+                    source_fingerprint=fingerprint,
+                    builder_version=CONCEPT_MAP_BUILDER_VERSION,
+                    chapters=chapters,
+                    completed_chapter_indexes=sorted(completed_indexes),
+                    cells=cells,
+                    intra_edges=intra_edges,
+                    warnings=warnings,
+                ),
+            )
+
+        cells_by_chapter: dict[int, list[ConceptCell]] = {}
+        for cell in cells:
+            cells_by_chapter.setdefault(cell.chapter_index, []).append(cell)
+        cross_edges: list[ConceptEdge] = []
+        for left, right in iter_chapter_pairs_within_window(chapters):
+            pair = build_cross_chapter_edges(
+                cells_by_chapter.get(left.chapter_index, ()),
+                cells_by_chapter.get(right.chapter_index, ()),
+                default_cross_chapter_cap(
+                    len(cells_by_chapter.get(left.chapter_index, ())),
+                    len(cells_by_chapter.get(right.chapter_index, ())),
+                ),
+                model_runner=self.model_runner,
+                project_id=project_id,
+                model=model_fast,
+                chapter_a_index=left.chapter_index,
+                chapter_b_index=right.chapter_index,
+                section_titles=section_titles,
+            )
+            cross_edges.extend(pair.edges)
+            warnings.extend(pair.warnings)
+
+        promoted = promote_tiers(cells, [*intra_edges, *cross_edges], document_map.sections)
+        concept_map = SourceConceptMap(
+            source_fingerprint=fingerprint,
+            builder_version=CONCEPT_MAP_BUILDER_VERSION,
+            chapters=chapters,
+            cells=promoted,
+            edges=[*intra_edges, *cross_edges],
+            statistics=ConceptMapStatistics(cell_count=0),
+            warnings=warnings,
+        )
+        block_texts = {block.block_id: block.text for block in blocks}
+        concept_map = concept_map.model_copy(
+            update={
+                "statistics": compute_statistics(
+                    concept_map,
+                    sections=document_map.sections,
+                    block_texts=block_texts,
+                )
+            }
+        )
+        self.cache.save_source(concept_map)
+        emit_cache_lookup(
+            cache="shared_concept_map",
+            result="store",
+            project_id=project_id,
+            subject_type="source",
+            subject_id=str(source_id),
+            lookup_key=fingerprint[:16],
+            artifact_hash=fingerprint[:16],
+        )
+        self._clear_partial(project_id, source_id)
+        return concept_map
+
+    def _build_or_load_chapter(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        fingerprint: str,
+        chapter: SourceChapter,
+        blocks: Sequence[SourceDocumentBlock],
+        document_map: DocumentMap,
+        section_titles: Mapping[str, str],
+        prior_cells: Sequence[ConceptCell],
+        model_fast: str,
+    ) -> tuple[list[ConceptCell], list[ConceptEdge], list[str]]:
+        chapter_key = chapter_hash(chapter, blocks)
+        cached = self.cache.load_chapter(fingerprint, chapter_key)
+        emit_cache_lookup(
+            cache="shared_concept_map_chapter",
+            result="hit" if cached is not None else "miss",
+            project_id=project_id,
+            subject_type="chapter",
+            subject_id=str(chapter.chapter_index),
+            lookup_key=chapter_key[:16],
+            artifact_hash=chapter_key[:16] if cached is not None else None,
+            avoided_calls=1 if cached is not None else None,
+        )
+        if cached is not None:
+            return list(cached.cells), list(cached.intra_edges), list(cached.warnings)
+
+        chapter_sections = _sections_for_chapter(chapter, document_map.sections)
+        extracted = extract_chapter_cells(
+            self.model_runner,
+            project_id=project_id,
+            source_id=source_id,
+            chapter=chapter,
+            sections=chapter_sections,
+            blocks=blocks,
+            model=model_fast,
+            prior_cells=prior_cells,
+        )
+        budget = chapter_budget(chapter_sections)
+        consolidated = consolidate_chapter(
+            extracted.cells,
+            budget,
+            model_runner=self.model_runner,
+            project_id=project_id,
+            model=model_fast,
+            chapter_title=chapter.title,
+            section_titles=section_titles,
+        )
+        intra = build_edges_for_chapter(
+            consolidated.cells,
+            model_runner=self.model_runner,
+            project_id=project_id,
+            model=model_fast,
+            chapter_title=chapter.title,
+            section_titles=section_titles,
+        )
+        warnings = [
+            *extracted.warnings,
+            *consolidated.warnings,
+            *intra.warnings,
+        ]
+        self.cache.save_chapter(
+            CachedChapterConceptMap(
+                source_fingerprint=fingerprint,
+                chapter_hash=chapter_key,
+                builder_version=CONCEPT_MAP_BUILDER_VERSION,
+                chapter=chapter,
+                cells=list(consolidated.cells),
+                intra_edges=list(intra.edges),
+                warnings=warnings,
+            )
+        )
+        return list(consolidated.cells), list(intra.edges), warnings
+
+    def _partial_path(self, project_id: UUID, source_id: UUID) -> Path:
+        return (
+            self.workspace_root
+            / str(project_id)
+            / "sources"
+            / str(source_id)
+            / "concept-map.partial.json"
+        )
+
+    def _load_matching_partial(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        fingerprint: str,
+    ) -> ConceptMapPartial | None:
+        path = self._partial_path(project_id, source_id)
+        try:
+            partial = ConceptMapPartial.model_validate_json(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return None
+        if partial.source_fingerprint != fingerprint:
+            return None
+        if partial.builder_version != CONCEPT_MAP_BUILDER_VERSION:
+            return None
+        return partial
+
+    def _write_partial(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        partial: ConceptMapPartial,
+    ) -> None:
+        path = self._partial_path(project_id, source_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps(partial.model_dump(mode="json"), ensure_ascii=False, indent=2)
+        temporary = path.with_suffix(".json.tmp")
+        temporary.write_text(payload + "\n", encoding="utf-8")
+        temporary.replace(path)
+
+    def _clear_partial(self, project_id: UUID, source_id: UUID) -> None:
+        self._partial_path(project_id, source_id).unlink(missing_ok=True)
 
 
 def chapter_budget(sections: Sequence[DocumentMapSection]) -> int:
@@ -991,7 +1273,8 @@ def _validate_consolidate_draft(
                 )
             if action.merge_into not in known_set:
                 raise DeterministicValidationError(
-                    f"{action.cell_key} merge_into {action.merge_into} is not a cell in this chapter."
+                    f"{action.cell_key} merge_into {action.merge_into} "
+                    "is not a cell in this chapter."
                 )
             if action.merge_into not in keep_keys:
                 raise DeterministicValidationError(

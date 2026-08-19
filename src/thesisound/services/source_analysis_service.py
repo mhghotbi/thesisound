@@ -29,11 +29,12 @@ from thesisound.services.analysis_profile import (
 )
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
+from thesisound.services.concept_map_builder import ConceptMapBuilder
 from thesisound.services.document_identity import block_sequence_key
 from thesisound.services.document_map_cache import DocumentMapCache, is_shareable_document_map
 from thesisound.services.document_mapper import DocumentMapperService, build_exhaustive_document_map
-from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.episode_duration_cost import source_needs_reextraction
+from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_scope import extraction_profiles_compatible
 from thesisound.services.evidence_validator import validate_evidence_collection
 from thesisound.services.lineage_events import emit_cache_lookup
@@ -92,6 +93,8 @@ class SourceAnalysisService:
         evidence_extractor: EvidenceExtractorService,
         claim_reconciler: ClaimReconcilerService,
         document_map_cache: DocumentMapCache | None = None,
+        concept_map_builder: ConceptMapBuilder | None = None,
+        concept_map_enabled: bool = False,
     ) -> None:
         self.workspace_store = workspace_store
         self.artifact_store = artifact_store
@@ -100,6 +103,8 @@ class SourceAnalysisService:
         self.evidence_extractor = evidence_extractor
         self.claim_reconciler = claim_reconciler
         self.document_map_cache = document_map_cache or DocumentMapCache(workspace_store.root)
+        self.concept_map_builder = concept_map_builder
+        self.concept_map_enabled = concept_map_enabled
 
     def build_blocks(
         self,
@@ -163,7 +168,7 @@ class SourceAnalysisService:
             )
             if reusable is not None:
                 span.set(source="project_reuse")
-                return self._mark_document_mapped(project_id, source_id)
+                return self._mark_document_mapped(project_id, source_id, model=model)
             content_key = block_sequence_key(blocks)
             shared = self.document_map_cache.load(content_key, blocks, source_id=source_id)
             emit_cache_lookup(
@@ -178,7 +183,7 @@ class SourceAnalysisService:
             if shared is not None:
                 self.artifact_store.save_document_map(project_id, source_id, shared)
                 span.set(source="shared_cache")
-                return self._mark_document_mapped(project_id, source_id)
+                return self._mark_document_mapped(project_id, source_id, model=model)
             project = self.workspace_store.load_project(project_id)
             # Without a brief there is no duration-aware profile, so the skip is
             # undefined — fall through to the model (CLI map-document path).
@@ -212,7 +217,7 @@ class SourceAnalysisService:
                         reason="selection_exhaustive",
                     )
                     span.set(source="exhaustive_skip")
-                    return self._mark_document_mapped(project_id, source_id)
+                    return self._mark_document_mapped(project_id, source_id, model=model)
             document_map, run = self.document_mapper.map_document(
                 project_id=project_id,
                 source_id=source_id,
@@ -225,7 +230,7 @@ class SourceAnalysisService:
                 self.document_map_cache.save(content_key, blocks, document_map)
             span.set(source="model")
             return self._mark_document_mapped(
-                project_id, source_id, run_id=run.run_id if run is not None else None
+                project_id, source_id, run_id=run.run_id if run is not None else None, model=model
             )
 
     def has_reusable_document_map(self, project_id: UUID, source_id: UUID) -> bool:
@@ -247,6 +252,7 @@ class SourceAnalysisService:
         source_id: UUID,
         *,
         run_id: UUID | None = None,
+        model: str | None = None,
     ) -> SourceAnalysisManifest:
         manifest = self.artifact_store.load_manifest(project_id, source_id)
         manifest.status = "document_mapped"
@@ -254,7 +260,33 @@ class SourceAnalysisService:
             manifest.model_run_ids.append(run_id)
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
+        if model is not None:
+            self._maybe_build_concept_map(project_id, source_id, model=model)
         return manifest
+
+    def _maybe_build_concept_map(
+        self,
+        project_id: UUID,
+        source_id: UUID,
+        *,
+        model: str,
+    ) -> None:
+        if not self.concept_map_enabled:
+            return
+        if self.concept_map_builder is None:
+            raise ValueError("Concept map is enabled but no builder is configured.")
+        blocks = self.artifact_store.load_blocks(project_id, source_id)
+        document_map = self.artifact_store.load_document_map(project_id, source_id)
+        parsed = self.artifact_store.load_parsed_document(project_id, source_id)
+        concept_map = self.concept_map_builder.build(
+            project_id,
+            source_id,
+            blocks,
+            document_map,
+            parsed,
+            model_fast=model,
+        )
+        self.artifact_store.save_concept_map(project_id, source_id, concept_map)
 
     def extract_evidence(
         self,

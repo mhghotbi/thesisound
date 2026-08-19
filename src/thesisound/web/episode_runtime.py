@@ -11,6 +11,7 @@ from thesisound.prompt_loader import PromptLoader
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
 from thesisound.services.claim_reconciler import ClaimReconcilerService
+from thesisound.services.concept_map_builder import ConceptMapBuilder
 from thesisound.services.coverage_auditor import CoverageAuditorService
 from thesisound.services.disagreement_graph import DisagreementGraphBuilder
 from thesisound.services.document_map_part_cache import DocumentMapPartCache
@@ -96,6 +97,8 @@ def create_episode_planner(
                 runner,
                 max_workers=settings.claim_reconciliation_workers,
             ),
+            concept_map_builder=ConceptMapBuilder(runner, workspace_root=workspace.root),
+            concept_map_enabled=settings.concept_map_on_analysis_enabled,
         )
 
     planner = EpisodePlanningRunService(
