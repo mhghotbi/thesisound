@@ -1,0 +1,21 @@
+{
+  "name": "impeccable",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axe-core": "^4.13.0",
+    "css-select": "^7.0.0",
+    "css-tree": "^3.2.1",
+    "domutils": "^4.0.2",
+    "htmlparser2": "^12.0.0",
+    "puppeteer": "^25.8.0"
+  }
+}

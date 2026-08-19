@@ -34,3 +34,7 @@ benchmarks/persian_ocr/runtime/
 *.flac
 
 benchmarks/eval/runtime/
+
+# Design tooling (impeccable / taste redesign skill)
+.claude/skills/impeccable/node_modules/
+.impeccable/
