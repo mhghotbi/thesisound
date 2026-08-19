@@ -91,6 +91,7 @@ class ScriptCheckIssue(BaseModel):
         "speaker_skew",
         "speaker_b_substantive",
         "dropped_content",
+        "unsupported_specifics",
         "other",
     ]
     explanation: str = Field(min_length=1)

@@ -7,10 +7,22 @@ from uuid import UUID
 from thesisound.domain import ClaimRecord, EpisodePlan, Script, ScriptTurn
 from thesisound.episode import MustNotBeLostReview, SegmentEvidencePack
 from thesisound.script import Glossary, ScriptCheckIssue, ScriptCheckReport
+from thesisound.services.excerpt_matching import normalize_for_match
 
 _WORD = re.compile(r"\w+", re.UNICODE)
 _ZWNJ = "\u200c"
 _SENTENCE_END = re.compile(r"[.!?؟۔…]")
+_DIGIT_RUN = re.compile(r"\d{2,}")
+_FOUR_DIGIT_YEAR = re.compile(r"\d{4}")
+_LATIN_CAPITALISED = re.compile(r"(?<![A-Za-z])[A-Z][A-Za-z]+(?![A-Za-z])")
+_GUILLEMET_SPAN = re.compile(r"«([^»]+)»")
+_ASCII_QUOTE_SPAN = re.compile(r'"([^"]+)"')
+_CURLY_DOUBLE_QUOTES = (
+    "\u201c",
+    "\u201d",
+    "\u201e",
+    "\u201f",
+)
 
 
 def _normalize_spoken(text: str) -> str:
@@ -227,6 +239,8 @@ class ScriptChecker:
                         ),
                     )
                 )
+            if not turn.editorial_only:
+                issues.extend(_unsupported_specifics_issues(turn, pack))
 
             normalized = _normalize_spoken(turn.spoken_text_fa)
             tokens = _tokens(normalized)
@@ -529,6 +543,76 @@ def _repetition_issues(
                     )
                 )
     return issues
+
+
+def _ascii_double_quoted(text: str) -> str:
+    mapped = text
+    for mark in _CURLY_DOUBLE_QUOTES:
+        mapped = mapped.replace(mark, '"')
+    return mapped
+
+
+def _specifics_in_spoken(text: str) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+
+    def add(token: str) -> None:
+        stripped = token.strip()
+        if stripped and stripped not in seen:
+            seen.add(stripped)
+            ordered.append(stripped)
+
+    for match in _DIGIT_RUN.finditer(text):
+        add(match.group(0))
+    for match in _FOUR_DIGIT_YEAR.finditer(text):
+        add(match.group(0))
+    for match in _LATIN_CAPITALISED.finditer(text):
+        add(match.group(0))
+    for span in _GUILLEMET_SPAN.findall(text):
+        add(span)
+    for span in _ASCII_QUOTE_SPAN.findall(_ascii_double_quoted(text)):
+        add(span)
+    return ordered
+
+
+def _pack_specifics_haystack(turn: ScriptTurn, pack: SegmentEvidencePack) -> str:
+    cited = set(turn.evidence_ids)
+    parts: list[str] = [
+        item.supporting_excerpt
+        for item in pack.evidence_items
+        if item.evidence_id in cited
+    ]
+    parts.extend(block.text for block in pack.original_blocks)
+    parts.extend(block.text for block in pack.context_blocks)
+    joined = "\n".join(parts)
+    return normalize_for_match(joined)[0]
+
+
+def _unsupported_specifics_issues(
+    turn: ScriptTurn,
+    pack: SegmentEvidencePack,
+) -> list[ScriptCheckIssue]:
+    haystack = _pack_specifics_haystack(turn, pack)
+    offending: list[str] = []
+    for token in _specifics_in_spoken(turn.spoken_text_fa):
+        needle, _ = normalize_for_match(token)
+        if needle and needle not in haystack:
+            offending.append(token)
+    if not offending:
+        return []
+    listed = ", ".join(offending)
+    return [
+        ScriptCheckIssue(
+            turn_id=turn.turn_id,
+            segment_id=turn.segment_id,
+            severity="medium",
+            issue_type="unsupported_specifics",
+            explanation=(
+                "Turn uses specifics not found in cited excerpts or pack blocks: "
+                f"{listed}."
+            ),
+        )
+    ]
 
 
 def _dropped_content_issues(

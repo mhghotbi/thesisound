@@ -240,7 +240,9 @@ class FakeScriptRunner:
 
 
 def _spoken(prefix: str, count: int) -> str:
-    return " ".join(f"{prefix}{index}" for index in range(count))
+    # Single-digit suffixes keep turns distinct without inventing 2-digit
+    # numbers that unsupported_specifics (P0.5) would flag.
+    return " ".join(f"{prefix}{index % 10}" for index in range(count))
 
 
 def _seed(root: Path) -> tuple[UUID, UUID, str]:
