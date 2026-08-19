@@ -1,9 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from uuid import UUID
 
 from thesisound import tracing
-from thesisound.domain import ClaimRecord, ClaimType, ResearchBrief, SupportStatus
+from thesisound.domain import (
+    ClaimRecord,
+    ClaimType,
+    LessonIntent,
+    Project,
+    ResearchBrief,
+    SupportStatus,
+)
 from thesisound.episode import ClaimPriorityRecord, ClaimPriorityReport, CoverageReport
 
 _SUPPORT_SCORE = {
@@ -30,6 +38,8 @@ class ClaimPrioritizer:
         brief: ResearchBrief,
         claims: list[ClaimRecord],
         coverage: CoverageReport,
+        project: Project | None = None,
+        must_include_claim_ids: Sequence[str] | None = None,
     ) -> ClaimPriorityReport:
         with tracing.span(
             "episode.prioritize_claims", component="episode", project_id=project_id
@@ -41,6 +51,37 @@ class ClaimPrioritizer:
             for item in coverage.objective_coverage:
                 for claim_id in item.claim_ids:
                     objective_hits[claim_id] = objective_hits.get(claim_id, 0) + 1
+
+            if project is not None and project.lesson_intent == LessonIntent.SOURCE_COVERAGE:
+                # Cut-lines are cell linkage, not a duration ranking (`10c` P3
+                # Step 8): a claim linked to this part's cells is must_include,
+                # everything else passed in is deferred.
+                must_include = set(must_include_claim_ids or ())
+                priorities = [
+                    ClaimPriorityRecord(
+                        claim_id=claim.claim_id,
+                        level="must_include" if claim.claim_id in must_include else "deferred",
+                        score=self._score(claim, brief, central, objective_hits),
+                        reasons=self._reasons(
+                            claim, central=central, objective_hits=objective_hits, brief=brief
+                        ),
+                        estimated_explanation_seconds=self._estimate_seconds(claim),
+                    )
+                    for claim in claims
+                ]
+                selected_seconds = sum(
+                    item.estimated_explanation_seconds
+                    for item in priorities
+                    if item.level == "must_include"
+                )
+                span.measure(claim_count=len(claims), must_include_count=len(must_include))
+                return ClaimPriorityReport(
+                    project_id=project_id,
+                    target_duration_minutes=brief.target_duration_minutes,
+                    priorities=priorities,
+                    available_content_seconds=coverage.max_supported_minutes * 60,
+                    estimated_selected_seconds=selected_seconds,
+                )
 
             scored = [
                 (

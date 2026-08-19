@@ -71,7 +71,13 @@ class EpisodePlannerService:
                 "Coverage is insufficient for the requested duration; narrow scope or add evidence."
             )
         # Structural: same — user must change duration or evidence (information_asymmetry).
-        if budget.effective_supported_minutes < brief.target_duration_minutes * 0.8:
+        # A non-empty skeleton means a `source_coverage` part call: `budget`/`brief`
+        # here describe the whole scope, not this one part, so the whole-scope 80%
+        # heuristic does not apply (`10b` B2: per-cell coverage is the real gate).
+        whole_scope_budget_low = (
+            budget.effective_supported_minutes < brief.target_duration_minutes * 0.8
+        )
+        if not segment_skeleton and whole_scope_budget_low:
             raise ValueError("Deterministic budget is insufficient for episode planning.")
         claim_ids = {claim.claim_id for claim in claims}
         must_not_be_lost_ids = {
@@ -186,6 +192,10 @@ def _validate_draft(
     used_claims: list[str] = []
     seen_before: set[str] = set()
     for index, segment in enumerate(draft.segments, start=1):
+        if not skeleton and not segment.claim_ids:
+            # Structural: only the deterministic skeleton's recap segment may be
+            # claimless; free planning must ground every segment.
+            raise DeterministicValidationError(f"Segment {index} has no claim_ids.")
         unknown = sorted(set(segment.claim_ids) - known_claim_ids)
         if unknown:
             # Structural: no grounded artifact remains for unknown claim IDs.

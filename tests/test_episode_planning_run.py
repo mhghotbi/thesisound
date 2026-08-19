@@ -5,6 +5,7 @@ from thesisound import tracing
 from thesisound.domain import (
     EpisodePlan,
     EpisodeSegment,
+    LessonIntent,
     Project,
     ProjectState,
     ResearchBrief,
@@ -391,3 +392,45 @@ def test_failure_and_restart_recovery_create_retryable_new_attempts(
     assert interrupted.status == "failed"
     assert interrupted.stage == "failed"
     assert workspace.load_project(project.project_id).state == ProjectState.FAILED_RETRYABLE
+
+
+def test_budget_gate_blocks_a_focused_question_below_80_percent(tmp_path: Path) -> None:
+    """Conditional point 5 (`10c` P3 Step 10), the `focused_question` side."""
+
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(
+        raw_input="موضوع",
+        state=ProjectState.CORPUS_READY,
+        brief=_brief(20),
+        lesson_intent=LessonIntent.FOCUSED_QUESTION,
+    )
+    fake = FakePreparationService(workspace, can_plan=True, supported_minutes=10)
+    service = _service(tmp_path, project, fake)
+
+    service.queue(project.project_id)
+    run = service.run(project.project_id)
+
+    assert run.status == "blocked"
+    assert fake.calls == ["coverage", "priorities", "budget"]
+
+
+def test_budget_gate_is_advisory_for_source_coverage(tmp_path: Path) -> None:
+    """Conditional point 5 (`10c` P3 Step 10): the whole-scope 80% heuristic does
+    not gate a `source_coverage` run -- per-cell coverage is the real, advisory
+    check there (`10b` B2)."""
+
+    workspace = WorkspaceStore(tmp_path / "workspaces")
+    project = Project(
+        raw_input="موضوع",
+        state=ProjectState.CORPUS_READY,
+        brief=_brief(20),
+        lesson_intent=LessonIntent.SOURCE_COVERAGE,
+    )
+    fake = FakePreparationService(workspace, can_plan=True, supported_minutes=10)
+    service = _service(tmp_path, project, fake)
+
+    service.queue(project.project_id)
+    run = service.run(project.project_id)
+
+    assert run.status == "succeeded"
+    assert fake.calls == ["coverage", "priorities", "budget", "disagreements", "plan", "packs"]

@@ -61,9 +61,9 @@ _FUNCTION_WEIGHT = {
 }
 # Second-pass deepening pushes these two levers to the schema ceiling (AnalysisProfile
 # caps max_claims_per_block at 12 and neighbor_context_blocks at 2). For today's only
-# caller (depth == "extended") the other two levers -- include_examples and
-# include_objections_and_responses -- are already forced on by build_analysis_profile,
-# so claim capacity and neighbor context are the only levers with real headroom.
+# caller (depth == "extended") the remaining lever -- include_examples -- is already
+# forced on by build_analysis_profile, so claim capacity and neighbor context are the
+# only levers with real headroom.
 _SECOND_PASS_MAX_CLAIMS_PER_BLOCK = 12
 _SECOND_PASS_NEIGHBOR_CONTEXT_BLOCKS = 2
 # First duration that ``build_analysis_profile`` maps to the extended tier.
@@ -73,7 +73,11 @@ _EXTENDED_DEPTH_MINUTES = 46
 CELL_BATCH_MAX_SOURCE_TOKENS = 12_000
 
 
-def build_analysis_profile(brief: ResearchBrief) -> AnalysisProfile:
+def build_analysis_profile(
+    brief: ResearchBrief,
+    *,
+    project: Project | None = None,
+) -> AnalysisProfile:
     duration = brief.target_duration_minutes
     if duration <= 10:
         depth = "brief"
@@ -114,6 +118,14 @@ def build_analysis_profile(brief: ResearchBrief) -> AnalysisProfile:
     if brief.prior_knowledge == "advanced":
         rationale.append("Advanced prior knowledge increases claim and context depth.")
 
+    # `source_coverage` extracts cell-seeded blocks (`resolve_extraction_seeds`),
+    # not a duration-ranked subset -- every seeded block deserves its examples
+    # regardless of which duration tier the derived brief happens to land on.
+    include_examples = depth != "brief"
+    if project is not None and project.lesson_intent == LessonIntent.SOURCE_COVERAGE:
+        include_examples = True
+        rationale.append("source_coverage: examples always included regardless of depth tier.")
+
     return AnalysisProfile(
         depth=depth,
         target_duration_minutes=duration,
@@ -121,8 +133,7 @@ def build_analysis_profile(brief: ResearchBrief) -> AnalysisProfile:
         evidence_input_token_budget=token_budget,
         max_claims_per_block=max_claims,
         neighbor_context_blocks=neighbors,
-        include_examples=depth != "brief",
-        include_objections_and_responses=critical_mode or depth in {"deep", "extended"},
+        include_examples=include_examples,
         second_pass_for_core_sections=depth == "extended",
         rationale=rationale,
     )
@@ -146,7 +157,6 @@ def build_second_pass_profile(profile: AnalysisProfile) -> AnalysisProfile:
                 profile.max_claims_per_block, _SECOND_PASS_MAX_CLAIMS_PER_BLOCK
             ),
             "include_examples": True,
-            "include_objections_and_responses": True,
             "rationale": [
                 *profile.rationale,
                 "Second pass: deepened extraction for a required_for_global_understanding section.",
@@ -224,12 +234,13 @@ def plan_evidence_extraction(
     *,
     seed_cells: Sequence[ConceptCell] | None = None,
     force_depth: Literal["extended"] | None = None,
+    project: Project | None = None,
 ) -> EvidenceExtractionPlan:
     with tracing.span(
         "corpus.plan_extraction", component="corpus", subject_type="source",
         subject_id=str(document_map.source_id),
     ) as span:
-        profile = build_analysis_profile(_profile_brief(brief, force_depth))
+        profile = build_analysis_profile(_profile_brief(brief, force_depth), project=project)
         if seed_cells is not None:
             # Dense-block second pass replaces the required-section re-extract;
             # in-scope blocks are already taken at extended depth.

@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from uuid import UUID
 
+from thesisound.concepts import ConceptCell, LessonPart, SegmentSkeleton
 from thesisound.domain import (
     ClaimRecord,
+    DeliberatelyOmittedClaim,
     EpisodePlan,
+    EpisodeSegment,
     EvidenceItem,
     ExtractedAuxiliaryPoint,
     ExtractedDefinition,
     ExtractedDistinction,
+    LessonIntent,
     MustNotBeLostPoint,
     Project,
     ProjectState,
@@ -21,7 +26,9 @@ from thesisound.episode import (
     CoverageReport,
     DisagreementGraph,
     EpisodeBudgetReport,
+    EpisodePlanDraft,
     EpisodePreparationManifest,
+    EpisodeSegmentDraft,
     EpisodeStageInputs,
     MustNotBeLostReview,
     MustNotBeLostReviewItem,
@@ -29,10 +36,12 @@ from thesisound.episode import (
 )
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
-from thesisound.script import QualityNotesLedger
+from thesisound.script import QualityNote, QualityNotesLedger
 from thesisound.services.analysis_profile import plan_evidence_extraction, resolve_extraction_seeds
+from thesisound.services.cell_selection import select_cells
+from thesisound.services.claim_cell_linkage import link_claims_to_cells
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
-from thesisound.services.concept_map_overlay import ConceptMapOverlayService
+from thesisound.services.concept_map_overlay import effective_concept_map
 from thesisound.services.coverage_auditor import CoverageAuditorService, can_plan_episode
 from thesisound.services.disagreement_graph import DisagreementGraphBuilder
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
@@ -42,6 +51,8 @@ from thesisound.services.episode_reuse import planning_input_key
 from thesisound.services.evidence_pack_builder import EvidencePackBuilder
 from thesisound.services.evidence_scope import scope_by_block, scope_claims_and_evidence
 from thesisound.services.lineage_events import emit_cache_lookup
+from thesisound.services.part_packer import pack_parts
+from thesisound.services.segment_skeleton import build as build_segment_skeleton
 from thesisound.services.semantic_identity import (
     COVERAGE_AUDITOR_VERSION,
     EPISODE_PLANNER_VERSION,
@@ -123,6 +134,7 @@ class EpisodePreparationService:
             key,
             project.brief,
             semantic=semantic,
+            lesson_intent=project.lesson_intent,
         )
         emit_cache_lookup(
             cache="coverage_audit",
@@ -143,6 +155,7 @@ class EpisodePreparationService:
             extraction_plans=corpus.extraction_plans,
             model=model,
             prompt_version=prompt_version,
+            lesson_intent=project.lesson_intent,
         )
         self.episode_store.save_coverage(report)
         # A fresh audit invalidates the stored plan: it was built on the previous answer.
@@ -251,23 +264,38 @@ class EpisodePreparationService:
             budget = self.episode_store.load_budget(project_id)
             priorities = self.episode_store.load_priorities(project_id)
             disagreement_graph = self.episode_store.load_disagreement_graph(project_id)
-            plan, draft, run, quality_notes = self.episode_planner.plan(
-                project_id=project_id,
-                brief=project.brief,
-                claims=corpus.claims,
-                coverage=coverage,
-                budget=budget,
-                priorities=priorities,
-                disagreement_graph=disagreement_graph,
-                extraction_plans=corpus.extraction_plans,
-                definitions=corpus.definitions,
-                distinctions=corpus.distinctions,
-                examples=corpus.examples,
-                objections=corpus.objections,
-                responses=corpus.responses,
-                model=model,
-                prompt_version=prompt_version,
-            )
+            if project.lesson_intent == LessonIntent.SOURCE_COVERAGE:
+                plan, draft, quality_notes, part_run_ids = self._plan_episode_parts(
+                    project_id=project_id,
+                    project=project,
+                    brief=project.brief,
+                    corpus=corpus,
+                    coverage=coverage,
+                    budget=budget,
+                    disagreement_graph=disagreement_graph,
+                    model=model,
+                    prompt_version=prompt_version,
+                )
+                model_run_ids.extend(part_run_ids)
+            else:
+                plan, draft, run, quality_notes = self.episode_planner.plan(
+                    project_id=project_id,
+                    brief=project.brief,
+                    claims=corpus.claims,
+                    coverage=coverage,
+                    budget=budget,
+                    priorities=priorities,
+                    disagreement_graph=disagreement_graph,
+                    extraction_plans=corpus.extraction_plans,
+                    definitions=corpus.definitions,
+                    distinctions=corpus.distinctions,
+                    examples=corpus.examples,
+                    objections=corpus.objections,
+                    responses=corpus.responses,
+                    model=model,
+                    prompt_version=prompt_version,
+                )
+                model_run_ids.append(run.run_id)
             self.episode_store.save_plan(project_id, plan, draft)
             self.episode_store.save_quality_notes(
                 QualityNotesLedger(project_id=project_id, notes=quality_notes)
@@ -278,7 +306,6 @@ class EpisodePreparationService:
                     update={"plan": key, "plan_semantic": dict(semantic)}
                 ),
             )
-            model_run_ids.append(run.run_id)
 
         project.episode_plan = plan
         self.workspace_store.save_project(project)
@@ -294,6 +321,183 @@ class EpisodePreparationService:
         manifest.updated_at = datetime.now(UTC)
         self.episode_store.save_manifest(manifest)
         return plan
+
+    def _plan_episode_parts(
+        self,
+        *,
+        project_id: UUID,
+        project: Project,
+        brief: ResearchBrief,
+        corpus: CorpusArtifacts,
+        coverage: CoverageReport,
+        budget: EpisodeBudgetReport,
+        disagreement_graph: DisagreementGraph,
+        model: str,
+        prompt_version: str | None,
+    ) -> tuple[EpisodePlan, EpisodePlanDraft, list[QualityNote], list[UUID]]:
+        """Plan one part per packed group of in-scope cells (`10c` P3 Step 8).
+
+        Each part gets its own deterministic segment skeleton
+        (`segment_skeleton.build`) and its own `episode_planner.plan` call,
+        scoped to only the claims linked to that part's cells -- the model
+        never sees, and so cannot ground on, another part's material. A part
+        whose skeleton exceeds `target_minutes * 1.25` is re-packed once into
+        two half-budget parts before planning (10c P3 Step 8: "re-pack on
+        window overflow"); a part with no linked claim at all cannot form a
+        segment and is dropped (surfaces as "not covered" in the report,
+        `10c` P3 Step 11).
+        """
+
+        source_id = (
+            project.scope.source_id if project.scope is not None else corpus.source_ids[0]
+        )
+        concept_map = effective_concept_map(self.source_store, project_id, source_id)
+        if concept_map is None:
+            raise ValueError("source_coverage planning requires a built concept map.")
+        in_scope, _omitted = select_cells(concept_map, project.scope, project.compression)
+        in_scope_cells = [item.cell for item in in_scope]
+        if not in_scope_cells:
+            raise ValueError(
+                "No in-scope concept cells to plan a source_coverage episode from."
+            )
+        cells_by_key = {cell.cell_key: cell for cell in in_scope_cells}
+        minutes_by_cell = {cell.cell_key: cell.estimated_minutes for cell in in_scope_cells}
+        target_minutes = float(project.episode_target_minutes)
+
+        # Re-pack on window overflow (`10c` P3 Step 8): a packed part whose
+        # skeleton exceeds `target * 1.25` is re-packed into two half-budget
+        # parts. Bounded recursion -- `pack_parts`' own fill rule can force a
+        # cell in past FILL_MAX to reach FILL_MIN, so one split does not
+        # always land under the new ceiling either; a genuinely oversized
+        # single cell (`len(cell_keys) == 1`) can never be split further and
+        # is accepted as-is (already flagged `oversize_cell` by the packer).
+        _MAX_REPACK_DEPTH = 3
+        pending: deque[tuple[list[ConceptCell], float, int]] = deque(
+            [(in_scope_cells, target_minutes, 0)]
+        )
+        units: list[tuple[LessonPart, list[SegmentSkeleton], float]] = []
+        while pending:
+            group_cells, group_target, depth = pending.popleft()
+            for part in pack_parts(group_cells, concept_map.edges, group_target, minutes_by_cell):
+                part_cells = [cells_by_key[key] for key in part.cell_keys]
+                skeleton = build_segment_skeleton(
+                    part, part_cells, corpus.claims, corpus.evidence_items, concept_map.edges
+                )
+                total_minutes = sum(item.estimated_minutes for item in skeleton)
+                ceiling = group_target * 1.25
+                splittable = len(part.cell_keys) > 1 and depth < _MAX_REPACK_DEPTH
+                if total_minutes > ceiling and splittable:
+                    pending.append((part_cells, group_target / 2, depth + 1))
+                else:
+                    # A part accepted despite still exceeding `group_target *
+                    # 1.25` (an atomic cell, or the repack depth cap) genuinely
+                    # needs that much time; report its own size as the target
+                    # instead of failing the deterministic skeleton-ceiling
+                    # check against a budget it was never going to meet.
+                    units.append((part, skeleton, max(group_target, total_minutes)))
+
+        # Recursive re-packing does not process groups in book order; the
+        # final numbering must, so sort by each unit's earliest cell_key.
+        units.sort(key=lambda unit: min(unit[0].cell_keys))
+        units = [unit for unit in units if unit[1]]
+        if not units:
+            raise ValueError(
+                "No part has a claim to plan from; check the extraction plan and claim ledger."
+            )
+
+        all_segments: list[EpisodeSegment] = []
+        all_draft_segments: list[EpisodeSegmentDraft] = []
+        omitted_claims: list[DeliberatelyOmittedClaim] = []
+        follow_up_topics: list[str] = []
+        final_parts: list[LessonPart] = []
+        run_ids: list[UUID] = []
+        quality_notes: list[QualityNote] = []
+        listener_outcomes: list[str] = []
+        known_so_far = list(project.known_concepts)
+
+        for part_index, (part, skeleton, part_target) in enumerate(units, start=1):
+            part_cells = [cells_by_key[key] for key in part.cell_keys]
+            claim_to_cells = link_claims_to_cells(corpus.claims, corpus.evidence_items, part_cells)
+            must_include_ids = {claim_id for claim_id, keys in claim_to_cells.items() if keys}
+            part_claims = [claim for claim in corpus.claims if claim.claim_id in must_include_ids]
+            part_priorities = self.claim_prioritizer.prioritize(
+                project_id=project_id,
+                brief=brief,
+                claims=part_claims,
+                coverage=coverage,
+                project=project,
+                must_include_claim_ids=must_include_ids,
+            )
+            part_plan, part_draft, run, part_notes = self.episode_planner.plan(
+                project_id=project_id,
+                brief=brief,
+                claims=part_claims,
+                coverage=coverage,
+                budget=budget,
+                priorities=part_priorities,
+                disagreement_graph=disagreement_graph,
+                extraction_plans=corpus.extraction_plans,
+                definitions=corpus.definitions,
+                distinctions=corpus.distinctions,
+                examples=corpus.examples,
+                objections=corpus.objections,
+                responses=corpus.responses,
+                model=model,
+                prompt_version=prompt_version,
+                part={
+                    "part_index": part_index,
+                    "part_count": len(units),
+                    "part_target_minutes": part_target,
+                    "cell_labels": [cell.label_fa for cell in part_cells],
+                },
+                segment_skeleton=[item.model_dump(mode="json") for item in skeleton],
+                known_concepts=known_so_far,
+            )
+            all_segments.extend(part_plan.segments)
+            all_draft_segments.extend(part_draft.segments)
+            omitted_claims.extend(part_plan.deliberately_omitted_claims)
+            follow_up_topics.extend(part_plan.follow_up_topics)
+            quality_notes.extend(part_notes)
+            run_ids.append(run.run_id)
+            listener_outcomes.append(part_plan.listener_outcome)
+            final_parts.append(
+                LessonPart(
+                    part_index=part_index,
+                    title_fa=part.title_fa,
+                    cell_keys=part.cell_keys,
+                    claim_ids=[
+                        claim_id
+                        for segment in part_plan.segments
+                        for claim_id in segment.claim_ids
+                    ],
+                    estimated_minutes=sum(
+                        segment.estimated_minutes for segment in part_plan.segments
+                    ),
+                    graph_backed=part.graph_backed,
+                    flags=part.flags,
+                )
+            )
+            known_so_far = [*known_so_far, *(cell.label_fa for cell in part_cells)]
+
+        plan = EpisodePlan(
+            title=brief.normalized_topic,
+            listener_outcome=" | ".join(dict.fromkeys(listener_outcomes)),
+            estimated_duration_minutes=sum(part.estimated_minutes for part in final_parts),
+            segments=all_segments,
+            deliberately_omitted_claims=omitted_claims,
+            follow_up_topics=list(dict.fromkeys(follow_up_topics)),
+            parts=final_parts,
+        )
+        draft = EpisodePlanDraft(
+            title=plan.title,
+            listener_outcome=plan.listener_outcome,
+            segments=all_draft_segments,
+            deliberately_omitted_claims=[
+                {"claim_id": item.claim_id, "reason": item.reason} for item in omitted_claims
+            ],
+            follow_up_topics=plan.follow_up_topics,
+        )
+        return plan, draft, quality_notes, run_ids
 
     @staticmethod
     def _build_must_not_be_lost_review(
@@ -426,6 +630,7 @@ class EpisodePreparationService:
         brief: ResearchBrief,
         *,
         semantic: dict[str, object],
+        lesson_intent: LessonIntent | None = None,
     ) -> tuple[CoverageReport | None, str | None]:
         """Return the stored audit when the corpus and the research question are the same.
 
@@ -449,6 +654,7 @@ class EpisodePreparationService:
             recommendation=report.recommendation,
             max_supported_minutes=report.max_supported_minutes,
             target_duration_minutes=brief.target_duration_minutes,
+            lesson_intent=lesson_intent,
         )
         if report.can_plan_episode != verdict:
             report.can_plan_episode = verdict
@@ -525,7 +731,7 @@ class EpisodePreparationService:
                     raise
                 document_map = self.source_store.load_document_map(project_id, source_id)
                 seed_cells, force_depth = resolve_extraction_seeds(
-                    project, self._effective_concept_map(project_id, source_id)
+                    project, effective_concept_map(self.source_store, project_id, source_id)
                 )
                 plan = plan_evidence_extraction(
                     project_brief,
@@ -533,6 +739,7 @@ class EpisodePreparationService:
                     source_blocks,
                     seed_cells=seed_cells,
                     force_depth=force_depth,
+                    project=project,
                 )
             extraction_plans.append(plan)
             ledger = self.source_store.load_claim_ledger(project_id, source_id)
@@ -585,16 +792,6 @@ class EpisodePreparationService:
                 item for ledger in ledgers for item in ledger.must_not_be_lost
             ],
         )
-
-    def _effective_concept_map(self, project_id: UUID, source_id: UUID):
-        concept_map = self.source_store.load_concept_map_optional(project_id, source_id)
-        if concept_map is None:
-            return None
-        overlay_service = ConceptMapOverlayService(self.workspace_store.root)
-        overlay = overlay_service.load(project_id, source_id)
-        if overlay is None:
-            return concept_map
-        return overlay_service.apply(concept_map, overlay)
 
     @staticmethod
     def _enter_episode_planning(project: Project) -> None:

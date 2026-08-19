@@ -73,7 +73,7 @@ Direction approved in [`docs/01-foundations/10-personal-learning-companion-devel
 - P0.5 Grounding hotfix (writer 1.3.0, `ClaimRecord` in packs, `unsupported_specifics` check, must-not-be-lost review page): **done**
 - P1 Concept map (two-way chapter detection → tiered concept cells with promotion → edges → gate; cache + overlay; CLI + page): **done**
 - P2 Evidence completeness (extraction 2.0 unified inventory for all intents, cell-unit batches ready, `must_not_be_lost` accounting, reconciliation 1.1.0, planner 1.3.0, glossary 1.1.0; golden re-baseline, no migration): **done**
-- P3 `source_coverage` end to end (derived brief, compression + prerequisite closure, cost estimate, part packer, segment skeleton, per-part planning/script/audio, completion report): not started — **next**
+- P3 `source_coverage` end to end (derived brief, compression + prerequisite closure, cost estimate, part packer, segment skeleton, per-part planning/script/audio, completion report): **in progress** — runbook steps 18–21 are done (derived brief and prerequisite closure; extraction seeding, linkage, coverage levels; `part_packer`; `segment_skeleton` + the per-part planning loop with re-pack-on-overflow and the five `lesson_intent == source_coverage` conditional points); step 22 (per-part script/audio, report, UI) remains, then checkpoint C-D
 - P4 Text delivery (grounded prose lesson): not started
 - P5 Owner UI consolidation: not started
 - P6 Evaluation on one real source + cleanup: not started
@@ -91,14 +91,15 @@ Closed in P0.5 (2026-08-19):
 Closed in P2 (2026-08-19, steps 13–17):
 
 - definitions, distinctions, examples, objections and responses are claims with verbatim excerpts and IDs (`evidence_extraction/2.0.0`);
-- surplus claims on dense blocks set `more_claims_available` (second pass still waits for `source_coverage` in P3); `excerpt_char_coverage` is recorded;
+- surplus claims on dense blocks set `more_claims_available`, and the dense second pass now reads it together with `EvidenceExtractionPlan.dense_second_pass_block_ids` (populated on `source_coverage` concept-map plans only, so it stays dormant for `focused_question`);
 - the glossary seed (`glossary/1.1.0`) is not Latin-token-only; Persian definition claims and concept-map cells seed terms;
 - flagged must-not-be-lost claims cannot vanish from the plan without a stated omission (`episode_plan/1.3.0`).
 
 Still open (P3):
 
 - cell-unit extraction batches and the dense-block second pass are implemented but not switched on for `focused_question`;
-- `source_coverage` packing, per-part planning, and the completion report are not built yet.
+- `excerpt_char_coverage` is now measured and stored on `EvidenceExtractionPlan` after each extraction (2026-08-20), but nothing reads it yet: the tier-1 `thin_extraction` gate still waits for `lesson_intent == source_coverage`. Measured on Arendt ch2–ch3 at the `deep` tier, mean coverage is 0.30 and 28 of 38 blocks fall under the 0.35 threshold, so the threshold needs calibrating against depth tier before it gates anything;
+- `source_coverage` part packing (step 20) and per-part planning (step 21: `segment_skeleton`, the per-part loop in `EpisodePreparationService.plan_episode`, re-pack on `target * 1.25` overflow, and the five intent-conditional points) are built; the completion report and per-part script/audio (step 22) are not. `EpisodePlanner.plan()`'s own whole-scope-budget precondition was also found to block every part call and was scoped to the non-skeleton (`focused_question`) path only — not one of the five named points, but required for the loop to run at all.
 
 ## What is not yet claimed
 

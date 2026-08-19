@@ -86,7 +86,11 @@ class EpisodeSegmentDraft(BaseModel):
     title: str = Field(min_length=1)
     purpose: str = Field(min_length=1)
     target_minutes: float = Field(gt=0)
-    claim_ids: list[str] = Field(min_length=1)
+    # No `min_length=1`: the deterministic `source_coverage` skeleton appends a
+    # trailing editorial recap segment with no claims. `_validate_draft` still
+    # requires at least one claim per segment on the free-planning
+    # (`focused_question`, empty-skeleton) path.
+    claim_ids: list[str] = Field(default_factory=list)
     prerequisite_claim_ids: list[str] = Field(default_factory=list)
     key_question: str = Field(min_length=1)
     speaker_dynamic: SpeakerDynamic

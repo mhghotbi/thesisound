@@ -270,3 +270,63 @@ def test_empty_skeleton_still_enforces_ten_percent_window() -> None:
             priority_by_id=_priorities(("clm-must", "must_include")),
             segment_skeleton=[],
         )
+
+
+def test_empty_skeleton_still_requires_every_segment_to_ground_a_claim() -> None:
+    """Conditional point 4 (`10c` P3 Step 10), the `focused_question` side: the
+    deterministic skeleton is the only thing allowed to produce a claimless
+    (recap) segment; free planning still must ground every one."""
+
+    claimless = EpisodeSegmentDraft(
+        title="Seg",
+        purpose="Purpose",
+        target_minutes=10,
+        claim_ids=[],
+        key_question="Why?",
+        speaker_dynamic="explanation",
+    )
+    draft = EpisodePlanDraft(title="Title", listener_outcome="Outcome", segments=[claimless])
+    with pytest.raises(DeterministicValidationError, match="no claim_ids"):
+        _validate_draft(
+            draft,
+            brief=_brief(10),
+            known_claim_ids={"clm-must"},
+            priority_by_id=_priorities(("clm-must", "must_include")),
+            segment_skeleton=[],
+        )
+
+
+def test_skeleton_mode_allows_a_claimless_recap_segment() -> None:
+    """Conditional point 4, the `source_coverage` side: a non-empty skeleton's
+    own recap item (no claims) is not rejected by the new empty-claims check."""
+
+    real = EpisodeSegmentDraft(
+        title="Seg",
+        purpose="Purpose",
+        target_minutes=5,
+        claim_ids=["clm-must"],
+        key_question="Why?",
+        speaker_dynamic="explanation",
+    )
+    recap = EpisodeSegmentDraft(
+        title="Recap",
+        purpose="Recap",
+        target_minutes=1.5,
+        claim_ids=[],
+        key_question="What did we cover?",
+        speaker_dynamic="recap",
+    )
+    draft = EpisodePlanDraft(title="Title", listener_outcome="Outcome", segments=[real, recap])
+    skeleton = [
+        {"claim_ids": ["clm-must"], "speaker_dynamic": "explanation", "estimated_minutes": 5},
+        {"claim_ids": [], "speaker_dynamic": "recap", "estimated_minutes": 1.5},
+    ]
+
+    _validate_draft(
+        draft,
+        brief=_brief(10),
+        known_claim_ids={"clm-must"},
+        priority_by_id=_priorities(("clm-must", "must_include")),
+        part={"part_index": 1, "part_count": 1, "part_target_minutes": 6.5, "cell_labels": []},
+        segment_skeleton=skeleton,
+    )

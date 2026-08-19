@@ -247,6 +247,34 @@ class LessonPart(BaseModel):
     flags: list[str] = Field(default_factory=list)
 
 
+SegmentSpeakerDynamic = Literal[
+    "explanation",
+    "questioning",
+    "critique",
+    "comparison",
+    "recap",
+]
+
+
+class SegmentSkeleton(BaseModel):
+    """Deterministic segment shape for one cell within a `LessonPart` (`10b` B1.6; `10c` P3 Step 7).
+
+    One instance per in-scope cell in packer order, plus one trailing
+    ``recap`` instance (``cell_key=None``, no claims) for parts with three or
+    more cell segments. The planner may only fill narrative fields on top of
+    this; `episode_planner._validate_draft` rejects any deviation in order,
+    `claim_ids`, `speaker_dynamic` or minutes.
+    """
+
+    segment_index: int = Field(ge=1)
+    cell_key: str | None = Field(default=None, pattern=CELL_KEY_PATTERN.pattern)
+    title_fa: str = Field(min_length=1)
+    claim_ids: list[str] = Field(default_factory=list)
+    estimated_minutes: float = Field(ge=0)
+    speaker_dynamic: SegmentSpeakerDynamic
+    prerequisite_claim_ids: list[str] = Field(default_factory=list)
+
+
 class ConceptCellDraft(BaseModel):
     """Raw model output for one cell before `cell_key` assignment (`10c` P1 Step 1)."""
 

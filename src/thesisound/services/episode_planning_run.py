@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from thesisound import tracing
 from thesisound.config import Settings
-from thesisound.domain import ProjectState
+from thesisound.domain import LessonIntent, ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.product_metrics import ProductEvent, emit
 from thesisound.product_metrics.emit import classify_gate_reason
@@ -372,7 +372,13 @@ class EpisodePlanningRunService:
                     )
                 run.effective_supported_minutes = budget.effective_supported_minutes
                 self.run_store.save(run)
-                if budget.effective_supported_minutes < budget.target_duration_minutes * 0.8:
+                # `source_coverage` budgets against the derived (whole-scope) brief,
+                # not a single duration the owner asked for; the per-cell coverage
+                # check is the real, advisory gate there (`10b` B2).
+                if (
+                    project.lesson_intent != LessonIntent.SOURCE_COVERAGE
+                    and budget.effective_supported_minutes < budget.target_duration_minutes * 0.8
+                ):
                     root.mark("blocked", reason="budget_insufficient")
                     return self._block(
                         run,

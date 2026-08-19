@@ -7,6 +7,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
 
+from thesisound.concepts import LessonPart
+
 
 class ProjectState(StrEnum):
     DRAFT = "draft"
@@ -84,13 +86,18 @@ class ClaimType(StrEnum):
     COUNTERARGUMENT = "counterargument"
     EDITORIAL_EXPLANATION = "editorial_explanation"
     # Extraction 2.0 (10c P2 Step 1): the former aux lists (definitions,
-    # distinctions, examples, objections, responses) are now claims with one
-    # of these types, so every extracted item lives in one audited inventory.
+    # distinctions, examples) are now claims with one of these types, so every
+    # extracted item lives in one audited inventory.
+    #
+    # `objection` and `response` were removed in prompt 2.1.0: across two live
+    # corpora (Arendt, and a ten-author volume of explicit rebuttals) the model
+    # never chose either type, routing that content to `criticism`,
+    # `counterargument` and `scholarly_interpretation` instead. They were dead
+    # schema. Block-level `objection`/`response` vocabulary is unrelated and
+    # stays: see `BlockType` and `DocumentMapSection.function`.
     DEFINITION = "definition"
     DISTINCTION = "distinction"
     EXAMPLE = "example"
-    OBJECTION = "objection"
-    RESPONSE = "response"
 
 
 class SupportStatus(StrEnum):
@@ -437,6 +444,9 @@ class EpisodePlan(BaseModel):
     segments: list[EpisodeSegment]
     deliberately_omitted_claims: list[DeliberatelyOmittedClaim] = Field(default_factory=list)
     follow_up_topics: list[str] = Field(default_factory=list)
+    # `source_coverage` only (`10c` P3 Step 8): one entry per planned part, in
+    # order. Empty for `focused_question`, which plans a single unnamed part.
+    parts: list[LessonPart] = Field(default_factory=list)
 
     @field_validator("deliberately_omitted_claims", mode="before")
     @classmethod

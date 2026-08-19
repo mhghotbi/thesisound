@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, ResearchBrief
+from thesisound.domain import ClaimRecord, LessonIntent, ResearchBrief
 from thesisound.episode import CoverageAuditDraft, CoverageRecommendation, CoverageReport
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.services.model_runner import ModelRunner
@@ -15,14 +15,23 @@ def can_plan_episode(
     recommendation: CoverageRecommendation,
     max_supported_minutes: int,
     target_duration_minutes: int,
+    lesson_intent: LessonIntent | None = None,
 ) -> bool:
     """Whether an audited corpus carries the requested duration.
 
     Kept separate from the audit itself because the supported minutes describe the
     corpus, while the verdict depends on the duration the listener asked for. A shorter
     request can turn the same audit into a yes.
+
+    `source_coverage` coverage is a per-cell, deterministic accounting (`10c`
+    P3 Step 5), not a single duration estimate -- the 80% supported-duration
+    heuristic does not apply there; the audit's own recommendation is still
+    honoured (`10b` B2: "80% supported-duration gate | per-cell coverage
+    check, advisory").
     """
 
+    if lesson_intent == LessonIntent.SOURCE_COVERAGE:
+        return recommendation == "continue"
     return recommendation == "continue" and max_supported_minutes >= round(
         target_duration_minutes * 0.8
     )
@@ -41,6 +50,7 @@ class CoverageAuditorService:
         extraction_plans: list[EvidenceExtractionPlan],
         model: str,
         prompt_version: str | None = None,
+        lesson_intent: LessonIntent | None = None,
     ) -> tuple[CoverageReport, ModelRunRecord]:
         if not claims:
             raise ValueError("Coverage audit requires at least one grounded claim.")
@@ -66,6 +76,7 @@ class CoverageAuditorService:
             recommendation=draft.recommendation,
             max_supported_minutes=draft.max_supported_minutes,
             target_duration_minutes=brief.target_duration_minutes,
+            lesson_intent=lesson_intent,
         )
         return (
             CoverageReport(
