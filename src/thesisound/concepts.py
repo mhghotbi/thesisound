@@ -126,6 +126,7 @@ def is_banned_or_smell_label(label: str) -> bool:
         return True
     return any(text.startswith(f"{banned} ") for banned in BANNED_LABELS_EN | BANNED_LABELS_FA)
 
+
 DetectedFrom = Literal["heading", "toc", "single"]
 DetectionAgreement = Literal["agreed", "toc_only", "heading_only", "disagreed"]
 ConceptCellKind = Literal[
@@ -235,7 +236,7 @@ class ConceptMapOverlay(BaseModel):
 
 
 class LessonPart(BaseModel):
-    """Placeholder shape reserved for P3 (`10b` B1.5); not built yet."""
+    """One packed episode of in-scope cells (`10b` B1.5; `10c` P3 Step 6)."""
 
     part_index: int = Field(ge=1)
     title_fa: str = Field(min_length=1)
