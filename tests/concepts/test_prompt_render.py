@@ -42,3 +42,46 @@ def test_missing_placeholder_raises() -> None:
     assert "budget" in message
     assert "chapter" in message
     assert "blocks" in message
+
+
+def test_concept_cells_consolidate_1_0_0_renders_with_fixture() -> None:
+    loader = PromptLoader()
+    contract = loader.load_contract("concept_cells_consolidate")
+    assert contract.version == "1.0.0"
+    assert contract.model_tier == "fast"
+    assert contract.output_model == "ConceptCellsConsolidateDraft"
+    assert contract.max_attempts == 2
+
+    bundle = loader.load_bundle(
+        "concept_cells_consolidate",
+        {
+            "chapter_title": "فصل یکم",
+            "target_count": 6,
+            "cells": [
+                {
+                    "cell_key": "ch00-c001",
+                    "label_fa": "تمایز کنش و ساخت",
+                    "kind": "distinction",
+                    "tier": 1,
+                    "section_titles": ["کنش"],
+                    "granularity_rationale": "یک تمایز مستقل است.",
+                    "estimated_minutes": 6,
+                }
+            ],
+        },
+    )
+    assert "<CHAPTER_TITLE>" in bundle.user_prompt
+    assert "فصل یکم" in bundle.user_prompt
+    assert "ch00-c001" in bundle.user_prompt
+    assert "تمایز کنش و ساخت" in bundle.user_prompt
+    assert "{{" not in bundle.system_prompt + bundle.user_prompt
+    assert "cell metadata only" in bundle.system_prompt
+    assert "Never let a section lose its last cell" in bundle.system_prompt
+
+
+def test_consolidate_missing_placeholder_raises() -> None:
+    with pytest.raises(PromptRenderError, match="missing prompt variables") as exc_info:
+        PromptLoader().load_bundle("concept_cells_consolidate", {"chapter_title": "فصل"})
+    message = str(exc_info.value)
+    assert "target_count" in message
+    assert "cells" in message

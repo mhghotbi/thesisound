@@ -30,6 +30,7 @@ prompts/script_verifier/1.0.0/ … 1.2.0/ (فعال: 1.2.0)
 prompts/script_reviser/1.0.0/ … 1.1.0/ (فعال: 1.1.0)
 prompts/web_source_capture/1.0.0/
 prompts/concept_cells/1.0.0/              (P1 Pass 2; سلول‌های مفهومی یک فصل)
+prompts/concept_cells_consolidate/1.0.0/  (P1 Pass 3; ادغام سلول‌های هم‌پوشان یک فصل)
 ```
 
 `prompt_loader` بدون pin بالاترین نسخه را انتخاب می‌کند.

@@ -1,15 +1,17 @@
-"""Concept-map pipeline: Pass 0 (chapters) and Pass 2/2.5 (cells).
+"""Concept-map pipeline: Pass 0 (chapters), Pass 2/2.5 (cells), Pass 3 (consolidate).
 
 Pass 0 (`detect_chapters`) is deterministic. Pass 2 calls `concept_cells/1.0.0`
 through `ModelRunner` with `_validate_cells_draft`; Pass 2.5 (`normalise_cells`)
-is pure. Orchestration that loops chapters arrives in a later step.
+is pure. Pass 3 calls `concept_cells_consolidate/1.0.0` only when a chapter's
+cell count exceeds its budget; applying keep/merge/remove is deterministic.
+Orchestration that loops chapters arrives in a later step.
 """
 
 from __future__ import annotations
 
 import math
 from bisect import bisect_right
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from statistics import median
 from typing import Any
@@ -18,7 +20,9 @@ from uuid import UUID
 from thesisound.concepts import (
     ConceptCell,
     ConceptCellDraft,
+    ConceptCellsConsolidateDraft,
     ConceptCellsDraft,
+    ConsolidateActionDraft,
     DetectedFrom,
     DetectionAgreement,
     SourceChapter,
@@ -233,6 +237,8 @@ def _build_single_chapter(blocks: list[SourceDocumentBlock]) -> list[SourceChapt
 
 _PROMPT_NAME = "concept_cells"
 _PROMPT_VERSION = "1.0.0"
+_CONSOLIDATE_PROMPT_NAME = "concept_cells_consolidate"
+_CONSOLIDATE_PROMPT_VERSION = "1.0.0"
 _MODE = "extraction"
 _MIN_CHAPTER_BUDGET = 6
 _MAX_CHAPTER_BUDGET = 40
@@ -264,6 +270,16 @@ class ChapterCellsResult:
     warnings: tuple[str, ...]
     related_candidates: tuple[tuple[str, str], ...]
     record: ModelRunRecord
+
+
+@dataclass(frozen=True)
+class ConsolidateChapterResult:
+    """Pass 3 output: cells at or under budget, with a run record when the model ran."""
+
+    cells: tuple[ConceptCell, ...]
+    skipped: bool
+    warnings: tuple[str, ...]
+    record: ModelRunRecord | None
 
 
 def chapter_budget(sections: Sequence[DocumentMapSection]) -> int:
@@ -488,6 +504,214 @@ def extract_chapter_cells(
         related_candidates=normalised.related_candidates,
         record=execution.record,
     )
+
+
+def consolidate_chapter(
+    cells: Sequence[ConceptCell],
+    budget: int,
+    *,
+    model_runner: ModelRunner,
+    project_id: UUID,
+    model: str,
+    chapter_title: str,
+    section_titles: Mapping[str, str] | None = None,
+    prompt_version: str | None = None,
+) -> ConsolidateChapterResult:
+    """Pass 3: shrink a chapter to ``budget`` cells. No model call when already at or under."""
+
+    if len(cells) <= budget:
+        return ConsolidateChapterResult(
+            cells=tuple(cells),
+            skipped=True,
+            warnings=(),
+            record=None,
+        )
+
+    titles = dict(section_titles or {})
+    attempt = {"n": 0}
+    max_attempts = _consolidate_max_attempts(model_runner, prompt_version)
+
+    def validate(draft: ConceptCellsConsolidateDraft) -> None:
+        attempt["n"] += 1
+        _validate_consolidate_draft(
+            draft,
+            cells,
+            budget,
+            attempt=attempt["n"],
+            max_attempts=max_attempts,
+        )
+
+    chapter_index = cells[0].chapter_index if cells else 0
+    execution = model_runner.run(
+        project_id=project_id,
+        stage=f"concept_cells_consolidate:ch{chapter_index:02d}",
+        prompt_name=_CONSOLIDATE_PROMPT_NAME,
+        prompt_version=prompt_version or _CONSOLIDATE_PROMPT_VERSION,
+        variables={
+            "chapter_title": chapter_title,
+            "target_count": budget,
+            "cells": [_cell_consolidate_payload(cell, titles) for cell in cells],
+        },
+        output_type=ConceptCellsConsolidateDraft,
+        model=model,
+        validator=validate,
+    )
+    applied = _apply_consolidate_actions(cells, execution.output)
+    return ConsolidateChapterResult(
+        cells=tuple(applied),
+        skipped=False,
+        warnings=_consolidate_action_warnings(execution.output),
+        record=execution.record,
+    )
+
+
+def _validate_consolidate_draft(
+    draft: ConceptCellsConsolidateDraft,
+    cells: Sequence[ConceptCell],
+    budget: int,
+    *,
+    attempt: int = 1,
+    max_attempts: int = 2,
+) -> None:
+    """Deterministic Pass 3 gate. Attempts are recorded for the retry loop; rules stay strict."""
+
+    _ = attempt, max_attempts
+    known_keys = [cell.cell_key for cell in cells]
+    known_set = set(known_keys)
+    if len(known_set) != len(known_keys):
+        raise DeterministicValidationError(
+            "Input cells have duplicate keys; cannot consolidate."
+        )
+
+    actions_by_key: dict[str, ConsolidateActionDraft] = {}
+    duplicates: list[str] = []
+    for action in draft.actions:
+        if action.cell_key in actions_by_key:
+            duplicates.append(action.cell_key)
+        actions_by_key[action.cell_key] = action
+    if duplicates:
+        raise DeterministicValidationError(
+            "Duplicate actions for cell key(s): " + ", ".join(_unique(duplicates))
+        )
+
+    unknown = sorted(set(actions_by_key) - known_set)
+    if unknown:
+        raise DeterministicValidationError(
+            "Unknown cell_key values in consolidate actions: " + ", ".join(unknown)
+        )
+    missing = sorted(known_set - set(actions_by_key))
+    if missing:
+        raise DeterministicValidationError(
+            "Every cell needs one action; missing: " + ", ".join(missing)
+        )
+
+    keep_keys = {
+        action.cell_key for action in draft.actions if action.action == "keep"
+    }
+    for action in draft.actions:
+        if action.action == "merge":
+            if not action.merge_into:
+                raise DeterministicValidationError(
+                    f"{action.cell_key} action=merge requires merge_into."
+                )
+            if action.merge_into == action.cell_key:
+                raise DeterministicValidationError(
+                    f"{action.cell_key} cannot merge into itself."
+                )
+            if action.merge_into not in known_set:
+                raise DeterministicValidationError(
+                    f"{action.cell_key} merge_into {action.merge_into} is not a cell in this chapter."
+                )
+            if action.merge_into not in keep_keys:
+                raise DeterministicValidationError(
+                    f"{action.cell_key} merge_into {action.merge_into} must be a keep action."
+                )
+        elif action.merge_into is not None:
+            raise DeterministicValidationError(
+                f"{action.cell_key} action={action.action} must not set merge_into."
+            )
+
+    surviving = _apply_consolidate_actions(cells, draft)
+    if len(surviving) > budget:
+        raise DeterministicValidationError(
+            f"After consolidate, {len(surviving)} cells remain (budget {budget}). "
+            "Merge or remove more overlapping cells."
+        )
+
+    original_sections = {section_id for cell in cells for section_id in cell.section_ids}
+    surviving_sections = {section_id for cell in surviving for section_id in cell.section_ids}
+    uncovered = sorted(original_sections - surviving_sections)
+    if uncovered:
+        raise DeterministicValidationError(
+            "A section would lose its last cell: " + ", ".join(uncovered)
+        )
+
+
+def _apply_consolidate_actions(
+    cells: Sequence[ConceptCell],
+    draft: ConceptCellsConsolidateDraft,
+) -> list[ConceptCell]:
+    """Apply keep/merge/remove: union blocks/sections onto each keep, keep the lower tier."""
+
+    updated = {cell.cell_key: cell for cell in cells}
+    keep_keys = {action.cell_key for action in draft.actions if action.action == "keep"}
+    for action in draft.actions:
+        if action.action != "merge" or action.merge_into is None:
+            continue
+        source = updated[action.cell_key]
+        target = updated[action.merge_into]
+        updated[action.merge_into] = target.model_copy(
+            update={
+                "block_ids": _unique([*target.block_ids, *source.block_ids]),
+                "section_ids": _unique([*target.section_ids, *source.section_ids]),
+                "evidence_ids": _unique([*target.evidence_ids, *source.evidence_ids]),
+                "tier": target.tier if target.tier <= source.tier else source.tier,
+            }
+        )
+    return [updated[cell.cell_key] for cell in cells if cell.cell_key in keep_keys]
+
+
+def _cell_consolidate_payload(
+    cell: ConceptCell,
+    section_titles: Mapping[str, str],
+) -> dict[str, Any]:
+    """Metadata-only payload: no block text (Pass 3 is labels and structure)."""
+
+    return {
+        "cell_key": cell.cell_key,
+        "label_fa": cell.label_fa,
+        "label_source": cell.label_source,
+        "kind": cell.kind,
+        "tier": cell.tier,
+        "section_ids": list(cell.section_ids),
+        "section_titles": [
+            section_titles.get(section_id, section_id) for section_id in cell.section_ids
+        ],
+        "granularity_rationale": cell.granularity_rationale,
+        "estimated_minutes": cell.estimated_minutes,
+    }
+
+
+def _consolidate_action_warnings(draft: ConceptCellsConsolidateDraft) -> tuple[str, ...]:
+    warnings: list[str] = []
+    for action in draft.actions:
+        if action.action == "keep":
+            continue
+        if action.action == "merge":
+            warnings.append(
+                f"Merged {action.cell_key} into {action.merge_into}: {action.reason}"
+            )
+        else:
+            warnings.append(f"Removed {action.cell_key}: {action.reason}")
+    return tuple(warnings)
+
+
+def _consolidate_max_attempts(model_runner: ModelRunner, prompt_version: str | None) -> int:
+    loader = getattr(model_runner, "prompt_loader", None)
+    if loader is None:
+        return 2
+    version = prompt_version or _CONSOLIDATE_PROMPT_VERSION
+    return loader.load_contract(_CONSOLIDATE_PROMPT_NAME, version=version).max_attempts
 
 
 def _cells_max_attempts(model_runner: ModelRunner, prompt_version: str | None) -> int:

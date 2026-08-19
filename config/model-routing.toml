@@ -71,6 +71,7 @@ web_source_capture = "gemini_fast"
 document_map = "gemini_fast"
 document_map_merge = "gemini_strong"
 concept_cells = "gemini_fast"
+concept_cells_consolidate = "gemini_fast"
 
 # evidence_extraction requires supporting_excerpt to be copied character-for-
 # character from the source block (excerpt_matching.locate_excerpt gate).

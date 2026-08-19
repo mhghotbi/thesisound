@@ -57,6 +57,8 @@ _STAGE_RETRY_POLICIES: dict[str, StageRetryPolicy] = {
     "document_map_merge": StageRetryPolicy(max_contract_repairs=1),
     # Two repairs so attempt 3 can auto-merge duplicates / accept distribution.
     "concept_cells": StageRetryPolicy(max_contract_repairs=2),
+    # Contract max_attempts is 2: one repair, then a strict second attempt.
+    "concept_cells_consolidate": StageRetryPolicy(max_contract_repairs=1),
     "claim_reconciliation": StageRetryPolicy(max_contract_repairs=1),
     "claim_reconciliation_merge": StageRetryPolicy(max_contract_repairs=1),
     "coverage_audit": StageRetryPolicy(max_contract_repairs=1),
