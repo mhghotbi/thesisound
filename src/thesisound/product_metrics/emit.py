@@ -76,7 +76,7 @@ def emit(
         if resolved_user is None and project_id is not None and _user_resolver is not None:
             resolved_user = _user_resolver(project_id)
 
-        is_synthetic = bool(_settings.allow_test_otp) or _settings.environment == "test"
+        is_synthetic = _settings.environment == "test"
         properties_json = json.dumps(payload.model_dump(mode="json"), ensure_ascii=False)
         _store.write(
             name=event.value,

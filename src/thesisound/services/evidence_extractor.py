@@ -362,6 +362,7 @@ class EvidenceExtractorService:
                     extraction=extraction,
                     status="rejected",
                     rejection_reason=("No auditable evidence survived validation after retries."),
+                    more_claims_available=execution.output.more_claims_available,
                 )
             else:
                 record = BlockEvidenceExtraction(
@@ -369,6 +370,7 @@ class EvidenceExtractorService:
                     block_id=block.block_id,
                     extraction=extraction,
                     status="extracted",
+                    more_claims_available=execution.output.more_claims_available,
                 )
         except StructuredOutputError as exc:
             record = BlockEvidenceExtraction(
@@ -482,6 +484,7 @@ class EvidenceExtractorService:
                     claims=_merge_distinct_claims(prior.extraction.claims, extraction.claims),
                 ),
                 "extraction_pass": prior.extraction_pass + 1,
+                "more_claims_available": execution.output.more_claims_available,
             }
         )
         _emit_evidence_attempt_event(project_id, block, merged, counters)
@@ -587,6 +590,7 @@ class EvidenceExtractorService:
                         block_id=block.block_id,
                         extraction=extraction,
                         status="extracted",
+                        more_claims_available=entry.extraction.more_claims_available,
                     ),
                     execution.record,
                 )

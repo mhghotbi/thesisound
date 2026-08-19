@@ -100,13 +100,53 @@ class SupportStatus(StrEnum):
     UNCERTAIN = "uncertain"
 
 
+class LessonIntent(StrEnum):
+    FOCUSED_QUESTION = "focused_question"
+    SOURCE_COVERAGE = "source_coverage"
+
+
+class DeliveryMode(StrEnum):
+    AUDIO = "audio"
+    TEXT = "text"
+    BOTH = "both"
+
+
+class Compression(StrEnum):
+    CONCISE = "concise"
+    STANDARD = "standard"
+    FULL = "full"
+
+
+# Informational total on a derived `source_coverage` brief (`10c` P3 Step 1).
+BRIEF_DURATION_MINUTES_MIN = 5
+BRIEF_DURATION_MINUTES_MAX = 120
+# Per-part target on the project (`10b` B1.1; config default 60).
+MAX_PART_MINUTES = 60
+
+
+class ProjectScope(BaseModel):
+    """Which source — and optionally which chapters — a `source_coverage` project covers."""
+
+    source_id: UUID
+    chapter_indexes: list[int] | None = None
+
+    @field_validator("chapter_indexes")
+    @classmethod
+    def _chapter_indexes_non_negative(cls, value: list[int] | None) -> list[int] | None:
+        if value is not None and any(index < 0 for index in value):
+            raise ValueError("chapter_indexes must be >= 0")
+        return value
+
+
 class ResearchBrief(BaseModel):
     normalized_topic: str
     topic_type: TopicType
     central_question: str
     audience: str = "educated general listener"
     prior_knowledge: Literal["none", "introductory", "intermediate", "advanced"] = "introductory"
-    target_duration_minutes: int = Field(default=30, ge=5, le=120)
+    target_duration_minutes: int = Field(
+        default=30, ge=BRIEF_DURATION_MINUTES_MIN, le=BRIEF_DURATION_MINUTES_MAX
+    )
     output_language: str = "fa"
     modes: list[Literal["explanatory", "critical", "comparative", "debate"]] = Field(
         default_factory=lambda: ["explanatory"]
@@ -116,6 +156,8 @@ class ResearchBrief(BaseModel):
     scope_inclusions: list[str] = Field(default_factory=list)
     scope_exclusions: list[str] = Field(default_factory=list)
     ambiguities: list[str] = Field(default_factory=list)
+    # In-scope concept-map cells of a derived `source_coverage` brief (`10b` B1.1).
+    cell_keys: list[str] = Field(default_factory=list)
 
 
 class SearchQuery(BaseModel):
@@ -486,3 +528,10 @@ class Project(BaseModel):
     episode_plan: EpisodePlan | None = None
     script: Script | None = None
     last_error: str | None = None
+    # Optional `source_coverage` fields (`10b` B1.1). Defaults keep focused_question.
+    lesson_intent: LessonIntent = LessonIntent.FOCUSED_QUESTION
+    delivery: DeliveryMode = DeliveryMode.AUDIO
+    compression: Compression = Compression.STANDARD
+    episode_target_minutes: int = Field(default=20, ge=5, le=MAX_PART_MINUTES)
+    scope: ProjectScope | None = None
+    known_concepts: list[str] = Field(default_factory=list)

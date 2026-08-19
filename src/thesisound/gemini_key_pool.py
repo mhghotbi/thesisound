@@ -21,6 +21,10 @@ class GeminiKeyPoolExhausted(RuntimeError):
 
     status_code = 429
 
+    def __init__(self, message: str, *, retry_after_seconds: float = 0.0) -> None:
+        super().__init__(message)
+        self.retry_after_seconds = retry_after_seconds
+
 
 class GeminiAuthenticationError(RuntimeError):
     """Raised when API-key authentication fails and OAuth/ADC cannot recover."""
@@ -161,7 +165,8 @@ class GeminiKeyPool:
             )
             raise GeminiKeyPoolExhausted(
                 "All configured Gemini API keys are temporarily quota-blocked; "
-                f"retry in approximately {wait_seconds:.0f} seconds."
+                f"retry in approximately {wait_seconds:.0f} seconds.",
+                retry_after_seconds=wait_seconds,
             )
         raise GeminiKeyPoolExhausted("No Gemini API key was available.")
 

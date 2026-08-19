@@ -181,3 +181,29 @@ def test_retry_schema_errors_false_stops_with_explicit_reason() -> None:
     )
     assert not decision.should_retry
     assert decision.stop_reason == "schema_retries_disabled"
+
+
+def test_rate_limit_honors_retry_after_seconds_hint() -> None:
+    decision = decide_retry(
+        ModelRateLimitError("429", retry_after_seconds=45),
+        attempt=1,
+        max_attempts=3,
+        prompt_id="evidence_extraction",
+        retry_schema_errors=True,
+        base_delay_seconds=1,
+    )
+    assert decision.should_retry
+    assert decision.delay_seconds >= 45
+
+
+def test_rate_limit_without_hint_keeps_exponential_backoff() -> None:
+    decision = decide_retry(
+        ModelRateLimitError("429"),
+        attempt=2,
+        max_attempts=3,
+        prompt_id="evidence_extraction",
+        retry_schema_errors=True,
+        base_delay_seconds=1,
+    )
+    assert decision.should_retry
+    assert decision.delay_seconds == 2

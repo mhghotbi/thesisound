@@ -126,6 +126,7 @@ class ModelError(RuntimeError):
         *,
         retryable: bool | None = None,
         usage: ModelUsage | None = None,
+        retry_after_seconds: float | None = None,
     ) -> None:
         super().__init__(message)
         if retryable is not None:
@@ -133,6 +134,7 @@ class ModelError(RuntimeError):
         # Tokens the provider billed before the call was rejected. None means
         # nothing was billed (or we never found out) -- never coerce it to zero.
         self.usage = usage
+        self.retry_after_seconds = retry_after_seconds
 
 
 class ModelProviderError(ModelError):

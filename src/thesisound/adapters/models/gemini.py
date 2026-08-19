@@ -598,7 +598,8 @@ def _map_provider_error(exc: Exception) -> ModelError:
     status = _status_code(exc)
 
     if status == 429 or "resourceexhausted" in name or "ratelimit" in name:
-        return ModelRateLimitError(message)
+        retry_after = getattr(exc, "retry_after_seconds", None)
+        return ModelRateLimitError(message, retry_after_seconds=retry_after)
     if "timeout" in name or "deadline" in name:
         return ModelTimeoutError(message)
     if "safety" in name or "blocked" in name:

@@ -57,7 +57,7 @@ def _fixture(count: int = 8) -> tuple[UUID, list[SourceDocumentBlock], DocumentM
     )
 
 
-def _draft(text: str) -> EvidenceExtractionDraft:
+def _draft(text: str, *, more_claims_available: bool = False) -> EvidenceExtractionDraft:
     return EvidenceExtractionDraft(
         segment_function="argument",
         claims=[
@@ -69,12 +69,14 @@ def _draft(text: str) -> EvidenceExtractionDraft:
                 confidence=0.9,
             )
         ],
+        more_claims_available=more_claims_available,
     )
 
 
 class BatchRunner:
-    def __init__(self, *, mode: str = "normal") -> None:
+    def __init__(self, *, mode: str = "normal", more_claims_available: bool = False) -> None:
         self.mode = mode
+        self.more_claims_available = more_claims_available
         self.calls: list[tuple[str, list[str]]] = []
         self.batch_prompt_versions: list[str | None] = []
 
@@ -93,7 +95,7 @@ class BatchRunner:
             block = variables["block"]
             assert isinstance(block, dict)
             texts = [str(block["text"])]
-            output = _draft(texts[0])
+            output = _draft(texts[0], more_claims_available=self.more_claims_available)
         else:
             assert stage == "evidence_extraction_batch"
             assert output_type is BatchEvidenceExtractionDraft
@@ -107,7 +109,10 @@ class BatchRunner:
             if self.mode == "provider":
                 raise ModelProviderError("provider unavailable")
             entries = [
-                BatchEvidenceEntryDraft(block_index=index, extraction=_draft(text))
+                BatchEvidenceEntryDraft(
+                    block_index=index,
+                    extraction=_draft(text, more_claims_available=self.more_claims_available),
+                )
                 for index, text in enumerate(texts, start=1)
             ]
             if self.mode == "reversed":
@@ -325,3 +330,35 @@ def test_batch_size_setting_and_constructor_are_bounded() -> None:
 def test_batch_entry_index_is_one_based() -> None:
     with pytest.raises(ValueError):
         BatchEvidenceEntryDraft(block_index=0, extraction=_draft("enough source text"))
+
+
+def test_more_claims_available_persists_on_single_block_extraction() -> None:
+    source_id, blocks, document_map = _fixture(1)
+    records, _ = EvidenceExtractorService(
+        BatchRunner(more_claims_available=True),
+        batch_size=1,
+    ).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+    )
+    assert len(records) == 1
+    assert records[0].more_claims_available is True
+
+
+def test_more_claims_available_persists_on_batch_extraction() -> None:
+    source_id, blocks, document_map = _fixture(4)
+    records, _ = EvidenceExtractorService(
+        BatchRunner(more_claims_available=True),
+        batch_size=4,
+    ).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+    )
+    assert len(records) == 4
+    assert all(record.more_claims_available for record in records)

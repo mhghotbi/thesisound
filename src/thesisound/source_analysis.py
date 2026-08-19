@@ -218,6 +218,9 @@ class BlockEvidenceExtraction(BaseModel):
     extraction_pass: int = Field(default=1, ge=1)
     extraction_identity: dict[str, Any] | None = None
     schema_version: int = 1
+    # Extraction 2.0: copied from the draft. Default False so pre-2.0 artifacts
+    # still load. The second-pass caller (P3) reads this; it is not a gate yet.
+    more_claims_available: bool = False
 
 
 class ClaimDraft(BaseModel):

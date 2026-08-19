@@ -8,6 +8,7 @@ from uuid import uuid4
 import pytest
 
 from thesisound import tracing
+from thesisound.config import Settings
 from thesisound.modeling import ModelUsage
 from thesisound.observability import (
     ModelCallSpec,
@@ -15,6 +16,7 @@ from thesisound.observability import (
     PipelineRunSpec,
     ProviderMetadata,
     _MIGRATIONS,
+    ledger_from_settings,
 )
 from thesisound.services.lineage_events import (
     emit_cache_lookup,
@@ -320,3 +322,16 @@ def test_production_root_span_requires_workflow(tmp_path: Path) -> None:
                 pid=1,
             )
         )
+
+
+def test_development_ledger_is_not_synthetic_when_test_otp_enabled(tmp_path: Path) -> None:
+    settings = Settings(
+        environment="development",
+        allow_test_otp=True,
+        workspace_root=tmp_path / "workspaces",
+        observability_database_path=tmp_path / "ledger.sqlite3",
+        observability_artifact_root=tmp_path / "artifacts",
+    )
+    ledger = ledger_from_settings(settings)
+    assert ledger.is_synthetic is False
+    assert ledger.environment == "development"

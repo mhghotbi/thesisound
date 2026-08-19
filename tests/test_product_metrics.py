@@ -453,3 +453,32 @@ def test_emit_survives_readonly_metrics_path(tmp_path: Path) -> None:
     finally:
         reset_product_metrics()
         os.chmod(readonly_dir, stat.S_IRWXU)
+
+
+def test_development_emit_is_not_synthetic_when_test_otp_enabled(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)
+    settings = Settings(
+        environment="development",
+        allow_test_otp=True,
+        workspace_root=tmp_path / "workspaces",
+        observability_database_path=ledger.database_path,
+    )
+    store = ProductEventStore(ledger.database_path)
+    configure_product_metrics(settings, store)  # type: ignore[arg-type]
+    try:
+        emit(
+            ProductEvent.PROJECT_STAGE_ENTERED,
+            ProjectStageEntered(
+                stage=1,
+                from_stage=None,
+                state="draft",
+                from_state="draft",
+            ),
+            project_id=uuid4(),
+        )
+        events = store.list_events(name=ProductEvent.PROJECT_STAGE_ENTERED.value)
+        assert len(events) == 1
+        assert events[0].is_synthetic is False
+        assert events[0].environment == "development"
+    finally:
+        reset_product_metrics()

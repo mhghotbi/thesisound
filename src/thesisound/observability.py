@@ -1830,7 +1830,7 @@ def ledger_from_settings(settings: Any | None = None) -> ObservabilityLedger:
     # so importing CostCalculator at module level here would be circular.
     from thesisound.services.model_pricing import CostCalculator
 
-    is_synthetic = bool(settings.allow_test_otp) or settings.environment == "test"
+    is_synthetic = settings.environment == "test"
     return shared_observability_ledger(
         settings.resolved_observability_database_path,
         settings.resolved_observability_artifact_root,

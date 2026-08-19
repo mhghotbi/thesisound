@@ -148,8 +148,9 @@ def test_pool_reports_when_all_keys_are_temporarily_blocked() -> None:
 
     with pytest.raises(QuotaError):
         pool.call(lambda _: (_ for _ in ()).throw(QuotaError("rate limit")))
-    with pytest.raises(GeminiKeyPoolExhausted, match="30 seconds"):
+    with pytest.raises(GeminiKeyPoolExhausted, match="30 seconds") as raised:
         pool.call(lambda _: "not reached")
+    assert raised.value.retry_after_seconds == pytest.approx(30.0, abs=1.0)
 
 
 def test_settings_accept_json_or_comma_separated_key_pool() -> None:

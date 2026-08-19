@@ -129,6 +129,10 @@ def decide_retry(
     error_class = classify_error(error)
     if error_class in {"provider", "rate_limit", "timeout"}:
         delay = base_delay_seconds * (2 ** (attempt - 1))
+        if error_class == "rate_limit":
+            hinted = getattr(error, "retry_after_seconds", None)
+            if hinted is not None:
+                delay = max(delay, float(hinted))
         return RetryDecision(should_retry=True, delay_seconds=delay)
 
     # Contract / structured-output failures.
