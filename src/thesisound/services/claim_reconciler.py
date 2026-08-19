@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from uuid import UUID
 
 from thesisound import tracing
-from thesisound.domain import ClaimRecord, EvidenceItem, SupportStatus
+from thesisound.domain import ClaimRecord, ClaimType, EvidenceItem, SupportStatus
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
@@ -214,7 +214,7 @@ class ClaimReconcilerService:
         }
 
         def validate(draft: ClaimReconciliationDraft) -> None:
-            _validate_draft(draft, set(evidence_by_id))
+            _validate_draft(draft, evidence_by_id)
 
         execution = self.model_runner.run(
             project_id=project_id,
@@ -237,8 +237,8 @@ class ClaimReconcilerService:
         model: str,
         prompt_version: str | None,
     ) -> tuple[ClaimMergeDraft, ModelRunRecord]:
-        known_ids = {
-            claim.claim_id for claims in batch_claims for claim in claims
+        known = {
+            claim.claim_id: claim for claims in batch_claims for claim in claims
         }
         variables = {
             "source_id": str(source_id),
@@ -250,6 +250,10 @@ class ClaimReconcilerService:
                     "claim": claim.claim,
                     "claim_type": claim.claim_type.value,
                     "support_status": claim.support_status.value,
+                    "qualifications": list(claim.qualifications),
+                    "must_not_be_lost": claim.must_not_be_lost,
+                    "term": claim.term,
+                    "contrast": list(claim.contrast) if claim.contrast is not None else None,
                 }
                 for index, claims in enumerate(batch_claims, start=1)
                 for claim in claims
@@ -257,7 +261,11 @@ class ClaimReconcilerService:
         }
 
         def validate(draft: ClaimMergeDraft) -> None:
-            _validate_merge_draft(draft, known_ids)
+            _validate_merge_draft(
+                draft,
+                set(known),
+                {claim_id: record.claim_type for claim_id, record in known.items()},
+            )
 
         execution = self.model_runner.run(
             project_id=project_id,
@@ -322,8 +330,9 @@ def _partition_evidence(
 
 def _validate_draft(
     draft: ClaimReconciliationDraft,
-    evidence_ids: set[str],
+    evidence_by_id: dict[str, EvidenceItem],
 ) -> None:
+    evidence_ids = set(evidence_by_id)
     referenced: list[str] = []
     normalized_claims: set[str] = set()
     for claim in draft.claims:
@@ -332,6 +341,18 @@ def _validate_draft(
             raise DeterministicValidationError(
                 "Claim referenced unknown evidence IDs: "
                 f"{', '.join(sorted(unknown))}."
+            )
+        cited_types = {evidence_by_id[evidence_id].claim_type for evidence_id in claim.evidence_ids}
+        if len(cited_types) > 1:
+            raise DeterministicValidationError(
+                "Reconciled claims must not merge evidence of different claim_type "
+                f"(got: {', '.join(sorted(item.value for item in cited_types))})."
+            )
+        only_type = next(iter(cited_types))
+        if claim.claim_type != only_type:
+            raise DeterministicValidationError(
+                "Reconciled claim_type must match the cited evidence "
+                f"(claim is {claim.claim_type.value}, evidence is {only_type.value})."
             )
         normalized = _normalize(claim.claim).casefold()
         if normalized in normalized_claims:
@@ -364,9 +385,19 @@ def _validate_draft(
         )
 
 
-def _validate_merge_draft(draft: ClaimMergeDraft, known_ids: set[str]) -> None:
+def _validate_merge_draft(
+    draft: ClaimMergeDraft,
+    known_ids: set[str],
+    claim_types: dict[str, ClaimType] | None = None,
+) -> None:
     seen: set[str] = set()
     for group in draft.merge_groups:
+        if group.canonical_claim_id not in group.claim_ids:
+            raise DeterministicValidationError(
+                "canonical_claim_id must be one of the group's claim_ids "
+                f"(got {group.canonical_claim_id!r})."
+            )
+        group_types: set[ClaimType] = set()
         for claim_id in group.claim_ids:
             if claim_id not in known_ids:
                 raise DeterministicValidationError(
@@ -377,6 +408,13 @@ def _validate_merge_draft(draft: ClaimMergeDraft, known_ids: set[str]) -> None:
                     f"Claim ID appears in more than one merge group: {claim_id}."
                 )
             seen.add(claim_id)
+            if claim_types is not None and claim_id in claim_types:
+                group_types.add(claim_types[claim_id])
+        if len(group_types) > 1:
+            raise DeterministicValidationError(
+                "Merge groups must not mix claim_type "
+                f"(got: {', '.join(sorted(item.value for item in group_types))})."
+            )
 
 
 def _apply_merge_groups(
@@ -384,7 +422,7 @@ def _apply_merge_groups(
     batch_claims: list[list[ClaimRecord]],
     draft: ClaimMergeDraft,
 ) -> list[ClaimRecord]:
-    """Union evidence/source IDs for each merge group; first-seen-wins on claim text."""
+    """Keep the canonical member's text; union evidence, qualifications, and flags."""
 
     ordered: list[ClaimRecord] = [claim for claims in batch_claims for claim in claims]
     by_id = {claim.claim_id: claim for claim in ordered}
@@ -393,40 +431,51 @@ def _apply_merge_groups(
 
     for group in draft.merge_groups:
         members = [by_id[claim_id] for claim_id in group.claim_ids]
-        # First-seen in batch order, not group order.
         members_in_order = sorted(
             members,
             key=lambda claim: next(
                 index for index, item in enumerate(ordered) if item.claim_id == claim.claim_id
             ),
         )
-        first = members_in_order[0]
+        canonical = by_id[group.canonical_claim_id]
+        carry_order = [
+            canonical,
+            *[
+                member
+                for member in members_in_order
+                if member.claim_id != canonical.claim_id
+            ],
+        ]
         evidence_ids = list(
             dict.fromkeys(
-                evidence_id for claim in members_in_order for evidence_id in claim.evidence_ids
+                evidence_id for claim in carry_order for evidence_id in claim.evidence_ids
             )
         )
         agreeing = sorted(
             {
                 source
-                for claim in members_in_order
+                for claim in carry_order
                 for source in claim.agreeing_source_ids
             },
             key=str,
         )
         result.append(
             ClaimRecord(
-                claim_id=_claim_id(source_id, first.claim, evidence_ids),
-                claim=first.claim,
-                claim_type=first.claim_type,
+                claim_id=_claim_id(source_id, canonical.claim, evidence_ids),
+                claim=canonical.claim,
+                claim_type=canonical.claim_type,
                 evidence_ids=evidence_ids,
-                support_status=first.support_status,
-                qualifications=list(first.qualifications),
+                support_status=canonical.support_status,
+                qualifications=_unique_in_order(
+                    qualification
+                    for claim in carry_order
+                    for qualification in claim.qualifications
+                ),
                 agreeing_source_ids=agreeing,
                 disagreeing_source_ids=[],
-                must_not_be_lost=any(member.must_not_be_lost for member in members_in_order),
-                term=first.term,
-                contrast=first.contrast,
+                must_not_be_lost=any(member.must_not_be_lost for member in carry_order),
+                term=_first_present(member.term for member in carry_order),
+                contrast=_first_present(member.contrast for member in carry_order),
             )
         )
         merged_away.update(group.claim_ids)
@@ -445,14 +494,8 @@ def _materialize_ledger(
     claims: list[ClaimRecord] = []
     for item in draft.claims:
         evidence_ids = list(dict.fromkeys(item.evidence_ids))
-        source_ids = sorted(
-            {evidence_by_id[evidence_id].source_id for evidence_id in evidence_ids},
-            key=str,
-        )
-        # A merge could combine evidence whose must_not_be_lost/term/contrast
-        # flags disagree; first-seen (by evidence order) wins, matching the
-        # merge tie-break in `_apply_merge_groups`.
-        first_evidence = evidence_by_id[evidence_ids[0]] if evidence_ids else None
+        cited = [evidence_by_id[evidence_id] for evidence_id in evidence_ids]
+        source_ids = sorted({record.source_id for record in cited}, key=str)
         claims.append(
             ClaimRecord(
                 claim_id=_claim_id(source_id, item.claim, evidence_ids),
@@ -460,14 +503,22 @@ def _materialize_ledger(
                 claim_type=item.claim_type,
                 evidence_ids=evidence_ids,
                 support_status=item.support_status,
-                qualifications=item.qualifications,
+                qualifications=_unique_in_order(
+                    [
+                        *item.qualifications,
+                        *(
+                            qualification
+                            for record in cited
+                            for qualification in record.qualifications
+                        ),
+                    ]
+                ),
                 agreeing_source_ids=source_ids,
                 disagreeing_source_ids=[],
-                must_not_be_lost=any(
-                    evidence_by_id[evidence_id].must_not_be_lost for evidence_id in evidence_ids
-                ),
-                term=first_evidence.term if first_evidence is not None else None,
-                contrast=first_evidence.contrast if first_evidence is not None else None,
+                must_not_be_lost=item.must_not_be_lost
+                or any(record.must_not_be_lost for record in cited),
+                term=item.term or _first_present(record.term for record in cited),
+                contrast=item.contrast or _first_present(record.contrast for record in cited),
             )
         )
     return ClaimLedger(
@@ -525,6 +576,17 @@ def _claim_id(source_id: UUID, claim: str, evidence_ids: list[str]) -> str:
 
 def _normalize(text: str) -> str:
     return _WHITESPACE.sub(" ", text).strip()
+
+
+def _unique_in_order(values: Iterable[str]) -> list[str]:
+    return list(dict.fromkeys(values))
+
+
+def _first_present[T](values: Iterable[T]) -> T | None:
+    for value in values:
+        if value is not None:
+            return value
+    return None
 
 
 def _empty_run_record(project_id: UUID, model: str) -> ModelRunRecord:

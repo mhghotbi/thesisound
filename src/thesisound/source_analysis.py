@@ -226,6 +226,9 @@ class ClaimDraft(BaseModel):
     evidence_ids: list[str] = Field(min_length=1)
     support_status: SupportStatus
     qualifications: list[str] = Field(default_factory=list)
+    must_not_be_lost: bool = False
+    term: str | None = None
+    contrast: tuple[str, str] | None = None
 
 
 class ClaimReconciliationDraft(BaseModel):
@@ -238,6 +241,18 @@ class ClaimMergeGroup(BaseModel):
     """Claim IDs from different reconciliation batches that express the same proposition."""
 
     claim_ids: list[str] = Field(min_length=2)
+    # Empty on parse means "use the first listed member"; the validator fills it.
+    canonical_claim_id: str = ""
+
+    @model_validator(mode="after")
+    def require_canonical_in_group(self) -> ClaimMergeGroup:
+        if not self.canonical_claim_id:
+            self.canonical_claim_id = self.claim_ids[0]
+        elif self.canonical_claim_id not in self.claim_ids:
+            raise ValueError(
+                f"canonical_claim_id {self.canonical_claim_id!r} is not one of claim_ids."
+            )
+        return self
 
 
 class ClaimMergeDraft(BaseModel):

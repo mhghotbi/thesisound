@@ -54,8 +54,8 @@
 | 11 | P1 | orchestration + کش + overlay + resume | انجام‌شده 2026-08-19 |
 | 12 | P1 | CLI `concept-map` + صفحهٔ نقشه | انجام‌شده 2026-08-19 |
 | C-B | ✔ | **چک‌پوینت B** — نقشهٔ یک منبع واقعی | انجام‌شده 2026-08-19 |
-| 13 | P2 | استخراج ۲.۰ (+ batch، گذر دوم، پوشش، batch سلولی) | |
-| 14 | P2 | reconciliation 1.1.0 + merge 1.1.0 | |
+| 13 | P2 | استخراج ۲.۰ (+ batch، گذر دوم، پوشش، batch سلولی) | انجام‌شده 2026-08-19 |
+| 14 | P2 | reconciliation 1.1.0 + merge 1.1.0 | انجام‌شده 2026-08-19 |
 | 15 | P2 | planner 1.3.0 + plumbing verifier | |
 | 16 | P2 | glossary 1.1.0 + document_map 1.1.0 + web capture | |
 | 17 | P2 | re-baseline golden + CHANGELOG + docs | |

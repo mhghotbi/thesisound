@@ -19,11 +19,14 @@ from thesisound.modeling import (
     ModelExecution,
     ModelRunRecord,
 )
+from thesisound.prompt_loader import PromptLoader
 from thesisound.services.claim_reconciler import (
     ClaimReconcilerService,
     _apply_merge_groups,
     _claim_id,
+    _materialize_ledger,
     _partition_evidence,
+    _validate_draft,
     _validate_merge_draft,
 )
 from thesisound.source_analysis import (
@@ -470,7 +473,11 @@ def test_merge_group_unifies_evidence_and_source_ids() -> None:
         support_status=SupportStatus.MODERATE,
         agreeing_source_ids=[source_id],
     )
-    draft = ClaimMergeDraft(merge_groups=[ClaimMergeGroup(claim_ids=["clm-a", "clm-b"])])
+    draft = ClaimMergeDraft(
+        merge_groups=[
+            ClaimMergeGroup(claim_ids=["clm-a", "clm-b"], canonical_claim_id="clm-a")
+        ]
+    )
 
     merged = _apply_merge_groups(source_id, [[first], [second]], draft)
 
@@ -484,7 +491,7 @@ def test_merge_group_unifies_evidence_and_source_ids() -> None:
     )
 
 
-def test_merge_group_ties_break_first_seen() -> None:
+def test_merge_group_uses_canonical_claim_id() -> None:
     source_id = uuid4()
     earlier = ClaimRecord(
         claim_id="clm-early",
@@ -494,28 +501,151 @@ def test_merge_group_ties_break_first_seen() -> None:
         support_status=SupportStatus.MODERATE,
         qualifications=["From batch one."],
         agreeing_source_ids=[source_id],
+        term=None,
     )
     later = ClaimRecord(
         claim_id="clm-late",
-        claim="Later wording.",
-        claim_type=ClaimType.CRITICISM,
+        claim="Later wording, more qualified.",
+        claim_type=ClaimType.AUTHOR_POSITION,
         evidence_ids=["ev-2"],
         support_status=SupportStatus.STRONG,
         qualifications=["From batch two."],
         agreeing_source_ids=[source_id],
+        must_not_be_lost=True,
+        term="Action",
+        contrast=("Action", "Labor"),
     )
-    # Group lists later first; batch order still wins.
     draft = ClaimMergeDraft(
-        merge_groups=[ClaimMergeGroup(claim_ids=["clm-late", "clm-early"])]
+        merge_groups=[
+            ClaimMergeGroup(
+                claim_ids=["clm-late", "clm-early"],
+                canonical_claim_id="clm-late",
+            )
+        ]
     )
 
     merged = _apply_merge_groups(source_id, [[earlier], [later]], draft)
 
     assert len(merged) == 1
-    assert merged[0].claim == "Earlier wording."
+    assert merged[0].claim == "Later wording, more qualified."
     assert merged[0].claim_type == ClaimType.AUTHOR_POSITION
-    assert merged[0].support_status == SupportStatus.MODERATE
-    assert merged[0].qualifications == ["From batch one."]
+    assert merged[0].support_status == SupportStatus.STRONG
+    assert merged[0].qualifications == ["From batch two.", "From batch one."]
+    assert merged[0].must_not_be_lost is True
+    assert merged[0].term == "Action"
+    assert merged[0].contrast == ("Action", "Labor")
+    assert merged[0].claim_id == _claim_id(
+        source_id, "Later wording, more qualified.", ["ev-2", "ev-1"]
+    )
+
+
+def test_merge_rejects_mixed_claim_types() -> None:
+    with pytest.raises(DeterministicValidationError, match="mix claim_type"):
+        _validate_merge_draft(
+            ClaimMergeDraft(
+                merge_groups=[
+                    ClaimMergeGroup(
+                        claim_ids=["clm-a", "clm-b"],
+                        canonical_claim_id="clm-a",
+                    )
+                ]
+            ),
+            known_ids={"clm-a", "clm-b"},
+            claim_types={
+                "clm-a": ClaimType.DEFINITION,
+                "clm-b": ClaimType.AUTHOR_POSITION,
+            },
+        )
+
+
+def test_reconcile_rejects_mixed_claim_types() -> None:
+    source_id = uuid4()
+    evidence_by_id = {
+        "ev-def": EvidenceItem(
+            evidence_id="ev-def",
+            source_id=source_id,
+            block_id="block-01",
+            claim="Action is defined as beginning.",
+            claim_type=ClaimType.DEFINITION,
+            supporting_excerpt="Action is defined as beginning.",
+            locator=_locator(1),
+            support_kind="direct",
+            confidence=0.9,
+            term="Action",
+        ),
+        "ev-pos": _claim_evidence(source_id, "block-01", "ev-pos"),
+    }
+    draft = ClaimReconciliationDraft(
+        claims=[
+            ClaimDraft(
+                claim="Action is beginning and occurs between persons.",
+                claim_type=ClaimType.DEFINITION,
+                evidence_ids=["ev-def", "ev-pos"],
+                support_status=SupportStatus.STRONG,
+            )
+        ]
+    )
+
+    with pytest.raises(DeterministicValidationError, match="different claim_type"):
+        _validate_draft(draft, evidence_by_id)
+
+
+def test_materialize_ledger_carries_must_not_be_lost_term_and_contrast() -> None:
+    source_id = uuid4()
+    evidence_by_id = {
+        "ev-a": EvidenceItem(
+            evidence_id="ev-a",
+            source_id=source_id,
+            block_id="block-01",
+            claim="Action is beginning.",
+            claim_type=ClaimType.DEFINITION,
+            supporting_excerpt="Action is beginning.",
+            locator=_locator(1),
+            support_kind="direct",
+            confidence=0.9,
+            qualifications=["In the political realm."],
+            must_not_be_lost=False,
+            term=None,
+        ),
+        "ev-b": EvidenceItem(
+            evidence_id="ev-b",
+            source_id=source_id,
+            block_id="block-02",
+            claim="Action means beginning something new.",
+            claim_type=ClaimType.DEFINITION,
+            supporting_excerpt="Action means beginning something new.",
+            locator=_locator(2),
+            support_kind="direct",
+            confidence=0.8,
+            qualifications=["Not labor."],
+            must_not_be_lost=True,
+            term="Action",
+            contrast=("Action", "Labor"),
+        ),
+    }
+    draft = ClaimReconciliationDraft(
+        claims=[
+            ClaimDraft(
+                claim="Action is beginning something new.",
+                claim_type=ClaimType.DEFINITION,
+                evidence_ids=["ev-a", "ev-b"],
+                support_status=SupportStatus.STRONG,
+                qualifications=["As natality."],
+            )
+        ]
+    )
+
+    ledger = _materialize_ledger(source_id, draft, evidence_by_id)
+
+    assert len(ledger.claims) == 1
+    assert ledger.claims[0].must_not_be_lost is True
+    assert ledger.claims[0].term == "Action"
+    assert ledger.claims[0].contrast == ("Action", "Labor")
+    assert ledger.claims[0].qualifications == [
+        "As natality.",
+        "In the political realm.",
+        "Not labor.",
+    ]
 
 
 def test_merge_rejects_unknown_claim_id() -> None:
@@ -632,3 +762,25 @@ def test_reconcile_multi_batch_merge_unifies_matching_claims() -> None:
 
     assert len(ledger.claims) == 1
     assert set(ledger.claims[0].evidence_ids) == {"ev-0", "ev-1"}
+
+
+def test_latest_reconciliation_prompts_are_1_1_0() -> None:
+    loader = PromptLoader()
+    recon = loader.load_bundle(
+        "claim_reconciliation",
+        {"source_id": "source", "evidence_items": []},
+    )
+    merge = loader.load_bundle(
+        "claim_reconciliation_merge",
+        {"source_id": "source", "batch_count": 2, "claims": []},
+    )
+    assert recon.contract.version == "1.1.0"
+    assert merge.contract.version == "1.1.0"
+    assert "Never merge claims of different claim_type" in recon.system_prompt
+    assert "canonical_claim_id" in merge.system_prompt
+    older = loader.load_bundle(
+        "claim_reconciliation",
+        {"source_id": "source", "evidence_items": []},
+        version="1.0.0",
+    )
+    assert "Never merge claims of different claim_type" not in older.system_prompt
