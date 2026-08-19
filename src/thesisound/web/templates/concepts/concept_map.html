@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% from "components.html" import status_label, technical_details, error_notice %}
+{% block title %}نقشهٔ مفاهیم | مقال{% endblock %}
+{% block content %}
+<header class="page-heading page-heading--compact">
+  <div>
+    <p class="kicker">نقشهٔ مفهومی منبع</p>
+    <h1>{{ source_title }}</h1>
+    <p>فصل‌ها، مفاهیم و رابطه‌ها را ببینید و در صورت نیاز اصلاح کنید. اصلاح شما با بازسازی نقشه پاک نمی‌شود.</p>
+    {% if statistics %}
+    <div class="page-heading__meta">
+      <span>{{ statistics.cell_count | fa_num }} مفهوم</span>
+      <span>{{ edges | length | fa_num }} رابطه</span>
+      {% if statistics.promoted_cell_keys %}<span>{{ statistics.promoted_cell_keys | length | fa_num }} ارتقایافته</span>{% endif %}
+      {% if needs_review %}<span>{{ needs_review | length | fa_num }} مورد نیازمند بازبینی</span>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/sources">بازگشت به منابع</a>
+</header>
+
+{% if error %}
+{{ error_notice(error) }}
+{% endif %}
+
+{% if concept_map is none %}
+<div class="empty-inline">
+  <strong>هنوز نقشه‌ای برای این منبع ساخته نشده است.</strong>
+  <span>از خط فرمان <bdi dir="ltr">thesisound concept-map</bdi> را روی فایل منبع اجرا کنید.</span>
+</div>
+{% else %}
+
+<section class="section-block" aria-labelledby="chapters-title">
+  <div class="section-heading section-heading--rule">
+    <h2 id="chapters-title">فصل‌ها</h2>
+    <span>{{ chapters | length | fa_num }} فصل</span>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>فصل</th>
+          <th>عنوان</th>
+          <th>تشخیص</th>
+          <th>دقیقه</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for chapter in chapters %}
+        <tr>
+          <td>{{ (chapter.chapter_index + 1) | fa_num }}</td>
+          <td>{{ chapter.title }}</td>
+          <td>
+            {{ agreement_labels.get(chapter.detection_agreement, chapter.detection_agreement) }}
+            {% if chapter.detection_agreement == 'disagreed' %}
+              {{ status_label('نیازمند بازبینی', '', 'attention', pill=true) }}
+            {% endif %}
+          </td>
+          <td>{{ chapter.estimated_minutes | round(1) | fa_num }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section-block" aria-labelledby="cells-title">
+  <div class="section-heading section-heading--rule">
+    <h2 id="cells-title">مفاهیم</h2>
+    <span>{{ cells | length | fa_num }} مورد</span>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>برچسب</th>
+          <th>گونه</th>
+          <th>اهمیت</th>
+          <th>دقیقه</th>
+          <th>رد به منبع</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in cell_rows %}
+        {% set cell = row.cell %}
+        <tr>
+          <td>
+            {{ cell.label_fa }}
+            {% if cell.created_by == 'user' %}<small>افزودهٔ شما</small>{% endif %}
+          </td>
+          <td>{{ row.kind_label }}</td>
+          <td>
+            {{ cell.tier | fa_num }}
+            {% if cell.tier_promoted %}<span class="promoted-mark">ارتقا‌یافته</span>{% endif %}
+          </td>
+          <td>{{ cell.estimated_minutes | round(1) | fa_num }}</td>
+          <td>
+            {% for trace in row.traces %}
+            <p class="source-trace">
+              <code class="operator-only"><bdi dir="ltr">{{ trace.block_id }}</bdi></code>
+              {% if trace.snippet %}<span>{{ trace.snippet }}</span>{% endif %}
+            </p>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section-block" aria-labelledby="edges-title">
+  <div class="section-heading section-heading--rule">
+    <h2 id="edges-title">رابطه‌ها</h2>
+    <span>{{ edges | length | fa_num }} مورد</span>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>از</th>
+          <th>به</th>
+          <th>نوع</th>
+          <th>دلیل</th>
+          <th>منبع</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in edge_rows %}
+        {% set edge = row.edge %}
+        <tr>
+          <td><code><bdi dir="ltr">{{ edge.source_key }}</bdi></code></td>
+          <td><code><bdi dir="ltr">{{ edge.target_key }}</bdi></code></td>
+          <td>{{ row.type_label }}</td>
+          <td>{{ edge.rationale_fa }}</td>
+          <td>{% if edge.created_by == 'user' %}شما{% else %}سامانه{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if statistics %}
+<section class="section-block" aria-labelledby="stats-title">
+  <div class="section-heading section-heading--rule">
+    <h2 id="stats-title">آمار و بازبینی</h2>
+  </div>
+  <div class="page-heading__meta">
+    <span>اهمیت ۱: {{ statistics.cells_per_tier.get(1, 0) | fa_num }}</span>
+    <span>اهمیت ۲: {{ statistics.cells_per_tier.get(2, 0) | fa_num }}</span>
+    <span>اهمیت ۳: {{ statistics.cells_per_tier.get(3, 0) | fa_num }}</span>
+    <span>یتیم: {{ statistics.orphan_cell_keys | length | fa_num }}</span>
+  </div>
+  {% if needs_review %}
+  <ul class="review-flags">
+    {% for flag in needs_review %}<li>{{ flag }}</li>{% endfor %}
+  </ul>
+  {% else %}
+  <p>موردی برای بازبینی علامت نخورده است.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="section-block" aria-labelledby="overlay-title">
+  <div class="section-heading section-heading--rule">
+    <h2 id="overlay-title">اصلاح نقشه</h2>
+    {% if overlay_version %}<span>نسخهٔ {{ overlay_version | fa_num }}</span>{% endif %}
+  </div>
+  <p>حذف، افزودن و تغییر اهمیت روی لایهٔ اصلاحات شما ذخیره می‌شود و با بازسازی نقشه از بین نمی‌رود.</p>
+
+  <div class="overlay-forms">
+    <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/sources/{{ source_id }}/concept-map/cells">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h3>افزودن مفهوم</h3>
+      <div class="field-grid">
+        <label class="field"><span>برچسب</span><input name="label_fa" required></label>
+        <label class="field">
+          <span>گونه</span>
+          <select name="kind">{% for kind in kind_choices %}<option value="{{ kind }}">{{ kind_labels.get(kind, kind) }}</option>{% endfor %}</select>
+        </label>
+        <label class="field">
+          <span>اهمیت</span>
+          <select name="tier"><option value="1">۱</option><option value="2" selected>۲</option><option value="3">۳</option></select>
+        </label>
+        <label class="field">
+          <span>فصل</span>
+          <select name="chapter_index">
+            {% for chapter in chapters %}
+            <option value="{{ chapter.chapter_index }}">{{ (chapter.chapter_index + 1) | fa_num }} — {{ chapter.title }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="field"><span>شناسهٔ پاره‌متن‌ها</span><input name="block_ids" required placeholder="b0001, b0002"></label>
+        <label class="field"><span>شناسهٔ بخش‌ها</span><input name="section_ids" required placeholder="s001"></label>
+        <label class="field"><span>دقیقه</span><input type="number" name="estimated_minutes" min="0.5" max="30" step="0.5" value="5"></label>
+        <label class="field"><span>شناسه (اختیاری)</span><input name="cell_key" placeholder="ch00-c003" dir="ltr"></label>
+      </div>
+      <label class="field"><span>چرا این یک مفهوم مستقل است</span><textarea name="granularity_rationale" rows="2">افزوده‌شده توسط مالک.</textarea></label>
+      <div class="form-actions"><button class="button button--primary" type="submit">افزودن مفهوم</button></div>
+    </form>
+
+    <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/sources/{{ source_id }}/concept-map/cells/remove">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h3>حذف مفهوم</h3>
+      <label class="field">
+        <span>مفهوم</span>
+        <select name="cell_key" required>
+          {% for cell in cells %}<option value="{{ cell.cell_key }}">{{ cell.label_fa }} ({{ cell.cell_key }})</option>{% endfor %}
+        </select>
+      </label>
+      <div class="form-actions"><button class="button button--danger" type="submit">حذف مفهوم</button></div>
+    </form>
+
+    <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/sources/{{ source_id }}/concept-map/edges">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h3>افزودن رابطه</h3>
+      <div class="field-grid">
+        <label class="field">
+          <span>از</span>
+          <select name="source_key">{% for cell in cells %}<option value="{{ cell.cell_key }}">{{ cell.label_fa }}</option>{% endfor %}</select>
+        </label>
+        <label class="field">
+          <span>به</span>
+          <select name="target_key">{% for cell in cells %}<option value="{{ cell.cell_key }}">{{ cell.label_fa }}</option>{% endfor %}</select>
+        </label>
+        <label class="field">
+          <span>نوع</span>
+          <select name="edge_type">{% for edge_type in edge_choices %}<option value="{{ edge_type }}">{{ edge_labels.get(edge_type, edge_type) }}</option>{% endfor %}</select>
+        </label>
+        <label class="field"><span>وزن</span><input type="number" name="weight" min="0" max="1" step="0.1" value="0.8"></label>
+      </div>
+      <label class="field"><span>دلیل</span><input name="rationale_fa" required></label>
+      <div class="form-actions"><button class="button button--primary" type="submit">افزودن رابطه</button></div>
+    </form>
+
+    <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/sources/{{ source_id }}/concept-map/edges/remove">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h3>حذف رابطه</h3>
+      <label class="field">
+        <span>رابطه</span>
+        <select name="edge_key" required>
+          {% for row in edge_rows %}
+          <option value="{{ row.key }}">{{ row.edge.source_key }} → {{ row.edge.target_key }} ({{ row.type_label }})</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="form-actions"><button class="button button--danger" type="submit">حذف رابطه</button></div>
+    </form>
+
+    <form class="form-sheet" method="post" action="/projects/{{ project.project_id }}/sources/{{ source_id }}/concept-map/tier">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h3>تغییر اهمیت</h3>
+      <div class="field-grid">
+        <label class="field">
+          <span>مفهوم</span>
+          <select name="cell_key">{% for cell in cells %}<option value="{{ cell.cell_key }}">{{ cell.label_fa }} — {{ cell.tier | fa_num }}</option>{% endfor %}</select>
+        </label>
+        <label class="field">
+          <span>اهمیت تازه</span>
+          <select name="tier"><option value="1">۱</option><option value="2">۲</option><option value="3">۳</option></select>
+        </label>
+      </div>
+      <div class="form-actions"><button class="button button--secondary" type="submit">ثبت اهمیت</button></div>
+    </form>
+  </div>
+</section>
+
+{% call technical_details('جزئیات فنی نقشه') %}
+  <p>Source ID: <code><bdi dir="ltr">{{ source_id }}</bdi></code></p>
+  <p>Fingerprint: <code><bdi dir="ltr">{{ concept_map.source_fingerprint }}</bdi></code></p>
+  <p>Builder version: <code><bdi dir="ltr">{{ concept_map.builder_version }}</bdi></code></p>
+{% endcall %}
+
+{% endif %}
+{% endblock %}

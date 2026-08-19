@@ -46,6 +46,7 @@ from thesisound.services.readiness import project_readiness
 from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
 from thesisound.web.audio_routes import register_audio_routes
 from thesisound.web.auth import NullOtpSender, OtpError, OtpSenderPort, OtpService
+from thesisound.web.concept_routes import register_concept_routes
 from thesisound.web.corpus_runtime import create_corpus_builder, run_corpus_then_queue_planning
 from thesisound.web.episode_routes import register_episode_routes
 from thesisound.web.episode_runtime import create_episode_planner
@@ -1070,6 +1071,14 @@ def create_app(
         corpus_builder=corpus_builder,
         episode_planner=episode_planner,
         execute_corpus=execute_corpus,
+        render=render,
+        login_redirect=_login_redirect,
+        project_redirect=_project_redirect,
+        validate_csrf=_validate_csrf,
+    )
+    register_concept_routes(
+        app,
+        workspace=workspace,
         render=render,
         login_redirect=_login_redirect,
         project_redirect=_project_redirect,

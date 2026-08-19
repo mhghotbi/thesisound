@@ -164,6 +164,7 @@
         </p>
 
         {% if source.issue_summary and not usable %}<p class="source-row__summary">{{ source.issue_summary }}</p>{% endif %}
+        <p class="source-row__meta"><a href="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/concept-map">نقشهٔ مفاهیم</a></p>
 
         {% call technical_details('جزئیات فنی استخراج') %}
           <p>Source ID: <code><bdi dir="ltr">{{ source.source_id }}</bdi></code></p>

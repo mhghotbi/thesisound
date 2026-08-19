@@ -15,9 +15,11 @@ from thesisound.adapters.parsers.docling_adapter import DoclingParser
 from thesisound.adapters.parsers.epub_adapter import EpubDocumentParser
 from thesisound.adapters.parsers.mineru_adapter import MineruParser
 from thesisound.adapters.parsers.native_adapter import NativeDocumentParser
+from thesisound.concept_map_cli import register_concept_map_command
 from thesisound.config import Settings
 from thesisound.domain import Project
 from thesisound.episode_cli import register_episode_commands
+from thesisound.migrate_cli import register_migrate_commands
 from thesisound.modeling import ModelError
 from thesisound.observability import tracer_from_settings
 from thesisound.pipeline import WorkspaceStore
@@ -33,7 +35,6 @@ from thesisound.services.parsed_document_cache import ParsedDocumentCache
 from thesisound.services.parser_benchmark import benchmark_directory, benchmark_document
 from thesisound.services.research_brief import ResearchBriefService
 from thesisound.source_cli import register_source_commands
-from thesisound.migrate_cli import register_migrate_commands
 
 app = typer.Typer(no_args_is_help=True, help="Thesisound local development CLI")
 console = Console()
@@ -41,6 +42,7 @@ register_source_commands(app)
 register_episode_commands(app)
 register_script_commands(app)
 register_migrate_commands(app)
+register_concept_map_command(app)
 
 
 @app.callback()

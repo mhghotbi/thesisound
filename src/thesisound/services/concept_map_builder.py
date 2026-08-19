@@ -361,6 +361,39 @@ class ConceptMapPartial(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+def _select_chapters(
+    chapters: Sequence[SourceChapter],
+    chapter_indexes: Sequence[int],
+) -> list[SourceChapter]:
+    """Keep chapters whose ``chapter_index`` is in ``chapter_indexes`` (0-based)."""
+
+    wanted = list(dict.fromkeys(chapter_indexes))
+    by_index = {chapter.chapter_index: chapter for chapter in chapters}
+    missing = [index for index in wanted if index not in by_index]
+    if missing:
+        available = ", ".join(str(chapter.chapter_index + 1) for chapter in chapters)
+        requested = ", ".join(str(index + 1) for index in missing)
+        raise ValueError(
+            f"Requested chapter(s) {requested} not found. Available: {available or 'none'}."
+        )
+    return [by_index[index] for index in wanted]
+
+
+def _sections_for_chapters(
+    chapters: Sequence[SourceChapter],
+    sections: Sequence[DocumentMapSection],
+) -> list[DocumentMapSection]:
+    seen: set[str] = set()
+    selected: list[DocumentMapSection] = []
+    for chapter in chapters:
+        for section in _sections_for_chapter(chapter, sections):
+            if section.section_id in seen:
+                continue
+            seen.add(section.section_id)
+            selected.append(section)
+    return selected
+
+
 class ConceptMapBuilder:
     """Run Pass 0–5 with shared cache, per-chapter sub-entries, and resume."""
 
@@ -384,9 +417,12 @@ class ConceptMapBuilder:
         parsed_document: ParsedDocument,
         *,
         model_fast: str,
+        rebuild: bool = False,
+        chapter_indexes: Sequence[int] | None = None,
     ) -> SourceConceptMap:
         fingerprint = block_sequence_key(blocks)
-        cached = self.cache.load_source(fingerprint)
+        subset = chapter_indexes is not None
+        cached = None if rebuild or subset else self.cache.load_source(fingerprint)
         emit_cache_lookup(
             cache="shared_concept_map",
             result="hit" if cached is not None else "miss",
@@ -402,12 +438,18 @@ class ConceptMapBuilder:
             return cached
 
         chapters = detect_chapters(blocks, parsed_document)
-        partial = self._load_matching_partial(project_id, source_id, fingerprint)
+        if chapter_indexes is not None:
+            chapters = _select_chapters(chapters, chapter_indexes)
+        partial = (
+            None
+            if rebuild or subset
+            else self._load_matching_partial(project_id, source_id, fingerprint)
+        )
         completed_indexes = set(partial.completed_chapter_indexes) if partial else set()
         cells = list(partial.cells) if partial else []
         intra_edges = list(partial.intra_edges) if partial else []
         warnings = list(partial.warnings) if partial else []
-        if partial is not None:
+        if partial is not None and not subset:
             chapters = partial.chapters or chapters
 
         section_titles = {section.section_id: section.title for section in document_map.sections}
@@ -424,6 +466,7 @@ class ConceptMapBuilder:
                 section_titles=section_titles,
                 prior_cells=cells,
                 model_fast=model_fast,
+                rebuild=rebuild,
             )
             minutes = sum(cell.estimated_minutes for cell in chapter_cells)
             chapter.estimated_minutes = minutes
@@ -478,25 +521,31 @@ class ConceptMapBuilder:
             warnings=warnings,
         )
         block_texts = {block.block_id: block.text for block in blocks}
+        stats_sections = (
+            _sections_for_chapters(chapters, document_map.sections)
+            if subset
+            else document_map.sections
+        )
         concept_map = concept_map.model_copy(
             update={
                 "statistics": compute_statistics(
                     concept_map,
-                    sections=document_map.sections,
+                    sections=stats_sections,
                     block_texts=block_texts,
                 )
             }
         )
-        self.cache.save_source(concept_map)
-        emit_cache_lookup(
-            cache="shared_concept_map",
-            result="store",
-            project_id=project_id,
-            subject_type="source",
-            subject_id=str(source_id),
-            lookup_key=fingerprint[:16],
-            artifact_hash=fingerprint[:16],
-        )
+        if not subset:
+            self.cache.save_source(concept_map)
+            emit_cache_lookup(
+                cache="shared_concept_map",
+                result="store",
+                project_id=project_id,
+                subject_type="source",
+                subject_id=str(source_id),
+                lookup_key=fingerprint[:16],
+                artifact_hash=fingerprint[:16],
+            )
         self._clear_partial(project_id, source_id)
         return concept_map
 
@@ -512,9 +561,10 @@ class ConceptMapBuilder:
         section_titles: Mapping[str, str],
         prior_cells: Sequence[ConceptCell],
         model_fast: str,
+        rebuild: bool = False,
     ) -> tuple[list[ConceptCell], list[ConceptEdge], list[str]]:
         chapter_key = chapter_hash(chapter, blocks)
-        cached = self.cache.load_chapter(fingerprint, chapter_key)
+        cached = None if rebuild else self.cache.load_chapter(fingerprint, chapter_key)
         emit_cache_lookup(
             cache="shared_concept_map_chapter",
             result="hit" if cached is not None else "miss",

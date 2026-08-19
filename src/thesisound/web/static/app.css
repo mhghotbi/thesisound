@@ -1628,3 +1628,35 @@ code {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
 }
+
+.table-wrap { max-width: 100%; overflow-x: auto; }
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.data-table th,
+.data-table td {
+  padding: 10px 12px;
+  border-block-end: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+.data-table th {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 650;
+}
+.data-table tbody tr:hover { background: var(--paper-muted); }
+.data-table td small { display: block; color: var(--muted); font-size: 12px; }
+.promoted-mark {
+  margin-inline-start: 6px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 650;
+}
+.source-trace { margin: 0 0 6px; color: var(--muted); font-size: 13px; }
+.source-trace span { display: block; }
+.review-flags { margin: 12px 0 0; padding-inline-start: 1.2em; }
+.overlay-forms { display: grid; gap: 18px; }
+.overlay-forms .form-sheet h3 { margin: 0; font-size: 15px; }
