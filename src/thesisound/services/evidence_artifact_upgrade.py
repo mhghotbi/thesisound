@@ -25,12 +25,17 @@ class EvidenceArtifactUpgradeError(ValueError):
 def upgrade_block_extraction_payload(
     payload: dict[str, Any],
     *,
-    block_locator: Locator,
+    block_locator: Locator | None = None,
 ) -> dict[str, Any]:
     """Lift a stored extraction payload to the current schema.
 
     Pure. Uses only values already present in the payload and the block's own
     locator. Raises EvidenceArtifactUpgradeError if a required anchor is absent.
+
+    ``block_locator`` is consulted only when a legacy (schema 1) payload has to
+    be lifted; current-schema payloads already carry their own locators, so
+    callers reading those do not need the blocks artifact at all. Lifting a
+    legacy payload without a locator raises rather than inventing one.
     """
 
     if not isinstance(payload, dict):
@@ -58,6 +63,10 @@ def upgrade_block_extraction_payload(
     if not isinstance(extraction, dict):
         raise EvidenceArtifactUpgradeError("Extraction payload is missing extraction")
 
+    if block_locator is None:
+        raise EvidenceArtifactUpgradeError(
+            "Legacy extraction payload cannot be lifted without its block locator"
+        )
     locator_payload = block_locator.model_dump(mode="json")
     source_id_value = str(source_id)
 

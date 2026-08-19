@@ -25,6 +25,19 @@ from thesisound.source_analysis import (
 )
 
 
+def _needs_block_locator(payload: Mapping[str, Any]) -> bool:
+    """Whether lifting this stored payload requires the block's own locator.
+
+    Only legacy (schema 1) records are rewritten against it. Resolving it for
+    every record made reading current-schema extractions depend on the blocks
+    artifact, so a project whose blocks were pruned lost its extraction
+    provenance silently on the read path.
+    """
+
+    version = payload.get("schema_version", 1)
+    return not isinstance(version, int) or version < CURRENT_EXTRACTION_SCHEMA_VERSION
+
+
 class SourceArtifactStore:
     """Atomic JSON/JSONL persistence for source-analysis artifacts."""
 
@@ -161,7 +174,11 @@ class SourceArtifactStore:
         records: list[BlockEvidenceExtraction] = []
         for path in sorted(directory.glob("*.json")):
             raw = json.loads(path.read_text(encoding="utf-8"))
-            locator = resolve_block_locator(raw, block_locators)
+            locator = (
+                resolve_block_locator(raw, block_locators)
+                if _needs_block_locator(raw)
+                else None
+            )
             upgraded = upgrade_block_extraction_payload(raw, block_locator=locator)
             records.append(BlockEvidenceExtraction.model_validate(upgraded))
         return records
@@ -210,7 +227,11 @@ class SourceArtifactStore:
         path = self.source_dir(project_id, source_id) / "evidence-extractions.jsonl"
         records: list[BlockEvidenceExtraction] = []
         for item in self._read_jsonl(path):
-            locator = resolve_block_locator(item, block_locators)
+            locator = (
+                resolve_block_locator(item, block_locators)
+                if _needs_block_locator(item)
+                else None
+            )
             upgraded = upgrade_block_extraction_payload(item, block_locator=locator)
             records.append(BlockEvidenceExtraction.model_validate(upgraded))
         return records

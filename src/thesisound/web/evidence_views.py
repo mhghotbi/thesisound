@@ -7,6 +7,7 @@ from uuid import UUID
 from markupsafe import Markup, escape
 
 from thesisound.domain import ClaimRecord, EvidenceItem, Locator, Project, Script, SupportStatus
+from thesisound.services.evidence_artifact_upgrade import EvidenceArtifactUpgradeError
 from thesisound.services.excerpt_matching import locate_excerpt_span
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.source_manifest import UiSourceManifestStore
@@ -406,13 +407,18 @@ def resolve_judgement_snapshot(
     claim = claims.get(claim_id)
     titles = source_titles_for_project(project, source_store)
     extraction_identity = None
+    # Blocks are only needed to lift legacy extractions; a project whose blocks
+    # were pruned must still record where its evidence came from, and a stored
+    # record that cannot be lifted must not fail the judgement itself.
+    try:
+        block_locators = source_store.load_block_locators(project.project_id, source_id)
+    except FileNotFoundError:
+        block_locators = {}
     try:
         for extraction in source_store.load_extractions(
             project.project_id,
             source_id,
-            block_locators=source_store.load_block_locators(
-                project.project_id, source_id
-            ),
+            block_locators=block_locators,
         ):
             if any(
                 claim_item.evidence_id == evidence_id
@@ -420,7 +426,7 @@ def resolve_judgement_snapshot(
             ):
                 extraction_identity = extraction.extraction_identity
                 break
-    except FileNotFoundError:
+    except (FileNotFoundError, EvidenceArtifactUpgradeError):
         extraction_identity = None
     reconciler_identity = None
     try:
