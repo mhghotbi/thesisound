@@ -43,7 +43,7 @@
 | 1 | P0.5 | نویسندهٔ `persian_script_segment/1.3.0` | انجام‌شده 2026-08-19 |
 | 2 | P0.5 | `ClaimRecord` در evidence pack + verifier 1.2.0 + reviser 1.1.0 | انجام‌شده 2026-08-19 |
 | 3 | P0.5 | چک قطعی `unsupported_specifics` | انجام‌شده 2026-08-19 |
-| 4 | P0.5 | صفحهٔ must-not-be-lost | |
+| 4 | P0.5 | صفحهٔ must-not-be-lost | انجام‌شده 2026-08-19 |
 | C-A | ✔ | **چک‌پوینت A** — مسیر `focused_question` سالم؟ | |
 | 5 | P1 | مدل‌های `concepts.py` | |
 | 6 | P1 | Pass 0 — تشخیص فصل (دو تشخیص‌دهنده) | |

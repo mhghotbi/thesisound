@@ -23,8 +23,8 @@ from thesisound.web.error_messages import user_facing_error
 from thesisound.web.evidence_views import (
     load_claim_index,
     load_evidence_index,
+    must_not_be_lost_review_views,
     omitted_claim_views,
-    unused_must_not_be_lost_views,
 )
 
 Render = Callable[..., HTMLResponse]
@@ -53,6 +53,8 @@ def register_episode_routes(
         episode_plan = _load_optional(episode_store.load_plan, project_id) or project.episode_plan
         omitted_views: list[dict[str, object]] = []
         mnbl_views: list[dict[str, object]] = []
+        unused_mnbl_views: list[dict[str, object]] = []
+        mnbl_unused_count: int | None = None
         claims: dict = {}
         evidence_by_id: dict = {}
         needs_claim_index = bool(
@@ -76,11 +78,13 @@ def register_episode_routes(
             if not claims:
                 claims = load_claim_index(project, source_store)
                 evidence_by_id = load_evidence_index(project, source_store)
-            mnbl_views = unused_must_not_be_lost_views(
+            mnbl_views = must_not_be_lost_review_views(
                 review,
                 claims=claims,
                 evidence_by_id=evidence_by_id,
             )
+            unused_mnbl_views = [row for row in mnbl_views if not row["used_in_plan"]]
+            mnbl_unused_count = getattr(review, "unused_count", None)
 
         default_duration = None
         if run is not None and run.supported_duration_minutes is not None:
@@ -109,7 +113,9 @@ def register_episode_routes(
             "budget": _load_optional(episode_store.load_budget, project_id),
             "episode_plan": episode_plan,
             "omitted_claim_views": omitted_views,
-            "unused_must_not_be_lost_views": mnbl_views,
+            "must_not_be_lost_review_views": mnbl_views,
+            "unused_must_not_be_lost_views": unused_mnbl_views,
+            "must_not_be_lost_unused_count": mnbl_unused_count,
             "duration_reextraction_required": duration_reextraction,
             "can_start": project.state == ProjectState.CORPUS_READY,
             "can_retry": bool(
@@ -334,7 +340,9 @@ def _episode_error(
             "budget": _load_optional(episode_store.load_budget, project_id),
             "episode_plan": plan,
             "omitted_claim_views": [],
+            "must_not_be_lost_review_views": [],
             "unused_must_not_be_lost_views": [],
+            "must_not_be_lost_unused_count": None,
             "duration_reextraction_required": False,
             "can_start": project.state == ProjectState.CORPUS_READY,
             "can_retry": bool(

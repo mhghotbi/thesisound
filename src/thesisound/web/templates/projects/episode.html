@@ -7,6 +7,11 @@
     <p class="kicker">کفایت منابع و ساختار</p>
     <h1>{{ project_title(project) }}</h1>
     <p>ابتدا روشن می‌شود منابع چه مدت گفتار مستند را پشتیبانی می‌کنند؛ سپس ساختار گفتار برای تأیید شما ساخته می‌شود.</p>
+    {% if must_not_be_lost_unused_count is not none %}
+    <div class="page-heading__meta">
+      <span>{{ must_not_be_lost_unused_count | fa_num }} نکته در طرح نیامده</span>
+    </div>
+    {% endif %}
   </div>
   {% if planning_active %}{{ status_label('در حال سنجش کفایت منابع', 'اقدامی لازم نیست', 'running', planning_run.status if planning_run else '') }}
   {% elif planning_run and planning_run.status == 'blocked' %}{{ status_label('منتظر تصمیم شما', 'منابع برای هدف فعلی کافی نیست', 'attention', planning_run.status) }}
@@ -172,18 +177,23 @@
 </section>
 {% endif %}
 
-{% if unused_must_not_be_lost_views %}
+{% if must_not_be_lost_review_views %}
 <section class="section-block" aria-labelledby="must-not-be-lost-title">
   <details class="plan-list-details" data-plan-list-open="must_not_be_lost" data-project-id="{{ project.project_id }}">
     <summary class="section-heading">
       <h2 id="must-not-be-lost-title">نکته‌هایی که نباید گم شوند</h2>
-      <span>{{ unused_must_not_be_lost_views | length | fa_num }} مورد</span>
+      <span>{{ must_not_be_lost_unused_count | fa_num }} در طرح نیامده</span>
     </summary>
     <div class="data-panel omitted-claims">
-      {% for item in unused_must_not_be_lost_views %}
+      {% for item in must_not_be_lost_review_views %}
       <article class="omitted-claim">
-        <p class="omitted-claim__reason">{{ item.text }}</p>
+        <div class="omitted-claim__head">
+          <p class="omitted-claim__reason">{{ item.text }}</p>
+          {% if item.used_in_plan %}{{ status_label('در طرح آمده', '', 'success', pill=true) }}
+          {% else %}{{ status_label('در طرح نیامده', '', 'attention', pill=true) }}{% endif %}
+        </div>
         {% if item.claim_groups %}{{ evidence_claim_groups(item.claim_groups, none, false) }}{% endif %}
+        {% if item.claim_ids %}<p class="operator-only">مدعاهای نامزد: <code><bdi dir="ltr">{{ item.claim_ids | join(', ') }}</bdi></code></p>{% endif %}
         {% if item.block_id %}<p class="operator-only"><code><bdi dir="ltr">{{ item.block_id }}</bdi></code></p>{% endif %}
       </article>
       {% endfor %}

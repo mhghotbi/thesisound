@@ -1384,7 +1384,16 @@ div.evidence-card ul { margin: 0; padding-inline-start: 18px; }
 }
 
 .omitted-claims { display: grid; gap: 16px; }
+.omitted-claim__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin-block-end: 6px;
+}
 .omitted-claim__reason { margin: 0 0 6px; color: var(--ink-soft); font-size: 14px; text-wrap: pretty; }
+.omitted-claim__head .omitted-claim__reason { margin: 0; flex: 1 1 18ch; }
 .plan-list-details > summary {
   cursor: pointer;
   list-style: none;

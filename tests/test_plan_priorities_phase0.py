@@ -40,7 +40,10 @@ from thesisound.services.episode_planning_run import (
 )
 from thesisound.source_analysis import AnalysisProfile, EvidenceExtractionPlan
 from thesisound.web.app import create_app
-from thesisound.web.evidence_views import unused_must_not_be_lost_views
+from thesisound.web.evidence_views import (
+    must_not_be_lost_review_views,
+    unused_must_not_be_lost_views,
+)
 
 
 def _brief(duration: int = 10) -> ResearchBrief:
@@ -163,6 +166,41 @@ def test_unused_must_not_be_lost_views_filters_used_and_keeps_text() -> None:
     assert len(rows) == 1
     assert rows[0]["text"] == "Unused note that matters"
     assert rows[0]["block_id"] == "b2"
+
+
+def test_must_not_be_lost_review_views_includes_used_and_candidates() -> None:
+    source_id = uuid4()
+    used = MustNotBeLostReviewItem(
+        point=MustNotBeLostPoint(
+            text="Used note",
+            source_id=source_id,
+            block_id="b1",
+            locator=Locator(page_start=1, page_end=1),
+        ),
+        reflected_in_claims=["c1", "c2"],
+        used_in_plan=True,
+    )
+    unused = MustNotBeLostReviewItem(
+        point=MustNotBeLostPoint(
+            text="Unused note that matters",
+            source_id=source_id,
+            block_id="b2",
+            locator=Locator(page_start=2, page_end=2),
+        ),
+        reflected_in_claims=[],
+        used_in_plan=False,
+    )
+    review = MustNotBeLostReview(
+        project_id=uuid4(),
+        items=[used, unused],
+        unused_count=1,
+    )
+    rows = must_not_be_lost_review_views(review, claims={}, evidence_by_id={})
+    assert [row["text"] for row in rows] == ["Used note", "Unused note that matters"]
+    assert rows[0]["used_in_plan"] is True
+    assert rows[0]["claim_ids"] == ["c1", "c2"]
+    assert rows[1]["used_in_plan"] is False
+    assert rows[1]["claim_ids"] == []
 
 
 def _settings(tmp_path: Path) -> Settings:
@@ -310,12 +348,100 @@ def test_planned_page_shows_mnbl_and_emits_plan_reviewed(tmp_path: Path) -> None
         page = client.get(f"/projects/{project.project_id}/episode")
     assert "نکته‌هایی که نباید گم شوند" in page.text
     assert "این نکته مهم نیامده" in page.text
+    assert "۱ نکته در طرح نیامده" in page.text
+    assert "در طرح نیامده" in page.text
     assert "هر مدتی تا" in page.text
     assert 'data-plan-list-open="must_not_be_lost"' in page.text
     store = ProductEventStore(settings.resolved_observability_database_path)
     events = store.list_events(name=ProductEvent.PLAN_REVIEWED.value)
     assert len(events) >= 1
     assert events[-1].properties["has_unused_must_not_be_lost"] is True
+
+
+def test_episode_page_renders_full_must_not_be_lost_review(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = Project(
+        raw_input="موضوع",
+        state=ProjectState.EPISODE_PLANNED,
+        brief=_brief(15),
+        episode_plan=EpisodePlan(
+            title="طرح نمونه",
+            listener_outcome="شنونده می‌فهمد",
+            estimated_duration_minutes=15,
+            segments=[
+                EpisodeSegment(
+                    segment_id="seg-001",
+                    title="بخش",
+                    purpose="هدف",
+                    estimated_minutes=15,
+                    claim_ids=["claim-candidate"],
+                    key_question="؟",
+                    speaker_dynamic="explanation",
+                )
+            ],
+        ),
+    )
+    workspace.save_project(project)
+    EpisodePlanningRunStore(settings.workspace_root).save(
+        EpisodePlanningRun(
+            project_id=project.project_id,
+            status="succeeded",
+            stage="complete",
+            target_duration_minutes=15,
+            max_supported_minutes=22,
+            effective_supported_minutes=22.0,
+        )
+    )
+    episode_store = EpisodeArtifactStore(workspace.root)
+    source_id = uuid4()
+    episode_store.save_must_not_be_lost_review(
+        MustNotBeLostReview(
+            project_id=project.project_id,
+            items=[
+                MustNotBeLostReviewItem(
+                    point=MustNotBeLostPoint(
+                        text="نکتهٔ آمده در طرح",
+                        source_id=source_id,
+                        block_id="block-used",
+                        locator=Locator(page_start=1, page_end=1),
+                    ),
+                    reflected_in_claims=["claim-candidate"],
+                    used_in_plan=True,
+                ),
+                MustNotBeLostReviewItem(
+                    point=MustNotBeLostPoint(
+                        text="نکتهٔ نیامده در طرح",
+                        source_id=source_id,
+                        block_id="block-unused",
+                        locator=Locator(page_start=2, page_end=2),
+                    ),
+                    reflected_in_claims=[],
+                    used_in_plan=False,
+                ),
+            ],
+            unused_count=1,
+        )
+    )
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+    )
+    with _client(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/episode")
+    assert page.status_code == 200
+    assert "نکته‌هایی که نباید گم شوند" in page.text
+    assert "نکتهٔ آمده در طرح" in page.text
+    assert "نکتهٔ نیامده در طرح" in page.text
+    assert "در طرح آمده" in page.text
+    assert "در طرح نیامده" in page.text
+    assert "۱ نکته در طرح نیامده" in page.text
+    assert "claim-candidate" in page.text
+    assert "مدعاهای نامزد" in page.text
+    assert "block-used" in page.text
+    assert "block-unused" in page.text
 
 
 def test_duration_cost_endpoint_returns_hint(tmp_path: Path) -> None:
