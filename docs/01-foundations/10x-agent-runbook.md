@@ -46,7 +46,7 @@
 | 4 | P0.5 | صفحهٔ must-not-be-lost | انجام‌شده 2026-08-19 |
 | C-A | ✔ | **چک‌پوینت A** — مسیر `focused_question` سالم؟ | انجام‌شده 2026-08-19 |
 | 5 | P1 | مدل‌های `concepts.py` | انجام‌شده 2026-08-19 |
-| 6 | P1 | Pass 0 — تشخیص فصل (دو تشخیص‌دهنده) | |
+| 6 | P1 | Pass 0 — تشخیص فصل (دو تشخیص‌دهنده) | انجام‌شده 2026-08-19 |
 | 7 | P1 | Pass 1 — document map فصل‌به‌فصل | |
 | 8 | P1 | Pass 2/2.5 — سلول‌های مفهومی + نرمال‌سازی | |
 | 9 | P1 | Pass 3 — consolidate | |
@@ -149,13 +149,13 @@
 
 ---
 
-### گام 6 — Pass 0: تشخیص فصل (P1 قدم ۲)
+### Step 6 — Pass 0: chapter detection (P1 step 2)
 
-**بخوان:** `10c` P1 Step 2؛ `10b` B2 Pass 0، B1.2.
-**پیش‌بررسی:** `uv run pytest tests/concepts -q` سبز.
-**انجام بده:** `services/concept_map_builder.py` (فعلاً فقط) تابع خالص `detect_chapters(blocks, parsed_document) -> list[SourceChapter]` با دو تشخیص‌دهنده (H از `heading_path`، T از TOC سند — ببین `ParsedDocument` چه چیزی دربارهٔ heading/TOC دارد؛ اگر TOC صریح ندارد، از headingهای سطح بالای parsed document استفاده کن و در docstring بنویس) و قاعدهٔ reconcile (۲۰٪ / ۴۰٪ / ۲٪) و `detection_agreement`. دقیقهٔ موقت = Σ توکن / ۳۰۰.
-**تست پایان:** `tests/concepts/test_detect_chapters.py` با ۵ فیکسچر 10c (agreed، toc_only، EPUB nav، disagreed، single)؛ `uv run pytest -q`.
-**گزارش:** «کتاب به فصل‌ها شکسته می‌شود، از دو راه مستقل؛ اگر دو راه با هم نخوانند، پرچم می‌خورد و فهرست مطالب مبنا می‌شود — بدون این‌که از شما تأیید بخواهد.»
+**Read:** `10c` P1 Step 2; `10b` B2 Pass 0, B1.2.
+**Pre-check:** `uv run pytest tests/concepts -q` green.
+**Do:** In `services/concept_map_builder.py` (only this, for now), add a pure function `detect_chapters(blocks, parsed_document) -> list[SourceChapter]` with two detectors (H from `heading_path`, T from the document's TOC — check what `ParsedDocument` exposes about heading/TOC; if there's no explicit TOC, fall back to the parsed document's top-level headings and note this in the docstring) plus the reconcile rule (20% / 40% / 2%) and `detection_agreement`. Provisional minutes = Σ tokens / 300.
+**Final test:** `tests/concepts/test_detect_chapters.py` with the 5 fixtures from `10c` (agreed, toc_only, EPUB nav, disagreed, single); `uv run pytest -q`.
+**Report:** "The book is split into chapters using two independent methods; if the two methods disagree, it gets flagged and the table of contents is used as the source of truth — without asking you to confirm."
 
 ---
 
