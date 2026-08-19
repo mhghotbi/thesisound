@@ -13,6 +13,7 @@ from thesisound.pipeline import WorkspaceStore
 from thesisound.services.audio_run import AudioBuildRunStore
 
 console = Console()
+error_console = Console(stderr=True)
 
 
 def register_audio_commands(app: typer.Typer) -> None:
@@ -36,11 +37,11 @@ def register_audio_commands(app: typer.Typer) -> None:
             builder.queue(project_id)
             run = builder.run(project_id)
         except (FileNotFoundError, RuntimeError, ValueError) as exc:
-            console.print(f"[red]{exc}[/red]", stderr=True)
+            error_console.print(f"[red]{exc}[/red]")
             raise typer.Exit(code=1) from exc
         if run.status != "succeeded":
             message = run.last_error or "Audio generation failed."
-            console.print(f"[red]{message}[/red]", stderr=True)
+            error_console.print(f"[red]{message}[/red]")
             raise typer.Exit(code=1)
         console.print(f"Audio verified for [bold]{project_id}[/bold]")
 

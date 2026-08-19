@@ -38,6 +38,7 @@ from thesisound.source_cli import register_source_commands
 
 app = typer.Typer(no_args_is_help=True, help="Thesisound local development CLI")
 console = Console()
+error_console = Console(stderr=True)
 register_source_commands(app)
 register_episode_commands(app)
 register_script_commands(app)
@@ -241,7 +242,7 @@ def build_brief(
             prompt_version=prompt_version,
         )
     except (FileNotFoundError, ModelError, ValueError) as exc:
-        console.print(f"[red]{exc}[/red]", stderr=True)
+        error_console.print(f"[red]{exc}[/red]")
         raise typer.Exit(code=1) from exc
 
     _emit_json(
@@ -293,7 +294,7 @@ def parse_source(
             parse_cache=_parse_cache(settings, artifact_root),
         )
     except (OSError, ValueError, RuntimeError) as exc:
-        console.print(f"[red]{exc}[/red]", stderr=True)
+        error_console.print(f"[red]{exc}[/red]")
         raise typer.Exit(code=1) from exc
 
     _emit_json(result.model_dump(mode="json"), output)

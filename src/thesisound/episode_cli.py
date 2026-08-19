@@ -27,6 +27,7 @@ from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.services.sqlite_block_retriever import SQLiteBlockRetriever
 
 console = Console()
+error_console = Console(stderr=True)
 
 
 def register_episode_commands(app: typer.Typer) -> None:
@@ -209,5 +210,5 @@ def _print_json(payload: object) -> None:
 
 
 def _fail(exc: Exception) -> None:
-    console.print(f"[red]{exc}[/red]", stderr=True)
+    error_console.print(f"[red]{exc}[/red]")
     raise typer.Exit(code=1) from exc

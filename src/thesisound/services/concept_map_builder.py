@@ -713,7 +713,7 @@ def _validate_cells_draft(
 
     _reject_unknown_ids(draft, known_block_ids, known_section_ids)
     _reject_cells_without_blocks(draft)
-    _reject_banned_labels(draft)
+    _reject_banned_labels(draft, attempt=attempt, max_attempts=max_attempts)
     _reject_uncovered_sections(draft, sections, accepted_cells)
 
     last_attempt = attempt >= max_attempts
@@ -1512,18 +1512,46 @@ def _reject_cells_without_blocks(draft: ConceptCellsDraft) -> None:
         )
 
 
-def _reject_banned_labels(draft: ConceptCellsDraft) -> None:
-    banned: list[str] = []
+def _reject_banned_labels(
+    draft: ConceptCellsDraft,
+    *,
+    attempt: int = 1,
+    max_attempts: int = 1,
+) -> None:
+    """Deterministic gate against structural/pedagogical labels.
+
+    A chapter that is purely front matter (e.g. a table of contents page)
+    can never yield a real concept; on the final attempt, cells that are
+    still only structural are dropped instead of failing the whole chapter.
+    `_reject_uncovered_sections` still requires a real cell for any
+    non-front-matter/transition section, so this cannot silently swallow a
+    substantive chapter.
+    """
+
+    flagged: list[tuple[ConceptCellDraft, list[str]]] = []
     for cell in draft.cells:
-        if is_banned_or_smell_label(cell.label_fa):
-            banned.append(cell.label_fa)
-        if cell.label_source is not None and is_banned_or_smell_label(cell.label_source):
-            banned.append(cell.label_source)
-    if banned:
-        raise DeterministicValidationError(
-            "Banned or smell labels (structural/pedagogical, not a concept): "
-            + "; ".join(banned)
+        labels = [
+            label
+            for label in (cell.label_fa, cell.label_source)
+            if label is not None and is_banned_or_smell_label(label)
+        ]
+        if labels:
+            flagged.append((cell, labels))
+    if not flagged:
+        return
+    banned = [label for _, labels in flagged for label in labels]
+    if attempt >= max_attempts:
+        dropped_ids = {id(cell) for cell, _ in flagged}
+        draft.cells[:] = [cell for cell in draft.cells if id(cell) not in dropped_ids]
+        draft.warnings.append(
+            f"{_NEEDS_REVIEW_PREFIX}Dropped {len(flagged)} structural/pedagogical "
+            f"cell(s) on the final attempt: {'; '.join(banned)}."
         )
+        return
+    raise DeterministicValidationError(
+        "Banned or smell labels (structural/pedagogical, not a concept): "
+        + "; ".join(banned)
+    )
 
 
 def _reject_uncovered_sections(

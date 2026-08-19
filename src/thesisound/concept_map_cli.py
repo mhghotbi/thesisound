@@ -17,6 +17,7 @@ from thesisound.services.concept_map_pipeline import (
 )
 
 console = Console()
+error_console = Console(stderr=True)
 
 
 def register_concept_map_command(app: typer.Typer) -> None:
@@ -54,7 +55,7 @@ def register_concept_map_command(app: typer.Typer) -> None:
                 rebuild=rebuild,
             )
         except (FileNotFoundError, ModelError, OSError, RuntimeError, ValueError) as exc:
-            console.print(f"[red]{exc}[/red]", stderr=True)
+            error_console.print(f"[red]{exc}[/red]")
             raise typer.Exit(code=1) from exc
 
         payload = concept_map_summary(result)

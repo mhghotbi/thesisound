@@ -35,6 +35,11 @@ class StageRetryPolicy:
 
     # None = unlimited within max_attempts; 0 = no contract repairs; 1 = one chance.
     max_contract_repairs: int | None = 1
+    # False for stages whose final attempt has its own deterministic repair
+    # (concept_cells auto-merges/flags, consolidate/edges auto-fix on the last
+    # attempt): a model that repeats the same wrong answer must still reach
+    # that final attempt, so an identical fingerprint must not stop it early.
+    allow_identical_repair_stop: bool = True
 
 
 @dataclass(frozen=True)
@@ -56,11 +61,17 @@ _STAGE_RETRY_POLICIES: dict[str, StageRetryPolicy] = {
     "document_map": StageRetryPolicy(max_contract_repairs=1),
     "document_map_merge": StageRetryPolicy(max_contract_repairs=1),
     # Two repairs so attempt 3 can auto-merge duplicates / accept distribution.
-    "concept_cells": StageRetryPolicy(max_contract_repairs=2),
+    "concept_cells": StageRetryPolicy(
+        max_contract_repairs=2, allow_identical_repair_stop=False
+    ),
     # Contract max_attempts is 2: one repair, then a strict second attempt.
-    "concept_cells_consolidate": StageRetryPolicy(max_contract_repairs=1),
+    "concept_cells_consolidate": StageRetryPolicy(
+        max_contract_repairs=1, allow_identical_repair_stop=False
+    ),
     # Attempt 1 errors on a cycle; the final attempt drops the weakest cycle edge.
-    "concept_edges": StageRetryPolicy(max_contract_repairs=1),
+    "concept_edges": StageRetryPolicy(
+        max_contract_repairs=1, allow_identical_repair_stop=False
+    ),
     "claim_reconciliation": StageRetryPolicy(max_contract_repairs=1),
     "claim_reconciliation_merge": StageRetryPolicy(max_contract_repairs=1),
     "coverage_audit": StageRetryPolicy(max_contract_repairs=1),
@@ -131,7 +142,11 @@ def decide_retry(
         return RetryDecision(should_retry=False, stop_reason="stage_policy")
 
     fingerprint = error_fingerprint(error)
-    if previous_fingerprint is not None and fingerprint == previous_fingerprint:
+    if (
+        policy.allow_identical_repair_stop
+        and previous_fingerprint is not None
+        and fingerprint == previous_fingerprint
+    ):
         return RetryDecision(should_retry=False, stop_reason="identical_repair")
 
     return RetryDecision(
