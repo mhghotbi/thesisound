@@ -71,9 +71,9 @@ Direction approved in [`docs/01-foundations/10-personal-learning-companion-devel
 
 - P0 Product contract: **done** (this file, `PRODUCT.md`, foundation and pipeline docs aligned, prompt design notes moved under `docs/02-pipeline/prompt-design-notes/`)
 - P0.5 Grounding hotfix (writer 1.3.0, `ClaimRecord` in packs, `unsupported_specifics` check, must-not-be-lost review page): **done**
-- P1 Concept map (two-way chapter detection → tiered concept cells with promotion → edges → gate; cache + overlay; CLI + page): not started — **next**
-- P2 Evidence completeness (extraction 2.0 unified inventory for all intents, cell-unit batches, `must_not_be_lost` accounting, reconciliation 1.1.0, planner 1.3.0, glossary seeds; golden re-baseline, no migration): not started
-- P3 `source_coverage` end to end (derived brief, compression + prerequisite closure, cost estimate, part packer, segment skeleton, per-part planning/script/audio, completion report): not started
+- P1 Concept map (two-way chapter detection → tiered concept cells with promotion → edges → gate; cache + overlay; CLI + page): **done**
+- P2 Evidence completeness (extraction 2.0 unified inventory for all intents, cell-unit batches ready, `must_not_be_lost` accounting, reconciliation 1.1.0, planner 1.3.0, glossary 1.1.0; golden re-baseline, no migration): **done**
+- P3 `source_coverage` end to end (derived brief, compression + prerequisite closure, cost estimate, part packer, segment skeleton, per-part planning/script/audio, completion report): not started — **next**
 - P4 Text delivery (grounded prose lesson): not started
 - P5 Owner UI consolidation: not started
 - P6 Evaluation on one real source + cleanup: not started
@@ -86,13 +86,19 @@ Closed in P0.5 (2026-08-19):
 
 - F1 — the active writer is `persian_script_segment/1.3.0`; grounding rules (no outside knowledge, `editorial_only`, qualifications/disagreement, `speaker_dynamic`) are back in the system prompt. `tests/test_script_speaker_balance.py::test_latest_script_prompt_is_1_3_0_and_renders_position` is green.
 - F5 — evidence packs carry reconciled `ClaimRecord`s (`support_status`, qualifications); writer, verifier `1.2.0`, and reviser `1.1.0` receive them as `CLAIMS_JSON`.
-- must-not-be-lost notes appear on the episode page, with unused count in the header. They are still **not** supplied to the planner (P2).
+- must-not-be-lost notes appear on the episode page, with unused count in the header.
 
-Still open (P2):
+Closed in P2 (2026-08-19, steps 13–17):
 
-- definitions, distinctions, examples, objections and responses carry no verbatim excerpt and no ID, so they are neither audited nor accounted for in the plan;
-- `max_claims_per_block` silently drops surplus claims on dense blocks (no `truncated` signal, no second pass);
-- the glossary model pass triggers only on Latin tokens; Persian sources with transliterated terms get an empty glossary and a silent pass.
+- definitions, distinctions, examples, objections and responses are claims with verbatim excerpts and IDs (`evidence_extraction/2.0.0`);
+- surplus claims on dense blocks set `more_claims_available` (second pass still waits for `source_coverage` in P3); `excerpt_char_coverage` is recorded;
+- the glossary seed (`glossary/1.1.0`) is not Latin-token-only; Persian definition claims and concept-map cells seed terms;
+- flagged must-not-be-lost claims cannot vanish from the plan without a stated omission (`episode_plan/1.3.0`).
+
+Still open (P3):
+
+- cell-unit extraction batches and the dense-block second pass are implemented but not switched on for `focused_question`;
+- `source_coverage` packing, per-part planning, and the completion report are not built yet.
 
 ## What is not yet claimed
 

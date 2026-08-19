@@ -15,16 +15,16 @@ Promptهای اجرایی فعلی:
 
 ```text
 prompts/research_brief/1.0.0/
-prompts/document_map/1.0.0/
+prompts/document_map/1.0.0/ … 1.1.0/          (فعال: 1.1.0)
 prompts/document_map_merge/1.0.0/          (تاریخی؛ هنگام render خطا می‌دهد)
 prompts/document_map_merge/1.1.0/
-prompts/evidence_extraction/1.0.0/ … 1.4.0/ (فعال: 1.4.0)
-prompts/evidence_extraction_batch/1.0.0/
-prompts/claim_reconciliation/1.0.0/
-prompts/claim_reconciliation_merge/1.0.0/
+prompts/evidence_extraction/1.0.0/ … 2.0.0/ (فعال: 2.0.0)
+prompts/evidence_extraction_batch/1.0.0/ … 2.0.0/ (فعال: 2.0.0)
+prompts/claim_reconciliation/1.0.0/ … 1.1.0/ (فعال: 1.1.0)
+prompts/claim_reconciliation_merge/1.0.0/ … 1.1.0/ (فعال: 1.1.0)
 prompts/coverage_audit/1.0.0/
-prompts/episode_plan/1.0.0/ … 1.2.0/       (فعال: 1.2.0)
-prompts/glossary/1.0.0/
+prompts/episode_plan/1.0.0/ … 1.3.0/       (فعال: 1.3.0)
+prompts/glossary/1.0.0/ … 1.1.0/           (فعال: 1.1.0)
 prompts/persian_script_segment/1.0.0/ … 1.3.0/ (فعال: 1.3.0)
 prompts/script_verifier/1.0.0/ … 1.2.0/ (فعال: 1.2.0)
 prompts/script_reviser/1.0.0/ … 1.1.0/ (فعال: 1.1.0)
@@ -47,6 +47,8 @@ prompts/concept_edges/1.0.0/              (P1 Pass 4; یال‌های درون�
 `document_map_merge/1.1.0` تنها نسخه‌ی قابل‌اجراست. در نسخه `1.0.0` توکن
 `{{ partitions | tojson }}` هرگز جایگزین نمی‌شد و مدل هیچ‌وقت partitionها را نمی‌دید؛
 آن نسخه فقط به‌عنوان سابقه نگه داشته شده و اکنون هنگام render خطا می‌دهد.
+
+`evidence_extraction/2.0.0` و `evidence_extraction_batch/2.0.0` انبارهٔ واحد claim هستند (تعریف/تمایز/مثال/اعتراض/پاسخ هم excerpt دارند). `claim_reconciliation/1.1.0` و merge هم‌نسخه merge بین‌نوع را رد می‌کنند. `episode_plan/1.3.0` حساب must-not-be-lost و اسکلت (خالی تا P3) را اضافه می‌کند. `glossary/1.1.0` و `document_map/1.1.0` seed و `key_concepts` verbatim را سخت می‌گیرند. نسخه‌های قبلی بدون تغییر حفظ شده‌اند.
 
 ## Contract
 
@@ -203,4 +205,4 @@ Persian Script:
 
 ## Planned versions (سند ۱۰، ضمیمهٔ A)
 
-نسخه‌های زیر در برنامه‌اند و هنوز منتشر نشده‌اند؛ متن کامل‌شان در ضمیمهٔ A سند ۱۰ است: `evidence_extraction/2.0.0` و `evidence_extraction_batch/2.0.0` (یک انبارهٔ واحد claim با excerpt)، `claim_reconciliation/1.1.0`، `claim_reconciliation_merge/1.1.0`، `episode_plan/1.3.0`، `glossary/1.1.0`، `document_map/1.1.0`، و prompt جدید `persian_lesson_prose/1.0.0`. `persian_script_segment/1.3.0`، `script_verifier/1.2.0` و `script_reviser/1.1.0` در P0.5 منتشر شدند؛ `concept_cells/1.0.0`، `concept_cells_consolidate/1.0.0` و `concept_edges/1.0.0` در P1 منتشر شدند.
+نسخهٔ باقی‌مانده در برنامه: prompt جدید `persian_lesson_prose/1.0.0` (P4). در P2 منتشر شدند: `evidence_extraction/2.0.0`، `evidence_extraction_batch/2.0.0`، `claim_reconciliation/1.1.0`، `claim_reconciliation_merge/1.1.0`، `episode_plan/1.3.0`، `glossary/1.1.0`، `document_map/1.1.0`. در P0.5: `persian_script_segment/1.3.0`، `script_verifier/1.2.0`، `script_reviser/1.1.0`. در P1: `concept_cells/1.0.0`، `concept_cells_consolidate/1.0.0`، `concept_edges/1.0.0`.

@@ -4,7 +4,7 @@
 
 این subsystem بین Claim Ledger و سناریونویسی فارسی قرار می‌گیرد. پیش از نوشتن متن گفتاری مشخص می‌کند corpus برای خروجی درخواستی کافی است یا نه، کدام claimها اولویت دارند، اختلاف sourceها کجاست، ترتیب آموزشی چیست و هر segment دقیقاً به چه evidence و متن اصلی دسترسی دارد.
 
-> **بازنگری ۲۰۲۶-۰۸-۱۹ ([سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §5.5، §6، §8 C4–C5، P2–P3):** as-built این سند برای `focused_question` می‌ماند. برنامه‌ریزی‌شده: (۱) **بخش‌بند قطعی** (`part_packer`) پیش از planner، سلول‌های مفهومی در دامنه را به `LessonPart`هایی ≤ طول اپیزود و نزدیک به آن می‌چیند؛ planner (`episode_plan/1.3.0`) به‌ازای هر بخش با claimهای همان بخش اجرا می‌شود؛ پنجرهٔ زمان برای این نیت بدون کف و با سقف ۱٫۲۵ × طول اپیزود است؛ (۲) هر claim با `must_not_be_lost` یا در segment است یا با دلیل در `deliberately_omitted_claims` (امروز `must_not_be_lost` هنوز به planner داده نمی‌شود؛ `MustNotBeLostReview` روی صفحهٔ اپیزود دیده می‌شود)؛ (۳) گیت «۸۰٪ مدت» برای `source_coverage` مشورتی است و بررسی پوشش هر سلول جایش را می‌گیرد؛ خطوط برش اولویت (امروز `/3, /2, /4` — نه `/10, /6, /8` که در `07-specs/05` آمده بود) برای این نیت با «claim متصل به سلول‌های بخش → must_include» جایگزین می‌شود؛ (۴) **Evidence Pack حامل خودِ `ClaimRecord`ها** است (متن، `support_status`، قیدها) نه فقط `claim_ids` — پیاده‌شده در P0.5؛ (۵) glossary از سلول‌های مفهومی seed می‌گیرد.
+> **بازنگری ۲۰۲۶-۰۸-۱۹ ([سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §5.5، §6، §8 C4–C5، P2–P3):** as-built این سند برای `focused_question` می‌ماند. **پیاده‌شده در گام ۱۳–۱۶ (P2):** planner فعال `episode_plan/1.3.0` است؛ هر claim با `must_not_be_lost` یا در segment است یا با دلیل در `deliberately_omitted_claims` (وگرنه `integrity_breach`)؛ `SEGMENT_SKELETON_JSON` تا P3 خالی است؛ `part_index` روی segment پیش‌فرض ۱ است؛ glossary `1.1.0` از claimهای `definition` و (وقتی نقشه هست) سلول‌های مفهومی seed می‌گیرد. **پیاده‌شده در P0.5:** Evidence Pack حامل خودِ `ClaimRecord`هاست. **برنامه‌ریزی‌شده (P3):** (۱) **بخش‌بند قطعی** (`part_packer`) پیش از planner، سلول‌های مفهومی در دامنه را به `LessonPart`هایی ≤ طول اپیزود و نزدیک به آن می‌چیند؛ planner به‌ازای هر بخش با اسکلت و claimهای همان بخش اجرا می‌شود؛ پنجرهٔ زمان برای نیت `source_coverage` بدون کف و با سقف ۱٫۲۵ × طول اپیزود است؛ (۲) گیت «۸۰٪ مدت» برای `source_coverage` مشورتی است و بررسی پوشش هر سلول جایش را می‌گیرد؛ خطوط برش اولویت برای این نیت با «claim متصل به سلول‌های بخش → must_include» جایگزین می‌شود.
 
 ## جریان کامل
 
@@ -124,10 +124,10 @@ disagreement-graph.json
 
 ```text
 src/thesisound/services/episode_planner.py
-prompts/episode_plan/1.1.0/
+prompts/episode_plan/1.3.0/   (فعال؛ 1.0.0…1.2.0 برای reproducibility نگه داشته شده)
 ```
 
-نسخه `1.1.0` علاوه بر coverage و priorities، Budget Report و Disagreement Graph را دریافت می‌کند. نسخه `1.0.0` برای reproducibility بدون تغییر باقی مانده است.
+نسخه `1.3.0` علاوه بر coverage و priorities، `MUST_NOT_BE_LOST` را حساب می‌کند، `PART_JSON` و `SEGMENT_SKELETON_JSON` می‌گیرد (برای `focused_question` اسکلت خالی و part واحد است)، و Budget Report و Disagreement Graph را مثل ۱.۱.۰ می‌بیند. نسخه‌های `1.0.0`–`1.2.0` برای reproducibility بدون تغییر باقی مانده‌اند.
 
 هر segment شامل این موارد است:
 
@@ -147,6 +147,8 @@ Quality gateها:
 - prerequisite باید قبلاً معرفی شده باشد؛
 - claim در چند segment تکرار نمی‌شود؛
 - تمام `must_include`ها استفاده می‌شوند؛
+- هر claim با `must_not_be_lost` یا در segment است یا با دلیل در `deliberately_omitted_claims`؛
+- اگر اسکلت غیرخالی باشد ترتیب، claim_ids، speaker_dynamic و دقیقه باید با اسکلت یکی باشند؛
 - supporting/optional یا استفاده می‌شوند یا دلیل omission دارند؛
 - claim استفاده‌شده نمی‌تواند omitted باشد.
 

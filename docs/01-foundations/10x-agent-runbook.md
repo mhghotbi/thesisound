@@ -58,7 +58,7 @@
 | 14 | P2 | reconciliation 1.1.0 + merge 1.1.0 | انجام‌شده 2026-08-19 |
 | 15 | P2 | planner 1.3.0 + plumbing verifier | انجام‌شده 2026-08-19 |
 | 16 | P2 | glossary 1.1.0 + document_map 1.1.0 + web capture | انجام‌شده 2026-08-19 |
-| 17 | P2 | re-baseline golden + CHANGELOG + docs | |
+| 17 | P2 | re-baseline golden + CHANGELOG + docs | انجام‌شده 2026-08-19 |
 | C-C | ✔ | **چک‌پوینت C** — استخراج کامل و بدون اتلاف؟ | |
 | 18 | P3 | میدان‌های پروژه + brief مشتق + انتخاب با بستار + برآورد هزینه | |
 | 19 | P3 | seeding استخراج + linkage + سطوح پوشش | |

@@ -52,7 +52,7 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`05-episode-preparation.md`](02-pipeline/05-episode-preparation.md) | ارزیابی پوشش، اولویت‌بندی و Episode Plan |
 | [`06-persian-script-pipeline.md`](02-pipeline/06-persian-script-pipeline.md) | نگارش و راستی‌آزمایی متن فارسی |
 
-یادداشت‌های طراحی prompt هر stage (`01_research_brief.md` … `09_tts_and_audio_qa.md`) در [`02-pipeline/prompt-design-notes/`](02-pipeline/prompt-design-notes/) — **تاریخی**؛ مرجع اجرایی `prompts/<id>/<latest>/` است (منتقل‌شده از `prompts/` در ۲۰۲۶-۰۸-۱۹). اسناد ۰۳ تا ۰۶ هر کدام یک یادداشت «بازنگری ۲۰۲۶-۰۸-۱۹» دارند که تغییرات برنامه‌ریزی‌شدهٔ [سند ۱۰](01-foundations/10-personal-learning-companion-development-plan.md) را روی as-built نشان می‌دهد.
+یادداشت‌های طراحی prompt هر stage (`01_research_brief.md` … `09_tts_and_audio_qa.md`) در [`02-pipeline/prompt-design-notes/`](02-pipeline/prompt-design-notes/) — **تاریخی**؛ مرجع اجرایی `prompts/<id>/<latest>/` است (منتقل‌شده از `prompts/` در ۲۰۲۶-۰۸-۱۹). اسناد ۰۳، ۰۵ و ۰۶ یادداشت «بازنگری ۲۰۲۶-۰۸-۱۹» دارند؛ بندهای P1/P2 آنجا **پیاده‌شده در گام ۱۳–۱۶**اند و بندهای P3/P4 هنوز برنامه‌ریزی‌شده‌اند.
 
 ## `03-web-ui/` — رابط عملیاتی
 

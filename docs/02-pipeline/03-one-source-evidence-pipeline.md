@@ -2,7 +2,7 @@
 
 مرتبط: ورودی این stage خروجی [`01-document-ingestion.md`](01-document-ingestion.md) است؛ عمق استخراج شواهد را [`04-output-aware-analysis-budget.md`](04-output-aware-analysis-budget.md) تعیین می‌کند.
 
-> **بازنگری ۲۰۲۶-۰۸-۱۹ ([سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §6، §8، P1–P2):** این سند وضعیت as-built است. سه تغییر برنامه‌ریزی‌شده روی آن سوار می‌شود: (۱) Document Map فصل‌به‌فصل ساخته می‌شود (partition = فصل، نه ۲۵۰k کاراکتر) و بالای آن لایهٔ **سلول‌های مفهومی و یال‌ها** می‌آید (P1)؛ (۲) **استخراج ۲.۰** — همهٔ اقلام (تعریف، تمایز، مثال، اعتراض، پاسخ) claim با excerpt و نوع می‌شوند، `must_not_be_lost` پرچم روی claim است، بلاک‌های متراکم گذر دوم دارند و `excerpt_char_coverage` هر بلاک ثبت می‌شود (P2)؛ (۳) reconciliation بین `claim_type`های متفاوت merge نمی‌کند و merge گروه‌ها `canonical_claim_id` برمی‌گرداند. فهرست «خروجی draft» در §۳ زیر، پس از P2 به‌صورت یک انبارهٔ واحد خواهد بود.
+> **بازنگری ۲۰۲۶-۰۸-۱۹ ([سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §6، §8، P1–P2):** این سند وضعیت as-built است. **پیاده‌شده در گام ۱۳–۱۶ (P2) و P1:** (۱) Document Map فصل‌به‌فصل ساخته می‌شود (partition = فصل، نه ۲۵۰k کاراکتر) و بالای آن لایهٔ **سلول‌های مفهومی و یال‌ها** می‌آید (P1)؛ (۲) **استخراج ۲.۰** — همهٔ اقلام (تعریف، تمایز، مثال، اعتراض، پاسخ) claim با excerpt و نوع می‌شوند، `must_not_be_lost` پرچم روی claim است، بلاک‌های متراکم `more_claims_available` می‌گیرند (گذر دوم برای `source_coverage` در P3 فعال می‌شود) و `excerpt_char_coverage` هر بلاک ثبت می‌شود؛ (۳) reconciliation بین `claim_type`های متفاوت merge نمی‌کند و merge گروه‌ها `canonical_claim_id` برمی‌گرداند. فهرست «خروجی draft» در §۳ همان انبارهٔ واحد claim است.
 
 این subsystem یک منبع parse‌شده را به Claim Ledger قابل‌ممیزی تبدیل می‌کند. هدف آن «خلاصه‌سازی سند» نیست؛ هدف ساختن یک لایه شواهد است که مراحل بعدی مانند episode planning و script writing بتوانند دوباره به متن اصلی برگردند.
 
@@ -88,7 +88,7 @@ Block builder نباید به tokenizer یک provider وابسته شود. `esti
 ```text
 src/thesisound/services/document_mapper.py
 src/thesisound/services/analysis_profile.py  # selection_is_exhaustive
-prompts/document_map/1.0.0/
+prompts/document_map/1.1.0/   (فعال؛ 1.0.0 برای reproducibility نگه داشته شده)
 ```
 
 وقتی `selection_is_exhaustive` برقرار باشد — یعنی `target_tokens >= total_tokens` و نقشه نمی‌تواند مجموعهٔ بلوک‌های انتخاب‌شده را عوض کند — مدل صدا زده نمی‌شود و یک `DocumentMap` تک‌بخشیِ قطعی نوشته می‌شود (با warning خودتوضیح‌گر). این نقشه به کش مشترک وارد نمی‌شود. عمق/بودجهٔ پروفایل عوض نمی‌شود؛ فقط هزینهٔ map وقتی انتخاب کامل است حذف می‌شود. جزئیات: [`07-specs/06-conditional-document-map.md`](../07-specs/06-conditional-document-map.md).
@@ -158,7 +158,7 @@ front_matter
 
 ```text
 src/thesisound/services/evidence_extractor.py
-prompts/evidence_extraction/1.0.0/
+prompts/evidence_extraction/2.0.0/   (فعال؛ 1.0.0…1.4.0 برای reproducibility نگه داشته شده)
 ```
 
 هر semantic block در یک model run مستقل تحلیل می‌شود. ورودی محدود است به:
@@ -168,21 +168,11 @@ prompts/evidence_extraction/1.0.0/
 - context کوتاه section؛
 - working thesis سند.
 
-مدل خروجی draft می‌دهد:
-
-- claimها؛
-- supporting excerpt؛
-- definitionها؛
-- distinctionها؛
-- exampleها؛
-- objection و response؛
-- qualification؛
-- unresolved context؛
-- `must_not_be_lost`.
+مدل یک انبارهٔ واحد `claims` می‌دهد. هر قلم — از جمله تعریف، تمایز، مثال، اعتراض و پاسخ — claim است با `claim_type`، supporting excerpt، و در صورت نیاز `term` / `contrast` / `responds_to_excerpt` / `must_not_be_lost`. Qualification روی همان claim می‌ماند.
 
 مدل ID یا locator تولید نمی‌کند. application پس از validation آن‌ها را می‌سازد.
 
-**محدودیت شناخته‌شدهٔ این نسخه (ممیزی ۲۰۲۶-۰۸-۱۹، سند ۱۰ §8 F2–F4):** فقط claimها excerpt و ID دارند؛ تعریف/تمایز/مثال/اعتراض/پاسخ و `must_not_be_lost` رشتهٔ آزادند، ممیزی verbatim نمی‌شوند، در طرح حساب نمی‌شوند و `must_not_be_lost` هرگز به planner نمی‌رسد؛ سقف `max_claims_per_block` ادعاهای اضافی را بی‌صدا حذف می‌کند. استخراج ۲.۰ (P2) همهٔ این‌ها را با «یک انبارهٔ واحد claim با excerpt» برطرف می‌کند.
+**بسته در P2 (ممیزی ۲۰۲۶-۰۸-۱۹ F2–F4):** تعریف/تمایز/مثال/اعتراض/پاسخ دیگر رشتهٔ آزاد بدون excerpt نیستند؛ `must_not_be_lost` پرچم claim است و planner ۱.۳.۰ حذف بی‌دلیل را رد می‌کند. سقف `max_claims_per_block` با `more_claims_available` علامت می‌خورد (گذر دوم برای نیت `source_coverage` در P3).
 
 ### Persistence مرحله‌ای
 
@@ -227,8 +217,8 @@ src/thesisound/services/evidence_validator.py
 
 ```text
 src/thesisound/services/claim_reconciler.py
-prompts/claim_reconciliation/1.0.0/
-prompts/claim_reconciliation_merge/1.0.0/
+prompts/claim_reconciliation/1.1.0/          (فعال؛ 1.0.0 نگه داشته شده)
+prompts/claim_reconciliation_merge/1.1.0/    (فعال؛ 1.0.0 نگه داشته شده)
 ```
 
 Evidence itemهای یک source ممکن است تکراری یا مکمل باشند. این stage آن‌ها را به claimهای canonical تبدیل می‌کند.
@@ -239,6 +229,7 @@ Evidence itemهای یک source ممکن است تکراری یا مکمل با�
 
 - claimهای هم‌معنا فقط با attribution، scope و certainty سازگار ادغام می‌شوند؛
 - objection با response ادغام نمی‌شود؛
+- هیچ merge بین‌ِ `claim_type` پذیرفته نمی‌شود (pre-filter قطعی در ۱.۱.۰)؛ هر گروه merge یک `canonical_claim_id` دارد؛
 - criticism به author position تبدیل نمی‌شود؛
 - qualificationهای material حفظ می‌شوند؛
 - evidence ID ناشناخته رد می‌شود؛

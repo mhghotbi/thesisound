@@ -6,6 +6,7 @@
 
 > **بازنگری ۲۰۲۶-۰۸-۱۹ ([سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §7، §8 F1/F5/F11، C1/C5/C7، ضمیمهٔ A.1/A.5/A.11):**
 > - **پیاده‌شده در P0.5:** نسخهٔ فعال نویسنده `persian_script_segment/1.3.0` است (لحن 1.2.0 + قرارداد grounding و dynamics؛ «عدد/تاریخ/نام/مکان/تشبیه خارج از pack ممنوع؛ تشبیه فقط در turn ویرایشی»). pack حامل `ClaimRecord`هاست. چک قطعی `unsupported_specifics` در `script_checks` فعال است. `script_verifier/1.2.0` و `script_reviser/1.1.0` لجر ادعا را می‌بینند.
+> - **پیاده‌شده در گام ۱۳–۱۶ (P2):** glossary فعال `glossary/1.1.0` است (seed قطعی از claimهای `definition` و سلول‌های مفهومی وقتی نقشه هست؛ `needs_model` دیگر فقط به توکن لاتین وابسته نیست). verifier همان ۱.۲.۰ است با `PLAN_MUST_INCLUDE_JSON` پرشده از طرح.
 > - **برنامه‌ریزی‌شده (P3/P4):** script و audio به‌ازای هر بخش (`script/parts/<n>/`, `audio/parts/<n>/`)؛ تحویل متنی با `persian_lesson_prose/1.0.0` روی همان plan/pack/verifier و گذار `SCRIPT_VERIFIED → COMPLETE` برای `delivery == text`.
 
 ## جریان
@@ -57,7 +58,7 @@ uv run thesisound prepare-script <project-id>
 
 واژه‌نامه فقط اصطلاح‌هایی را نگه می‌دارد که روی معنا، تمایز، attribution یا تلفظ اثر دارند. ترجمه contested باید صریحاً contested باقی بماند.
 
-ساخت واژه‌نامه **ابتدا قطعی است** (`deterministic_glossary`): از `ExtractedDefinition`ها، توکن‌های لاتین در excerptها و متن claimها فهرست اصطلاح می‌سازد و فقط وقتی تصمیم ترجمه‌ای باز مانده (فرم فارسی مطمئن نیست، تعارض بین منابع، یا کاندیدای لاتین بی‌ترجمه) مدل صدا زده می‌شود. نتیجه همیشه یک `Glossary` کامل است (`build_kind` برابر `deterministic` یا `model`) تا `glossary_inconsistency` خاموش نشود. جزئیات: [`07-specs/07-conditional-glossary-and-verification.md`](../07-specs/07-conditional-glossary-and-verification.md).
+ساخت واژه‌نامه **ابتدا قطعی است** (`deterministic_glossary`، prompt فعال `glossary/1.1.0`): از claimهای `definition`، سلول‌های مفهومی وقتی نقشه هست، توکن‌های لاتین در excerptها و متن claimها فهرست اصطلاح می‌سازد و فقط وقتی تصمیم ترجمه‌ای باز مانده مدل صدا زده می‌شود. نتیجه همیشه یک `Glossary` کامل است (`build_kind` برابر `deterministic` یا `model`) تا `glossary_inconsistency` خاموش نشود. جزئیات: [`07-specs/07-conditional-glossary-and-verification.md`](../07-specs/07-conditional-glossary-and-verification.md).
 
 Artifact:
 
