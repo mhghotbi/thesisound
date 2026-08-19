@@ -44,8 +44,8 @@
 | 2 | P0.5 | `ClaimRecord` در evidence pack + verifier 1.2.0 + reviser 1.1.0 | انجام‌شده 2026-08-19 |
 | 3 | P0.5 | چک قطعی `unsupported_specifics` | انجام‌شده 2026-08-19 |
 | 4 | P0.5 | صفحهٔ must-not-be-lost | انجام‌شده 2026-08-19 |
-| C-A | ✔ | **چک‌پوینت A** — مسیر `focused_question` سالم؟ | |
-| 5 | P1 | مدل‌های `concepts.py` | |
+| C-A | ✔ | **چک‌پوینت A** — مسیر `focused_question` سالم؟ | انجام‌شده 2026-08-19 |
+| 5 | P1 | مدل‌های `concepts.py` | انجام‌شده 2026-08-19 |
 | 6 | P1 | Pass 0 — تشخیص فصل (دو تشخیص‌دهنده) | |
 | 7 | P1 | Pass 1 — document map فصل‌به‌فصل | |
 | 8 | P1 | Pass 2/2.5 — سلول‌های مفهومی + نرمال‌سازی | |
