@@ -4,6 +4,8 @@
 
 این subsystem بین Claim Ledger و سناریونویسی فارسی قرار می‌گیرد. پیش از نوشتن متن گفتاری مشخص می‌کند corpus برای خروجی درخواستی کافی است یا نه، کدام claimها اولویت دارند، اختلاف sourceها کجاست، ترتیب آموزشی چیست و هر segment دقیقاً به چه evidence و متن اصلی دسترسی دارد.
 
+> **بازنگری ۲۰۲۶-۰۸-۱۹ ([سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §5.5، §6، §8 C4–C5، P2–P3):** as-built این سند برای `focused_question` می‌ماند. برنامه‌ریزی‌شده: (۱) **بخش‌بند قطعی** (`part_packer`) پیش از planner، سلول‌های مفهومی در دامنه را به `LessonPart`هایی ≤ طول اپیزود و نزدیک به آن می‌چیند؛ planner (`episode_plan/1.3.0`) به‌ازای هر بخش با claimهای همان بخش اجرا می‌شود؛ پنجرهٔ زمان برای این نیت بدون کف و با سقف ۱٫۲۵ × طول اپیزود است؛ (۲) هر claim با `must_not_be_lost` یا در segment است یا با دلیل در `deliberately_omitted_claims` (امروز `must_not_be_lost` اصلاً به planner داده نمی‌شود و `MustNotBeLostReview` در هیچ صفحه‌ای نیست)؛ (۳) گیت «۸۰٪ مدت» برای `source_coverage` مشورتی است و بررسی پوشش هر سلول جایش را می‌گیرد؛ خطوط برش اولویت (امروز `/3, /2, /4` — نه `/10, /6, /8` که در `07-specs/05` آمده بود) برای این نیت با «claim متصل به سلول‌های بخش → must_include» جایگزین می‌شود؛ (۴) **Evidence Pack حامل خودِ `ClaimRecord`ها** می‌شود (متن، `support_status`، قیدها) نه فقط `claim_ids`، تا نویسنده و verifier عدم‌قطعیت را ببینند؛ (۵) glossary از سلول‌های مفهومی seed می‌گیرد.
+
 ## جریان کامل
 
 ```text

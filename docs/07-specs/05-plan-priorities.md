@@ -30,10 +30,12 @@
 سطح‌های `must_include` / `supporting` / `optional` / `deferred` در [`claim_prioritizer.py:55`](../../src/thesisound/services/claim_prioritizer.py) با **خط برش رتبه‌ای بر پایهٔ مدت درخواستی** تعیین می‌شوند:
 
 ```text
-must_count       = round(target_duration_minutes / 10)
-supporting_count = round(target_duration_minutes / 6)
-optional_count   = round(target_duration_minutes / 8)
+must_count       = max(1, min(len(scored), round(target_duration_minutes / 3)))
+supporting_count = max(1, min(len(scored) - must_count, round(target_duration_minutes / 2)))
+optional_count   = max(0, min(len(scored) - must_count - supporting_count, round(target_duration_minutes / 4)))
 ```
+
+(اصلاح ۲۰۲۶-۰۸-۱۹: نسخهٔ قبلی این سند `/10, /6, /8` نوشته بود که با کد `claim_prioritizer.py:55-66` نمی‌خواند. برای نیت `source_coverage` در [سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §6 خط برش مدت‌محور به کار نمی‌رود: claimهای متصل به سلول‌های بخش `must_include` و بقیه `deferred` با همین معنا هستند.)
 
 یعنی `deferred` **به معنای بی‌پشتوانه یا مردود نیست**؛ فقط یعنی زیر خط برش ظرفیت افتاده. هر مدعای غیرتحریری از پیش شاهد دارد و بدون شاهد اصلاً نامعتبر است ([`domain.py:321`](../../src/thesisound/domain.py)).
 

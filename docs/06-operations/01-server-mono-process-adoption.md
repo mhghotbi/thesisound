@@ -4,7 +4,9 @@ Date: 2026-08-09 · Source read: `classplus/server-mono` (NestJS / TypeScript / 
 
 A process-adoption study, not a code-reuse study. The stacks share nothing at the code level. What transfers is the operating shape: how a run is scored, how a failure is contained, how a human enters the loop, and what gets recorded so a claim about quality can be defended later.
 
-**Items 1–10 are implemented.** Item 9 produced [`03-production-sop.md`](03-production-sop.md); item 6 produced [`../../benchmarks/eval/`](../../benchmarks/eval/). Items 11–14 remain open and are the live part of this document.
+**Items 1–10 are implemented.** Item 9 produced [`03-production-sop.md`](03-production-sop.md); item 6 produced [`../../benchmarks/eval/`](../../benchmarks/eval/). Items 11–14 remain open.
+
+**Second study (2026-08-19), items 15–24 below**, read the AQT Maker / KMS knowledge-graph side of `server-mono` (`apps/aqt-maker/src/pdf-aqt/`, `libs/lxd-engine/`, `libs/mission-engine/`, `libs/database/prisma/schema.prisma`) for the personal-learning pivot. Those items are **planned**, not implemented; their implementation home is [`../01-foundations/10-personal-learning-companion-development-plan.md`](../01-foundations/10-personal-learning-companion-development-plan.md) (P1–P3). Items 11–14 and 15–24 together are the live part of this document.
 
 ## Weight definition
 
@@ -66,6 +68,37 @@ Each item was scored on two axes; the final tier is **the higher of the two**.
 **Source.** `libs/planner-ai-core/src/draft-jobs.ts:3-28` (status/phase enums, 15-minute orphan threshold), `planner-job-sse-hub.ts:19-67` (replay-buffered fan-out), and `PLANNER-OPS.md` on why this cannot run under PM2 cluster mode without a shared queue.
 
 **Ours.** Every stage already resumes from persisted artifacts via `load_*_optional`, and stage callbacks plus tracing spans already report phases. **Recommendation: do not adopt.** The one genuinely missing piece is cancellation, which is far cheaper on its own than the job subsystem around it.
+
+## Second study — concept-graph and curriculum patterns (2026-08-19)
+
+Scope: how AQT Maker turns a textbook into cells, a semantic graph and teaching sessions, and what of that transfers to "learn one humanities source completely, in parts". Same tiering as above. Status "Planned (P<n>)" refers to the phases of doc 10.
+
+| # | Item | Source (server-mono) | Tier | Status / where |
+|---|---|---|---|---|
+| 15 | Chapter-first hierarchy: chapters → per-chapter passes; chapter titles "exactly as printed, do not guess" | `multi-pass-orchestrator.service.ts:423-1366`, `pdf-structure.prompt.ts:2-12` | Medium | Planned (P1, Pass 0–1) — deterministic chapter detection from `heading_path`/TOC; document map partition = chapter |
+| 16 | Formal unit definition + split/merge criteria + "split forbidden" list + banned titles + self-check + `granularityRationale` | `extract-cells.prompt.ts:57-147` | Medium | Planned (P1, `concept_cells/1.0.0`) — humanities version: *assessable* → *traceable* |
+| 17 | Progressive chapter awareness in extraction (accepted titles, remaining budget, tightening line); chapter budget = f(section count) | `extract-cells.prompt.ts:15-31`, `chapter-budget-formula.util.ts` | Light | Planned (P1) |
+| 18 | Deterministic granularity validation: smell titles, Jaccard ≥ 0.85 merge, sole-cell rewrite; chapter and book title registries | `validate-cell-granularity.pass.ts`, `chapter-cell-dedup.util.ts` | Light | Planned (P1, Pass 2.5) |
+| 19 | Consolidate pass `keep \| merge \| remove` to a target "without losing coverage", metadata only | `consolidate-cells.prompt.ts` | Light | Planned (P1, Pass 3) |
+| 20 | Chapter gate: critical vs `needs_review`; every TOC section covered; sampled lexical grounding ≥ 0.15 | `chapter-validation.pass.ts`, `content-grounding.service.ts:41-80` | Light | Planned (P1, Pass 5) |
+| 21 | Typed edges with `weight`, `confidence`, `rationale`, `created_by ai\|user`; graph prompt rules (real edges only, cap `min(2N,60)`, no cycles, no self-loops) | `schema.prisma:357-378`, `cell-graph.prompt.ts:26-64` | Medium | Planned (P1, Pass 4) — **plus** deterministic cycle/orphan checks, which AQT never implemented |
+| 22 | Deterministic session packer: topological readiness + affinity + textbook-order prior; honest `graph_backed`; median for missing minutes; measured warning that the LLM graph is too sparse to sequence alone (46–66 % graph-backed) | `session-planner.service.ts:28-101`, `session.types.ts:35-84`, `session-plan.service.ts` | Medium | Planned (P3, part packer) — owner's fill rule (≥ 0.8 × target) replaces "stop early" |
+| 23 | Two extraction modes: *extraction* (follow the book) vs *design* (restructure, content only from text) | `extract-cells.prompt.ts:151-207` | Light | Planned (P1) — default *extraction*; *design* later |
+| 24 | Per-chapter checkpoint / resume via phase sentinels; forced spread of importance | `aqt-phase.constants.ts`, `cell-enrichment.prompt.ts` | Light | Planned (P1) — checkpoint file per chapter; tier distribution constraint |
+
+### Not adopted from the second study
+
+| Their pattern | Why not |
+|---|---|
+| Quiz-based mastery (BKT `student__dynamic_report_bkt`, LP/EWMA `mse__learner_lp`, error types E1–E4, forgetting curve) | The owner is not a student and the product is not an educational platform; a distinction cannot be quizzed. Coverage is tracked, mastery is not. |
+| Application paths, atom-level remedial graph, missions | School practice layer for 13-year-olds. |
+| Two coexisting mastery models; `spaced_repetition` declared in a taxonomy but never scheduled | Lesson: one model, simple; do not name what is not built. |
+| **Text truncation** — chapter text cut to 25–30k chars, microtopic text to 8k with `[... متن قطع شده ...]`, topics located by keyword or proportional slicing, no text IDs (only page ranges) | Thesisound's no-truncation, block-ID discipline is the stronger design and stays. |
+| Destructive graph rebuild (deletes owner-authored edges; no snapshot) | Owner edits live in a per-project overlay; the AI map is immutable and content-addressed. |
+
+### What AQT Maker claims versus what it has
+
+Read before copying anything else from it: no cycle detection exists anywhere ("0 inconsistent cycles" on the marketing page is produced by no code path; the investor dossier `03-advantage-and-moat-map.md:75-81` calls the graph "Overstated"); the personalisation engine (`mission-engine`) has zero references to `aqt__cell_relations`; there is no learner-facing graph view; `libs/knowledge-tree-read` has no traversal. Realistic expectation for us: the concept map is a coverage ledger and local sequencer, not a learning-path engine.
 
 ## Already had — rejected
 

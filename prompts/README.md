@@ -16,22 +16,22 @@ Promptهای اجرایی فعلی:
 ```text
 prompts/research_brief/1.0.0/
 prompts/document_map/1.0.0/
-prompts/document_map_merge/1.0.0/
+prompts/document_map_merge/1.0.0/          (تاریخی؛ هنگام render خطا می‌دهد)
 prompts/document_map_merge/1.1.0/
-prompts/evidence_extraction/1.1.0/
-prompts/evidence_extraction/1.2.0/
+prompts/evidence_extraction/1.0.0/ … 1.4.0/ (فعال: 1.4.0)
+prompts/evidence_extraction_batch/1.0.0/
 prompts/claim_reconciliation/1.0.0/
 prompts/claim_reconciliation_merge/1.0.0/
 prompts/coverage_audit/1.0.0/
-prompts/episode_plan/1.0.0/
-prompts/episode_plan/1.1.0/
+prompts/episode_plan/1.0.0/ … 1.2.0/       (فعال: 1.2.0)
 prompts/glossary/1.0.0/
-prompts/persian_script_segment/1.0.0/
-prompts/script_verifier/1.0.0/
-prompts/script_verifier/1.1.0/
+prompts/persian_script_segment/1.0.0/ … 1.2.0/ (فعال: 1.2.0 — فقط لحن؛ قرارداد grounding در 1.3.0 برمی‌گردد، سند ۱۰ §8 F1)
+prompts/script_verifier/1.0.0/ … 1.1.0/
 prompts/script_reviser/1.0.0/
 prompts/web_source_capture/1.0.0/
 ```
+
+`prompt_loader` بدون pin بالاترین نسخه را انتخاب می‌کند.
 
 `episode_plan/1.1.0` به Budget Report و Disagreement Graph وابسته است. نسخه `1.0.0` بدون تغییر حفظ شده تا runهای قدیمی reproducible بمانند.
 
@@ -192,21 +192,10 @@ Persian Script:
 - revision دارای ID جدید؛
 - تغییر turn سالم در targeted revision.
 
-## Design contract files
+## Design notes (historical)
 
-| فایل | stage |
-|---|---|
-| `01_research_brief.md` | تبدیل input مبهم به brief |
-| `02_query_planner.md` | query family و search budget |
-| `03_source_triage.md` | role/relevance/limitation منبع |
-| `04_document_mapper.md` | نقشه ساختاری سند |
-| `04b_parse_quality_auditor.md` | audit parse مشکوک |
-| `05_evidence_extractor.md` | claim و evidence دقیق |
-| `05b_claim_reconciler.md` | canonical claim و disagreement |
-| `05c_coverage_auditor.md` | کفایت corpus و gap واقعی |
-| `06_episode_plan.md` | outline claim-bound |
-| `06b_glossary_builder.md` | اصطلاحات و تلفظ فارسی |
-| `07_persian_script.md` | نوشتن مستقیم سناریوی فارسی |
-| `08_script_verifier.md` | بررسی adversarial سناریو |
-| `08b_script_reviser.md` | اصلاح محدود turnهای معیوب |
-| `09_tts_and_audio_qa.md` | direction صوت و semantic QA |
+فایل‌های طراحی `01_research_brief.md` … `09_tts_and_audio_qa.md` که قبلاً این‌جا بودند **قرارداد اجرایی نیستند** و از promptهای اجرایی جدا افتاده بودند (ممیزی ۲۰۲۶-۰۸-۱۹، [سند ۱۰](../docs/01-foundations/10-personal-learning-companion-development-plan.md) §8 F13/C10). به [`docs/02-pipeline/prompt-design-notes/`](../docs/02-pipeline/prompt-design-notes/) منتقل شدند و فقط سابقهٔ نیت طراحی‌اند. **مرجع هر stage، prompt اجرایی در `prompts/<id>/<latest>/` است.**
+
+## Planned versions (سند ۱۰، ضمیمهٔ A)
+
+نسخه‌های زیر در برنامه‌اند و هنوز منتشر نشده‌اند؛ متن کامل‌شان در ضمیمهٔ A سند ۱۰ است: `persian_script_segment/1.3.0` (بازگرداندن قرارداد grounding و dynamics به نویسندهٔ فعال)، `evidence_extraction/2.0.0` و `evidence_extraction_batch/2.0.0` (یک انبارهٔ واحد claim با excerpt)، `claim_reconciliation/1.1.0`، `claim_reconciliation_merge/1.1.0`، `episode_plan/1.3.0`، `script_verifier/1.2.0`، `script_reviser/1.1.0`، `glossary/1.1.0`، `document_map/1.1.0`، و promptهای جدید `concept_cells/1.0.0`، `concept_cells_consolidate/1.0.0`، `concept_edges/1.0.0`، `persian_lesson_prose/1.0.0`.

@@ -26,6 +26,19 @@ The `Reads`, `Writes`, `Enforced at`, and `Blocked means` cells below intentiona
 | 12 | `audio-qa` | Machine | Audio QA report | Accepted audio manifest | `src/thesisound/services/audio_pipeline_service.py:193` | Audio QA failed and no manual-review escape was used. | Regenerate, fix segmentation, or explicitly accept manual review. |
 | 13 | `final-listen` | Human | Final assembled audio | Operator release decision | Unenforced | No human final-listen confirmation exists; this is a known gap. | Listen before release. |
 
+## Planned changes for `source_coverage` projects (doc 10, not yet enforced)
+
+[`../01-foundations/10-personal-learning-companion-development-plan.md`](../01-foundations/10-personal-learning-companion-development-plan.md) adds a second lesson intent. Until those phases land, the thirteen gates above are the only enforced ones and `GATE_REGISTRY` is unchanged. When P1–P3 land, this table is updated and `tests/test_gates.py` extended:
+
+| Applies to | Change |
+|---|---|
+| new machine gate `concept-map-gate` (between 3 and 4) | Pass 5 of the concept-map build: every chapter section has ≥ 1 cell; every cell has ≥ 1 block; no ordering cycle. Critical failures block; `needs_review` flags do not. |
+| gate 6 `coverage-duration` | Advisory only for `source_coverage`; replaced by the per-cell coverage check (in-scope cells with no claim are reported and carried into the completion report, never blocking). |
+| gate 7 `episode-plan-approval` | The approval covers the whole parts plan (all `LessonPart`s and their segment plans) under one hash; a re-pack after a window overflow requires a new approval. |
+| gates 8–12 | Enforced **per part**; a part failing script checks or verification does not block other parts, but the project is not `COMPLETE` until every part passes or has a human review decision. |
+| gate 11 `audio-start` | Skipped when `delivery == text`; the state machine goes `SCRIPT_VERIFIED → COMPLETE`. |
+| new report (not a gate) | `episode/report.json`: parts vs target, `graph_backed`, cells covered (extracted / planned / spoken), omitted by compression, in scope but not covered, `must_not_be_lost` outcomes, cost per stage. The operator reads it before `final-listen`. |
+
 ## The human stops on the build path
 
 Spec 12 budgets exactly three human *blocking* stops between corpus confirmation and audio start:

@@ -25,6 +25,7 @@ Thesisound نباید با معیار «خروجی روان به نظر می‌�
 - objectiveهای اصلی پوشش داده شده‌اند؛
 - موضوع‌های حذف‌شده ثبت شده‌اند؛
 - پوشش تصادفی یا تابع جذابیت سطحی مدل نیست.
+- (سند ۱۰، `source_coverage`) پوشش در سطح **سلول مفهومی** سنجیده می‌شود، در سه سطح: `extracted` (≥ ۱ claim)، `planned` (claim در segment)، `spoken` (claim در turn تأییدشده)؛ سلول‌های حذف‌شده با فشردگی و سلول‌های در دامنه ولی پوشش‌نگرفته جداگانه گزارش می‌شوند؛ هر claim با `must_not_be_lost` یا گفته شده یا با دلیل حذف شده.
 
 ### ۴. Synthesis quality
 
@@ -200,6 +201,20 @@ tts_retry_rate
 audio_segment_failure_rate
 human_quality_score
 manual_minutes_per_episode
+```
+
+(سند ۱۰) برای `source_coverage` این‌ها اضافه می‌شوند و در `episode/report.json` و ledger ثبت می‌شوند:
+
+```text
+cell_coverage_extracted / planned / spoken      (نسبت سلول‌های در دامنه)
+cells_omitted_by_compression
+cells_not_covered
+must_not_be_lost_spoken_ratio
+thin_extraction_blocks                          (بلاک‌های tier-1 با excerpt_char_coverage < 0.35)
+unsupported_specifics_rate                      (عدد/تاریخ/نام خارج از pack در هر ۱۰۰ turn)
+part_minutes_vs_target                          (هر بخش در [0.8, 1.0] × هدف، جز آخری)
+graph_backed_part_ratio
+model_cost_per_part
 ```
 
 برای MVP مهم‌ترین metricها:

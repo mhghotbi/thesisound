@@ -32,7 +32,12 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`07-junior-guide.md`](01-foundations/07-junior-guide.md) | نقشهٔ کد، ترتیب افزودن feature و قواعدی که زیاد نقض می‌شوند |
 | [`08-security-privacy-copyright.md`](01-foundations/08-security-privacy-copyright.md) | کلاس‌های داده، حق نشر، SSRF، prompt injection |
 | [`09-open-questions.md`](01-foundations/09-open-questions.md) | تصمیم‌های باز OQ-001…OQ-010 (سند زنده) |
-| [`10-personal-research-companion-development-plan.md`](01-foundations/10-personal-research-companion-development-plan.md) | برنامهٔ گام‌به‌گام تبدیل Thesisound به همراه پژوهشی صوتی شخصی و تجمعی |
+| [`10-personal-learning-companion-development-plan.md`](01-foundations/10-personal-learning-companion-development-plan.md) | **ورودی** طرح همراه یادگیری شخصی (بازنگری ۳.۲) + نقشهٔ بخش‌ها برای ارجاع‌های «سند ۱۰ §N» |
+| [`10a-personal-learning-companion-direction.md`](01-foundations/10a-personal-learning-companion-direction.md) | **چرا** — تصمیم‌های مالک، کار محصول، وضع فعلی در برابر هدف، درس‌های KMS/AQT، قواعد تغییرناپذیر |
+| [`10b-personal-learning-companion-design.md`](01-foundations/10b-personal-learning-companion-design.md) | **چه** — مدل دامنه، خط لولهٔ `source_coverage`، مدت، تحویل متنی، ممیزی promptها، **متن کامل همهٔ promptهای جدید/جایگزین (ضمیمهٔ A)** |
+| [`10c-personal-learning-companion-implementation.md`](01-foundations/10c-personal-learning-companion-implementation.md) | **چگونه** — فازهای P0 … P6 در سطح توسعه‌دهنده، ترتیب، پروتکل، راهنمای فایل، جدول وضعیت ریسک‌ها، Definition of Done |
+| [`10x-agent-runbook.md`](01-foundations/10x-agent-runbook.md) | **موقت** — runbook گام‌به‌گام برای ایجنت پیاده‌ساز: ۲۵ گام + ۶ چک‌پوینت، هر کدام با «بخوان / پیش‌بررسی / انجام بده / تست / گزارش»؛ مالک فقط می‌گوید «گام N» |
+| [`11-course-memory-future-phase.md`](01-foundations/11-course-memory-future-phase.md) | **فاز بعد (متوقف):** حافظهٔ دوره بین پروژه‌ها — چرا کنار گذاشته شد، پیش‌شرط‌های بازگشایی، و خلاصهٔ طراحی قبلی |
 
 ## `02-pipeline/` — خط لولهٔ شواهد و تولید محتوا
 
@@ -46,6 +51,8 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`04-output-aware-analysis-budget.md`](02-pipeline/04-output-aware-analysis-budget.md) | تعیین عمق و بودجهٔ استخراج بر اساس مدت خروجی |
 | [`05-episode-preparation.md`](02-pipeline/05-episode-preparation.md) | ارزیابی پوشش، اولویت‌بندی و Episode Plan |
 | [`06-persian-script-pipeline.md`](02-pipeline/06-persian-script-pipeline.md) | نگارش و راستی‌آزمایی متن فارسی |
+
+یادداشت‌های طراحی prompt هر stage (`01_research_brief.md` … `09_tts_and_audio_qa.md`) در [`02-pipeline/prompt-design-notes/`](02-pipeline/prompt-design-notes/) — **تاریخی**؛ مرجع اجرایی `prompts/<id>/<latest>/` است (منتقل‌شده از `prompts/` در ۲۰۲۶-۰۸-۱۹). اسناد ۰۳ تا ۰۶ هر کدام یک یادداشت «بازنگری ۲۰۲۶-۰۸-۱۹» دارند که تغییرات برنامه‌ریزی‌شدهٔ [سند ۱۰](01-foundations/10-personal-learning-companion-development-plan.md) را روی as-built نشان می‌دهد.
 
 ## `03-web-ui/` — رابط عملیاتی
 
@@ -109,6 +116,12 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`06-conditional-document-map.md`](07-specs/06-conditional-document-map.md) | حذف فراخوانی map وقتی انتخاب شواهد جامع است، با map قطعیِ جایگزین | — |
 | [`07-conditional-glossary-and-verification.md`](07-specs/07-conditional-glossary-and-verification.md) | glossary همیشه deterministic و مدل فقط در صورت نیاز؛ verifier unconditional (audit)؛ reviser صریح | پیاده‌شده (glossary + reviser) |
 | [`08-batched-claim-reconciliation.md`](07-specs/08-batched-claim-reconciliation.md) | partition/merge برای claim reconciliation وقتی شواهد یک source از بودجهٔ prompt بیشتر است | — |
+| [`09-degrade-instead-of-fail.md`](07-specs/09-degrade-instead-of-fail.md) | Degrade instead of fail | — |
+| [`10-automatic-run-recovery.md`](07-specs/10-automatic-run-recovery.md) | Automatic run recovery | — |
+| [`11-failure-disclosure-and-stop-criteria.md`](07-specs/11-failure-disclosure-and-stop-criteria.md) | Failure disclosure and stop criteria | — |
+| [`12-stop-budget.md`](07-specs/12-stop-budget.md) | A stop budget for the build | — |
+
+specهای اجرایی فازهای P1–P4 سند ۱۰ (نقشهٔ مفهومی، استخراج ۲.۰، بخش‌بندی، تحویل متنی) هنگام شروع هر فاز این‌جا اضافه می‌شوند؛ تا آن زمان مرجع، خودِ سند ۱۰ §9 و ضمیمهٔ A است.
 
 ## افزودن سند جدید
 

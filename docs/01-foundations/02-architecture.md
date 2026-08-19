@@ -40,6 +40,8 @@ Deterministic code -> Model transform -> Schema validation -> Quality gate
 | ۱۴ | Audio QA | ASR + diff + retry هدفمند |
 | ۱۵ | Final package | audio، transcript، source map |
 
+برای نیت `source_coverage` (برنامه‌ریزی‌شده، سند ۱۰ §6) بین ۶ و ۷ سه مرحله اضافه می‌شود — تشخیص فصل (deterministic)، سلول‌های مفهومی و یال‌ها (model transform + gate)، و پس از ۸ بسته‌بند بخش‌ها (deterministic)؛ مراحل ۹ تا ۱۴ برای هر بخش تکرار می‌شوند؛ ۱۱ می‌تواند به‌جای گفت‌وگو درس متنی بسازد.
+
 ## لایه‌ها
 
 ### ۱. Domain
@@ -140,6 +142,26 @@ DRAFT → BRIEF_READY → SOURCES_COLLECTING → SOURCE_SELECTION_REQUIRED
 ```
 
 هر مرحله می‌تواند به `FAILED_RETRYABLE` یا در خطای غیرقابل‌اصلاح به `FAILED_PERMANENT` برود. **تغییر state فقط پس از ثبت artifact معتبر انجام می‌شود.**
+
+## تغییرات معماری برنامه‌ریزی‌شده (سند ۱۰، بازنگری ۳.۱ — ۲۰۲۶-۰۸-۱۹)
+
+اصل طراحی، لایه‌ها، portها و artifact-first بودن **تغییر نمی‌کنند**. آنچه اضافه می‌شود لایه‌ای بالای خط شواهد است و همهٔ تغییرات افزایشی‌اند؛ هیچ stage حذف یا دور زده نمی‌شود. فهرست دقیق در [`10-personal-learning-companion-development-plan.md`](10-personal-learning-companion-development-plan.md) §5، §6 و §9.
+
+| چه چیزی | نوع تغییر | کجا |
+|---|---|---|
+| **Domain:** `ConceptCell`، `ConceptEdge`، `SourceConceptMap`، `ConceptMapOverlay`، `SourceChapter`، `LessonPart`؛ `Project` با میدان‌های اختیاری `lesson_intent`، `delivery`، `compression`، `episode_target_minutes`، `scope`، `known_concepts`؛ `ResearchBrief.cell_keys`؛ `EpisodePlan.parts` و `EpisodeSegment.part_index` | افزایشی | `src/thesisound/concepts.py` (ماژول جدید)، `domain.py` |
+| **Domain:** استخراج ۲.۰ — همهٔ اقلام شواهد (تعریف، تمایز، مثال، اعتراض، پاسخ) claim با excerpt هستند؛ `ClaimType` گسترش می‌یابد؛ `must_not_be_lost` روی claim؛ `ClaimRecord` در evidence pack | **تغییر schema با migration در مسیر خواندن** — تنها تغییر غیرافزایشیِ واقعی | `source_analysis.py`, `domain.py`, `episode.py`, `evidence_artifact_migration.py` |
+| **Stageهای جدید (مدل‌محور، bounded):** سلول‌های مفهومی هر فصل، consolidate، یال‌ها، درس متنی (prose) | همان الگوی `Deterministic code → Model transform → Schema validation → Quality gate` | `services/concept_map_builder.py`، prompts جدید |
+| **Stageهای جدید (قطعی):** تشخیص فصل، اعتبارسنجی ریزدانگی/دور/یتیم، بسته‌بند بخش‌ها، گزارش پایانی | بدون فراخوانی مدل | `services/part_packer.py`، `services/lesson_report.py` |
+| **Document map:** partition = فصل به‌جای بودجهٔ ۲۵۰k کاراکتر | تغییر رفتار سرویس، بدون تغییر قرارداد | `services/document_mapper.py` |
+| **State machine:** بدون state جدید؛ مراحل plan/script/audio درون خود **روی بخش‌ها حلقه می‌زنند**؛ یک گذار افزایشی `SCRIPT_VERIFIED → COMPLETE` برای `delivery == text` | افزایشی | `pipeline.py`، سرویس‌های build |
+| **Artifactها:** `_shared/concept-maps/<sha>.json` (کش)، `sources/<sid>/concept-map-overlay.json`، `script/parts/<n>/`، `audio/parts/<n>/`، `episode/report.json`؛ checkpoint فصلی هنگام ساخت نقشه | افزایشی | `workspaces/` |
+| **Observability:** stageهای جدید با همان `ModelCallSpec` (`concept_cells`, `concept_edges`, `lesson_prose`)، stage فراخوانی اسکریپت با `part_index` | افزایشی | `observability.py` |
+| **Web:** صفحات نقشهٔ مفهومی، فهرست بخش‌ها، گزارش؛ گزینه‌های ساخت پروژه؛ بعداً نمای گراف 2D (کتابخانهٔ vendored، بدون CDN) | افزایشی، همان Jinja + HTMX | `web/concept_routes.py` |
+
+**چیزهایی که عمداً عوض نمی‌شوند:** یک process و فایل‌سیستم (صف کار و DB خارجی همچنان رد است)؛ بدون embedding؛ بدون لایهٔ بین‌پروژه‌ای؛ auth و project isolation؛ مسیر `focused_question` به‌جز re-baseline یک‌بارهٔ استخراج ۲.۰.
+
+**ریسک معماری واقعی فقط یکی است:** migration استخراج ۲.۰ — artifactهای قدیمی باید در مسیر خواندن بالا بیایند و پروژه‌های قدیمی با نسخهٔ prompt خودشان reproducible بمانند (الگوی `evidence_artifact_migration.py` و `07-specs/01`). بقیه افزودن ماژول کنار ماژول‌های موجود است.
 
 ## Provider configuration
 

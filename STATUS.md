@@ -1,6 +1,6 @@
 # Thesisound — Current Implementation Status
 
-Last updated: 2026-08-10
+Last updated: 2026-08-19 (direction and milestone list; implemented path unchanged since 2026-08-10)
 
 The operating procedure is [`docs/06-operations/03-production-sop.md`](docs/06-operations/03-production-sop.md). The `thesisound readiness` command and matching web view re-run stored-input gate logic without model calls. The frozen machine-checkable evaluation is under [`benchmarks/eval/`](benchmarks/eval/); human scoring and the blind NotebookLM comparison remain separate work.
 
@@ -61,9 +61,35 @@ All Gemini text, Google Search, URL Context, TTS, and ASR calls now pass through
 - M6 TTS, ASR, and Audio QA vertical slice: implemented in code
 - M6.5 Operator UI: implemented through final audio review with revision navigation
 - M7 Gemini Source Discovery vertical slice: implemented; general crawler, deduplication quality, and authority ranking remain open
-- M8 Full multi-source semantic reconciliation: not implemented
-- M9 End-user product UI: not implemented
-- M10 production persistence, jobs, deployment, and real OTP provider: not implemented
+- M8 Full multi-source semantic reconciliation: **retired** — replaced by the doc 10 plan below
+- M9 End-user product UI: **retired** — no end-user product; the owner is the user (doc 10 §1)
+- M10 production persistence, jobs, deployment, and real OTP provider: **retired as a milestone** — revisit only if real use demands it (doc 10 §13)
+
+## Personal learning companion plan (doc 10, revision 3.2 — 2026-08-19)
+
+Direction approved in [`docs/01-foundations/10-personal-learning-companion-development-plan.md`](docs/01-foundations/10-personal-learning-companion-development-plan.md) (entry; parts 10a direction / 10b design + prompts / 10c implementation). Status per phase:
+
+- P0 Product contract: **done** (this file, `PRODUCT.md`, foundation and pipeline docs aligned, prompt design notes moved under `docs/02-pipeline/prompt-design-notes/`)
+- P0.5 Grounding hotfix (writer 1.3.0, `ClaimRecord` in packs, `unsupported_specifics` check, must-not-be-lost review page): not started — **next**
+- P1 Concept map (two-way chapter detection → tiered concept cells with promotion → edges → gate; cache + overlay; CLI + page): not started
+- P2 Evidence completeness (extraction 2.0 unified inventory for all intents, cell-unit batches, `must_not_be_lost` accounting, reconciliation 1.1.0, planner 1.3.0, glossary seeds; golden re-baseline, no migration): not started
+- P3 `source_coverage` end to end (derived brief, compression + prerequisite closure, cost estimate, part packer, segment skeleton, per-part planning/script/audio, completion report): not started
+- P4 Text delivery (grounded prose lesson): not started
+- P5 Owner UI consolidation: not started
+- P6 Evaluation on one real source + cleanup: not started
+
+Cross-project course memory is deferred: [`docs/01-foundations/11-course-memory-future-phase.md`](docs/01-foundations/11-course-memory-future-phase.md).
+
+## Known gaps from the 2026-08-19 prompt audit (doc 10 §8)
+
+These describe the **current** code and are fixed by P2:
+
+- the active writer prompt `persian_script_segment/1.2.0` carries tone guidance only; the grounding rules of 1.1.0 (no outside knowledge, `editorial_only` semantics, preserve qualifications/disagreement, `speaker_dynamic` contract) are absent from its system prompt — `tests/test_script_speaker_balance.py::test_latest_script_prompt_is_1_2_0_and_renders_position` already fails on this (it asserts "Never add outside knowledge" is present); the fix is `persian_script_segment/1.3.0` (doc 10, Appendix A.1), after which the test's version pin moves to 1.3.0;
+- `must_not_be_lost` points are extracted and cross-referenced but never supplied to the planner and shown on no page;
+- definitions, distinctions, examples, objections and responses carry no verbatim excerpt and no ID, so they are neither audited nor accounted for in the plan;
+- `max_claims_per_block` silently drops surplus claims on dense blocks (no `truncated` signal, no second pass);
+- evidence packs omit the reconciled `ClaimRecord` (`support_status`, qualifications), so the writer sees `uncertain` only through the disagreement graph;
+- the glossary model pass triggers only on Latin tokens; Persian sources with transliterated terms get an empty glossary and a silent pass.
 
 ## What is not yet claimed
 

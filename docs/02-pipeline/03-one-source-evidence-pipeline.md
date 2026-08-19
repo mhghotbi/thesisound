@@ -2,6 +2,8 @@
 
 مرتبط: ورودی این stage خروجی [`01-document-ingestion.md`](01-document-ingestion.md) است؛ عمق استخراج شواهد را [`04-output-aware-analysis-budget.md`](04-output-aware-analysis-budget.md) تعیین می‌کند.
 
+> **بازنگری ۲۰۲۶-۰۸-۱۹ ([سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §6، §8، P1–P2):** این سند وضعیت as-built است. سه تغییر برنامه‌ریزی‌شده روی آن سوار می‌شود: (۱) Document Map فصل‌به‌فصل ساخته می‌شود (partition = فصل، نه ۲۵۰k کاراکتر) و بالای آن لایهٔ **سلول‌های مفهومی و یال‌ها** می‌آید (P1)؛ (۲) **استخراج ۲.۰** — همهٔ اقلام (تعریف، تمایز، مثال، اعتراض، پاسخ) claim با excerpt و نوع می‌شوند، `must_not_be_lost` پرچم روی claim است، بلاک‌های متراکم گذر دوم دارند و `excerpt_char_coverage` هر بلاک ثبت می‌شود (P2)؛ (۳) reconciliation بین `claim_type`های متفاوت merge نمی‌کند و merge گروه‌ها `canonical_claim_id` برمی‌گرداند. فهرست «خروجی draft» در §۳ زیر، پس از P2 به‌صورت یک انبارهٔ واحد خواهد بود.
+
 این subsystem یک منبع parse‌شده را به Claim Ledger قابل‌ممیزی تبدیل می‌کند. هدف آن «خلاصه‌سازی سند» نیست؛ هدف ساختن یک لایه شواهد است که مراحل بعدی مانند episode planning و script writing بتوانند دوباره به متن اصلی برگردند.
 
 ## جریان کامل
@@ -179,6 +181,8 @@ prompts/evidence_extraction/1.0.0/
 - `must_not_be_lost`.
 
 مدل ID یا locator تولید نمی‌کند. application پس از validation آن‌ها را می‌سازد.
+
+**محدودیت شناخته‌شدهٔ این نسخه (ممیزی ۲۰۲۶-۰۸-۱۹، سند ۱۰ §8 F2–F4):** فقط claimها excerpt و ID دارند؛ تعریف/تمایز/مثال/اعتراض/پاسخ و `must_not_be_lost` رشتهٔ آزادند، ممیزی verbatim نمی‌شوند، در طرح حساب نمی‌شوند و `must_not_be_lost` هرگز به planner نمی‌رسد؛ سقف `max_claims_per_block` ادعاهای اضافی را بی‌صدا حذف می‌کند. استخراج ۲.۰ (P2) همهٔ این‌ها را با «یک انبارهٔ واحد claim با excerpt» برطرف می‌کند.
 
 ### Persistence مرحله‌ای
 

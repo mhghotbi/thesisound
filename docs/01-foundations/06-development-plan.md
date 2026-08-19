@@ -12,12 +12,12 @@ input fidelity → evidence fidelity → episode sufficiency → script fidelity
 → discovery and multi-source breadth → end-user UI → persistence and deployment
 ```
 
-Operator UI و End-user UI دو milestone متفاوت‌اند: اولی ابزار محلی برای اجرای pipeline، مشاهدهٔ artifact و recovery است؛ دومی تجربهٔ ساده‌شده برای کاربر غیرمتخصص.
+> **بازنگری ۲۰۲۶-۰۸-۱۹:** پس از M7، ادامهٔ مسیر دیگر M8–M10 نیست؛ [`10-personal-learning-companion-development-plan.md`](10-personal-learning-companion-development-plan.md) جای آن‌ها را می‌گیرد (P0 قرارداد → P1 نقشهٔ مفهومی → P2 کامل‌بودن شواهد → P3 `source_coverage` → P4 متن → P5 UI → P6 ارزیابی). دیگر «End-user UI» جداگانه‌ای وجود ندارد: مالک همان اپراتور است.
 
 ## قواعد سراسری
 
 - parse، block ID و locator مستقل از duration هستند؛
-- breadth و depth شواهد و اپیزود به duration وابسته‌اند؛
+- برای `focused_question`، breadth و depth شواهد و اپیزود به duration وابسته‌اند؛ برای `source_coverage` به دامنه و فشردگی وابسته‌اند و duration خروجی است (سند ۱۰ §6)؛
 - مدل هیچ ID یا locator معتبری نمی‌سازد؛
 - متن اصلی source of truth است؛
 - corpus ناکافی با padding جبران نمی‌شود؛
@@ -39,9 +39,11 @@ Operator UI و End-user UI دو milestone متفاوت‌اند: اولی ابز
 | M6 | TTS، ASR و Audio QA | [`../03-web-ui/09-audio-vertical-slice.md`](../03-web-ui/09-audio-vertical-slice.md) |
 | M6.5 | Operator UI | [`../03-web-ui/`](../03-web-ui/) |
 | M7 | Source Discovery | [`../04-integrations/02-source-discovery-large-docs-and-revision.md`](../04-integrations/02-source-discovery-large-docs-and-revision.md) |
-| M8–M10 | پایین | — |
+| M8–M10 | **بازنشسته** — جایگزین: فازهای P0–P6 سند ۱۰ | [`10-personal-learning-companion-development-plan.md`](10-personal-learning-companion-development-plan.md) |
 
-## Milestone 8 — Multi-source reconciliation
+بخش‌های زیر دربارهٔ M8–M10 فقط به‌عنوان سابقهٔ تصمیم نگه داشته شده‌اند. M8 (reconciliation چندمنبعی کامل) و M9 (UI کاربر نهایی) دیگر هدف نیستند؛ M10 فقط اگر استفادهٔ واقعی نیاز را ثابت کرد.
+
+## Milestone 8 — Multi-source reconciliation (بازنشسته)
 
 reconciliation آگاه به نقش منبع؛ یال‌های اختلاف معنایی؛ synthesis آگاه به انتساب؛ تخصیص بودجه میان منابع؛ جست‌وجوی gap؛ ارتقای تدریجی profile؛ استفادهٔ دوباره از شواهد معتبر قبلی؛ جلوگیری از dominance یک منبع یا اجماع جعلی.
 
