@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 from thesisound import source_cli, tracing
 from thesisound.config import Settings
-from thesisound.domain import Locator
+from thesisound.domain import Locator, Project
 from thesisound.modeling import (
     DeterministicValidationError,
     ModelExecution,
@@ -670,7 +670,11 @@ def test_all_cached_partitions_and_a_merge_failure_return_no_record_and_mark_the
     tmp_path: Path,
 ) -> None:
     blocks = _blocks()
-    project_id = uuid4()
+    # ``map_document`` loads the project to decide whether the duration-aware
+    # exhaustive skip applies. A brief-less project leaves that skip undefined,
+    # so the call falls through to the mapper -- the path this test exercises.
+    project = Project(raw_input="merge failure")
+    project_id = project.project_id
     source_id = blocks[0].source_id
     root = tmp_path / "workspaces"
     cache = DocumentMapPartCache(root)
@@ -694,6 +698,7 @@ def test_all_cached_partitions_and_a_merge_failure_return_no_record_and_mark_the
     assert any("Cross-partition merge failed" in warning for warning in document_map.warnings)
 
     workspace = WorkspaceStore(root)
+    workspace.save_project(project)
     artifact_store = SourceArtifactStore(root)
     artifact_store.save_blocks(
         project_id,

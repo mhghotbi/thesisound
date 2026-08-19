@@ -70,6 +70,7 @@ _WRITES = {
     "models provision",
     "models parse",
     "metrics rollup",
+    "migrate evidence-artifacts",
 }
 _SPENDS = {
     "build-brief",

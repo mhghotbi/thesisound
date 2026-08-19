@@ -8,27 +8,35 @@ from uuid import UUID
 import pytest
 
 from thesisound import tracing
+from thesisound.config import Settings
 from thesisound.observability import ObservabilityLedger
 from thesisound.tracing import EventRecord, SpanRecord, Tracer
 
 
 @pytest.fixture(autouse=True)
 def _isolate_from_local_env(monkeypatch: pytest.MonkeyPatch):
-    """Prevent a developer's local ``.env`` from leaking live credentials
-    into the test suite.
+    """Prevent the machine's ``.env`` from leaking into the test suite.
 
-    ``Settings`` loads ``.env`` on every instantiation. If a developer has
-    real Kavenegar SMS credentials configured there (needed to actually
-    send OTPs locally), tests that build ``Settings()`` without explicitly
-    overriding ``kavenegar_api_key``/``kavenegar_otp_template`` would pick
-    up those real values, causing the web app to construct a real
-    ``KavenegarOtpSender`` and hit the live API during OTP-login tests. An
-    empty-string env var takes precedence over a dotenv value in
-    pydantic-settings, so this forces every test back onto the null/test
-    sender unless a test explicitly overrides these fields itself (an
-    explicit keyword argument to ``Settings(...)`` still wins over both).
+    ``Settings`` declares ``env_file=".env"``, so every instantiation reads
+    whatever the developer (or the server this runs on) has configured
+    there, for any field the test itself does not override. That makes the
+    suite's result a function of the machine: CI has no ``.env`` and stays
+    green while the same commit shows failures locally. It bit us with
+    ``THESISOUND_WEB_SECURE_COOKIES=true`` -- the session cookie became
+    ``Secure``, ``TestClient`` speaks ``http://testserver`` so it was never
+    sent back, and thirteen web tests failed on CSRF far away from the
+    cause. Dropping ``env_file`` for the duration of a test pins every
+    unset field to its declared default; explicit keyword arguments to
+    ``Settings(...)`` and ``monkeypatch.setenv`` both still win.
+
+    The Kavenegar variables are additionally forced to empty strings: they
+    are read through ``validation_alias`` (no ``THESISOUND_`` prefix), so a
+    real value exported in the ambient environment -- not just in
+    ``.env`` -- would otherwise build a live ``KavenegarOtpSender`` and hit
+    the real SMS API during OTP-login tests.
     """
 
+    monkeypatch.setitem(Settings.model_config, "env_file", None)
     monkeypatch.setenv("KAVENEGAR_API_KEY", "")
     monkeypatch.setenv("KAVENEGAR_TEMPLATE_NAME", "")
 

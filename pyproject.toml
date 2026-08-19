@@ -66,7 +66,7 @@ artifacts = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 markers = [
   "live: calls external model APIs and is skipped unless explicitly enabled",
 ]
