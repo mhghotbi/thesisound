@@ -75,7 +75,7 @@ class PersianScriptWriterService:
             variables={
                 "research_brief": brief.model_dump(mode="json"),
                 "segment": segment.model_dump(mode="json"),
-                "claims": [],
+                "claims": [claim.model_dump(mode="json") for claim in evidence_pack.claims],
                 "known_concepts": [],
                 "evidence_pack": evidence_pack.model_dump(mode="json"),
                 "glossary": glossary.model_dump(mode="json"),

@@ -1,0 +1,10 @@
+{
+  "id": "script_reviser",
+  "version": "1.1.0",
+  "model_tier": "strong",
+  "output_model": "TargetedRevisionDraft",
+  "max_attempts": 2,
+  "retry_schema_errors": false,
+  "system_file": "system.md",
+  "user_file": "user.md"
+}

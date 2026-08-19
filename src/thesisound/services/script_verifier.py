@@ -38,6 +38,13 @@ class ScriptVerifierService:
                 "evidence_packs": [pack.model_dump(mode="json") for pack in evidence_packs],
                 "glossary": glossary.model_dump(mode="json"),
                 "disagreement_graph": disagreement_graph.model_dump(mode="json"),
+                "claims": [
+                    claim.model_dump(mode="json")
+                    for pack in evidence_packs
+                    for claim in pack.claims
+                ],
+                "plan_must_include": [],
+                "known_concepts": [],
             },
             output_type=VerificationDraft,
             model=model,

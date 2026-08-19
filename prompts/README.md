@@ -25,9 +25,9 @@ prompts/claim_reconciliation_merge/1.0.0/
 prompts/coverage_audit/1.0.0/
 prompts/episode_plan/1.0.0/ … 1.2.0/       (فعال: 1.2.0)
 prompts/glossary/1.0.0/
-prompts/persian_script_segment/1.0.0/ … 1.2.0/ (فعال: 1.2.0 — فقط لحن؛ قرارداد grounding در 1.3.0 برمی‌گردد، سند ۱۰ §8 F1)
-prompts/script_verifier/1.0.0/ … 1.1.0/
-prompts/script_reviser/1.0.0/
+prompts/persian_script_segment/1.0.0/ … 1.3.0/ (فعال: 1.3.0)
+prompts/script_verifier/1.0.0/ … 1.2.0/ (فعال: 1.2.0)
+prompts/script_reviser/1.0.0/ … 1.1.0/ (فعال: 1.1.0)
 prompts/web_source_capture/1.0.0/
 ```
 
@@ -38,6 +38,8 @@ prompts/web_source_capture/1.0.0/
 `evidence_extraction/1.2.0` سقف attempt را به ۳ می‌رساند تا repair برای excerpt/block validation یک دور بیشتر فرصت داشته باشد. نسخه `1.1.0` بدون تغییر حفظ شده تا runهای قدیمی reproducible بمانند.
 
 `script_verifier/1.1.0` امتیازهای کیفیت درجه‌بندی‌شده و بازخورد عملی اضافه می‌کند. نسخه `1.0.0` بدون تغییر حفظ شده تا runهای قدیمی reproducible بمانند.
+
+`script_verifier/1.2.0` لجر ادعا (`CLAIMS_JSON` با `support_status` و قیدها) و چک‌های grounding صریح را اضافه می‌کند. `script_reviser/1.1.0` همان قواعد ۱.۰.۰ است با بلوک ورودی `CLAIMS_JSON`. نسخه‌های قبلی بدون تغییر حفظ شده‌اند.
 
 `document_map_merge/1.1.0` تنها نسخه‌ی قابل‌اجراست. در نسخه `1.0.0` توکن
 `{{ partitions | tojson }}` هرگز جایگزین نمی‌شد و مدل هیچ‌وقت partitionها را نمی‌دید؛

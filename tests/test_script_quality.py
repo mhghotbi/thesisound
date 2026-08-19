@@ -128,10 +128,10 @@ def test_well_formed_current_verification_is_accepted() -> None:
     _validate_verification(draft, {"turn-1"})
 
 
-def test_latest_script_verifier_contract_is_1_1_0() -> None:
+def test_latest_script_verifier_contract_is_1_2_0() -> None:
     contract = PromptLoader().load_contract("script_verifier")
 
-    assert contract.version == "1.1.0"
+    assert contract.version == "1.2.0"
     assert contract.output_model == "VerificationDraft"
 
 

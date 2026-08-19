@@ -324,6 +324,9 @@ def test_prepare_episode_writes_plan_and_grounded_packs(tmp_path: Path) -> None:
     assert len(plan.segments) == len(packs)
     assert all(pack.original_blocks for pack in packs)
     assert all(pack.evidence_items for pack in packs)
+    assert all(
+        [claim.claim_id for claim in pack.claims] == pack.claim_ids for pack in packs
+    )
     if len(plan.segments) > 1:
         assert plan.segments[1].prerequisite_claim_ids == [plan.segments[0].claim_ids[0]]
     assert workspace.load_project(project.project_id).state == ProjectState.EPISODE_PLANNED

@@ -158,6 +158,7 @@ class EvidencePackBuilder:
             return SegmentEvidencePack(
                 segment_id=segment.segment_id,
                 claim_ids=segment.claim_ids,
+                claims=claims,
                 evidence_items=evidence,
                 original_blocks=originals,
                 context_blocks=context,

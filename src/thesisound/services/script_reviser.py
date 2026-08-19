@@ -52,6 +52,11 @@ class TargetedScriptReviserService:
                 "verification_issues": verification.model_dump(mode="json"),
                 "evidence_packs": [pack.model_dump(mode="json") for pack in relevant_packs],
                 "glossary": glossary.model_dump(mode="json"),
+                "claims": [
+                    claim.model_dump(mode="json")
+                    for pack in relevant_packs
+                    for claim in pack.claims
+                ],
             },
             output_type=TargetedRevisionDraft,
             model=model,

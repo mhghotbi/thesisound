@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from thesisound.domain import (
+    ClaimRecord,
     DeliberatelyOmittedClaim,
     EvidenceItem,
     MustNotBeLostPoint,
@@ -115,6 +116,7 @@ class RetrievalHit(BaseModel):
 class SegmentEvidencePack(BaseModel):
     segment_id: str = Field(min_length=1)
     claim_ids: list[str] = Field(min_length=1)
+    claims: list[ClaimRecord] = Field(default_factory=list)
     evidence_items: list[EvidenceItem] = Field(min_length=1)
     original_blocks: list[SourceDocumentBlock] = Field(min_length=1)
     context_blocks: list[SourceDocumentBlock] = Field(default_factory=list)
