@@ -62,10 +62,15 @@ def register_observability_routes(
         trace_page: int = Query(default=1, ge=1),
         event_page: int = Query(default=1, ge=1),
         depth: int = Query(default=6, ge=1, le=12),
-        include_synthetic: bool = Query(default=False),
+        include_synthetic: bool | None = Query(default=None),
     ) -> Response:
         if response := require_operator(request, project_id):
             return response
+        # A runtime that stamps its own telemetry synthetic -- every non-production
+        # setup does, see ``ledger_from_settings`` -- would otherwise render a page
+        # that hides everything it just wrote, while the live banner above it keeps
+        # naming the running stage. Follow the ledger unless the URL says otherwise.
+        show_synthetic = ledger.is_synthetic if include_synthetic is None else include_synthetic
         try:
             project = workspace.load_project(project_id)
             overview = reporter.project_overview(
@@ -74,7 +79,7 @@ def register_observability_routes(
                 trace_page=trace_page,
                 event_page=event_page,
                 depth=depth,
-                include_synthetic=include_synthetic,
+                include_synthetic=show_synthetic,
             )
         except FileNotFoundError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -95,7 +100,7 @@ def register_observability_routes(
             {
                 "project": project,
                 "selected_call": selected_call,
-                "include_synthetic": include_synthetic,
+                "include_synthetic": show_synthetic,
                 **overview,
             },
         )
