@@ -8,6 +8,7 @@ import pytest
 from pydantic import BaseModel
 
 from thesisound.adapters.models.okian import (
+    OkianHttpError,
     OkianHttpResponse,
     OkianStructuredModel,
     _collect_stream,
@@ -15,7 +16,7 @@ from thesisound.adapters.models.okian import (
     _strip_code_fence,
 )
 from thesisound.config import Settings
-from thesisound.modeling import ModelConfigurationError, SchemaValidationError
+from thesisound.modeling import ModelConfigurationError, ModelProviderError, SchemaValidationError
 from thesisound.observability import ObservabilityLedger
 from thesisound.ports import RunMetadata
 
@@ -406,6 +407,42 @@ def test_okian_refuses_gemini_grounding_before_http(tmp_path: Path) -> None:
         )
 
     assert client.requests == []
+
+
+def test_okian_adapter_treats_406_not_acceptable_as_retryable(tmp_path: Path) -> None:
+    """Observed live: the Gemini-fallback call to Okian hit a bare 406 "Not
+
+    Acceptable" (no JSON error body, urllib's HTTPError.reason as the whole
+    message) that cleared on an identical retried request. It must be
+    classified retryable so ModelRunner.run's contract-level retry loop gets
+    a chance to recover instead of failing the whole run on one blip.
+    """
+
+    class NotAcceptableClient(FakeOkianClient):
+        def create_chat_completion(
+            self,
+            payload: dict[str, object],
+            *,
+            timeout_seconds: float,
+        ) -> OkianHttpResponse:
+            raise OkianHttpError("Not Acceptable", status_code=406)
+
+    adapter = OkianStructuredModel(client=NotAcceptableClient(), settings=_settings(tmp_path))
+
+    with pytest.raises(ModelProviderError) as exc_info:
+        adapter.generate_structured(
+            system_prompt="Return JSON.",
+            user_prompt="Answer.",
+            output_type=ExampleOutput,
+            model="qwen-private-id",
+            metadata=RunMetadata(
+                stage="document_map",
+                model_or_provider="qwen-private-id",
+                provider="okian",
+            ),
+        )
+
+    assert exc_info.value.retryable is True
 
 
 def test_okian_adapter_attaches_billed_usage_to_schema_errors(tmp_path: Path) -> None:

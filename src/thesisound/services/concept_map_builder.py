@@ -1,16 +1,35 @@
-"""Pass 0 of the concept-map pipeline: split a source into chapters.
+"""Concept-map pipeline: Pass 0 (chapters) and Pass 2/2.5 (cells).
 
-Design: `10b` B1.2 (`SourceChapter`), `10b` B2 Pass 0 (the two detectors and the
-reconciliation thresholds). Plan: `10c` P1 Step 2. Deterministic; no model call.
+Pass 0 (`detect_chapters`) is deterministic. Pass 2 calls `concept_cells/1.0.0`
+through `ModelRunner` with `_validate_cells_draft`; Pass 2.5 (`normalise_cells`)
+is pure. Orchestration that loops chapters arrives in a later step.
 """
 
 from __future__ import annotations
 
+import math
 from bisect import bisect_right
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from statistics import median
+from typing import Any
+from uuid import UUID
 
-from thesisound.concepts import DetectedFrom, DetectionAgreement, SourceChapter
+from thesisound.concepts import (
+    ConceptCell,
+    ConceptCellDraft,
+    ConceptCellsDraft,
+    DetectedFrom,
+    DetectionAgreement,
+    SourceChapter,
+    cell_label_jaccard,
+    is_banned_or_smell_label,
+    normalise_cell_label,
+)
+from thesisound.domain import DocumentMapSection
+from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.ports import ParsedDocument
+from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import SourceDocumentBlock
 
 _MIN_CHAPTER_GROUPS = 2
@@ -208,3 +227,528 @@ def _build_single_chapter(blocks: list[SourceDocumentBlock]) -> list[SourceChapt
             detection_agreement="agreed",
         )
     ]
+
+
+# --- Pass 2 / 2.5: concept cells ------------------------------------------------
+
+_PROMPT_NAME = "concept_cells"
+_PROMPT_VERSION = "1.0.0"
+_MODE = "extraction"
+_MIN_CHAPTER_BUDGET = 6
+_MAX_CHAPTER_BUDGET = 40
+_BUDGET_PER_SECTION = 1.5
+_COUNT_CAP_FACTOR = 1.5
+_JACCARD_DUPLICATE = 0.85
+_TIER_DISTRIBUTION_MIN_CELLS = 6
+_TIER1_SHARE_MIN = 0.15
+_TIER1_SHARE_MAX = 0.45
+_TIER3_SHARE_MIN = 0.10
+_SECTIONS_EXEMPT_FROM_COVERAGE = frozenset({"front_matter", "transition"})
+_NEEDS_REVIEW_PREFIX = "needs_review: "
+
+
+@dataclass(frozen=True)
+class NormaliseCellsResult:
+    """Pass 2.5 output: merged cells, warnings, and cross-chapter `related` hints."""
+
+    cells: tuple[ConceptCell, ...]
+    warnings: tuple[str, ...]
+    related_candidates: tuple[tuple[str, str], ...]
+
+
+@dataclass(frozen=True)
+class ChapterCellsResult:
+    """One chapter after Pass 2 validation, key assignment, and Pass 2.5."""
+
+    cells: tuple[ConceptCell, ...]
+    warnings: tuple[str, ...]
+    related_candidates: tuple[tuple[str, str], ...]
+    record: ModelRunRecord
+
+
+def chapter_budget(sections: Sequence[DocumentMapSection]) -> int:
+    """Soft cell target for a chapter: clamp(ceil(non-front-matter sections × 1.5), 6, 40)."""
+
+    countable = sum(1 for section in sections if section.function != "front_matter")
+    raw = math.ceil(countable * _BUDGET_PER_SECTION)
+    return min(_MAX_CHAPTER_BUDGET, max(_MIN_CHAPTER_BUDGET, raw))
+
+
+def build_chapter_awareness(
+    accepted_cells: Sequence[ConceptCell | ConceptCellDraft],
+    remaining_budget: int,
+) -> dict[str, Any]:
+    """Prompt payload listing cells already accepted for this chapter and the remaining budget."""
+
+    return {
+        "accepted_cell_count": len(accepted_cells),
+        "accepted_labels": [
+            {"label_fa": cell.label_fa, "kind": cell.kind, "tier": cell.tier}
+            for cell in accepted_cells
+        ],
+        "remaining_budget": remaining_budget,
+        "instruction": (
+            "Do not recreate a concept already listed. If the budget is nearly exhausted, "
+            "create only genuinely new concepts."
+            if accepted_cells
+            else "No cells accepted yet for this chapter."
+        ),
+    }
+
+
+def _validate_cells_draft(
+    draft: ConceptCellsDraft,
+    *,
+    known_block_ids: set[str],
+    known_section_ids: set[str],
+    sections: Sequence[DocumentMapSection],
+    budget: int,
+    attempt: int,
+    max_attempts: int,
+    accepted_cells: Sequence[ConceptCell] = (),
+) -> None:
+    """Deterministic Pass 2 gate. Last attempt auto-merges duplicates and flags distribution."""
+
+    _reject_unknown_ids(draft, known_block_ids, known_section_ids)
+    _reject_cells_without_blocks(draft)
+    _reject_banned_labels(draft)
+    _reject_uncovered_sections(draft, sections, accepted_cells)
+
+    last_attempt = attempt >= max_attempts
+    if _duplicate_groups([cell.label_fa for cell in draft.cells]):
+        if last_attempt:
+            kept = _merge_draft_duplicates(draft.cells)
+            dropped = len(draft.cells) - len(kept)
+            draft.cells[:] = kept
+            draft.warnings.append(
+                f"Auto-merged {dropped} near-duplicate cell(s) on the final attempt "
+                f"(Jaccard ≥ {_JACCARD_DUPLICATE})."
+            )
+        else:
+            pairs = _duplicate_label_pairs(draft.cells)
+            raise DeterministicValidationError(
+                f"Duplicate cell labels (Jaccard ≥ {_JACCARD_DUPLICATE}) on attempt {attempt}: "
+                f"{pairs}. Rewrite so each cell names a distinct concept."
+            )
+
+    cap = budget * _COUNT_CAP_FACTOR
+    total = len(accepted_cells) + len(draft.cells)
+    if total > cap:
+        raise DeterministicValidationError(
+            f"Cell count {total} exceeds the chapter cap of {cap:.1f} (budget {budget} × "
+            f"{_COUNT_CAP_FACTOR}). Reduce overlapping cells."
+        )
+
+    distribution = _tier_distribution_failure(draft.cells, accepted_cells)
+    if distribution is None:
+        return
+    if last_attempt:
+        draft.warnings.append(f"{_NEEDS_REVIEW_PREFIX}{distribution}")
+        return
+    raise DeterministicValidationError(f"{distribution} (attempt {attempt}). Redistribute tiers.")
+
+
+def assign_cell_keys(
+    drafts: Sequence[ConceptCellDraft],
+    *,
+    chapter_index: int,
+    block_ids_in_order: Sequence[str],
+) -> list[ConceptCell]:
+    """Assign stable cell keys after validation, in first-block order."""
+
+    order = {block_id: index for index, block_id in enumerate(block_ids_in_order)}
+
+    def sort_key(draft: ConceptCellDraft) -> tuple[int, str]:
+        positions = [order.get(block_id, len(order)) for block_id in draft.block_ids]
+        return (min(positions, default=len(order)), draft.label_fa)
+
+    cells: list[ConceptCell] = []
+    for number, draft in enumerate(sorted(drafts, key=sort_key), start=1):
+        cells.append(
+            ConceptCell(
+                cell_key=f"ch{chapter_index:02d}-c{number:03d}",
+                label_fa=draft.label_fa,
+                label_source=draft.label_source,
+                kind=draft.kind,
+                tier=draft.tier,
+                tier_promoted=False,
+                chapter_index=chapter_index,
+                section_ids=list(draft.section_ids),
+                block_ids=list(draft.block_ids),
+                evidence_ids=[],
+                granularity_rationale=draft.granularity_rationale,
+                estimated_minutes=draft.estimated_minutes,
+                created_by="ai",
+            )
+        )
+    return cells
+
+
+def normalise_cells(
+    cells: Sequence[ConceptCell],
+    *,
+    prior_cells: Sequence[ConceptCell] = (),
+) -> NormaliseCellsResult:
+    """Pass 2.5: merge near-duplicates within a chapter; flag the same label across chapters."""
+
+    warnings: list[str] = []
+    merged: list[ConceptCell] = []
+    by_chapter: dict[int, list[ConceptCell]] = {}
+    for cell in cells:
+        by_chapter.setdefault(cell.chapter_index, []).append(cell)
+
+    for chapter_index in sorted(by_chapter):
+        chapter_cells = by_chapter[chapter_index]
+        groups = _duplicate_groups([cell.label_fa for cell in chapter_cells])
+        if not groups:
+            merged.extend(chapter_cells)
+            continue
+        chapter_merged, chapter_warnings = _merge_keyed_duplicates(chapter_cells, groups)
+        merged.extend(chapter_merged)
+        warnings.extend(chapter_warnings)
+
+    related = _related_candidates(merged, prior_cells)
+    for source_key, target_key in related:
+        warnings.append(
+            f"Same label in two chapters ({source_key} ~ {target_key}); recorded as a "
+            "related-edge candidate. Not merged across chapters."
+        )
+    return NormaliseCellsResult(
+        cells=tuple(merged),
+        warnings=tuple(warnings),
+        related_candidates=related,
+    )
+
+
+def extract_chapter_cells(
+    model_runner: ModelRunner,
+    *,
+    project_id: UUID,
+    source_id: str | UUID,
+    chapter: SourceChapter,
+    sections: Sequence[DocumentMapSection],
+    blocks: Sequence[SourceDocumentBlock],
+    model: str,
+    accepted_cells: Sequence[ConceptCell] = (),
+    prior_cells: Sequence[ConceptCell] = (),
+    prompt_version: str | None = None,
+) -> ChapterCellsResult:
+    """Run Pass 2 for one chapter, assign keys, then Pass 2.5."""
+
+    chapter_blocks = _blocks_for_chapter(chapter, blocks)
+    chapter_sections = _sections_for_chapter(chapter, sections)
+    budget = chapter_budget(chapter_sections)
+    remaining = max(0, budget - len(accepted_cells))
+    known_block_ids = set(chapter.block_ids)
+    known_section_ids = {section.section_id for section in chapter_sections}
+    attempt = {"n": 0}
+    max_attempts = _cells_max_attempts(model_runner, prompt_version)
+
+    def validate(draft: ConceptCellsDraft) -> None:
+        attempt["n"] += 1
+        _validate_cells_draft(
+            draft,
+            known_block_ids=known_block_ids,
+            known_section_ids=known_section_ids,
+            sections=chapter_sections,
+            budget=budget,
+            attempt=attempt["n"],
+            max_attempts=max_attempts,
+            accepted_cells=accepted_cells,
+        )
+
+    execution = model_runner.run(
+        project_id=project_id,
+        stage=f"concept_cells:ch{chapter.chapter_index:02d}",
+        prompt_name=_PROMPT_NAME,
+        prompt_version=prompt_version or _PROMPT_VERSION,
+        variables={
+            "source_id": str(source_id),
+            "chapter": chapter.model_dump(mode="json"),
+            "sections": [_section_payload(section) for section in chapter_sections],
+            "blocks": [_block_payload(block) for block in chapter_blocks],
+            "chapter_awareness": build_chapter_awareness(accepted_cells, remaining),
+            "budget": budget,
+            "mode": _MODE,
+        },
+        output_type=ConceptCellsDraft,
+        model=model,
+        validator=validate,
+    )
+    keyed = assign_cell_keys(
+        execution.output.cells,
+        chapter_index=chapter.chapter_index,
+        block_ids_in_order=chapter.block_ids,
+    )
+    normalised = normalise_cells(keyed, prior_cells=prior_cells)
+    warnings = tuple(execution.output.warnings) + normalised.warnings
+    return ChapterCellsResult(
+        cells=normalised.cells,
+        warnings=warnings,
+        related_candidates=normalised.related_candidates,
+        record=execution.record,
+    )
+
+
+def _cells_max_attempts(model_runner: ModelRunner, prompt_version: str | None) -> int:
+    loader = getattr(model_runner, "prompt_loader", None)
+    if loader is None:
+        return 3
+    version = prompt_version or _PROMPT_VERSION
+    return loader.load_contract(_PROMPT_NAME, version=version).max_attempts
+
+
+def _blocks_for_chapter(
+    chapter: SourceChapter,
+    blocks: Sequence[SourceDocumentBlock],
+) -> list[SourceDocumentBlock]:
+    by_id = {block.block_id: block for block in blocks}
+    missing = [block_id for block_id in chapter.block_ids if block_id not in by_id]
+    if missing:
+        raise ValueError(f"Chapter {chapter.chapter_index} references unknown blocks: {missing}")
+    return [by_id[block_id] for block_id in chapter.block_ids]
+
+
+def _sections_for_chapter(
+    chapter: SourceChapter,
+    sections: Sequence[DocumentMapSection],
+) -> list[DocumentMapSection]:
+    chapter_blocks = set(chapter.block_ids)
+    return [
+        section
+        for section in sections
+        if chapter_blocks.intersection(section.source_block_ids)
+    ]
+
+
+def _section_payload(section: DocumentMapSection) -> dict[str, Any]:
+    return {
+        "section_id": section.section_id,
+        "title": section.title,
+        "function": section.function,
+        "key_concepts": section.key_concepts,
+        "required_for_global_understanding": section.required_for_global_understanding,
+        "source_block_ids": section.source_block_ids,
+    }
+
+
+def _block_payload(block: SourceDocumentBlock) -> dict[str, Any]:
+    return {
+        "block_id": block.block_id,
+        "heading_path": block.heading_path,
+        "block_type": block.block_type,
+        "text": block.text,
+    }
+
+
+def _reject_unknown_ids(
+    draft: ConceptCellsDraft,
+    known_block_ids: set[str],
+    known_section_ids: set[str],
+) -> None:
+    unknown_blocks = sorted(
+        {
+            block_id
+            for cell in draft.cells
+            for block_id in cell.block_ids
+            if block_id not in known_block_ids
+        }
+    )
+    if unknown_blocks:
+        raise DeterministicValidationError(
+            f"Unknown block_id values: {', '.join(unknown_blocks)}"
+        )
+    unknown_sections = sorted(
+        {
+            section_id
+            for cell in draft.cells
+            for section_id in cell.section_ids
+            if section_id not in known_section_ids
+        }
+    )
+    if unknown_sections:
+        raise DeterministicValidationError(
+            f"Unknown section_id values: {', '.join(unknown_sections)}"
+        )
+
+
+def _reject_cells_without_blocks(draft: ConceptCellsDraft) -> None:
+    empty = [
+        index
+        for index, cell in enumerate(draft.cells, start=1)
+        if not cell.block_ids or any(not block_id.strip() for block_id in cell.block_ids)
+    ]
+    if empty:
+        raise DeterministicValidationError(
+            f"Cell(s) without a source block at position(s) {empty}."
+        )
+
+
+def _reject_banned_labels(draft: ConceptCellsDraft) -> None:
+    banned: list[str] = []
+    for cell in draft.cells:
+        if is_banned_or_smell_label(cell.label_fa):
+            banned.append(cell.label_fa)
+        if cell.label_source is not None and is_banned_or_smell_label(cell.label_source):
+            banned.append(cell.label_source)
+    if banned:
+        raise DeterministicValidationError(
+            "Banned or smell labels (structural/pedagogical, not a concept): "
+            + "; ".join(banned)
+        )
+
+
+def _reject_uncovered_sections(
+    draft: ConceptCellsDraft,
+    sections: Sequence[DocumentMapSection],
+    accepted_cells: Sequence[ConceptCell],
+) -> None:
+    covered = {section_id for cell in accepted_cells for section_id in cell.section_ids}
+    covered.update(section_id for cell in draft.cells for section_id in cell.section_ids)
+    required = {
+        section.section_id
+        for section in sections
+        if section.function not in _SECTIONS_EXEMPT_FROM_COVERAGE
+    }
+    missing = sorted(required - covered)
+    if missing:
+        raise DeterministicValidationError(
+            "Every non-front-matter/transition section needs a cell; uncovered: "
+            + ", ".join(missing)
+        )
+
+
+def _duplicate_groups(labels: Sequence[str]) -> list[list[int]]:
+    parent = list(range(len(labels)))
+
+    def find(index: int) -> int:
+        while parent[index] != index:
+            parent[index] = parent[parent[index]]
+            index = parent[index]
+        return index
+
+    def union(left: int, right: int) -> None:
+        root_left, root_right = find(left), find(right)
+        if root_left != root_right:
+            parent[root_right] = root_left
+
+    for i, left in enumerate(labels):
+        for j in range(i + 1, len(labels)):
+            if cell_label_jaccard(left, labels[j]) >= _JACCARD_DUPLICATE:
+                union(i, j)
+    grouped: dict[int, list[int]] = {}
+    for index in range(len(labels)):
+        grouped.setdefault(find(index), []).append(index)
+    return [group for group in grouped.values() if len(group) > 1]
+
+
+def _duplicate_label_pairs(cells: Sequence[ConceptCellDraft]) -> str:
+    pairs: list[str] = []
+    for i, left in enumerate(cells):
+        for right in cells[i + 1 :]:
+            if cell_label_jaccard(left.label_fa, right.label_fa) >= _JACCARD_DUPLICATE:
+                pairs.append(f"{left.label_fa!r} ~ {right.label_fa!r}")
+    return "; ".join(pairs)
+
+
+def _merge_draft_duplicates(cells: Sequence[ConceptCellDraft]) -> list[ConceptCellDraft]:
+    groups = _duplicate_groups([cell.label_fa for cell in cells])
+    drop: set[int] = set()
+    merged = list(cells)
+    for group in groups:
+        keep, *rest = group
+        merged[keep] = merged[keep].model_copy(
+            update={
+                "block_ids": _unique(
+                    block_id for index in group for block_id in merged[index].block_ids
+                ),
+                "section_ids": _unique(
+                    section_id for index in group for section_id in merged[index].section_ids
+                ),
+            }
+        )
+        drop.update(rest)
+    return [cell for index, cell in enumerate(merged) if index not in drop]
+
+
+def _merge_keyed_duplicates(
+    cells: Sequence[ConceptCell],
+    groups: list[list[int]],
+) -> tuple[list[ConceptCell], list[str]]:
+    drop: set[int] = set()
+    merged = list(cells)
+    warnings: list[str] = []
+    for group in groups:
+        ordered = sorted(group, key=lambda index: merged[index].cell_key)
+        keep, *rest = ordered
+        kept = merged[keep]
+        merged[keep] = kept.model_copy(
+            update={
+                "block_ids": _unique(
+                    block_id for index in ordered for block_id in merged[index].block_ids
+                ),
+                "section_ids": _unique(
+                    section_id for index in ordered for section_id in merged[index].section_ids
+                ),
+            }
+        )
+        drop.update(rest)
+        dropped_keys = ", ".join(merged[index].cell_key for index in rest)
+        warnings.append(
+            f"Merged near-duplicate cells {dropped_keys} into {kept.cell_key} "
+            f"(Jaccard ≥ {_JACCARD_DUPLICATE})."
+        )
+    return [cell for index, cell in enumerate(merged) if index not in drop], warnings
+
+
+def _related_candidates(
+    cells: Sequence[ConceptCell],
+    prior_cells: Sequence[ConceptCell],
+) -> tuple[tuple[str, str], ...]:
+    candidates: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+
+    def consider(left: ConceptCell, right: ConceptCell) -> None:
+        if left.chapter_index == right.chapter_index:
+            return
+        same_source = (
+            left.label_source is not None
+            and right.label_source is not None
+            and normalise_cell_label(left.label_source) == normalise_cell_label(right.label_source)
+            and normalise_cell_label(left.label_source) != ""
+        )
+        similar = cell_label_jaccard(left.label_fa, right.label_fa) >= _JACCARD_DUPLICATE
+        if not similar and not same_source:
+            return
+        pair = tuple(sorted((left.cell_key, right.cell_key)))
+        if pair not in seen:
+            seen.add(pair)
+            candidates.append((pair[0], pair[1]))
+
+    catalogue = list(cells) + list(prior_cells)
+    for i, left in enumerate(catalogue):
+        for right in catalogue[i + 1 :]:
+            consider(left, right)
+    return tuple(candidates)
+
+
+def _tier_distribution_failure(
+    draft_cells: Sequence[ConceptCellDraft],
+    accepted_cells: Sequence[ConceptCell],
+) -> str | None:
+    tiers = [cell.tier for cell in accepted_cells] + [cell.tier for cell in draft_cells]
+    count = len(tiers)
+    if count < _TIER_DISTRIBUTION_MIN_CELLS:
+        return None
+    share_1 = tiers.count(1) / count
+    share_3 = tiers.count(3) / count
+    if _TIER1_SHARE_MIN <= share_1 <= _TIER1_SHARE_MAX and share_3 >= _TIER3_SHARE_MIN:
+        return None
+    return (
+        f"Tier distribution for {count} cells is {share_1:.0%} tier-1 and {share_3:.0%} tier-3 "
+        f"(need tier-1 in [15%, 45%] and tier-3 ≥ 10%)"
+    )
+
+
+def _unique(values: Iterable[str]) -> list[str]:
+    return list(dict.fromkeys(values))

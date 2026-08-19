@@ -1,8 +1,7 @@
 """Data models for the source concept map (chapters, cells, edges, statistics).
 
-This module only defines the shapes from `10b` B1.2/B1.3/B1.5 plus the model
-draft shapes from `10c` P1 Step 1. No builder, prompt, cache, or overlay
-service lives here yet — those arrive in later steps.
+Shapes from `10b` B1.2/B1.3/B1.5 and draft models from `10c` P1 Step 1, plus
+the banned/smell label lists used by Pass 2 (`10c` P1 Step 4).
 """
 
 from __future__ import annotations
@@ -14,6 +13,118 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 CELL_KEY_PATTERN = re.compile(r"^ch\d{2}-c\d{3}$")
+_LABEL_TOKEN = re.compile(r"\w+", re.UNICODE)
+_ZWNJ = "\u200c"
+
+# Structural / pedagogical labels banned as the whole label or as a prefix
+# (`10b` A.8; `10c` P1 Step 4). Numbered forms ("chapter 2", "بخش دوم") are
+# handled by the regexes below, not by these sets.
+BANNED_LABELS_EN: frozenset[str] = frozenset(
+    {
+        "introduction",
+        "intro",
+        "preface",
+        "foreword",
+        "prologue",
+        "epilogue",
+        "section",
+        "summary",
+        "conclusion",
+        "note",
+        "notes",
+        "remark",
+        "remarks",
+        "figure",
+        "table",
+        "background",
+        "appendix",
+        "overview",
+        "abstract",
+        "further reading",
+        "contents",
+        "acknowledgements",
+        "acknowledgments",
+        "bibliography",
+        "references",
+        "index",
+        "glossary",
+    }
+)
+BANNED_LABELS_FA: frozenset[str] = frozenset(
+    {
+        "مقدمه",
+        "پیشگفتار",
+        "دیباچه",
+        "خلاصه",
+        "جمع بندی",
+        "نتیجه گیری",
+        "یادداشت",
+        "تذکر",
+        "شکل",
+        "جدول",
+        "نمودار",
+        "پیوست",
+        "چکیده",
+        "درآمد",
+        "پیش زمینه",
+        "مطالعه بیشتر",
+        "فهرست",
+        "منابع",
+        "کتابنامه",
+        "سپاسگزاری",
+    }
+)
+# Words that are only banned as the entire label, or when followed by a number /
+# ordinal ("part 2", "فصل یکم"). They are legitimate inside a real concept name.
+BANNED_NUMBERED_HEADS_EN: frozenset[str] = frozenset({"chapter", "part", "example"})
+BANNED_NUMBERED_HEADS_FA: frozenset[str] = frozenset({"فصل", "بخش", "قسمت", "مثال"})
+_FA_ORDINAL = r"(?:اول|دوم|سوم|چهارم|پنجم|ششم|هفتم|هشتم|نهم|دهم|یکم)"
+_EN_NUMBERED_LABEL = re.compile(
+    r"^(?:chapter|part|example|section|figure|table)\s+(?:[0-9]+|[ivxlcdm]+)\b"
+)
+_FA_NUMBERED_LABEL = re.compile(
+    rf"^(?:فصل|بخش|قسمت|مثال|شکل|جدول)\s+(?:[0-9]+|[۰-۹]+|{_FA_ORDINAL})\b"
+)
+
+
+def normalise_cell_label(label: str) -> str:
+    """Fold a cell label for banned-list and Jaccard comparison."""
+
+    text = label.replace("ي", "ی").replace("ك", "ک").replace(_ZWNJ, " ")
+    text = text.casefold().strip()
+    text = re.sub(r"[«»\"'`،,.:;!?()\[\]{}]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def cell_label_tokens(label: str) -> frozenset[str]:
+    return frozenset(_LABEL_TOKEN.findall(normalise_cell_label(label)))
+
+
+def cell_label_jaccard(left: str, right: str) -> float:
+    """Word-set Jaccard of two labels after `normalise_cell_label`."""
+
+    left_tokens = cell_label_tokens(left)
+    right_tokens = cell_label_tokens(right)
+    if not left_tokens and not right_tokens:
+        return 1.0
+    if not left_tokens or not right_tokens:
+        return 0.0
+    return len(left_tokens & right_tokens) / len(left_tokens | right_tokens)
+
+
+def is_banned_or_smell_label(label: str) -> bool:
+    """True when a label is a structural/pedagogical title rather than a concept."""
+
+    text = normalise_cell_label(label)
+    if not text or text.isdigit():
+        return True
+    if text in BANNED_LABELS_EN or text in BANNED_LABELS_FA:
+        return True
+    if text in BANNED_NUMBERED_HEADS_EN or text in BANNED_NUMBERED_HEADS_FA:
+        return True
+    if _EN_NUMBERED_LABEL.match(text) or _FA_NUMBERED_LABEL.match(text):
+        return True
+    return any(text.startswith(f"{banned} ") for banned in BANNED_LABELS_EN | BANNED_LABELS_FA)
 
 DetectedFrom = Literal["heading", "toc", "single"]
 DetectionAgreement = Literal["agreed", "toc_only", "heading_only", "disagreed"]

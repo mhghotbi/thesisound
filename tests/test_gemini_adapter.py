@@ -9,7 +9,12 @@ from pydantic import BaseModel
 
 from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.config import Settings
-from thesisound.modeling import ModelRateLimitError, ModelSafetyError, SchemaValidationError
+from thesisound.modeling import (
+    ModelProviderError,
+    ModelRateLimitError,
+    ModelSafetyError,
+    SchemaValidationError,
+)
 from thesisound.ports import RunMetadata
 
 
@@ -37,6 +42,19 @@ class FakeClient:
 
 class RateLimitException(RuntimeError):
     status_code = 429
+
+
+class NotAcceptableException(RuntimeError):
+    """Mirrors google.genai.errors.ClientError for a bare HTTP 406.
+
+    Reproduced live against the real API: the Gemini edge/proxy occasionally
+    answers with a 406 that carries no JSON error body (just the "Not
+    Acceptable" reason phrase), and the identical request succeeds when
+    retried immediately after. This must be classified as retryable so the
+    contract-level retry loop in ModelRunner.run gets a chance to recover.
+    """
+
+    status_code = 406
 
 
 def _metadata() -> RunMetadata:
@@ -218,6 +236,24 @@ def test_gemini_adapter_maps_rate_limit_errors(tmp_path) -> None:
             model="gemini-test",
             metadata=_metadata(),
         )
+
+
+def test_gemini_adapter_treats_406_not_acceptable_as_retryable(tmp_path) -> None:
+    adapter = GeminiStructuredModel(
+        client=FakeClient(FakeModels(error=NotAcceptableException("Not Acceptable"))),
+        settings=_settings_without_okian(tmp_path),
+    )
+
+    with pytest.raises(ModelProviderError) as exc_info:
+        adapter.generate_structured(
+            system_prompt="system",
+            user_prompt="user",
+            output_type=ExampleOutput,
+            model="gemini-test",
+            metadata=_metadata(),
+        )
+
+    assert exc_info.value.retryable is True
 
 
 def test_okian_port_is_built_once_under_concurrency(monkeypatch: pytest.MonkeyPatch) -> None:

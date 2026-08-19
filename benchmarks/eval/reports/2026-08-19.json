@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-08-19T11:16:35.250739+00:00",
+  "cases": [],
+  "gates": [],
+  "errors": [
+    "argument-and-context: ModelProviderError: Not Acceptable",
+    "competing-interpretations: ModelProviderError: Not Acceptable",
+    "conceptual-distinction: ValueError: Coverage audit blocked episode planning: The corpus lacks grounded claims addressing the learning objective for overlap and boundary cases."
+  ],
+  "exit_code": 2
+}

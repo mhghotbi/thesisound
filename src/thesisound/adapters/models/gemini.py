@@ -603,7 +603,15 @@ def _map_provider_error(exc: Exception) -> ModelError:
         return ModelTimeoutError(message)
     if "safety" in name or "blocked" in name:
         return ModelSafetyError(message)
-    retryable = status is None or status >= 500
+    # 406 from the Gemini API surface is not a documented client-contract
+    # rejection: observed in production as a bare "Not Acceptable" response
+    # with no JSON error body (the SDK falls back to the raw HTTP reason
+    # phrase), which cleared on an identical retried request. run_recovery's
+    # _TRANSPORT_MESSAGE already classifies "not acceptable"/406 as a
+    # transient transport condition; treat it the same way here so the
+    # contract-level retry budget (bundle.contract.max_attempts) gets a
+    # chance to recover instead of failing the whole run on one blip.
+    retryable = status is None or status >= 500 or status == 406
     return ModelProviderError(message, retryable=retryable)
 
 

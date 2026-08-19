@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-08-19T11:48:38.790371+00:00",
+  "cases": [],
+  "gates": [],
+  "errors": [
+    "argument-and-context: ModelProviderError: Not Acceptable",
+    "competing-interpretations: ModelProviderError: Not Acceptable"
+  ],
+  "exit_code": 2
+}

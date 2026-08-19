@@ -5,8 +5,7 @@
 این subsystem از Episode Plan تأییدشده و Segment Evidence Pack یک سناریوی فارسی قابل شنیدن می‌سازد. هدف صرفاً تولید متن روان نیست؛ هر turn محتوایی باید به claim و evidence معتبر متصل باشد و پیش از ورود به TTS از کنترل قطعی و verifier مستقل عبور کند.
 
 > **بازنگری ۲۰۲۶-۰۸-۱۹ ([سند ۱۰](../01-foundations/10-personal-learning-companion-development-plan.md) §7، §8 F1/F5/F11، C1/C5/C7، ضمیمهٔ A.1/A.5/A.11):**
-> - **وضع فعلی که باید دانست:** نسخهٔ فعال نویسنده `persian_script_segment/1.2.0` در system prompt فقط راهنمای لحن دارد؛ قواعد grounding نسخهٔ 1.1.0 («دانش بیرونی نه، مثال ساختگی نه»، معنای `editorial_only`، حفظ قید/انتساب/اختلاف، قرارداد `speaker_dynamic`) در آن نیست و فقط یک جمله در `user.md` مانده. چک‌های قطعی سوءاستفاده از ID را می‌گیرند، نه محتوای ساختگی زیر ID معتبر.
-> - **برنامه‌ریزی‌شده (P2):** `persian_script_segment/1.3.0` = لحن 1.2.0 + قرارداد grounding + dynamics، با قاعدهٔ صریح «عدد/تاریخ/نام/مکان/تشبیه خارج از pack ممنوع؛ تشبیه فقط در turn ویرایشی»؛ pack حامل `ClaimRecord`ها؛ چک قطعی جدید `unsupported_specifics` در `script_checks`؛ `script_verifier/1.2.0` با چک صریح جزئیات بی‌پشتوانه، تشبیه، استفاده از `known_concepts` به‌عنوان شاهد و claimهای `must_not_be_lost` گفته‌نشده.
+> - **پیاده‌شده در P0.5:** نسخهٔ فعال نویسنده `persian_script_segment/1.3.0` است (لحن 1.2.0 + قرارداد grounding و dynamics؛ «عدد/تاریخ/نام/مکان/تشبیه خارج از pack ممنوع؛ تشبیه فقط در turn ویرایشی»). pack حامل `ClaimRecord`هاست. چک قطعی `unsupported_specifics` در `script_checks` فعال است. `script_verifier/1.2.0` و `script_reviser/1.1.0` لجر ادعا را می‌بینند.
 > - **برنامه‌ریزی‌شده (P3/P4):** script و audio به‌ازای هر بخش (`script/parts/<n>/`, `audio/parts/<n>/`)؛ تحویل متنی با `persian_lesson_prose/1.0.0` روی همان plan/pack/verifier و گذار `SCRIPT_VERIFIED → COMPLETE` برای `delivery == text`.
 
 ## جریان

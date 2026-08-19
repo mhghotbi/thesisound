@@ -166,7 +166,7 @@
 **ورودی فقط:** یک segment plan، evidence pack همان segment (با `ClaimRecord`ها)، glossary، دنبالهٔ کوتاه segment قبل، قرارداد سبک، (سند ۱۰) `known_concepts` و موقعیت بخش.
 **خروجی:** turnهای فارسی به‌همراه claim IDs.
 **ممنوع:** دانش خارج از evidence pack · مثال ساختگی بدون `editorial_only` · نقل‌قول جعلی · filler · تکرار حرف گویندهٔ قبلی · شوخی رادیویی · ترجمه‌زدگی · نسبت‌دادن یک تفسیر به خود نویسنده · (سند ۱۰، `persian_script_segment/1.3.0`) **عدد، تاریخ، نام، مکان، تشبیه یا مقایسه‌ای که در pack نیست** — تشبیهِ لازم فقط در turn ویرایشی و بدون گزارهٔ واقعی · گفتن claim با `support_status` uncertain/contested بدون قید آن · اشاره به مفاهیم حذف‌شده با فشردگی به‌عنوان «گفته‌شده».
-**توجه (وضع فعلی):** نسخهٔ فعال امروز `1.2.0` این قواعد را در system prompt ندارد (فقط لحن)؛ نسخهٔ 1.3.0 قرارداد grounding و dynamics را برمی‌گرداند — STATUS.md، «Known gaps».
+**وضع فعلی:** نسخهٔ فعال امروز `1.3.0` است؛ قرارداد grounding و dynamics در system prompt برگشته (P0.5).
 **retry:** schema failure → یک retry · evidence failure → revise فقط turnهای مشخص · style failure → یک بازنویسی سبک بدون تغییر claim IDs · بیش از ۳ attempt → human review.
 
 ## Stage Q′ — Prose lesson writer · bounded model transform (سند ۱۰، P4)

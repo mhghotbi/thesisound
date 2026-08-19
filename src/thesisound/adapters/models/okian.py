@@ -622,7 +622,11 @@ def _map_provider_error(exc: Exception) -> ModelError:
         return ModelRateLimitError(message)
     if status == 408 or "timeout" in code or "timeout" in name:
         return ModelTimeoutError(message)
-    retryable = status is None or status >= 500
+    # See the matching comment in adapters/models/gemini.py: a bare HTTP 406
+    # ("Not Acceptable") observed against this provider's endpoint has cleared
+    # on an identical retried request, and run_recovery's _TRANSPORT_MESSAGE
+    # already treats "not acceptable"/406 as a transient transport condition.
+    retryable = status is None or status >= 500 or status == 406
     return ModelProviderError(message, retryable=retryable)
 
 
