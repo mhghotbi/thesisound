@@ -23,6 +23,7 @@ from thesisound.services.plan_approval import EpisodePlanApprovalStore, episode_
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.semantic_identity import (
     AUDIO_QA_VERSION,
+    EVIDENCE_EXTRACTOR_VERSION,
     SCRIPT_CHECKER_VERSION,
     audio_qa_identity,
     claim_reconciler_identity,
@@ -41,7 +42,11 @@ def test_first_mismatch_reports_identity_missing_and_field_reasons() -> None:
     )
     assert (
         first_mismatch(
-            {"model": "m1", "prompt_version": "1.0.0", "extractor_version": 1},
+            {
+                "model": "m1",
+                "prompt_version": "1.0.0",
+                "extractor_version": EVIDENCE_EXTRACTOR_VERSION,
+            },
             current,
             ("model", "prompt_version", "extractor_version"),
         )
@@ -49,7 +54,11 @@ def test_first_mismatch_reports_identity_missing_and_field_reasons() -> None:
     )
     assert (
         first_mismatch(
-            {"model": "other", "prompt_version": "1.0.0", "extractor_version": 1},
+            {
+                "model": "other",
+                "prompt_version": "1.0.0",
+                "extractor_version": EVIDENCE_EXTRACTOR_VERSION,
+            },
             current,
             ("model", "prompt_version", "extractor_version"),
         )

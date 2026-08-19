@@ -12,7 +12,7 @@ from collections.abc import Mapping, Sequence
 from hashlib import sha256
 from typing import Any
 
-EVIDENCE_EXTRACTOR_VERSION = 1
+EVIDENCE_EXTRACTOR_VERSION = 2
 CLAIM_RECONCILER_VERSION = 2
 COVERAGE_AUDITOR_VERSION = 1
 EPISODE_PLANNER_VERSION = 1

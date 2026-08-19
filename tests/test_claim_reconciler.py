@@ -11,11 +11,7 @@ from thesisound.domain import (
     ClaimType,
     EvidenceExtraction,
     EvidenceItem,
-    ExtractedAuxiliaryPoint,
-    ExtractedDefinition,
-    ExtractedDistinction,
     Locator,
-    MustNotBeLostPoint,
     SupportStatus,
 )
 from thesisound.modeling import (
@@ -200,160 +196,11 @@ def _extraction_records(
     ]
 
 
-def test_reconcile_deduplicates_auxiliary_evidence_across_and_within_blocks() -> None:
-    source_id = uuid4()
-    block_a, block_b = "block-01", "block-02"
-
-    extraction_a = EvidenceExtraction(
-        segment_function="argument",
-        claims=[_claim_evidence(source_id, block_a, "ev-a")],
-        definitions=[
-            ExtractedDefinition(
-                term="Action",
-                definition="Direct disclosure between persons.",
-                source_id=source_id,
-                block_id=block_a,
-                locator=_locator(1),
-            ),
-        ],
-        distinctions=[
-            ExtractedDistinction(
-                item_a="Action",
-                item_b="Fabrication",
-                distinction="Action cannot be repeated identically.",
-                source_id=source_id,
-                block_id=block_a,
-                locator=_locator(1),
-            ),
-        ],
-        examples=[
-            ExtractedAuxiliaryPoint(
-                text="Speech in the assembly.",
-                source_id=source_id,
-                block_id=block_a,
-                locator=_locator(1),
-            ),
-        ],
-        objections=[
-            ExtractedAuxiliaryPoint(
-                text="Some deny action is distinct from labor.",
-                source_id=source_id,
-                block_id=block_a,
-                locator=_locator(1),
-            ),
-        ],
-        responses=[
-            ExtractedAuxiliaryPoint(
-                text="The distinction rests on plurality, not effort.",
-                source_id=source_id,
-                block_id=block_a,
-                locator=_locator(1),
-            ),
-        ],
-        # Exact same-block repeat: must collapse to one.
-        must_not_be_lost=[
-            MustNotBeLostPoint(
-                text="The link between action and plurality.",
-                source_id=source_id,
-                block_id=block_a,
-                locator=_locator(1),
-            ),
-            MustNotBeLostPoint(
-                text="The link between action and plurality.",
-                source_id=source_id,
-                block_id=block_a,
-                locator=_locator(1),
-            ),
-        ],
-    )
-    extraction_b = EvidenceExtraction(
-        segment_function="argument",
-        claims=[_claim_evidence(source_id, block_b, "ev-b")],
-        # Exact duplicate of block_a's definition: must collapse to one.
-        definitions=[
-            ExtractedDefinition(
-                term="Action",
-                definition="Direct disclosure between persons.",
-                source_id=source_id,
-                block_id=block_b,
-                locator=_locator(2),
-            ),
-            ExtractedDefinition(
-                term="Fabrication",
-                definition="Making an object according to a model.",
-                source_id=source_id,
-                block_id=block_b,
-                locator=_locator(2),
-            ),
-        ],
-        # Exact duplicate example text: must collapse to one.
-        examples=[
-            ExtractedAuxiliaryPoint(
-                text="Speech in the assembly.",
-                source_id=source_id,
-                block_id=block_b,
-                locator=_locator(2),
-            ),
-        ],
-        # Same text as block_a, but a different block: must NOT collapse.
-        must_not_be_lost=[
-            MustNotBeLostPoint(
-                text="The link between action and plurality.",
-                source_id=source_id,
-                block_id=block_b,
-                locator=_locator(2),
-            ),
-        ],
-    )
-    records = [
-        BlockEvidenceExtraction(source_id=source_id, block_id=block_a, extraction=extraction_a),
-        BlockEvidenceExtraction(source_id=source_id, block_id=block_b, extraction=extraction_b),
-    ]
-
-    ledger, _ = ClaimReconcilerService(_FakeRunner()).reconcile(
-        project_id=uuid4(),
-        source_id=source_id,
-        extractions=records,
-        model="fake",
-    )
-
-    assert [item.term for item in ledger.definitions] == ["Action", "Fabrication"]
-    assert len(ledger.distinctions) == 1
-    assert [item.text for item in ledger.examples] == ["Speech in the assembly."]
-    assert len(ledger.objections) == 1
-    assert len(ledger.responses) == 1
-    assert len(ledger.must_not_be_lost) == 2
-    assert {item.block_id for item in ledger.must_not_be_lost} == {block_a, block_b}
-    assert all(
-        item.text == "The link between action and plurality." for item in ledger.must_not_be_lost
-    )
-
-
-def test_reconcile_preserves_auxiliary_evidence_when_no_claims() -> None:
-    """Regression test: a block can have claims=[] but real definitions/must_not_be_lost."""
+def test_reconcile_preserves_claim_level_must_not_be_lost_when_no_evidence_survives() -> None:
+    """Extraction 2.0: a block can extract zero claims and still hold no fallback aux state."""
 
     source_id = uuid4()
-    extraction = EvidenceExtraction(
-        segment_function="argument",
-        claims=[],
-        definitions=[
-            ExtractedDefinition(
-                term="Action",
-                definition="Direct disclosure between persons.",
-                source_id=source_id,
-                block_id="block-01",
-                locator=_locator(1),
-            ),
-        ],
-        must_not_be_lost=[
-            MustNotBeLostPoint(
-                text="The link between action and plurality.",
-                source_id=source_id,
-                block_id="block-01",
-                locator=_locator(1),
-            ),
-        ],
-    )
+    extraction = EvidenceExtraction(segment_function="argument", claims=[])
     records = [
         BlockEvidenceExtraction(source_id=source_id, block_id="block-01", extraction=extraction),
     ]
@@ -366,10 +213,8 @@ def test_reconcile_preserves_auxiliary_evidence_when_no_claims() -> None:
     )
 
     assert ledger.claims == []
-    assert [item.term for item in ledger.definitions] == ["Action"]
-    assert [item.text for item in ledger.must_not_be_lost] == [
-        "The link between action and plurality."
-    ]
+    assert ledger.definitions == []
+    assert ledger.must_not_be_lost == []
 
 
 def test_reconcile_skip_model_promotes_evidence_one_to_one() -> None:
@@ -387,13 +232,15 @@ def test_reconcile_skip_model_promotes_evidence_one_to_one() -> None:
                         evidence_id="ev-b",
                         source_id=source_id,
                         block_id="block-01",
-                        claim="Plurality is the condition of action.",
-                        claim_type=ClaimType.AUTHOR_POSITION,
+                        claim="Action is distinguished from fabrication.",
+                        claim_type=ClaimType.DISTINCTION,
                         supporting_excerpt="Plurality is the condition of action in the text.",
                         locator=_locator(1),
                         support_kind="inferential",
                         confidence=0.6,
                         qualifications=["Within the political realm."],
+                        must_not_be_lost=True,
+                        contrast=("Action", "Fabrication"),
                     ),
                 ],
             ),
@@ -416,6 +263,9 @@ def test_reconcile_skip_model_promotes_evidence_one_to_one() -> None:
     assert ledger.claims[0].support_status == SupportStatus.STRONG
     assert ledger.claims[1].support_status == SupportStatus.MODERATE
     assert ledger.claims[1].qualifications == ["Within the political realm."]
+    assert ledger.claims[0].must_not_be_lost is False
+    assert ledger.claims[1].must_not_be_lost is True
+    assert ledger.claims[1].contrast == ("Action", "Fabrication")
     assert ledger.warnings == ["Claim reconciliation skipped for single-source project."]
 
 

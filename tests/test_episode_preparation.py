@@ -16,7 +16,6 @@ from thesisound.domain import (
     ExtractedAuxiliaryPoint,
     ExtractedDefinition,
     Locator,
-    MustNotBeLostPoint,
     Project,
     ProjectState,
     ResearchBrief,
@@ -476,21 +475,11 @@ def test_episode_planner_sends_grounded_auxiliary_evidence_to_the_prompt() -> No
     assert runner.captured_variables["responses"] == []
 
 
-def test_build_must_not_be_lost_review_distinguishes_used_omitted_and_unreflected() -> None:
+def test_build_must_not_be_lost_review_distinguishes_used_and_omitted_claims() -> None:
+    """Extraction 2.0 (10c P2 Step 1): the flag lives on the claim, not a block-level point."""
+
     project_id = uuid4()
     source_id = uuid4()
-
-    def _point(block_id: str, text: str) -> MustNotBeLostPoint:
-        return MustNotBeLostPoint(
-            text=text,
-            source_id=source_id,
-            block_id=block_id,
-            locator=Locator(page_start=1, page_end=1),
-        )
-
-    used_point = _point("block-used", "Flag reflected in a used claim.")
-    omitted_point = _point("block-omitted", "Flag reflected in an omitted claim.")
-    unreflected_point = _point("block-none", "Flag with no claim at all.")
 
     corpus = CorpusArtifacts(
         source_ids=[source_id],
@@ -501,12 +490,21 @@ def test_build_must_not_be_lost_review_distinguishes_used_omitted_and_unreflecte
                 claim_type=ClaimType.AUTHOR_POSITION,
                 evidence_ids=["ev-used"],
                 support_status=SupportStatus.STRONG,
+                must_not_be_lost=True,
             ),
             ClaimRecord(
                 claim_id="clm-omitted",
                 claim="Omitted claim.",
                 claim_type=ClaimType.AUTHOR_POSITION,
                 evidence_ids=["ev-omitted"],
+                support_status=SupportStatus.STRONG,
+                must_not_be_lost=True,
+            ),
+            ClaimRecord(
+                claim_id="clm-unflagged",
+                claim="Unflagged claim.",
+                claim_type=ClaimType.AUTHOR_POSITION,
+                evidence_ids=["ev-unflagged"],
                 support_status=SupportStatus.STRONG,
             ),
         ],
@@ -536,7 +534,6 @@ def test_build_must_not_be_lost_review_distinguishes_used_omitted_and_unreflecte
         ],
         blocks=[],
         extraction_plans=[],
-        must_not_be_lost=[used_point, omitted_point, unreflected_point],
     )
     plan = EpisodePlan(
         title="Title",
@@ -558,14 +555,11 @@ def test_build_must_not_be_lost_review_distinguishes_used_omitted_and_unreflecte
 
     review = EpisodePreparationService._build_must_not_be_lost_review(project_id, corpus, plan)
 
-    by_block = {item.point.block_id: item for item in review.items}
-    assert by_block["block-used"].used_in_plan is True
-    assert by_block["block-used"].reflected_in_claims == ["clm-used"]
-    assert by_block["block-omitted"].used_in_plan is False
-    assert by_block["block-omitted"].reflected_in_claims == ["clm-omitted"]
-    assert by_block["block-none"].used_in_plan is False
-    assert by_block["block-none"].reflected_in_claims == []
-    assert review.unused_count == 2
+    by_claim = {item.claim_id: item for item in review.items}
+    assert set(by_claim) == {"clm-used", "clm-omitted"}
+    assert by_claim["clm-used"].used_in_plan is True
+    assert by_claim["clm-omitted"].used_in_plan is False
+    assert review.unused_count == 1
 
 
 def _prepared_project(root: Path, duration: int = 10) -> Project:

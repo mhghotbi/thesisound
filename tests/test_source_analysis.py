@@ -10,15 +10,14 @@ from uuid import UUID, uuid4
 import pytest
 
 from thesisound import tracing
+from thesisound.concepts import ConceptCell
 from thesisound.domain import (
     AuthorityClass,
     ClaimType,
     DocumentMap,
     DocumentMapSection,
     EvidenceExtraction,
-    ExtractedAuxiliaryPoint,
     Locator,
-    MustNotBeLostPoint,
     Project,
     ProjectState,
     ResearchBrief,
@@ -41,6 +40,7 @@ from thesisound.ports import DocumentInspection, ParsedBlock, ParsedDocument
 from thesisound.quality import ParseReport
 from thesisound.services.analysis_profile import (
     build_analysis_profile,
+    group_selected_blocks_by_cell,
     plan_evidence_extraction,
 )
 from thesisound.services.block_builder import BlockBuilder
@@ -66,8 +66,6 @@ from thesisound.source_analysis import (
     ClaimDraft,
     ClaimReconciliationDraft,
     CrossSectionThreadDraft,
-    DefinitionDraft,
-    DistinctionDraft,
     DocumentMapDraft,
     DocumentMapDraftSection,
     EvidenceClaimDraft,
@@ -134,7 +132,6 @@ class FakeRunner:
                             confidence=0.5,
                         )
                     ],
-                    must_not_be_lost=[],
                 )
             else:
                 excerpt = str(block["text"]).split(".")[0].strip()
@@ -147,9 +144,9 @@ class FakeRunner:
                             supporting_excerpt=excerpt,
                             support_kind="direct",
                             confidence=0.95,
+                            must_not_be_lost=True,
                         )
                     ],
-                    must_not_be_lost=["The distinction from fabrication."],
                 )
         elif output_type is ClaimReconciliationDraft:
             evidence = variables["evidence_items"]
@@ -573,6 +570,64 @@ def test_extraction_plan_loads_without_the_r5_counters() -> None:
     assert plan.seeded_block_count == 0
 
 
+def _cell(cell_key: str, block_ids: list[str]) -> ConceptCell:
+    return ConceptCell(
+        cell_key=cell_key,
+        label_fa="برچسب",
+        kind="argument",
+        tier=1,
+        chapter_index=0,
+        section_ids=["section-1"],
+        block_ids=block_ids,
+        granularity_rationale="test",
+        estimated_minutes=1,
+    )
+
+
+def test_group_selected_blocks_by_cell_batches_a_cells_blocks_together() -> None:
+    _, blocks, _ = _planning_fixture()
+    cells = [_cell("ch00-c001", ["block-1", "block-2"])]
+
+    units = group_selected_blocks_by_cell(
+        ["block-1", "block-2", "block-3"],
+        blocks,
+        cells,
+        max_batch_tokens=10_000,
+    )
+
+    assert units == [["block-1", "block-2"], ["block-3"]]
+
+
+def test_group_selected_blocks_by_cell_falls_back_when_over_budget() -> None:
+    _, blocks, _ = _planning_fixture()
+    cells = [_cell("ch00-c001", ["block-1", "block-2"])]
+
+    units = group_selected_blocks_by_cell(
+        ["block-1", "block-2"],
+        blocks,
+        cells,
+        max_batch_tokens=100,  # each block is 100 tokens; the pair cannot fit together
+    )
+
+    assert units == [["block-1"], ["block-2"]]
+
+
+def test_group_selected_blocks_by_cell_only_batches_selected_blocks() -> None:
+    """A cell's un-selected blocks stay out of its batch; selection order is preserved."""
+
+    _, blocks, _ = _planning_fixture()
+    cells = [_cell("ch00-c001", ["block-1", "block-2", "block-3"])]
+
+    units = group_selected_blocks_by_cell(
+        ["block-1", "block-3"],
+        blocks,
+        cells,
+        max_batch_tokens=10_000,
+    )
+
+    assert units == [["block-1", "block-3"]]
+
+
 def test_block_builder_removes_margin_and_preserves_traceability() -> None:
     source_id = uuid4()
     blocks, report = BlockBuilder(
@@ -650,35 +705,59 @@ def test_extract_source_materializes_auxiliary_evidence_with_provenance() -> Non
                 assert output_type is EvidenceExtractionDraft
                 target_block = variables["block"]
                 assert isinstance(target_block, dict)
-                excerpt = str(target_block["text"]).split(".")[0].strip()
+                sentence = str(target_block["text"]).split(".")[0].strip()
+                second_sentence = str(target_block["text"]).split(".")[1].strip()
                 output = EvidenceExtractionDraft(
                     segment_function="argument",
                     claims=[
                         EvidenceClaimDraft(
                             claim="Action occurs directly between persons.",
                             claim_type=ClaimType.AUTHOR_POSITION,
-                            supporting_excerpt=excerpt,
+                            supporting_excerpt=sentence,
                             support_kind="direct",
                             confidence=0.9,
-                        )
-                    ],
-                    definitions=[
-                        DefinitionDraft(
+                        ),
+                        EvidenceClaimDraft(
+                            claim="The block defines action as occurring directly between persons.",
+                            claim_type=ClaimType.DEFINITION,
+                            supporting_excerpt=sentence,
+                            support_kind="direct",
+                            confidence=0.9,
                             term="Action",
-                            definition="Direct disclosure between persons.",
-                        )
+                            must_not_be_lost=True,
+                        ),
+                        EvidenceClaimDraft(
+                            claim="Action is distinguished from fabrication.",
+                            claim_type=ClaimType.DISTINCTION,
+                            supporting_excerpt=second_sentence,
+                            support_kind="direct",
+                            confidence=0.9,
+                            contrast=("Action", "Fabrication"),
+                        ),
+                        EvidenceClaimDraft(
+                            claim="The fabrication of an object illustrates the contrast with "
+                            "action.",
+                            claim_type=ClaimType.EXAMPLE,
+                            supporting_excerpt="the fabrication of an object",
+                            support_kind="direct",
+                            confidence=0.8,
+                        ),
+                        EvidenceClaimDraft(
+                            claim="Some deny action is distinct from labor.",
+                            claim_type=ClaimType.OBJECTION,
+                            supporting_excerpt="cannot be reduced to the fabrication",
+                            support_kind="inferential",
+                            confidence=0.6,
+                        ),
+                        EvidenceClaimDraft(
+                            claim="The distinction rests on plurality, not effort.",
+                            claim_type=ClaimType.RESPONSE,
+                            supporting_excerpt="between persons",
+                            support_kind="inferential",
+                            confidence=0.6,
+                            responds_to_excerpt="cannot be reduced to the fabrication",
+                        ),
                     ],
-                    distinctions=[
-                        DistinctionDraft(
-                            item_a="Action",
-                            item_b="Fabrication",
-                            distinction="Action cannot be repeated identically.",
-                        )
-                    ],
-                    examples=["Speech in the assembly."],
-                    objections=["Some deny action is distinct from labor."],
-                    responses=["The distinction rests on plurality, not effort."],
-                    must_not_be_lost=["The link between action and plurality."],
                 )
             if validator is not None:
                 last_error: Exception | None = None
@@ -721,20 +800,20 @@ def test_extract_source_materializes_auxiliary_evidence_with_provenance() -> Non
     )[0][0]
 
     extraction = record.extraction
-    assert extraction.definitions[0].source_id == source_id
-    assert extraction.definitions[0].block_id == block.block_id
-    assert extraction.definitions[0].locator == block.locator
-    assert extraction.distinctions[0].source_id == source_id
-    assert extraction.distinctions[0].block_id == block.block_id
-    for point in (*extraction.examples, *extraction.objections, *extraction.responses):
-        assert isinstance(point, ExtractedAuxiliaryPoint)
-        assert point.source_id == source_id
-        assert point.block_id == block.block_id
-        assert point.locator == block.locator
-    assert isinstance(extraction.must_not_be_lost[0], MustNotBeLostPoint)
-    assert extraction.must_not_be_lost[0].text == "The link between action and plurality."
-    assert extraction.must_not_be_lost[0].source_id == source_id
-    assert extraction.must_not_be_lost[0].block_id == block.block_id
+    assert len(extraction.claims) == 6
+    for claim in extraction.claims:
+        assert claim.source_id == source_id
+        assert claim.block_id == block.block_id
+        assert claim.locator == block.locator
+
+    by_type = {claim.claim_type: claim for claim in extraction.claims}
+    assert by_type[ClaimType.DEFINITION].term == "Action"
+    assert by_type[ClaimType.DEFINITION].must_not_be_lost is True
+    assert by_type[ClaimType.DISTINCTION].contrast == ("Action", "Fabrication")
+    assert by_type[ClaimType.AUTHOR_POSITION].must_not_be_lost is False
+    assert by_type[ClaimType.EXAMPLE].claim_type == ClaimType.EXAMPLE
+    assert by_type[ClaimType.OBJECTION].claim_type == ClaimType.OBJECTION
+    assert by_type[ClaimType.RESPONSE].claim_type == ClaimType.RESPONSE
 
 
 def test_complete_one_source_pipeline_writes_auditable_artifacts(
@@ -867,9 +946,9 @@ class SalvagingFakeRunner(FakeRunner):
                     supporting_excerpt=excerpt,
                     support_kind="direct",
                     confidence=0.95,
+                    must_not_be_lost=True,
                 ),
             ],
-            must_not_be_lost=["The distinction from fabrication."],
         )
         if validator is not None:
             last_error: Exception | None = None

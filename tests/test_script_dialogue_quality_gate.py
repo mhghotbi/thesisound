@@ -13,7 +13,6 @@ from thesisound.domain import (
     EpisodeSegment,
     EvidenceItem,
     Locator,
-    MustNotBeLostPoint,
     Script,
     ScriptTurn,
     SupportStatus,
@@ -461,13 +460,8 @@ def test_dropped_content_flags_unreached_point() -> None:
         unused_count=1,
         items=[
             MustNotBeLostReviewItem(
-                point=MustNotBeLostPoint(
-                    text="نکته حیاتی که نباید از دست برود در گفتار",
-                    source_id=_SOURCE_ID,
-                    block_id="blk-9",
-                    locator=Locator(),
-                ),
-                reflected_in_claims=["clm-missing"],
+                claim_id="clm-missing",
+                claim="نکته حیاتی که نباید از دست برود در گفتار",
                 used_in_plan=True,
             )
         ],
@@ -536,13 +530,8 @@ def test_clean_script_still_passes() -> None:
         unused_count=0,
         items=[
             MustNotBeLostReviewItem(
-                point=MustNotBeLostPoint(
-                    text="نکته پوشش‌داده‌شده",
-                    source_id=_SOURCE_ID,
-                    block_id="blk-1",
-                    locator=Locator(),
-                ),
-                reflected_in_claims=["clm-1"],
+                claim_id="clm-1",
+                claim="نکته پوشش‌داده‌شده",
                 used_in_plan=True,
             )
         ],

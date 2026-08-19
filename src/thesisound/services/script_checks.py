@@ -625,14 +625,10 @@ def _dropped_content_issues(
     plan_used = [item for item in review.items if item.used_in_plan]
     if not plan_used:
         return []
-    unreached = [
-        item
-        for item in plan_used
-        if not set(item.reflected_in_claims) & cited_claims
-    ]
+    unreached = [item for item in plan_used if item.claim_id not in cited_claims]
     if not unreached:
         return []
-    prefixes = [item.point.text[:40] for item in unreached[:4]]
+    prefixes = [item.claim[:40] for item in unreached[:4]]
     listed = "; ".join(prefixes)
     severity = (
         "high"
@@ -645,7 +641,7 @@ def _dropped_content_issues(
             issue_type="dropped_content",
             explanation=(
                 f"{len(unreached)} of {len(plan_used)} plan-used must-not-be-lost "
-                f"points reach no turn claim_ids: {listed}."
+                f"claims reach no turn claim_ids: {listed}."
             ),
         )
     ]

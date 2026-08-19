@@ -302,40 +302,27 @@ class EpisodePreparationService:
     ) -> MustNotBeLostReview:
         """Deterministic, non-blocking cross-reference -- never raises, only informs.
 
-        Walks must_not_be_lost -> same-block evidence -> claims grounded in that
-        evidence -> whether any such claim made it into a plan segment.
+        Extraction 2.0 (10c P2 Step 1) flags ``must_not_be_lost`` on the claim
+        itself, so this walks flagged claims directly rather than through
+        block-level evidence indirection.
         """
 
-        evidence_ids_by_block: dict[str, list[str]] = {}
-        for item in corpus.evidence_items:
-            evidence_ids_by_block.setdefault(item.block_id, []).append(item.evidence_id)
-        claim_ids_by_evidence_id: dict[str, list[str]] = {}
-        for claim in corpus.claims:
-            for evidence_id in claim.evidence_ids:
-                claim_ids_by_evidence_id.setdefault(evidence_id, []).append(claim.claim_id)
         used_claim_ids = {
             claim_id for segment in plan.segments for claim_id in segment.claim_ids
         }
 
         items: list[MustNotBeLostReviewItem] = []
         unused_count = 0
-        for point in corpus.must_not_be_lost:
-            candidate_claim_ids = list(
-                dict.fromkeys(
-                    claim_id
-                    for evidence_id in evidence_ids_by_block.get(point.block_id, [])
-                    for claim_id in claim_ids_by_evidence_id.get(evidence_id, [])
-                )
-            )
-            used_in_plan = any(
-                claim_id in used_claim_ids for claim_id in candidate_claim_ids
-            )
+        for claim in corpus.claims:
+            if not claim.must_not_be_lost:
+                continue
+            used_in_plan = claim.claim_id in used_claim_ids
             if not used_in_plan:
                 unused_count += 1
             items.append(
                 MustNotBeLostReviewItem(
-                    point=point,
-                    reflected_in_claims=candidate_claim_ids,
+                    claim_id=claim.claim_id,
+                    claim=claim.claim,
                     used_in_plan=used_in_plan,
                 )
             )

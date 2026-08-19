@@ -82,6 +82,11 @@ class EvidenceExtractionPlan(BaseModel):
     target_source_tokens: int = Field(default=0, ge=0)
     required_section_count: int = Field(default=0, ge=0)
     seeded_block_count: int = Field(default=0, ge=0)
+    # Extraction 2.0 (10c P2 Step 2): fraction of each block's characters covered
+    # by located claim excerpts. Computed via `excerpt_char_coverage` in
+    # `excerpt_matching.py`; not yet wired into any gate (P3 adds the
+    # tier-1/thin_extraction reading for `lesson_intent == source_coverage`).
+    excerpt_char_coverage: dict[str, float] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def require_disjoint_block_sets(self) -> EvidenceExtractionPlan:
@@ -145,34 +150,33 @@ class DocumentMapMergeDraft(BaseModel):
 
 
 class EvidenceClaimDraft(BaseModel):
+    """One claim in the Extraction 2.0 audited inventory (10c P2 Step 1, App A.2).
+
+    There are no separate lists for definitions, distinctions, examples,
+    objections or responses: each is a claim carrying the matching
+    ``claim_type`` plus the field(s) that type requires. See
+    ``_validate_claim_type_fields`` for the per-type requirements.
+    """
+
     claim: str = Field(min_length=1)
     claim_type: ClaimType
     supporting_excerpt: str = Field(min_length=1)
     support_kind: Literal["direct", "inferential"]
     qualifications: list[str] = Field(default_factory=list)
     confidence: float = Field(ge=0, le=1)
-
-
-class DefinitionDraft(BaseModel):
-    term: str = Field(min_length=1)
-    definition: str = Field(min_length=1)
-
-
-class DistinctionDraft(BaseModel):
-    item_a: str = Field(min_length=1)
-    item_b: str = Field(min_length=1)
-    distinction: str = Field(min_length=1)
+    must_not_be_lost: bool = False
+    term: str | None = None
+    contrast: tuple[str, str] | None = None
+    responds_to_excerpt: str | None = None
 
 
 class EvidenceExtractionDraft(BaseModel):
     segment_function: str = Field(min_length=1)
     claims: list[EvidenceClaimDraft] = Field(default_factory=list)
-    definitions: list[DefinitionDraft] = Field(default_factory=list)
-    distinctions: list[DistinctionDraft] = Field(default_factory=list)
-    examples: list[str] = Field(default_factory=list)
-    objections: list[str] = Field(default_factory=list)
-    responses: list[str] = Field(default_factory=list)
-    must_not_be_lost: list[str] = Field(default_factory=list)
+    # True when the block supports more distinct claims than max_claims_per_block
+    # allowed extracting; triggers `_second_pass_for_block` (dormant until the
+    # `lesson_intent == source_coverage` gate lands in P3).
+    more_claims_available: bool = False
 
 
 class BatchEvidenceEntryDraft(BaseModel):

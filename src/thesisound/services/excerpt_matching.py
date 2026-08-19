@@ -120,6 +120,28 @@ def locate_excerpt(excerpt: str, source_text: str) -> str | None:
     return source_text[start:end]
 
 
+def excerpt_char_coverage(source_text: str, excerpts: list[str]) -> float:
+    """Fraction of ``source_text`` characters covered by located ``excerpts``.
+
+    Overlapping or repeated spans are counted once (union of covered offsets).
+    An excerpt that cannot be located contributes nothing. Feeds
+    ``EvidenceExtractionPlan.excerpt_char_coverage`` (10c P2 Step 2); not yet
+    read by any gate.
+    """
+
+    if not source_text:
+        return 0.0
+    covered = bytearray(len(source_text))
+    for excerpt in excerpts:
+        span = locate_excerpt_span(excerpt, source_text)
+        if span is None:
+            continue
+        start, end = span
+        for index in range(start, end):
+            covered[index] = 1
+    return sum(covered) / len(source_text)
+
+
 def _fold_digit(char: str) -> str | None:
     try:
         return str(unicodedata.digit(char))

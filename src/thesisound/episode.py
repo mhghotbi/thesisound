@@ -10,7 +10,6 @@ from thesisound.domain import (
     ClaimRecord,
     DeliberatelyOmittedClaim,
     EvidenceItem,
-    MustNotBeLostPoint,
     coerce_deliberately_omitted_claims,
 )
 from thesisound.source_analysis import SourceDocumentBlock
@@ -207,8 +206,15 @@ class EpisodePreparationManifest(BaseModel):
 
 
 class MustNotBeLostReviewItem(BaseModel):
-    point: MustNotBeLostPoint
-    reflected_in_claims: list[str] = Field(default_factory=list)
+    """One claim flagged ``must_not_be_lost`` by extraction, and whether it made the plan.
+
+    Extraction 2.0 (10c P2 Step 1) moved the safety-net flag onto the claim
+    itself, so this item wraps a claim directly rather than a block-level
+    ``MustNotBeLostPoint`` reflected through candidate claims.
+    """
+
+    claim_id: str = Field(min_length=1)
+    claim: str
     used_in_plan: bool = False
 
 
@@ -216,8 +222,8 @@ class MustNotBeLostReview(BaseModel):
     """Deterministic cross-reference: did each safety-net flag survive into the plan?
 
     Non-blocking by construction -- this is a human-review surface, not a gate. A
-    flagged item with no reflected claim, or one whose claim was deliberately
-    omitted, is surfaced here rather than silently dropped.
+    flagged claim that a plan segment did not cite is surfaced here rather than
+    silently dropped.
     """
 
     project_id: UUID

@@ -305,26 +305,23 @@ def must_not_be_lost_review_views(
     items = getattr(review, "items", None) or []
     rows: list[dict[str, object]] = []
     for item in items:
-        point = getattr(item, "point", None)
-        if point is None:
+        claim_id = getattr(item, "claim_id", None)
+        if not claim_id:
             continue
-        reflected = [
-            str(claim_id)
-            for claim_id in (getattr(item, "reflected_in_claims", None) or [])
-        ]
+        claim_ids = [str(claim_id)]
         groups = claim_groups_for_ids(
-            reflected,
+            claim_ids,
             turn_evidence_ids=None,
             claims=claims,
             evidence_by_id=evidence_by_id,
         )
         rows.append(
             {
-                "text": str(getattr(point, "text", "") or ""),
-                "claim_ids": reflected,
+                "text": str(getattr(item, "claim", "") or ""),
+                "claim_ids": claim_ids,
                 "claim_groups": groups,
                 "used_in_plan": bool(getattr(item, "used_in_plan", False)),
-                "block_id": getattr(point, "block_id", None),
+                "block_id": None,
             }
         )
     return rows

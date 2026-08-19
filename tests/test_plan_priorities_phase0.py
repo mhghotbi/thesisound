@@ -11,8 +11,6 @@ from thesisound.config import Settings
 from thesisound.domain import (
     EpisodePlan,
     EpisodeSegment,
-    Locator,
-    MustNotBeLostPoint,
     Project,
     ProjectState,
     ResearchBrief,
@@ -136,25 +134,14 @@ def test_unused_must_not_be_lost_views_empty_when_missing() -> None:
 
 
 def test_unused_must_not_be_lost_views_filters_used_and_keeps_text() -> None:
-    source_id = uuid4()
     used = MustNotBeLostReviewItem(
-        point=MustNotBeLostPoint(
-            text="Used note",
-            source_id=source_id,
-            block_id="b1",
-            locator=Locator(page_start=1, page_end=1),
-        ),
-        reflected_in_claims=["c1"],
+        claim_id="c1",
+        claim="Used note",
         used_in_plan=True,
     )
     unused = MustNotBeLostReviewItem(
-        point=MustNotBeLostPoint(
-            text="Unused note that matters",
-            source_id=source_id,
-            block_id="b2",
-            locator=Locator(page_start=2, page_end=2),
-        ),
-        reflected_in_claims=[],
+        claim_id="c2",
+        claim="Unused note that matters",
         used_in_plan=False,
     )
     review = MustNotBeLostReview(
@@ -165,29 +152,18 @@ def test_unused_must_not_be_lost_views_filters_used_and_keeps_text() -> None:
     rows = unused_must_not_be_lost_views(review, claims={}, evidence_by_id={})
     assert len(rows) == 1
     assert rows[0]["text"] == "Unused note that matters"
-    assert rows[0]["block_id"] == "b2"
+    assert rows[0]["claim_ids"] == ["c2"]
 
 
 def test_must_not_be_lost_review_views_includes_used_and_candidates() -> None:
-    source_id = uuid4()
     used = MustNotBeLostReviewItem(
-        point=MustNotBeLostPoint(
-            text="Used note",
-            source_id=source_id,
-            block_id="b1",
-            locator=Locator(page_start=1, page_end=1),
-        ),
-        reflected_in_claims=["c1", "c2"],
+        claim_id="c1",
+        claim="Used note",
         used_in_plan=True,
     )
     unused = MustNotBeLostReviewItem(
-        point=MustNotBeLostPoint(
-            text="Unused note that matters",
-            source_id=source_id,
-            block_id="b2",
-            locator=Locator(page_start=2, page_end=2),
-        ),
-        reflected_in_claims=[],
+        claim_id="c2",
+        claim="Unused note that matters",
         used_in_plan=False,
     )
     review = MustNotBeLostReview(
@@ -198,9 +174,9 @@ def test_must_not_be_lost_review_views_includes_used_and_candidates() -> None:
     rows = must_not_be_lost_review_views(review, claims={}, evidence_by_id={})
     assert [row["text"] for row in rows] == ["Used note", "Unused note that matters"]
     assert rows[0]["used_in_plan"] is True
-    assert rows[0]["claim_ids"] == ["c1", "c2"]
+    assert rows[0]["claim_ids"] == ["c1"]
     assert rows[1]["used_in_plan"] is False
-    assert rows[1]["claim_ids"] == []
+    assert rows[1]["claim_ids"] == ["c2"]
 
 
 def _settings(tmp_path: Path) -> Settings:
@@ -319,19 +295,13 @@ def test_planned_page_shows_mnbl_and_emits_plan_reviewed(tmp_path: Path) -> None
         )
     )
     episode_store = EpisodeArtifactStore(workspace.root)
-    source_id = uuid4()
     episode_store.save_must_not_be_lost_review(
         MustNotBeLostReview(
             project_id=project.project_id,
             items=[
                 MustNotBeLostReviewItem(
-                    point=MustNotBeLostPoint(
-                        text="این نکته مهم نیامده",
-                        source_id=source_id,
-                        block_id="block-x",
-                        locator=Locator(page_start=1, page_end=1),
-                    ),
-                    reflected_in_claims=[],
+                    claim_id="claim-x",
+                    claim="این نکته مهم نیامده",
                     used_in_plan=False,
                 )
             ],
@@ -394,29 +364,18 @@ def test_episode_page_renders_full_must_not_be_lost_review(tmp_path: Path) -> No
         )
     )
     episode_store = EpisodeArtifactStore(workspace.root)
-    source_id = uuid4()
     episode_store.save_must_not_be_lost_review(
         MustNotBeLostReview(
             project_id=project.project_id,
             items=[
                 MustNotBeLostReviewItem(
-                    point=MustNotBeLostPoint(
-                        text="نکتهٔ آمده در طرح",
-                        source_id=source_id,
-                        block_id="block-used",
-                        locator=Locator(page_start=1, page_end=1),
-                    ),
-                    reflected_in_claims=["claim-candidate"],
+                    claim_id="claim-candidate",
+                    claim="نکتهٔ آمده در طرح",
                     used_in_plan=True,
                 ),
                 MustNotBeLostReviewItem(
-                    point=MustNotBeLostPoint(
-                        text="نکتهٔ نیامده در طرح",
-                        source_id=source_id,
-                        block_id="block-unused",
-                        locator=Locator(page_start=2, page_end=2),
-                    ),
-                    reflected_in_claims=[],
+                    claim_id="claim-other",
+                    claim="نکتهٔ نیامده در طرح",
                     used_in_plan=False,
                 ),
             ],
@@ -439,9 +398,8 @@ def test_episode_page_renders_full_must_not_be_lost_review(tmp_path: Path) -> No
     assert "در طرح نیامده" in page.text
     assert "۱ نکته در طرح نیامده" in page.text
     assert "claim-candidate" in page.text
+    assert "claim-other" in page.text
     assert "مدعاهای نامزد" in page.text
-    assert "block-used" in page.text
-    assert "block-unused" in page.text
 
 
 def test_duration_cost_endpoint_returns_hint(tmp_path: Path) -> None:

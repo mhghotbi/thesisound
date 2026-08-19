@@ -2,20 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import re
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from uuid import UUID
 
 from thesisound import tracing
-from thesisound.domain import (
-    ClaimRecord,
-    EvidenceItem,
-    ExtractedAuxiliaryPoint,
-    ExtractedDefinition,
-    ExtractedDistinction,
-    MustNotBeLostPoint,
-    SupportStatus,
-)
+from thesisound.domain import ClaimRecord, EvidenceItem, SupportStatus
 from thesisound.modeling import DeterministicValidationError, ModelRunRecord
 from thesisound.services.model_runner import ModelRunner
 from thesisound.source_analysis import (
@@ -62,41 +54,16 @@ class ClaimReconcilerService:
             for record in extractions
             for item in record.extraction.claims
         ]
-        # Deduplicated deterministically, not by the reconciliation model call: none
-        # of these categories need the judgment the model call exists for (merge vs.
-        # keep-separate by attribution/scope/certainty). A block can have claims=[]
-        # while still carrying real definitions/must_not_be_lost content, so this runs
-        # regardless of whether `evidence` is empty -- see the early return below.
-        definitions = _dedupe_definitions(
-            item for record in extractions for item in record.extraction.definitions
-        )
-        distinctions = _dedupe_distinctions(
-            item for record in extractions for item in record.extraction.distinctions
-        )
-        examples = _dedupe_points(
-            item for record in extractions for item in record.extraction.examples
-        )
-        objections = _dedupe_points(
-            item for record in extractions for item in record.extraction.objections
-        )
-        responses = _dedupe_points(
-            item for record in extractions for item in record.extraction.responses
-        )
-        must_not_be_lost = _dedupe_must_not_be_lost(
-            item for record in extractions for item in record.extraction.must_not_be_lost
-        )
+        # Extraction 2.0 (10c P2 Step 1) folded definitions/distinctions/examples/
+        # objections/responses/must_not_be_lost into claims by claim_type, so the
+        # aux-list dedupe/collection this reconciler used to do is gone; ClaimLedger
+        # keeps those fields only for artifacts written before the change.
         if not evidence:
             return (
                 ClaimLedger(
                     source_id=source_id,
                     claims=[],
                     warnings=["No claim-bearing evidence was available for reconciliation."],
-                    definitions=definitions,
-                    distinctions=distinctions,
-                    examples=examples,
-                    objections=objections,
-                    responses=responses,
-                    must_not_be_lost=must_not_be_lost,
                 ),
                 [_empty_run_record(project_id, model)],
             )
@@ -108,16 +75,7 @@ class ClaimReconcilerService:
         # model call and promote each evidence item to a claim 1:1.
         if skip_model:
             return (
-                _passthrough_ledger(
-                    source_id,
-                    evidence,
-                    definitions=definitions,
-                    distinctions=distinctions,
-                    examples=examples,
-                    objections=objections,
-                    responses=responses,
-                    must_not_be_lost=must_not_be_lost,
-                ),
+                _passthrough_ledger(source_id, evidence),
                 [_empty_run_record(project_id, model)],
             )
 
@@ -130,17 +88,7 @@ class ClaimReconcilerService:
                 model=model,
                 prompt_version=prompt_version,
             )
-            ledger = _materialize_ledger(
-                source_id,
-                draft,
-                evidence_by_id,
-                definitions=definitions,
-                distinctions=distinctions,
-                examples=examples,
-                objections=objections,
-                responses=responses,
-                must_not_be_lost=must_not_be_lost,
-            )
+            ledger = _materialize_ledger(source_id, draft, evidence_by_id)
             return ledger, [record]
 
         drafts, batch_records = self._reconcile_batches(
@@ -155,17 +103,7 @@ class ClaimReconcilerService:
         warnings: list[str] = []
         for batch, draft in zip(batches, drafts, strict=True):
             batch_by_id = {item.evidence_id: item for item in batch}
-            batch_ledger = _materialize_ledger(
-                source_id,
-                draft,
-                batch_by_id,
-                definitions=[],
-                distinctions=[],
-                examples=[],
-                objections=[],
-                responses=[],
-                must_not_be_lost=[],
-            )
+            batch_ledger = _materialize_ledger(source_id, draft, batch_by_id)
             batch_claims.append(batch_ledger.claims)
             unresolved.extend(batch_ledger.unresolved_evidence_ids)
             warnings.extend(batch_ledger.warnings)
@@ -189,12 +127,6 @@ class ClaimReconcilerService:
                 claims=claims,
                 unresolved_evidence_ids=list(dict.fromkeys(unresolved)),
                 warnings=warnings,
-                definitions=definitions,
-                distinctions=distinctions,
-                examples=examples,
-                objections=objections,
-                responses=responses,
-                must_not_be_lost=must_not_be_lost,
             ),
             [*batch_records, merge_record],
         )
@@ -461,7 +393,7 @@ def _apply_merge_groups(
 
     for group in draft.merge_groups:
         members = [by_id[claim_id] for claim_id in group.claim_ids]
-        # First-seen in batch order, not group order — same tie-break as auxiliary dedupe.
+        # First-seen in batch order, not group order.
         members_in_order = sorted(
             members,
             key=lambda claim: next(
@@ -470,7 +402,9 @@ def _apply_merge_groups(
         )
         first = members_in_order[0]
         evidence_ids = list(
-            dict.fromkeys(evidence_id for claim in members_in_order for evidence_id in claim.evidence_ids)
+            dict.fromkeys(
+                evidence_id for claim in members_in_order for evidence_id in claim.evidence_ids
+            )
         )
         agreeing = sorted(
             {
@@ -490,6 +424,9 @@ def _apply_merge_groups(
                 qualifications=list(first.qualifications),
                 agreeing_source_ids=agreeing,
                 disagreeing_source_ids=[],
+                must_not_be_lost=any(member.must_not_be_lost for member in members_in_order),
+                term=first.term,
+                contrast=first.contrast,
             )
         )
         merged_away.update(group.claim_ids)
@@ -504,13 +441,6 @@ def _materialize_ledger(
     source_id: UUID,
     draft: ClaimReconciliationDraft,
     evidence_by_id: dict[str, EvidenceItem],
-    *,
-    definitions: list[ExtractedDefinition],
-    distinctions: list[ExtractedDistinction],
-    examples: list[ExtractedAuxiliaryPoint],
-    objections: list[ExtractedAuxiliaryPoint],
-    responses: list[ExtractedAuxiliaryPoint],
-    must_not_be_lost: list[MustNotBeLostPoint],
 ) -> ClaimLedger:
     claims: list[ClaimRecord] = []
     for item in draft.claims:
@@ -519,6 +449,10 @@ def _materialize_ledger(
             {evidence_by_id[evidence_id].source_id for evidence_id in evidence_ids},
             key=str,
         )
+        # A merge could combine evidence whose must_not_be_lost/term/contrast
+        # flags disagree; first-seen (by evidence order) wins, matching the
+        # merge tie-break in `_apply_merge_groups`.
+        first_evidence = evidence_by_id[evidence_ids[0]] if evidence_ids else None
         claims.append(
             ClaimRecord(
                 claim_id=_claim_id(source_id, item.claim, evidence_ids),
@@ -529,6 +463,11 @@ def _materialize_ledger(
                 qualifications=item.qualifications,
                 agreeing_source_ids=source_ids,
                 disagreeing_source_ids=[],
+                must_not_be_lost=any(
+                    evidence_by_id[evidence_id].must_not_be_lost for evidence_id in evidence_ids
+                ),
+                term=first_evidence.term if first_evidence is not None else None,
+                contrast=first_evidence.contrast if first_evidence is not None else None,
             )
         )
     return ClaimLedger(
@@ -536,25 +475,12 @@ def _materialize_ledger(
         claims=claims,
         unresolved_evidence_ids=list(dict.fromkeys(draft.unresolved_evidence_ids)),
         warnings=draft.warnings,
-        definitions=definitions,
-        distinctions=distinctions,
-        examples=examples,
-        objections=objections,
-        responses=responses,
-        must_not_be_lost=must_not_be_lost,
     )
 
 
 def _passthrough_ledger(
     source_id: UUID,
     evidence: list[EvidenceItem],
-    *,
-    definitions: list[ExtractedDefinition],
-    distinctions: list[ExtractedDistinction],
-    examples: list[ExtractedAuxiliaryPoint],
-    objections: list[ExtractedAuxiliaryPoint],
-    responses: list[ExtractedAuxiliaryPoint],
-    must_not_be_lost: list[MustNotBeLostPoint],
 ) -> ClaimLedger:
     claims = [
         ClaimRecord(
@@ -566,6 +492,9 @@ def _passthrough_ledger(
             qualifications=list(item.qualifications),
             agreeing_source_ids=[item.source_id],
             disagreeing_source_ids=[],
+            must_not_be_lost=item.must_not_be_lost,
+            term=item.term,
+            contrast=item.contrast,
         )
         for item in evidence
     ]
@@ -573,12 +502,6 @@ def _passthrough_ledger(
         source_id=source_id,
         claims=claims,
         warnings=["Claim reconciliation skipped for single-source project."],
-        definitions=definitions,
-        distinctions=distinctions,
-        examples=examples,
-        objections=objections,
-        responses=responses,
-        must_not_be_lost=must_not_be_lost,
     )
 
 
@@ -602,85 +525,6 @@ def _claim_id(source_id: UUID, claim: str, evidence_ids: list[str]) -> str:
 
 def _normalize(text: str) -> str:
     return _WHITESPACE.sub(" ", text).strip()
-
-
-def _dedupe_definitions(
-    items: Iterable[ExtractedDefinition],
-) -> list[ExtractedDefinition]:
-    """First-seen-wins on (term, definition).
-
-    Two real definitions of the same term are kept side by side rather than
-    collapsed -- only exact duplicates (e.g. neighbor-context bleed across
-    blocks) are noise.
-    """
-
-    seen: set[tuple[str, str]] = set()
-    kept: list[ExtractedDefinition] = []
-    for item in items:
-        key = (_normalize(item.term).casefold(), _normalize(item.definition).casefold())
-        if key in seen:
-            continue
-        seen.add(key)
-        kept.append(item)
-    return kept
-
-
-def _dedupe_distinctions(
-    items: Iterable[ExtractedDistinction],
-) -> list[ExtractedDistinction]:
-    seen: set[tuple[str, str, str]] = set()
-    kept: list[ExtractedDistinction] = []
-    for item in items:
-        key = (
-            _normalize(item.item_a).casefold(),
-            _normalize(item.item_b).casefold(),
-            _normalize(item.distinction).casefold(),
-        )
-        if key in seen:
-            continue
-        seen.add(key)
-        kept.append(item)
-    return kept
-
-
-def _dedupe_points(
-    items: Iterable[ExtractedAuxiliaryPoint],
-) -> list[ExtractedAuxiliaryPoint]:
-    """Shared by examples/objections/responses: dedupe on text alone.
-
-    Cross-block duplicate text is just noise here; the first occurrence's locator
-    wins, matching the ``dict.fromkeys``-style dedup already used for evidence IDs.
-    """
-
-    seen: set[str] = set()
-    kept: list[ExtractedAuxiliaryPoint] = []
-    for item in items:
-        key = _normalize(item.text).casefold()
-        if key in seen:
-            continue
-        seen.add(key)
-        kept.append(item)
-    return kept
-
-
-def _dedupe_must_not_be_lost(
-    items: Iterable[MustNotBeLostPoint],
-) -> list[MustNotBeLostPoint]:
-    """Collapse only same-block repeats; cross-block recurrence stays visible.
-
-    The same warning surfacing from two different blocks is provenance-meaningful
-    for the must-not-be-lost review artifact, not noise to remove.
-    """
-
-    seen: set[tuple[str, str]] = set()
-    kept: list[MustNotBeLostPoint] = []
-    for item in items:
-        key = (item.block_id, _normalize(item.text).casefold())
-        if key in seen:
-            continue
-        seen.add(key)
-        kept.append(item)
-    return kept
 
 
 def _empty_run_record(project_id: UUID, model: str) -> ModelRunRecord:

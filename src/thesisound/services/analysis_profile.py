@@ -5,6 +5,7 @@ import re
 from collections.abc import Iterable
 
 from thesisound import tracing
+from thesisound.concepts import ConceptCell
 from thesisound.domain import DocumentMap, DocumentMapSection, ResearchBrief
 from thesisound.source_analysis import (
     AnalysisProfile,
@@ -314,6 +315,55 @@ def plan_evidence_extraction(
             required_section_count=len(required_sections),
             seeded_block_count=seeded_block_count,
         )
+
+
+def group_selected_blocks_by_cell(
+    selected_block_ids: list[str],
+    blocks: list[SourceDocumentBlock],
+    cells: list[ConceptCell],
+    *,
+    max_batch_tokens: int,
+) -> list[list[str]]:
+    """Group selected blocks into cell-unit batches (10c P2 Step 2, App B2).
+
+    Each concept cell's selected blocks form one unit, extracted with a single
+    ``evidence_extraction_batch`` call; a unit whose blocks exceed
+    ``max_batch_tokens`` falls back to one block per unit, and a selected block
+    belonging to no cell is always its own unit.
+
+    Dormant: ``plan_evidence_extraction`` does not call this yet. Cell-unit batch
+    extraction activates once concept cells exist for a source and
+    ``lesson_intent == source_coverage`` selects by cell (P3, Step 19); until then
+    callers keep batching by ``EvidenceExtractorService.batch_size`` instead.
+    """
+
+    tokens_by_id = {block.block_id: block.estimated_token_count for block in blocks}
+    cell_key_by_block: dict[str, str] = {
+        block_id: cell.cell_key for cell in cells for block_id in cell.block_ids
+    }
+
+    units: list[list[str]] = []
+    unit_index_by_cell_key: dict[str, int] = {}
+    for block_id in selected_block_ids:
+        cell_key = cell_key_by_block.get(block_id)
+        if cell_key is None:
+            units.append([block_id])
+            continue
+        existing_index = unit_index_by_cell_key.get(cell_key)
+        if existing_index is None:
+            unit_index_by_cell_key[cell_key] = len(units)
+            units.append([block_id])
+        else:
+            units[existing_index].append(block_id)
+
+    result: list[list[str]] = []
+    for unit in units:
+        unit_tokens = sum(tokens_by_id.get(block_id, 0) for block_id in unit)
+        if len(unit) > 1 and unit_tokens > max_batch_tokens:
+            result.extend([block_id] for block_id in unit)
+        else:
+            result.append(unit)
+    return result
 
 
 def required_section_block_ids(

@@ -71,6 +71,7 @@ class ModelRunner:
         validator: Validator[T] | None = None,
         grounding_mode: GroundingMode | None = None,
         grounding_urls: list[str] | None = None,
+        user_suffix: str | None = None,
     ) -> ModelExecution[T]:
         bundle = self.prompt_loader.load_bundle(
             prompt_name,
@@ -127,7 +128,14 @@ class ModelRunner:
             variable_names=list(variables),
         )
 
-        user_prompt = bundle.user_prompt
+        # Extraction 2.0's second-pass suffix (10c P2 Step 2, App A.2) is rendered
+        # by the service, not a prompt template placeholder, so it is appended
+        # after the strict renderer runs rather than threaded through `variables`.
+        # A repair retry rebuilds from this base too, so the suffix survives it.
+        base_user_prompt = (
+            f"{bundle.user_prompt}\n\n{user_suffix}" if user_suffix else bundle.user_prompt
+        )
+        user_prompt = base_user_prompt
         ledger = getattr(self.model_port, "observability", None)
         previous_fingerprint: str | None = None
         contract_repairs_used = 0
@@ -245,7 +253,7 @@ class ModelRunner:
                 if decision.repair_instruction:
                     contract_repairs_used += 1
                     user_prompt = _append_repair_instruction(
-                        bundle.user_prompt,
+                        base_user_prompt,
                         decision.repair_instruction,
                     )
             except Exception as exc:

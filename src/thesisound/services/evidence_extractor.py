@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -9,14 +10,11 @@ from uuid import UUID
 
 from thesisound import tracing
 from thesisound.domain import (
+    ClaimType,
     DocumentMap,
     DocumentMapSection,
     EvidenceExtraction,
     EvidenceItem,
-    ExtractedAuxiliaryPoint,
-    ExtractedDefinition,
-    ExtractedDistinction,
-    MustNotBeLostPoint,
 )
 from thesisound.modeling import (
     DeterministicValidationError,
@@ -357,7 +355,7 @@ class EvidenceExtractorService:
             run = execution.record
             extraction = _materialize_extraction(execution.output, block)
             validate_evidence_extraction(extraction, block)
-            if not extraction.claims and not _has_auxiliary_content(extraction):
+            if not extraction.claims:
                 record = BlockEvidenceExtraction(
                     source_id=source_id,
                     block_id=block.block_id,
@@ -394,6 +392,100 @@ class EvidenceExtractorService:
         # calls never reach the validator and have a different denominator.
         _emit_evidence_attempt_event(project_id, block, record, counters)
         return record, run
+
+    def _second_pass_for_block(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        block: SourceDocumentBlock,
+        section: DocumentMapSection | None,
+        blocks: list[SourceDocumentBlock],
+        index_by_id: dict[str, int],
+        document_map: DocumentMap,
+        profile: AnalysisProfile,
+        model: str,
+        prompt_version: str | None,
+        max_attempts: int,
+        prior: BlockEvidenceExtraction,
+    ) -> tuple[BlockEvidenceExtraction, ModelRunRecord | None]:
+        """Re-extract one block after ``more_claims_available``, for claims not yet captured.
+
+        Extraction 2.0 (10c P2 Step 2, App A.2): the service renders a suffix
+        listing already-extracted claims and asks only for distinct ones.
+
+        Dormant: nothing calls this yet. The runbook gates activation on
+        ``lesson_intent == source_coverage`` and a tier <= 2 in-scope cell (P3,
+        Step 19), neither of which exists yet. The mechanism -- and its direct
+        unit-test coverage -- is ready ahead of that gate.
+        """
+
+        already_extracted = [item.claim for item in prior.extraction.claims]
+        variables = {
+            "source_id": str(source_id),
+            "block": block.model_dump(mode="json"),
+            "section_context": (section.model_dump(mode="json") if section is not None else None),
+            "working_thesis": document_map.working_thesis,
+            "analysis_profile": profile.model_dump(mode="json"),
+            "neighbor_context": _neighbor_context(
+                block,
+                blocks,
+                index_by_id,
+                profile.neighbor_context_blocks,
+            ),
+        }
+        counters: dict[str, int | bool] = {
+            "n": 0,
+            "excerpt_failures": 0,
+            "salvaged": False,
+            "dropped": 0,
+        }
+
+        def validator(draft: EvidenceExtractionDraft) -> None:
+            counters["n"] += 1
+            try:
+                _validate_draft(draft, block=block, profile=profile)
+            except ExcerptNotFoundError:
+                counters["excerpt_failures"] += 1
+                if counters["n"] < max_attempts:
+                    raise
+                before = len(draft.claims)
+                _salvage_draft_inplace(draft, block=block, profile=profile)
+                counters["salvaged"] = True
+                counters["dropped"] = int(counters["dropped"]) + before - len(draft.claims)
+            except DeterministicValidationError:
+                if counters["n"] < max_attempts:
+                    raise
+                before = len(draft.claims)
+                _salvage_draft_inplace(draft, block=block, profile=profile)
+                counters["salvaged"] = True
+                counters["dropped"] = int(counters["dropped"]) + before - len(draft.claims)
+
+        execution = self.model_runner.run(
+            project_id=project_id,
+            stage="evidence_extraction",
+            prompt_name="evidence_extraction",
+            variables=variables,
+            output_type=EvidenceExtractionDraft,
+            model=model,
+            prompt_version=prompt_version,
+            validator=validator,
+            user_suffix=_second_pass_suffix(already_extracted),
+        )
+        run = execution.record
+        extraction = _materialize_extraction(execution.output, block)
+        validate_evidence_extraction(extraction, block)
+        merged = prior.model_copy(
+            update={
+                "extraction": EvidenceExtraction(
+                    segment_function=prior.extraction.segment_function,
+                    claims=_merge_distinct_claims(prior.extraction.claims, extraction.claims),
+                ),
+                "extraction_pass": prior.extraction_pass + 1,
+            }
+        )
+        _emit_evidence_attempt_event(project_id, block, merged, counters)
+        return merged, run
 
     def _extract_batch(
         self,
@@ -486,7 +578,7 @@ class EvidenceExtractorService:
                 block = unit[entry.block_index - 1]
                 extraction = _materialize_extraction(entry.extraction, block)
                 validate_evidence_extraction(extraction, block)
-                if not extraction.claims and not _has_auxiliary_content(extraction):
+                if not extraction.claims:
                     fallback_ids.add(block.block_id)
                     continue
                 outcomes[block.block_id] = (
@@ -598,6 +690,10 @@ def _batch_prompt_version(model_runner: ModelRunner, prompt_version: str | None)
     return prompt_version
 
 
+_EXAMPLE_TYPES = frozenset({ClaimType.EXAMPLE})
+_OBJECTION_RESPONSE_TYPES = frozenset({ClaimType.OBJECTION, ClaimType.RESPONSE})
+
+
 def _validate_draft(
     draft: EvidenceExtractionDraft,
     *,
@@ -618,6 +714,25 @@ def _validate_draft(
             raise DeterministicValidationError(
                 "Evidence extraction may not create editorial claims."
             )
+        _validate_claim_type_fields(claim)
+
+
+def _validate_claim_type_fields(claim: EvidenceClaimDraft) -> None:
+    """Extraction 2.0 (10c P2 Step 2): a claim's type binds which fields it needs.
+
+    ``definition`` requires ``term``; ``distinction`` requires ``contrast``.
+    Other claim_type-specific fields (``responds_to_excerpt``,
+    ``must_not_be_lost``) are optional by design and not enforced here.
+    """
+
+    if claim.claim_type == ClaimType.DEFINITION and not claim.term:
+        raise DeterministicValidationError(
+            "A definition claim must set term to the term as written in the block."
+        )
+    if claim.claim_type == ClaimType.DISTINCTION and claim.contrast is None:
+        raise DeterministicValidationError(
+            "A distinction claim must set contrast to the two items being distinguished."
+        )
 
 
 def _validate_profile_budget(
@@ -628,11 +743,15 @@ def _validate_profile_budget(
         raise DeterministicValidationError(
             "Evidence extraction exceeded max_claims_per_block for this analysis profile."
         )
-    if not profile.include_examples and draft.examples:
+    if not profile.include_examples and any(
+        claim.claim_type in _EXAMPLE_TYPES for claim in draft.claims
+    ):
         raise DeterministicValidationError(
             "This analysis profile does not allocate budget for examples."
         )
-    if not profile.include_objections_and_responses and (draft.objections or draft.responses):
+    if not profile.include_objections_and_responses and any(
+        claim.claim_type in _OBJECTION_RESPONSE_TYPES for claim in draft.claims
+    ):
         raise DeterministicValidationError(
             "This analysis profile does not allocate budget for objections or responses."
         )
@@ -677,6 +796,8 @@ def _salvage_draft_inplace(
     for claim in draft.claims:
         if claim.claim_type.value == "editorial_explanation":
             continue
+        if not _claim_type_allowed(claim.claim_type, profile):
+            continue
         normalized_claim = _normalize(claim.claim).casefold()
         if normalized_claim in seen_claims:
             continue
@@ -689,11 +810,6 @@ def _salvage_draft_inplace(
         if len(kept) >= profile.max_claims_per_block:
             break
     draft.claims = kept
-    if not profile.include_examples:
-        draft.examples = []
-    if not profile.include_objections_and_responses:
-        draft.objections = []
-        draft.responses = []
 
 
 def _validate_batch_structure(
@@ -731,6 +847,9 @@ def _salvage_entry_inplace(
         if claim.claim_type.value == "editorial_explanation":
             dropped_claims += 1
             continue
+        if not _claim_type_allowed(claim.claim_type, profile):
+            dropped_claims += 1
+            continue
         normalized_claim = _normalize(claim.claim).casefold()
         if normalized_claim in seen_claims:
             dropped_claims += 1
@@ -755,18 +874,29 @@ def _salvage_entry_inplace(
     # Claims beyond the budget are deliberately dropped in place rather than retrying K blocks.
     stats["dropped_claims"] = int(stats["dropped_claims"]) + dropped_claims
     draft.claims = kept
-    if not profile.include_examples:
-        draft.examples = []
-    if not profile.include_objections_and_responses:
-        draft.objections = []
-        draft.responses = []
     return dropped_claims, excerpt_failure
+
+
+def _claim_type_allowed(claim_type: ClaimType, profile: AnalysisProfile) -> bool:
+    if claim_type in _EXAMPLE_TYPES:
+        return profile.include_examples
+    if claim_type in _OBJECTION_RESPONSE_TYPES:
+        return profile.include_objections_and_responses
+    return True
 
 
 def _materialize_extraction(
     draft: EvidenceExtractionDraft,
     block: SourceDocumentBlock,
 ) -> EvidenceExtraction:
+    """Extraction 2.0 (10c P2 Step 1): every claim lives in one audited list.
+
+    Definitions, distinctions, examples, objections and responses are claims
+    with the matching ``claim_type`` rather than separate aux lists, so
+    ``EvidenceExtraction``'s aux-list fields stay empty here (kept on the
+    model only for artifacts written before this change).
+    """
+
     claims = [
         EvidenceItem(
             evidence_id=_evidence_id(block, claim.claim, claim.supporting_excerpt),
@@ -779,72 +909,44 @@ def _materialize_extraction(
             support_kind=claim.support_kind,
             qualifications=claim.qualifications,
             confidence=claim.confidence,
+            must_not_be_lost=claim.must_not_be_lost,
+            term=claim.term,
+            contrast=claim.contrast,
         )
         for claim in draft.claims
     ]
-    return EvidenceExtraction(
-        segment_function=draft.segment_function,
-        claims=claims,
-        definitions=[
-            ExtractedDefinition(
-                term=item.term,
-                definition=item.definition,
-                source_id=block.source_id,
-                block_id=block.block_id,
-                locator=block.locator.model_copy(deep=True),
-            )
-            for item in draft.definitions
-        ],
-        distinctions=[
-            ExtractedDistinction(
-                item_a=item.item_a,
-                item_b=item.item_b,
-                distinction=item.distinction,
-                source_id=block.source_id,
-                block_id=block.block_id,
-                locator=block.locator.model_copy(deep=True),
-            )
-            for item in draft.distinctions
-        ],
-        examples=_materialize_points(draft.examples, block),
-        objections=_materialize_points(draft.objections, block),
-        responses=_materialize_points(draft.responses, block),
-        must_not_be_lost=[
-            MustNotBeLostPoint(
-                text=text,
-                source_id=block.source_id,
-                block_id=block.block_id,
-                locator=block.locator.model_copy(deep=True),
-            )
-            for text in draft.must_not_be_lost
-        ],
+    return EvidenceExtraction(segment_function=draft.segment_function, claims=claims)
+
+
+def _second_pass_suffix(already_extracted: list[str]) -> str:
+    """Render the App A.2 second-pass user suffix (not a prompt-file template)."""
+
+    payload = json.dumps(already_extracted, ensure_ascii=False, sort_keys=True)
+    return (
+        "<ALREADY_EXTRACTED_CLAIMS>\n"
+        f"{payload}\n"
+        "</ALREADY_EXTRACTED_CLAIMS>\n\n"
+        "The claims above were already extracted from this block. Extract only "
+        "distinct claims that are not restatements of them. If nothing distinct "
+        "remains, return an empty claims list and set more_claims_available to false."
     )
 
 
-def _materialize_points(
-    texts: list[str],
-    block: SourceDocumentBlock,
-) -> list[ExtractedAuxiliaryPoint]:
-    return [
-        ExtractedAuxiliaryPoint(
-            text=text,
-            source_id=block.source_id,
-            block_id=block.block_id,
-            locator=block.locator.model_copy(deep=True),
-        )
-        for text in texts
-    ]
+def _merge_distinct_claims(
+    prior_items: list[EvidenceItem],
+    new_items: list[EvidenceItem],
+) -> list[EvidenceItem]:
+    """Keep every prior claim, then append only claims distinct by text."""
 
-
-def _has_auxiliary_content(extraction: EvidenceExtraction) -> bool:
-    return bool(
-        extraction.definitions
-        or extraction.distinctions
-        or extraction.examples
-        or extraction.objections
-        or extraction.responses
-        or extraction.must_not_be_lost
-    )
+    seen = {_normalize(item.claim).casefold() for item in prior_items}
+    merged = list(prior_items)
+    for item in new_items:
+        key = _normalize(item.claim).casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(item)
+    return merged
 
 
 def _neighbor_context(

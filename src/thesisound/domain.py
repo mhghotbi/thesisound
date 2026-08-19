@@ -83,6 +83,14 @@ class ClaimType(StrEnum):
     CRITICISM = "criticism"
     COUNTERARGUMENT = "counterargument"
     EDITORIAL_EXPLANATION = "editorial_explanation"
+    # Extraction 2.0 (10c P2 Step 1): the former aux lists (definitions,
+    # distinctions, examples, objections, responses) are now claims with one
+    # of these types, so every extracted item lives in one audited inventory.
+    DEFINITION = "definition"
+    DISTINCTION = "distinction"
+    EXAMPLE = "example"
+    OBJECTION = "objection"
+    RESPONSE = "response"
 
 
 class SupportStatus(StrEnum):
@@ -294,6 +302,10 @@ class EvidenceItem(BaseModel):
     support_kind: Literal["direct", "inferential"]
     qualifications: list[str] = Field(default_factory=list)
     confidence: float = Field(ge=0, le=1)
+    # Extraction 2.0 claim-level fields (10c P2 Step 1).
+    must_not_be_lost: bool = False
+    term: str | None = None
+    contrast: tuple[str, str] | None = None
 
 
 class EvidenceExtraction(BaseModel):
@@ -316,6 +328,10 @@ class ClaimRecord(BaseModel):
     qualifications: list[str] = Field(default_factory=list)
     agreeing_source_ids: list[UUID] = Field(default_factory=list)
     disagreeing_source_ids: list[UUID] = Field(default_factory=list)
+    # Extraction 2.0 claim-level fields (10c P2 Step 1).
+    must_not_be_lost: bool = False
+    term: str | None = None
+    contrast: tuple[str, str] | None = None
 
     @model_validator(mode="after")
     def require_evidence_for_non_editorial_claim(self) -> ClaimRecord:
