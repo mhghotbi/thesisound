@@ -40,6 +40,7 @@ class UiSourceManifest(BaseModel):
     origin: str = "local_upload"
     canonical_url: str | None = None
     retrieval_scope: str | None = None
+    capture_divergence: bool = False
 
     @property
     def title(self) -> str:

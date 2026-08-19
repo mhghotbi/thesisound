@@ -13,12 +13,14 @@ from thesisound.services.document_mapper import scope_locator
 from thesisound.source_analysis import SourceDocumentBlock
 
 _CONTENT_KEY = re.compile(r"\A[0-9a-f]{64}\Z")
-MAP_BUILDER_VERSION = 2
+MAP_BUILDER_VERSION = 3
 """Bumped when a mapper change makes previously cached maps wrong.
 
 Version 2: `document_map_merge` produced no cross-partition structure at all
 before prompt version 1.1.0, so every multi-partition map cached under version 1
 is missing its global layer.
+Version 3: `document_map/1.1.0` requires `key_concepts` to appear verbatim in
+the section's blocks; cached maps from 1.0.0 may carry paraphrased terms.
 """
 
 _INCOMPLETE_CROSS_PARTITION_MERGE_PREFIXES = (

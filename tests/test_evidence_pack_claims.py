@@ -265,6 +265,60 @@ def test_verifier_sends_claims_and_empty_placeholders() -> None:
     assert runner.variables["known_concepts"] == []
 
 
+def test_verifier_sends_planned_must_not_be_lost_claim_ids() -> None:
+    project_id = uuid4()
+    kept = _claim("clm-kept")
+    kept = kept.model_copy(update={"must_not_be_lost": True})
+    omitted_flag = _claim("clm-omitted")
+    omitted_flag = omitted_flag.model_copy(update={"must_not_be_lost": True})
+    pack = _pack(kept)
+    pack.claims = [kept, omitted_flag]
+    runner = _SpyRunner(
+        VerificationDraft(
+            verdict="pass",
+            issues=[],
+            unsupported_claim_ratio=0.0,
+            quality=ScriptQualityScore(
+                evidence_fidelity=1,
+                qualification_preservation=1,
+                stance_and_disagreement=1,
+                terminology_consistency=1,
+                listenability=1,
+            ),
+        )
+    )
+    ScriptVerifierService(runner).verify(
+        project_id=project_id,
+        script=Script(
+            title="Action",
+            turns=[
+                ScriptTurn(
+                    turn_id="seg-001-turn-001",
+                    segment_id="seg-001",
+                    speaker="A",
+                    spoken_text_fa="کنش از ساختن جداست.",
+                    claim_ids=[kept.claim_id],
+                    evidence_ids=["ev-1"],
+                )
+            ],
+        ),
+        checks=ScriptCheckReport(
+            project_id=project_id,
+            verdict="pass",
+            word_count=4,
+            estimated_minutes=1,
+            substantive_turn_count=1,
+        ),
+        episode_plan=_plan(kept.claim_id),
+        evidence_packs=[pack],
+        glossary=Glossary(project_id=project_id, model_run_id=uuid4()),
+        disagreement_graph=DisagreementGraph(project_id=project_id),
+        model="fake",
+    )
+    assert runner.variables is not None
+    assert runner.variables["plan_must_include"] == ["clm-kept"]
+
+
 def test_reviser_sends_claims_from_relevant_packs() -> None:
     claim = _claim()
     pack = _pack(claim)

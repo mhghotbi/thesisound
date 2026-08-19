@@ -12,6 +12,7 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, HttpUrl
 
 from thesisound import tracing
+from thesisound.adapters.fetch.trafilatura import UrlFetchError, fetch_and_extract_url
 from thesisound.adapters.models.gemini import GeminiStructuredModel
 from thesisound.adapters.search.gemini import GeminiWebSearchPort
 from thesisound.config import Settings
@@ -100,6 +101,24 @@ class WebSourceCaptureDraft(BaseModel):
     @property
     def text_characters(self) -> int:
         return sum(len(paragraph) for section in self.sections for paragraph in section.paragraphs)
+
+
+CAPTURE_DIVERGENCE_RATIO = 0.20
+RAW_TRAFILATURA_FILENAME = "raw-trafilatura.md"
+
+
+def capture_text_diverges(
+    raw_characters: int,
+    model_characters: int,
+    *,
+    ratio: float = CAPTURE_DIVERGENCE_RATIO,
+) -> bool:
+    """True when model and Trafilatura lengths differ by more than ``ratio``."""
+
+    if raw_characters <= 0 and model_characters <= 0:
+        return False
+    baseline = max(raw_characters, 1)
+    return abs(model_characters - raw_characters) / baseline > ratio
 
 
 class WebSourceDiscoveryService:
@@ -241,12 +260,28 @@ class WebSourceDiscoveryService:
                 quality_issues=capture.limitations,
             )
 
+        raw_fetch = None
+        try:
+            raw_fetch = fetch_and_extract_url(str(candidate.url), settings=self.settings)
+        except UrlFetchError as error:
+            tracing.event(
+                "source.trafilatura_fetch_failed",
+                component="source",
+                project_id=project_id,
+                level="warn",
+                reason=str(error),
+            )
+
         markdown = _render_capture(capture)
         upload_root = self.workspace.project_dir(project_id) / "uploads" / "web" / str(source_id)
         upload_root.mkdir(parents=True, exist_ok=True)
         filename = _web_filename(capture.title)
         path = upload_root / filename
         path.write_text(markdown, encoding="utf-8")
+        if raw_fetch is not None:
+            (upload_root / RAW_TRAFILATURA_FILENAME).write_text(
+                raw_fetch.markdown, encoding="utf-8"
+            )
         size_bytes = path.stat().st_size
         artifact_root = (
             self.settings.ensure_ingestion_artifact_root() / str(project_id) / str(source_id)
@@ -283,6 +318,17 @@ class WebSourceDiscoveryService:
                     manifest.issue_summary,
                     "محدودیت بازیابی: " + "؛ ".join(capture.limitations[:3]),
                 )
+        if raw_fetch is not None and capture_text_diverges(
+            raw_fetch.text_characters, capture.text_characters
+        ):
+            manifest.capture_divergence = True
+            manifest.quality_issues = [
+                *manifest.quality_issues,
+                (
+                    "capture_divergence: model capture text length differs from "
+                    "the raw Trafilatura fetch by more than 20%."
+                ),
+            ]
         return manifest
 
 

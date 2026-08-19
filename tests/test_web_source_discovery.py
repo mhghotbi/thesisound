@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID
 
+from thesisound.adapters.fetch.trafilatura import UrlFetchResult
 from thesisound.config import Settings
 from thesisound.domain import Project, ResearchBrief, TopicType
 from thesisound.modeling import ModelExecution, ModelRunRecord
@@ -11,10 +12,12 @@ from thesisound.ports import RawSearchResult
 from thesisound.services.url_probe import UrlProbeResult
 from thesisound.web import source_discovery
 from thesisound.web.source_discovery import (
+    RAW_TRAFILATURA_FILENAME,
     WebSourceCandidate,
     WebSourceCaptureDraft,
     WebSourceDiscoveryService,
     WebSourceSectionDraft,
+    capture_text_diverges,
 )
 from thesisound.web.source_manifest import UiSourceStatus
 
@@ -96,6 +99,20 @@ def _capture(*, full: bool) -> WebSourceCaptureDraft:
     )
 
 
+def _matching_fetch(capture: WebSourceCaptureDraft) -> UrlFetchResult:
+    body = "x" * capture.text_characters
+    return UrlFetchResult(
+        title=capture.title,
+        markdown=body,
+        canonical_url="https://example.com/article",
+        text_characters=len(body),
+    )
+
+
+def _patch_fetch(monkeypatch, result: UrlFetchResult) -> None:
+    monkeypatch.setattr(source_discovery, "fetch_and_extract_url", lambda *_a, **_k: result)
+
+
 def test_full_web_capture_is_parsed_and_selected(tmp_path: Path, monkeypatch) -> None:
     settings = _settings(tmp_path)
     workspace = WorkspaceStore(settings.workspace_root)
@@ -108,6 +125,7 @@ def test_full_web_capture_is_parsed_and_selected(tmp_path: Path, monkeypatch) ->
         "ModelRunner",
         lambda *_, **__: FakeRunner(capture),
     )
+    _patch_fetch(monkeypatch, _matching_fetch(capture))
 
     manifest = WebSourceDiscoveryService(settings, workspace).import_candidate(
         project.project_id,
@@ -124,6 +142,16 @@ def test_full_web_capture_is_parsed_and_selected(tmp_path: Path, monkeypatch) ->
     assert manifest.origin == "gemini_web_search"
     assert manifest.canonical_url == "https://example.com/article"
     assert manifest.artifact_ref is not None
+    assert not manifest.capture_divergence
+    raw_path = (
+        settings.workspace_root
+        / str(project.project_id)
+        / "uploads"
+        / "web"
+        / str(manifest.source_id)
+        / RAW_TRAFILATURA_FILENAME
+    )
+    assert raw_path.exists()
     assert (
         settings.ingestion_artifact_root
         / str(project.project_id)
@@ -147,6 +175,7 @@ def test_partial_web_capture_is_visible_but_not_usable_as_evidence(
         "ModelRunner",
         lambda *_, **__: FakeRunner(capture),
     )
+    _patch_fetch(monkeypatch, _matching_fetch(capture))
 
     manifest = WebSourceDiscoveryService(settings, workspace).import_candidate(
         project.project_id,
@@ -238,6 +267,7 @@ def test_unknown_probe_outcome_still_attempts_capture(tmp_path: Path, monkeypatc
     )
     monkeypatch.setattr(source_discovery, "GeminiStructuredModel", lambda **_: object())
     monkeypatch.setattr(source_discovery, "ModelRunner", lambda *_, **__: runner)
+    _patch_fetch(monkeypatch, _matching_fetch(runner.capture))
 
     manifest = WebSourceDiscoveryService(settings, workspace).import_candidate(
         project.project_id,
@@ -284,3 +314,46 @@ def test_repeated_identical_search_uses_the_cache(tmp_path: Path, monkeypatch) -
         (item.title, str(item.url)) for item in second
     ]
     assert CountingSearchPort.calls == 1
+
+
+def test_capture_text_diverges_at_twenty_percent() -> None:
+    assert not capture_text_diverges(100, 120)
+    assert capture_text_diverges(100, 121)
+    assert capture_text_diverges(100, 50)
+
+
+def test_web_capture_flags_divergence_when_raw_fetch_length_differs(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project()
+    workspace.save_project(project)
+    capture = _capture(full=True)
+    short = UrlFetchResult(
+        title=capture.title,
+        markdown="short",
+        canonical_url="https://example.com/article",
+        text_characters=5,
+    )
+    monkeypatch.setattr(source_discovery, "GeminiStructuredModel", lambda **_: object())
+    monkeypatch.setattr(
+        source_discovery,
+        "ModelRunner",
+        lambda *_, **__: FakeRunner(capture),
+    )
+    _patch_fetch(monkeypatch, short)
+
+    manifest = WebSourceDiscoveryService(settings, workspace).import_candidate(
+        project.project_id,
+        WebSourceCandidate(
+            query="اخلاق کانت",
+            title="مقاله آزمون",
+            url="https://example.com/article",
+        ),
+    )
+
+    assert manifest.capture_divergence
+    assert any("capture_divergence" in issue for issue in manifest.quality_issues)
+

@@ -501,3 +501,101 @@ def test_deterministic_skip_produces_nonempty_terms_with_latin() -> None:
     assert result.corpus_has_latin_tokens
     assert result.glossary.terms
     assert result.needs_model is False
+
+
+def _definition_claim(*, term: str, text: str, claim_id: str) -> ClaimRecord:
+    return ClaimRecord(
+        claim_id=claim_id,
+        claim=text,
+        claim_type=ClaimType.DEFINITION,
+        evidence_ids=["ev-1"],
+        support_status=SupportStatus.STRONG,
+        term=term,
+    )
+
+
+def test_persian_definition_claims_seed_a_nonempty_glossary() -> None:
+    result = build_deterministic_glossary(
+        project_id=uuid4(),
+        definitions=[],
+        evidence_packs=[],
+        claims=[
+            _definition_claim(
+                term="کنش",
+                text="کنش فعالیتی است که در حضور دیگران رخ می‌دهد.",
+                claim_id="c-def-1",
+            )
+        ],
+    )
+    assert result.glossary.terms
+    assert any(term.source_term == "کنش" for term in result.glossary.terms)
+    assert result.needs_model is False
+    assert result.corpus_has_latin_tokens is False
+
+
+def test_concept_cell_source_labels_seed_terms_and_need_model() -> None:
+    from thesisound.concepts import ConceptCell
+
+    cell = ConceptCell(
+        cell_key="ch01-c001",
+        label_fa="پراکسیس",
+        label_source="پراکسیس",
+        kind="definition",
+        tier=1,
+        chapter_index=1,
+        section_ids=["s001"],
+        block_ids=["b0001"],
+        granularity_rationale="تعریف مستقل از متن منبع.",
+        estimated_minutes=4.0,
+    )
+    result = build_deterministic_glossary(
+        project_id=uuid4(),
+        definitions=[],
+        evidence_packs=[],
+        claims=[],
+        concept_cells=[cell],
+    )
+    assert any(term.source_term == "پراکسیس" for term in result.glossary.terms)
+    assert result.needs_model is True
+
+
+def test_five_definition_claims_need_model() -> None:
+    claims = [
+        _definition_claim(
+            term=f"مفهوم{index}",
+            text=f"مفهوم{index} در متن فارسی تعریف شده است.",
+            claim_id=f"c-def-{index}",
+        )
+        for index in range(1, 6)
+    ]
+    result = build_deterministic_glossary(
+        project_id=uuid4(),
+        definitions=[],
+        evidence_packs=[],
+        claims=claims,
+    )
+    assert len(result.glossary.terms) == 5
+    assert result.needs_model is True
+
+
+def test_latest_glossary_prompt_is_1_1_0_and_renders_seed_blocks() -> None:
+    from thesisound.prompt_loader import PromptLoader
+
+    loader = PromptLoader()
+    contract = loader.load_contract("glossary")
+    assert contract.version == "1.1.0"
+    bundle = loader.load_bundle(
+        "glossary",
+        {
+            "research_brief": {},
+            "episode_plan": {},
+            "evidence_packs": [],
+            "disagreement_graph": {},
+            "concept_cells": [{"label_fa": "کنش", "label_source": "action"}],
+            "definition_claims": [{"term": "کنش", "claim": "تعریف کنش"}],
+        },
+    )
+    assert "CONCEPT_CELLS_JSON" in bundle.system_prompt
+    assert "<CONCEPT_CELLS_JSON>" in bundle.user_prompt
+    assert "<DEFINITION_CLAIMS_JSON>" in bundle.user_prompt
+    assert "کنش" in bundle.user_prompt

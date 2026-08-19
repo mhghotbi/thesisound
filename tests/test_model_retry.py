@@ -113,9 +113,9 @@ def test_identical_fingerprint_stops_further_contract_repairs() -> None:
     assert decision.stop_reason == "identical_repair"
 
 
-def test_document_map_allows_one_contract_repair_then_stops() -> None:
+def test_document_map_allows_two_contract_repairs_so_final_attempt_can_drop_key_concepts() -> None:
     first = decide_retry(
-        DeterministicValidationError("section missing"),
+        DeterministicValidationError("key_concepts missing from blocks"),
         attempt=1,
         max_attempts=3,
         prompt_id="document_map",
@@ -125,18 +125,34 @@ def test_document_map_allows_one_contract_repair_then_stops() -> None:
     )
     assert first.should_retry
 
-    second = decide_retry(
-        DeterministicValidationError("different problem"),
+    repeated = decide_retry(
+        DeterministicValidationError("key_concepts missing from blocks"),
         attempt=2,
         max_attempts=3,
         prompt_id="document_map",
         retry_schema_errors=True,
         base_delay_seconds=0,
-        previous_fingerprint=error_fingerprint(DeterministicValidationError("section missing")),
+        previous_fingerprint=error_fingerprint(
+            DeterministicValidationError("key_concepts missing from blocks")
+        ),
         contract_repairs_used=1,
     )
-    assert not second.should_retry
-    assert second.stop_reason == "stage_policy"
+    assert repeated.should_retry
+
+    third = decide_retry(
+        DeterministicValidationError("different problem"),
+        attempt=3,
+        max_attempts=3,
+        prompt_id="document_map",
+        retry_schema_errors=True,
+        base_delay_seconds=0,
+        previous_fingerprint=error_fingerprint(
+            DeterministicValidationError("key_concepts missing from blocks")
+        ),
+        contract_repairs_used=2,
+    )
+    assert not third.should_retry
+    assert third.stop_reason == "max_attempts"
 
 
 def test_different_fingerprint_can_still_repair_when_budget_remains() -> None:

@@ -58,7 +58,9 @@ class RetryDecision:
 _STAGE_RETRY_POLICIES: dict[str, StageRetryPolicy] = {
     "evidence_extraction": StageRetryPolicy(max_contract_repairs=None),
     "evidence_extraction_batch": StageRetryPolicy(max_contract_repairs=None),
-    "document_map": StageRetryPolicy(max_contract_repairs=1),
+    "document_map": StageRetryPolicy(
+        max_contract_repairs=2, allow_identical_repair_stop=False
+    ),
     "document_map_merge": StageRetryPolicy(max_contract_repairs=1),
     # Two repairs so attempt 3 can auto-merge duplicates / accept distribution.
     "concept_cells": StageRetryPolicy(

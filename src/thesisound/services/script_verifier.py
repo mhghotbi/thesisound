@@ -43,7 +43,7 @@ class ScriptVerifierService:
                     for pack in evidence_packs
                     for claim in pack.claims
                 ],
-                "plan_must_include": [],
+                "plan_must_include": _plan_must_include(episode_plan, evidence_packs),
                 "known_concepts": [],
             },
             output_type=VerificationDraft,
@@ -52,6 +52,28 @@ class ScriptVerifierService:
             validator=lambda draft: _validate_verification(draft, known_turn_ids),
         )
         return execution.output, execution.record
+
+
+def _plan_must_include(
+    episode_plan: EpisodePlan,
+    evidence_packs: list[SegmentEvidencePack],
+) -> list[str]:
+    """Claim IDs the plan placed that extraction flagged must-not-be-lost."""
+
+    flagged = {
+        claim.claim_id
+        for pack in evidence_packs
+        for claim in pack.claims
+        if claim.must_not_be_lost
+    }
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for segment in episode_plan.segments:
+        for claim_id in segment.claim_ids:
+            if claim_id in flagged and claim_id not in seen:
+                seen.add(claim_id)
+                ordered.append(claim_id)
+    return ordered
 
 
 def _validate_verification(

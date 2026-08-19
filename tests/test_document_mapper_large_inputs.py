@@ -72,7 +72,7 @@ class HierarchicalRunner:
                         source_block_ids=[str(item["block_id"]) for item in blocks],
                         title="Mapped partition",
                         function="argument",
-                        key_concepts=["shared concept"],
+                        key_concepts=["semantic"],
                     )
                 ],
             )

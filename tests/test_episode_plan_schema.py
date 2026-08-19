@@ -65,3 +65,4 @@ def test_episode_plan_accepts_legacy_omitted_claim_map() -> None:
     assert len(plan.deliberately_omitted_claims) == 1
     assert plan.deliberately_omitted_claims[0].claim_id == "c2"
     assert plan.deliberately_omitted_claims[0].reason == "Out of scope for this duration"
+    assert plan.segments[0].part_index == 1

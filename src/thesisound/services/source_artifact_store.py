@@ -133,6 +133,14 @@ class SourceArtifactStore:
             )
         )
 
+    def load_concept_map_optional(
+        self, project_id: UUID, source_id: UUID
+    ) -> SourceConceptMap | None:
+        path = self.source_dir(project_id, source_id) / "concept-map.json"
+        if not path.exists():
+            return None
+        return self.load_concept_map(project_id, source_id)
+
     def save_document_map(
         self,
         project_id: UUID,

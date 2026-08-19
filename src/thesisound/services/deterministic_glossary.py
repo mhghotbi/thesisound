@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from thesisound.domain import ClaimRecord, ExtractedDefinition, GlossaryTerm
+from thesisound.concepts import ConceptCell
+from thesisound.domain import ClaimRecord, ClaimType, ExtractedDefinition, GlossaryTerm
 from thesisound.episode import SegmentEvidencePack
 from thesisound.modeling import ModelRunRecord
 from thesisound.script import Glossary
@@ -71,25 +73,29 @@ def text_has_latin_tokens(text: str) -> bool:
     return bool(extract_latin_tokens(text))
 
 
-def _preferred_from_definition(definition: ExtractedDefinition) -> str | None:
-    """Pick a confident Persian preferred form from a definition record."""
+def _preferred_from_definition_pair(term: str, definition: str) -> str | None:
+    """Pick a confident Persian preferred form from a term/definition pair."""
 
-    if is_confident_persian_form(definition.term):
-        return definition.term.strip()
-    # Definition body often glosses a Latin term in Persian; take the longest
-    # Arabic-script token sequence as a weak but deterministic preferred form.
-    if is_confident_persian_form(definition.definition):
+    if is_confident_persian_form(term):
+        return term.strip()
+    # Definition body often glosses a Latin term in Persian; take the first
+    # Arabic-script token as a weak but deterministic preferred form.
+    if is_confident_persian_form(definition):
         persian_tokens = [
             match.group(0)
-            for match in _TOKEN.finditer(definition.definition)
+            for match in _TOKEN.finditer(definition)
             if has_persian_letters(match.group(0))
         ]
         if persian_tokens:
             # First Persian token is usually the gloss; longest often picks a
             # later descriptive word (e.g. فعالیت over زحمت).
             return persian_tokens[0]
-        return definition.definition.strip()
+        return definition.strip()
     return None
+
+
+def _preferred_from_definition(definition: ExtractedDefinition) -> str | None:
+    return _preferred_from_definition_pair(definition.term, definition.definition)
 
 
 def _term_from_preferred(source_term: str, preferred: str) -> GlossaryTerm:
@@ -128,13 +134,16 @@ def build_deterministic_glossary(
     definitions: list[ExtractedDefinition],
     evidence_packs: list[SegmentEvidencePack],
     claims: list[ClaimRecord],
+    concept_cells: Sequence[ConceptCell] = (),
     model: str = "deterministic",
 ) -> DeterministicGlossaryResult:
     """Harvest glossary terms without a model call.
 
     Promotes only terms with a confident Persian preferred form. Any Latin
     candidate without such a form, any pronunciation-risk Latin remnant, or
-    conflicting preferred forms across sources sets ``needs_model``.
+    conflicting preferred forms across sources sets ``needs_model``. C6 also
+    calls the model when any concept cell has a ``label_source`` or at least
+    five definition claims exist.
     """
 
     # source_term.casefold() -> list of (preferred, source_id) for conflict detect
@@ -173,6 +182,7 @@ def build_deterministic_glossary(
                 if key not in preferred_by_term:
                     unresolved_latin.add(key)
 
+    definition_claim_count = 0
     for claim in claims:
         for token in extract_latin_tokens(claim.claim):
             corpus_has_latin = True
@@ -180,9 +190,36 @@ def build_deterministic_glossary(
             display_term.setdefault(key, token)
             if key not in preferred_by_term:
                 unresolved_latin.add(key)
-        if is_confident_persian_form(claim.claim):
-            # Persian claim text alone does not invent glossary entries.
-            pass
+        if claim.claim_type != ClaimType.DEFINITION:
+            continue
+        definition_claim_count += 1
+        source = (claim.term or "").strip() or claim.claim.strip()
+        if not source:
+            continue
+        key = source.casefold()
+        display_term.setdefault(key, source)
+        preferred = _preferred_from_definition_pair(source, claim.claim)
+        if preferred is not None:
+            preferred_by_term[key].append((preferred, None))
+        elif has_latin_letters(source) or text_has_latin_tokens(source):
+            corpus_has_latin = True
+            unresolved_latin.add(key)
+        if has_latin_letters(source) or text_has_latin_tokens(claim.claim):
+            corpus_has_latin = True
+
+    cells_with_source_label = False
+    for cell in concept_cells:
+        label_source = (cell.label_source or "").strip()
+        if not label_source:
+            continue
+        cells_with_source_label = True
+        key = label_source.casefold()
+        display_term.setdefault(key, label_source)
+        preferred = cell.label_fa.strip()
+        if preferred:
+            preferred_by_term[key].append((preferred, None))
+        if has_latin_letters(label_source) or has_latin_letters(preferred):
+            corpus_has_latin = True
 
     conflicting_keys: set[str] = set()
     confident_terms: list[GlossaryTerm] = []
@@ -213,8 +250,13 @@ def build_deterministic_glossary(
         seen_keys.add(key)
         unique_terms.append(term)
 
-    # Open decisions: unresolved Latin (no Persian form / TTS risk) or conflicts.
-    needs_model = bool(unresolved_latin or conflicting_keys)
+    # Open decisions: unresolved Latin / conflicts, plus C6 concept-map seeds.
+    needs_model = bool(
+        unresolved_latin
+        or conflicting_keys
+        or cells_with_source_label
+        or definition_claim_count >= 5
+    )
 
     warnings: list[str] = []
     if conflicting_keys:

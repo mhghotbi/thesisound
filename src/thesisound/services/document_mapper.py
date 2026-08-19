@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable, Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from typing import Any
@@ -32,6 +33,8 @@ from thesisound.source_analysis import (
 # paying for the fan-out. document_map_part is the largest call class in the
 # pipeline (60% of all input tokens on the 2026-08-09 run).
 _PROBE_PARTITIONS = 1
+_WHITESPACE = re.compile(r"\s+")
+_DEFAULT_MAP_MAX_ATTEMPTS = 3
 
 
 class DocumentMapperService:
@@ -186,6 +189,9 @@ class DocumentMapperService:
             known_ids=known_block_ids,
             content_ids=content_block_ids,
             minimum_coverage=1.0,
+            blocks=blocks,
+            attempt=_DEFAULT_MAP_MAX_ATTEMPTS,
+            max_attempts=_DEFAULT_MAP_MAX_ATTEMPTS,
         )
         return _materialize_document_map(source_id, blocks, merged), merge_record
 
@@ -308,14 +314,20 @@ class DocumentMapperService:
         }
         known_ids = {block.block_id for block in blocks}
         content_ids = {block.block_id for block in blocks if block.block_type != "front_matter"}
+        attempt = {"n": 0}
+        max_attempts = _document_map_max_attempts(self.model_runner, prompt_version)
 
         def validate(draft: DocumentMapDraft) -> None:
+            attempt["n"] += 1
             _normalize_map_draft(draft, known_ids=known_ids)
             _validate_map_draft(
                 draft,
                 known_ids=known_ids,
                 content_ids=content_ids,
                 minimum_coverage=1.0 if require_complete_coverage else 0.9,
+                blocks=blocks,
+                attempt=attempt["n"],
+                max_attempts=max_attempts,
             )
 
         execution = self.model_runner.run(
@@ -681,6 +693,9 @@ def _validate_map_draft(
     known_ids: set[str],
     content_ids: set[str],
     minimum_coverage: float = 0.9,
+    blocks: list[SourceDocumentBlock] | None = None,
+    attempt: int = 1,
+    max_attempts: int = _DEFAULT_MAP_MAX_ATTEMPTS,
 ) -> None:
     section_ids = [section.section_id for section in draft.sections]
     if len(section_ids) != len(set(section_ids)):
@@ -724,6 +739,86 @@ def _validate_map_draft(
             raise DeterministicValidationError(
                 f"Cross-section thread referenced unknown sections: {', '.join(sorted(unknown))}."
             )
+    if blocks is not None:
+        _validate_key_concepts(
+            draft,
+            blocks=blocks,
+            attempt=attempt,
+            max_attempts=max_attempts,
+        )
+
+
+def _normalize_key_concept(text: str) -> str:
+    return _WHITESPACE.sub(" ", text).strip().casefold()
+
+
+def _section_block_text(
+    section: DocumentMapDraftSection,
+    blocks_by_id: dict[str, SourceDocumentBlock],
+) -> str:
+    parts = [
+        blocks_by_id[block_id].text
+        for block_id in section.source_block_ids
+        if block_id in blocks_by_id
+    ]
+    return " ".join(parts)
+
+
+def _validate_key_concepts(
+    draft: DocumentMapDraft,
+    *,
+    blocks: list[SourceDocumentBlock],
+    attempt: int,
+    max_attempts: int,
+) -> None:
+    """C8: every key_concepts entry must appear verbatim in the section's blocks.
+
+    Attempts 1–(n-1) reject invented terms. The final attempt drops them and
+    records a warning so a usable map still ships.
+    """
+
+    blocks_by_id = {block.block_id: block for block in blocks}
+    last_attempt = attempt >= max_attempts
+    dropped: list[str] = []
+    for section in draft.sections:
+        haystack = _normalize_key_concept(_section_block_text(section, blocks_by_id))
+        kept: list[str] = []
+        missing: list[str] = []
+        for concept in section.key_concepts:
+            needle = _normalize_key_concept(concept)
+            if not needle:
+                continue
+            if needle in haystack:
+                kept.append(concept)
+            else:
+                missing.append(concept)
+        if not missing:
+            section.key_concepts = kept
+            continue
+        if last_attempt:
+            section.key_concepts = kept
+            dropped.extend(f"{section.section_id}:{item}" for item in missing)
+            continue
+        raise DeterministicValidationError(
+            "Document map key_concepts must appear verbatim in the section's "
+            f"blocks ({section.section_id}): {', '.join(missing)}."
+        )
+    if dropped:
+        draft.warnings.append(
+            "Dropped key_concepts absent from section blocks on the final attempt: "
+            + "; ".join(dropped)
+            + "."
+        )
+
+
+def _document_map_max_attempts(model_runner: ModelRunner, prompt_version: str | None) -> int:
+    loader = getattr(model_runner, "prompt_loader", None)
+    if loader is None:
+        return _DEFAULT_MAP_MAX_ATTEMPTS
+    try:
+        return loader.load_contract("document_map", version=prompt_version).max_attempts
+    except Exception:
+        return _DEFAULT_MAP_MAX_ATTEMPTS
 
 
 def _materialize_document_map(

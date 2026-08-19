@@ -18,7 +18,7 @@ from thesisound.source_analysis import (
 
 _CONTENT_KEY = re.compile(r"\A[0-9a-f]{64}\Z")
 
-PART_BUILDER_VERSION = 1
+PART_BUILDER_VERSION = 2
 """Bumped when a mapper or prompt change makes previously cached partitions wrong.
 
 Bump this together with MAP_BUILDER_VERSION in document_map_cache.py whenever the

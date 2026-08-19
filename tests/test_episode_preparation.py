@@ -450,7 +450,7 @@ def test_episode_planner_sends_grounded_auxiliary_evidence_to_the_prompt() -> No
     graph = DisagreementGraph(project_id=project_id)
 
     runner = _SpyPlanRunner()
-    EpisodePlannerService(runner).plan(
+    plan, *_ = EpisodePlannerService(runner).plan(
         project_id=project_id,
         brief=_brief(10),
         claims=[claim],
@@ -473,6 +473,15 @@ def test_episode_planner_sends_grounded_auxiliary_evidence_to_the_prompt() -> No
     assert runner.captured_variables["distinctions"] == []
     assert runner.captured_variables["objections"] == []
     assert runner.captured_variables["responses"] == []
+    assert runner.captured_variables["part"] == {
+        "part_index": 1,
+        "part_count": 1,
+        "part_target_minutes": 10,
+        "cell_labels": [],
+    }
+    assert runner.captured_variables["segment_skeleton"] == []
+    assert runner.captured_variables["known_concepts"] == []
+    assert plan.segments[0].part_index == 1
 
 
 def test_build_must_not_be_lost_review_distinguishes_used_and_omitted_claims() -> None:

@@ -369,6 +369,7 @@ class EpisodeSegment(BaseModel):
         "comparison",
         "recap",
     ]
+    part_index: int = Field(default=1, ge=1)
 
 
 class DeliberatelyOmittedClaim(BaseModel):

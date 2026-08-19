@@ -5,7 +5,15 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from thesisound import tracing
-from thesisound.domain import ClaimRecord, ExtractedDefinition, Project, ProjectState, Script, ScriptTurn
+from thesisound.concepts import ConceptCell
+from thesisound.domain import (
+    ClaimRecord,
+    ExtractedDefinition,
+    Project,
+    ProjectState,
+    Script,
+    ScriptTurn,
+)
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.script import (
@@ -92,7 +100,7 @@ class ScriptPipelineService:
             raise ValueError("ResearchBrief and EpisodePlan are required for glossary generation.")
         packs = self.episode_store.load_evidence_packs(project_id)
         graph = self.episode_store.load_disagreement_graph(project_id)
-        definitions, claims = self._load_glossary_inputs(project_id)
+        definitions, claims, concept_cells = self._load_glossary_inputs(project_id)
         glossary, run = self.glossary_builder.build(
             project_id=project_id,
             brief=project.brief,
@@ -101,6 +109,7 @@ class ScriptPipelineService:
             disagreement_graph=graph,
             definitions=definitions,
             claims=claims,
+            concept_cells=concept_cells,
             model=model,
             prompt_version=prompt_version,
         )
@@ -629,13 +638,13 @@ class ScriptPipelineService:
         self.script_store.replace_absorbed_faults(project_id, [], substantive_turn_count=0)
 
     def _load_claims(self, project_id: UUID) -> list[ClaimRecord]:
-        definitions, claims = self._load_glossary_inputs(project_id)
+        definitions, claims, _cells = self._load_glossary_inputs(project_id)
         del definitions
         return claims
 
     def _load_glossary_inputs(
         self, project_id: UUID
-    ) -> tuple[list[ExtractedDefinition], list[ClaimRecord]]:
+    ) -> tuple[list[ExtractedDefinition], list[ClaimRecord], list[ConceptCell]]:
         project = self.workspace_store.load_project(project_id)
         claim_ready_ids = self.source_store.list_claim_ready_source_ids(project_id)
         source_ids = [source.source_id for source in project.sources if source.usable_as_evidence]
@@ -651,11 +660,15 @@ class ScriptPipelineService:
             )
         claims: list[ClaimRecord] = []
         definitions: list[ExtractedDefinition] = []
+        concept_cells: list[ConceptCell] = []
         for source_id in source_ids:
             ledger = self.source_store.load_claim_ledger(project_id, source_id)
             claims.extend(ledger.claims)
             definitions.extend(ledger.definitions)
-        return definitions, claims
+            concept_map = self.source_store.load_concept_map_optional(project_id, source_id)
+            if concept_map is not None:
+                concept_cells.extend(concept_map.cells)
+        return definitions, claims, concept_cells
 
     def _ensure_script_drafting(self, project_id: UUID) -> None:
         project = self.workspace_store.load_project(project_id)
