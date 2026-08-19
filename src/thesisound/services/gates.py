@@ -68,7 +68,7 @@ GATE_REGISTRY: tuple[GateDefinition, ...] = (
         5,
         "Evidence retention",
         "machine",
-        "src/thesisound/services/source_analysis_service.py:63",
+        "src/thesisound/services/source_analysis_service.py:65",
         "Extraction plan and block outcomes",
         "Source-analysis manifest",
         (

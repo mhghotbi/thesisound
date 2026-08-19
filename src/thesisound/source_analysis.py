@@ -87,6 +87,13 @@ class EvidenceExtractionPlan(BaseModel):
     # `excerpt_matching.py`; not yet wired into any gate (P3 adds the
     # tier-1/thin_extraction reading for `lesson_intent == source_coverage`).
     excerpt_char_coverage: dict[str, float] = Field(default_factory=dict)
+    # Cell-unit batches (10c P3 Step 4). Empty on duration-ranked plans; the
+    # extractor then slices by ``batch_size`` as before. When populated, each
+    # inner list is one ``evidence_extraction_batch`` call.
+    cell_batch_units: list[list[str]] = Field(default_factory=list)
+    # Blocks belonging to an in-scope cell of tier ≤ 2. The extractor runs
+    # ``_second_pass_for_block`` when that block also sets ``more_claims_available``.
+    dense_second_pass_block_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def require_disjoint_block_sets(self) -> EvidenceExtractionPlan:
@@ -174,8 +181,8 @@ class EvidenceExtractionDraft(BaseModel):
     segment_function: str = Field(min_length=1)
     claims: list[EvidenceClaimDraft] = Field(default_factory=list)
     # True when the block supports more distinct claims than max_claims_per_block
-    # allowed extracting; triggers `_second_pass_for_block` (dormant until the
-    # `lesson_intent == source_coverage` gate lands in P3).
+    # allowed extracting; triggers `_second_pass_for_block` for source_coverage
+    # blocks that belong to a tier ≤ 2 in-scope cell (P3 Step 19).
     more_claims_available: bool = False
 
 
@@ -219,7 +226,8 @@ class BlockEvidenceExtraction(BaseModel):
     extraction_identity: dict[str, Any] | None = None
     schema_version: int = 1
     # Extraction 2.0: copied from the draft. Default False so pre-2.0 artifacts
-    # still load. The second-pass caller (P3) reads this; it is not a gate yet.
+    # still load. Dense second pass (P3 Step 19) reads this together with
+    # ``EvidenceExtractionPlan.dense_second_pass_block_ids``.
     more_claims_available: bool = False
 
 

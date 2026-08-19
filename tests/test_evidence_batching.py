@@ -5,13 +5,21 @@ from uuid import UUID, uuid4
 import pytest
 
 from thesisound.config import Settings
-from thesisound.domain import ClaimType, DocumentMap, DocumentMapSection, Locator
+from thesisound.domain import (
+    ClaimType,
+    DocumentMap,
+    DocumentMapSection,
+    Locator,
+    ResearchBrief,
+    TopicType,
+)
 from thesisound.modeling import (
     ModelExecution,
     ModelProviderError,
     ModelRunRecord,
 )
 from thesisound.prompt_loader import PromptLoader
+from thesisound.services.analysis_profile import build_analysis_profile
 from thesisound.services.evidence_extractor import (
     _MAX_BATCH_SOURCE_TOKENS,
     EvidenceExtractorService,
@@ -22,6 +30,7 @@ from thesisound.source_analysis import (
     BatchEvidenceExtractionDraft,
     EvidenceClaimDraft,
     EvidenceExtractionDraft,
+    EvidenceExtractionPlan,
     SourceDocumentBlock,
 )
 
@@ -362,3 +371,86 @@ def test_more_claims_available_persists_on_batch_extraction() -> None:
     )
     assert len(records) == 4
     assert all(record.more_claims_available for record in records)
+
+
+def _brief() -> ResearchBrief:
+    return ResearchBrief(
+        normalized_topic="Action",
+        topic_type=TopicType.CONCEPT,
+        central_question="What distinguishes action?",
+        target_duration_minutes=10,
+    )
+
+
+def _plan(source_id, blocks, *, cell_units=None, dense_ids=None) -> EvidenceExtractionPlan:
+    selected = [block.block_id for block in blocks]
+    return EvidenceExtractionPlan(
+        source_id=source_id,
+        profile=build_analysis_profile(_brief()),
+        selected_block_ids=selected,
+        deferred_block_ids=[],
+        selected_source_tokens=sum(block.estimated_token_count for block in blocks),
+        total_source_tokens=sum(block.estimated_token_count for block in blocks),
+        achieved_token_coverage=1.0,
+        cell_batch_units=cell_units or [],
+        dense_second_pass_block_ids=dense_ids or [],
+    )
+
+
+def test_cell_batch_units_on_the_plan_override_batch_size() -> None:
+    source_id, blocks, document_map = _fixture(3)
+    runner = BatchRunner()
+    plan = _plan(source_id, blocks, cell_units=[[block.block_id for block in blocks]])
+
+    records, _runs = EvidenceExtractorService(runner, batch_size=1).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+        plan=plan,
+    )
+
+    assert [stage for stage, _ in runner.calls] == ["evidence_extraction_batch"]
+    assert len(records) == 3
+    assert all(record.status == "extracted" for record in records)
+
+
+def test_dense_second_pass_runs_when_flagged_and_block_is_in_scope() -> None:
+    source_id, blocks, document_map = _fixture(1)
+    runner = BatchRunner(more_claims_available=True)
+    plan = _plan(source_id, blocks, dense_ids=[blocks[0].block_id])
+
+    records, runs = EvidenceExtractorService(runner, batch_size=1).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+        plan=plan,
+    )
+
+    assert [stage for stage, _ in runner.calls] == [
+        "evidence_extraction",
+        "evidence_extraction",
+    ]
+    assert records[0].extraction_pass == 2
+    assert len(runs) == 2
+
+
+def test_dense_second_pass_stays_off_without_plan_membership() -> None:
+    source_id, blocks, document_map = _fixture(1)
+    runner = BatchRunner(more_claims_available=True)
+    plan = _plan(source_id, blocks, dense_ids=[])
+
+    records, _runs = EvidenceExtractorService(runner, batch_size=1).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+        plan=plan,
+    )
+
+    assert [stage for stage, _ in runner.calls] == ["evidence_extraction"]
+    assert records[0].extraction_pass == 1

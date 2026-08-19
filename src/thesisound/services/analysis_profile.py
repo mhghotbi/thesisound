@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import math
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from typing import Literal
 
 from thesisound import tracing
-from thesisound.concepts import ConceptCell
-from thesisound.domain import DocumentMap, DocumentMapSection, ResearchBrief
+from thesisound.concepts import ConceptCell, SourceConceptMap
+from thesisound.domain import DocumentMap, DocumentMapSection, LessonIntent, Project, ResearchBrief
+from thesisound.services.cell_selection import select_cells
 from thesisound.source_analysis import (
     AnalysisProfile,
     EvidenceExtractionPlan,
@@ -64,6 +66,11 @@ _FUNCTION_WEIGHT = {
 # so claim capacity and neighbor context are the only levers with real headroom.
 _SECOND_PASS_MAX_CLAIMS_PER_BLOCK = 12
 _SECOND_PASS_NEIGHBOR_CONTEXT_BLOCKS = 2
+# First duration that ``build_analysis_profile`` maps to the extended tier.
+_EXTENDED_DEPTH_MINUTES = 46
+# Same cap as ``evidence_extractor._MAX_BATCH_SOURCE_TOKENS``: a cell whose
+# selected blocks exceed this falls back to per-block calls.
+CELL_BATCH_MAX_SOURCE_TOKENS = 12_000
 
 
 def build_analysis_profile(brief: ResearchBrief) -> AnalysisProfile:
@@ -194,16 +201,47 @@ def selection_is_exhaustive(
     return total_tokens > 0 and target_tokens >= total_tokens
 
 
+def resolve_extraction_seeds(
+    project: Project,
+    concept_map: SourceConceptMap | None,
+) -> tuple[list[ConceptCell] | None, Literal["extended"] | None]:
+    """Return ``(seed_cells, force_depth)`` for ``plan_evidence_extraction``.
+
+    ``source_coverage`` with a concept map extracts only in-scope cells at
+    extended depth. Any other intent, or a missing map, keeps duration ranking.
+    """
+
+    if project.lesson_intent != LessonIntent.SOURCE_COVERAGE or concept_map is None:
+        return None, None
+    in_scope, _omitted = select_cells(concept_map, project.scope, project.compression)
+    return [item.cell for item in in_scope], "extended"
+
+
 def plan_evidence_extraction(
     brief: ResearchBrief,
     document_map: DocumentMap,
     blocks: list[SourceDocumentBlock],
+    *,
+    seed_cells: Sequence[ConceptCell] | None = None,
+    force_depth: Literal["extended"] | None = None,
 ) -> EvidenceExtractionPlan:
     with tracing.span(
         "corpus.plan_extraction", component="corpus", subject_type="source",
         subject_id=str(document_map.source_id),
     ) as span:
-        profile = build_analysis_profile(brief)
+        profile = build_analysis_profile(_profile_brief(brief, force_depth))
+        if seed_cells is not None:
+            # Dense-block second pass replaces the required-section re-extract;
+            # in-scope blocks are already taken at extended depth.
+            profile = profile.model_copy(
+                update={
+                    "second_pass_for_core_sections": False,
+                    "rationale": [
+                        *profile.rationale,
+                        "source_coverage: extract in-scope cells at extended depth.",
+                    ],
+                }
+            )
         content_blocks = [block for block in blocks if block.block_type != "front_matter"]
         if not content_blocks:
             span.measure(selected_count=0, deferred_count=0)
@@ -233,40 +271,59 @@ def plan_evidence_extraction(
             for section in document_map.sections
             if section.required_for_global_understanding
         ]
-        seed_ids = _required_section_seeds(required_sections, block_by_id)
-        seed_allowance = math.ceil(target_tokens * _REQUIRED_SEED_BUDGET_SHARE)
 
-        selected: set[str] = set()
-        selected_tokens = 0
-        for block_id in sorted(
-            seed_ids,
-            key=lambda block_id: (
-                -_block_score(block_id, section_by_block, brief),
-                index_by_id[block_id],
-            ),
-        ):
-            # Checked before the add, so the first seed always lands even when it alone
-            # exceeds the allowance -- a required section is never silently dropped.
-            if selected and selected_tokens >= seed_allowance:
-                break
-            selected.add(block_id)
-            selected_tokens += block_by_id[block_id].estimated_token_count
-        seeded_block_count = len(selected)
+        cell_batch_units: list[list[str]] = []
+        dense_candidates: set[str] = set()
+        if seed_cells is not None:
+            selected, selected_tokens, seeded_block_count = _select_seed_blocks(
+                seed_cells, eligible
+            )
+            cell_batch_units = group_selected_blocks_by_cell(
+                [
+                    block.block_id
+                    for block in content_blocks
+                    if block.block_id in selected
+                ],
+                blocks,
+                list(seed_cells),
+                max_batch_tokens=CELL_BATCH_MAX_SOURCE_TOKENS,
+            )
+            dense_candidates = set(_dense_second_pass_block_ids(seed_cells, selected))
+        else:
+            seed_ids = _required_section_seeds(required_sections, block_by_id)
+            seed_allowance = math.ceil(target_tokens * _REQUIRED_SEED_BUDGET_SHARE)
 
-        ranked = sorted(
-            eligible,
-            key=lambda block: (
-                -_block_score(block.block_id, section_by_block, brief),
-                index_by_id[block.block_id],
-            ),
-        )
-        for block in ranked:
-            if selected_tokens >= target_tokens and selected:
-                break
-            if block.block_id in selected:
-                continue
-            selected.add(block.block_id)
-            selected_tokens += block.estimated_token_count
+            selected = set()
+            selected_tokens = 0
+            for block_id in sorted(
+                seed_ids,
+                key=lambda block_id: (
+                    -_block_score(block_id, section_by_block, brief),
+                    index_by_id[block_id],
+                ),
+            ):
+                # Checked before the add, so the first seed always lands even when it alone
+                # exceeds the allowance -- a required section is never silently dropped.
+                if selected and selected_tokens >= seed_allowance:
+                    break
+                selected.add(block_id)
+                selected_tokens += block_by_id[block_id].estimated_token_count
+            seeded_block_count = len(selected)
+
+            ranked = sorted(
+                eligible,
+                key=lambda block: (
+                    -_block_score(block.block_id, section_by_block, brief),
+                    index_by_id[block.block_id],
+                ),
+            )
+            for block in ranked:
+                if selected_tokens >= target_tokens and selected:
+                    break
+                if block.block_id in selected:
+                    continue
+                selected.add(block.block_id)
+                selected_tokens += block.estimated_token_count
 
         selected_ids = [
             block.block_id for block in content_blocks if block.block_id in selected
@@ -274,14 +331,21 @@ def plan_evidence_extraction(
         deferred_ids = [
             block.block_id for block in content_blocks if block.block_id not in selected
         ]
+        dense_second_pass_block_ids = [
+            block_id for block_id in selected_ids if block_id in dense_candidates
+        ]
         achieved = selected_tokens / total_tokens if total_tokens else 1.0
         largest_selected = max(
             (block_by_id[block_id].estimated_token_count for block_id in selected),
             default=0,
         )
         # Check-before-add lets exactly one block cross the line. Anything past that is
-        # a real budget failure and must not be silent again.
-        if selected_tokens - largest_selected > profile.evidence_input_token_budget:
+        # a real budget failure and must not be silent again. Seeded cell selection
+        # takes every in-scope block on purpose, so it does not use this warning.
+        if (
+            seed_cells is None
+            and selected_tokens - largest_selected > profile.evidence_input_token_budget
+        ):
             tracing.event(
                 "corpus.plan_over_budget",
                 component="corpus",
@@ -314,6 +378,8 @@ def plan_evidence_extraction(
             target_source_tokens=target_tokens,
             required_section_count=len(required_sections),
             seeded_block_count=seeded_block_count,
+            cell_batch_units=cell_batch_units,
+            dense_second_pass_block_ids=dense_second_pass_block_ids,
         )
 
 
@@ -329,18 +395,15 @@ def group_selected_blocks_by_cell(
     Each concept cell's selected blocks form one unit, extracted with a single
     ``evidence_extraction_batch`` call; a unit whose blocks exceed
     ``max_batch_tokens`` falls back to one block per unit, and a selected block
-    belonging to no cell is always its own unit.
-
-    Dormant: ``plan_evidence_extraction`` does not call this yet. Cell-unit batch
-    extraction activates once concept cells exist for a source and
-    ``lesson_intent == source_coverage`` selects by cell (P3, Step 19); until then
-    callers keep batching by ``EvidenceExtractorService.batch_size`` instead.
+    belonging to no cell is always its own unit. A block in more than one cell
+    is attributed to the earliest cell in book order.
     """
 
     tokens_by_id = {block.block_id: block.estimated_token_count for block in blocks}
-    cell_key_by_block: dict[str, str] = {
-        block_id: cell.cell_key for cell in cells for block_id in cell.block_ids
-    }
+    cell_key_by_block: dict[str, str] = {}
+    for cell in sorted(cells, key=lambda item: item.cell_key):
+        for block_id in cell.block_ids:
+            cell_key_by_block.setdefault(block_id, cell.cell_key)
 
     units: list[list[str]] = []
     unit_index_by_cell_key: dict[str, int] = {}
@@ -390,6 +453,46 @@ def required_section_block_ids(
         for block_id, section in section_by_block.items()
         if section.required_for_global_understanding
     }
+
+
+def _profile_brief(
+    brief: ResearchBrief,
+    force_depth: Literal["extended"] | None,
+) -> ResearchBrief:
+    if force_depth != "extended" or brief.target_duration_minutes > 45:
+        return brief
+    return brief.model_copy(update={"target_duration_minutes": _EXTENDED_DEPTH_MINUTES})
+
+
+def _select_seed_blocks(
+    seed_cells: Sequence[ConceptCell],
+    eligible: Sequence[SourceDocumentBlock],
+) -> tuple[set[str], int, int]:
+    """Select every eligible block that belongs to a seed cell. No budget cut."""
+
+    seed_block_ids = {block_id for cell in seed_cells for block_id in cell.block_ids}
+    selected = {block.block_id for block in eligible if block.block_id in seed_block_ids}
+    selected_tokens = sum(
+        block.estimated_token_count for block in eligible if block.block_id in selected
+    )
+    return selected, selected_tokens, len(selected)
+
+
+def _dense_second_pass_block_ids(
+    seed_cells: Sequence[ConceptCell],
+    selected: set[str],
+) -> list[str]:
+    """Selected blocks whose primary (book-earliest) cell is tier 1 or 2."""
+
+    tier_by_block: dict[str, int] = {}
+    for cell in sorted(seed_cells, key=lambda item: item.cell_key):
+        for block_id in cell.block_ids:
+            tier_by_block.setdefault(block_id, cell.tier)
+    return [
+        block_id
+        for block_id in selected
+        if tier_by_block.get(block_id, 99) <= 2
+    ]
 
 
 def _required_section_seeds(

@@ -118,7 +118,10 @@ class EvidenceExtractorService:
         if not pending:
             return [], []
 
-        units = _plan_units(pending, self.batch_size)
+        units = _extraction_units(pending, self.batch_size, plan)
+        dense_second_pass_ids = (
+            set(plan.dense_second_pass_block_ids) if plan is not None else set()
+        )
         results: dict[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]] = {}
         # A batch can successfully return empty entries for every block, causing all
         # blocks to fall back to single-block calls. Keep that billed batch run even
@@ -163,7 +166,24 @@ class EvidenceExtractorService:
                         prompt_version=prompt_version,
                         max_attempts=max_attempts,
                     )
-                return [(block.block_id, outcome)], []
+                    record, run = outcome
+                    record, second_run = self._maybe_dense_second_pass(
+                        project_id=project_id,
+                        source_id=source_id,
+                        block=block,
+                        section=section_by_block.get(block.block_id),
+                        blocks=blocks,
+                        index_by_id=index_by_id,
+                        document_map=document_map,
+                        profile=profile,
+                        model=model,
+                        prompt_version=prompt_version,
+                        max_attempts=max_attempts,
+                        prior=record,
+                        dense_second_pass_ids=dense_second_pass_ids,
+                    )
+                    extra_runs = [second_run] if second_run is not None else []
+                return [(block.block_id, (record, run))], extra_runs
             with tracing.span(
                 "corpus.extract_evidence_batch",
                 component="corpus",
@@ -171,7 +191,7 @@ class EvidenceExtractorService:
                 subject_id=f"{unit[0].block_id}+{len(unit) - 1}",
                 detail="verbose",
             ):
-                return self._extract_batch(
+                outcomes, completed_batch_runs = self._extract_batch(
                     project_id=project_id,
                     source_id=source_id,
                     unit=unit,
@@ -186,6 +206,31 @@ class EvidenceExtractorService:
                     fallback_max_attempts=max_attempts,
                     fallback_allowed=any_block_succeeded,
                 )
+                extra_runs = list(completed_batch_runs)
+                upgraded: list[
+                    tuple[str, tuple[BlockEvidenceExtraction, ModelRunRecord | None]]
+                ] = []
+                block_by_id = {block.block_id: block for block in unit}
+                for block_id, (record, run) in outcomes:
+                    record, second_run = self._maybe_dense_second_pass(
+                        project_id=project_id,
+                        source_id=source_id,
+                        block=block_by_id[block_id],
+                        section=section_by_block.get(block_id),
+                        blocks=blocks,
+                        index_by_id=index_by_id,
+                        document_map=document_map,
+                        profile=profile,
+                        model=model,
+                        prompt_version=prompt_version,
+                        max_attempts=max_attempts,
+                        prior=record,
+                        dense_second_pass_ids=dense_second_pass_ids,
+                    )
+                    upgraded.append((block_id, (record, run)))
+                    if second_run is not None:
+                        extra_runs.append(second_run)
+                return upgraded, extra_runs
 
         def hand_over(
             work_result: tuple[
@@ -416,10 +461,9 @@ class EvidenceExtractorService:
         Extraction 2.0 (10c P2 Step 2, App A.2): the service renders a suffix
         listing already-extracted claims and asks only for distinct ones.
 
-        Dormant: nothing calls this yet. The runbook gates activation on
-        ``lesson_intent == source_coverage`` and a tier <= 2 in-scope cell (P3,
-        Step 19), neither of which exists yet. The mechanism -- and its direct
-        unit-test coverage -- is ready ahead of that gate.
+        Called from ``extract_source`` when the block is in
+        ``plan.dense_second_pass_block_ids`` (in-scope tier ≤ 2) and the first
+        pass set ``more_claims_available``.
         """
 
         already_extracted = [item.claim for item in prior.extraction.claims]
@@ -489,6 +533,49 @@ class EvidenceExtractorService:
         )
         _emit_evidence_attempt_event(project_id, block, merged, counters)
         return merged, run
+
+    def _maybe_dense_second_pass(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        block: SourceDocumentBlock,
+        section: DocumentMapSection | None,
+        blocks: list[SourceDocumentBlock],
+        index_by_id: dict[str, int],
+        document_map: DocumentMap,
+        profile: AnalysisProfile,
+        model: str,
+        prompt_version: str | None,
+        max_attempts: int,
+        prior: BlockEvidenceExtraction,
+        dense_second_pass_ids: set[str],
+    ) -> tuple[BlockEvidenceExtraction, ModelRunRecord | None]:
+        """Re-extract one dense in-scope block; keep the first pass on failure."""
+
+        if (
+            prior.status != "extracted"
+            or not prior.more_claims_available
+            or block.block_id not in dense_second_pass_ids
+        ):
+            return prior, None
+        try:
+            return self._second_pass_for_block(
+                project_id=project_id,
+                source_id=source_id,
+                block=block,
+                section=section,
+                blocks=blocks,
+                index_by_id=index_by_id,
+                document_map=document_map,
+                profile=profile,
+                model=model,
+                prompt_version=prompt_version,
+                max_attempts=max_attempts,
+                prior=prior,
+            )
+        except (StructuredOutputError, ModelProviderError, ModelSafetyError):
+            return prior, None
 
     def _extract_batch(
         self,
@@ -973,6 +1060,30 @@ def _neighbor_context(
         for neighbor in blocks[start:end]
         if neighbor.block_id != block.block_id and neighbor.block_type != "front_matter"
     ]
+
+
+def _extraction_units(
+    pending: list[SourceDocumentBlock],
+    batch_size: int,
+    plan: EvidenceExtractionPlan | None,
+) -> list[list[SourceDocumentBlock]]:
+    """Prefer cell-unit batches from the plan; otherwise consecutive ``batch_size`` slices."""
+
+    if plan is None or not plan.cell_batch_units:
+        return _plan_units(pending, batch_size)
+    pending_by_id = {block.block_id: block for block in pending}
+    units: list[list[SourceDocumentBlock]] = []
+    seen: set[str] = set()
+    for unit_ids in plan.cell_batch_units:
+        unit = [pending_by_id[block_id] for block_id in unit_ids if block_id in pending_by_id]
+        if not unit:
+            continue
+        units.append(unit)
+        seen.update(block.block_id for block in unit)
+    for block in pending:
+        if block.block_id not in seen:
+            units.append([block])
+    return units
 
 
 def _plan_units(

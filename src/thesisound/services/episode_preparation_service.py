@@ -30,8 +30,9 @@ from thesisound.episode import (
 from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.script import QualityNotesLedger
-from thesisound.services.analysis_profile import plan_evidence_extraction
+from thesisound.services.analysis_profile import plan_evidence_extraction, resolve_extraction_seeds
 from thesisound.services.claim_prioritizer import ClaimPrioritizer
+from thesisound.services.concept_map_overlay import ConceptMapOverlayService
 from thesisound.services.coverage_auditor import CoverageAuditorService, can_plan_episode
 from thesisound.services.disagreement_graph import DisagreementGraphBuilder
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
@@ -523,7 +524,16 @@ class EpisodePreparationService:
                 if project_brief is None:
                     raise
                 document_map = self.source_store.load_document_map(project_id, source_id)
-                plan = plan_evidence_extraction(project_brief, document_map, source_blocks)
+                seed_cells, force_depth = resolve_extraction_seeds(
+                    project, self._effective_concept_map(project_id, source_id)
+                )
+                plan = plan_evidence_extraction(
+                    project_brief,
+                    document_map,
+                    source_blocks,
+                    seed_cells=seed_cells,
+                    force_depth=force_depth,
+                )
             extraction_plans.append(plan)
             ledger = self.source_store.load_claim_ledger(project_id, source_id)
             source_evidence = self.source_store.load_evidence_items(project_id, source_id)
@@ -575,6 +585,16 @@ class EpisodePreparationService:
                 item for ledger in ledgers for item in ledger.must_not_be_lost
             ],
         )
+
+    def _effective_concept_map(self, project_id: UUID, source_id: UUID):
+        concept_map = self.source_store.load_concept_map_optional(project_id, source_id)
+        if concept_map is None:
+            return None
+        overlay_service = ConceptMapOverlayService(self.workspace_store.root)
+        overlay = overlay_service.load(project_id, source_id)
+        if overlay is None:
+            return concept_map
+        return overlay_service.apply(concept_map, overlay)
 
     @staticmethod
     def _enter_episode_planning(project: Project) -> None:

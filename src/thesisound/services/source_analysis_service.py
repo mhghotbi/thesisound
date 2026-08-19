@@ -24,12 +24,14 @@ from thesisound.services.analysis_profile import (
     eligible_blocks,
     plan_evidence_extraction,
     required_section_block_ids,
+    resolve_extraction_seeds,
     selection_is_exhaustive,
     selection_target_tokens,
 )
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.concept_map_builder import ConceptMapBuilder
+from thesisound.services.concept_map_overlay import ConceptMapOverlayService
 from thesisound.services.document_identity import block_sequence_key
 from thesisound.services.document_map_cache import DocumentMapCache, is_shareable_document_map
 from thesisound.services.document_mapper import DocumentMapperService, build_exhaustive_document_map
@@ -288,6 +290,36 @@ class SourceAnalysisService:
         )
         self.artifact_store.save_concept_map(project_id, source_id, concept_map)
 
+    def _plan_extraction(
+        self,
+        project: Project,
+        source_id: UUID,
+        document_map: DocumentMap,
+        blocks: list[SourceDocumentBlock],
+    ) -> EvidenceExtractionPlan:
+        if project.brief is None:
+            raise ValueError("ResearchBrief is required to plan evidence depth.")
+        seed_cells, force_depth = resolve_extraction_seeds(
+            project, self._effective_concept_map(project.project_id, source_id)
+        )
+        return plan_evidence_extraction(
+            project.brief,
+            document_map,
+            blocks,
+            seed_cells=seed_cells,
+            force_depth=force_depth,
+        )
+
+    def _effective_concept_map(self, project_id: UUID, source_id: UUID):
+        concept_map = self.artifact_store.load_concept_map_optional(project_id, source_id)
+        if concept_map is None:
+            return None
+        overlay_service = ConceptMapOverlayService(self.workspace_store.root)
+        overlay = overlay_service.load(project_id, source_id)
+        if overlay is None:
+            return concept_map
+        return overlay_service.apply(concept_map, overlay)
+
     def extract_evidence(
         self,
         project_id: UUID,
@@ -306,7 +338,7 @@ class SourceAnalysisService:
             prior_plan = self.artifact_store.load_extraction_plan(project_id, source_id)
         except (OSError, ValueError):
             prior_plan = None
-        plan = plan_evidence_extraction(project.brief, document_map, blocks)
+        plan = self._plan_extraction(project, source_id, document_map, blocks)
         self.artifact_store.save_extraction_plan(project_id, source_id, plan)
 
         known_ids = {block.block_id for block in blocks}
@@ -606,7 +638,7 @@ class SourceAnalysisService:
             if project.brief is not None:
                 blocks = self.artifact_store.load_blocks(project_id, source_id)
                 document_map = self.artifact_store.load_document_map(project_id, source_id)
-                planned = plan_evidence_extraction(project.brief, document_map, blocks)
+                planned = self._plan_extraction(project, source_id, document_map, blocks)
                 selected_ids = set(planned.selected_block_ids)
         extractions = [
             record
@@ -671,7 +703,7 @@ class SourceAnalysisService:
             raise ValueError("ResearchBrief is required to sync evidence depth.")
         blocks = self.artifact_store.load_blocks(project_id, source_id)
         document_map = self.artifact_store.load_document_map(project_id, source_id)
-        planned = plan_evidence_extraction(project.brief, document_map, blocks)
+        planned = self._plan_extraction(project, source_id, document_map, blocks)
         try:
             stored_plan = self.artifact_store.load_extraction_plan(project_id, source_id)
         except (OSError, ValueError):
