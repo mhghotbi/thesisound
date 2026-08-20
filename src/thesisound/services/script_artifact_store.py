@@ -73,8 +73,14 @@ class ScriptArtifactStore:
         )
         artifacts_by_stage: dict[str, tuple[str, ...]] = {
             "building_glossary": ("glossary.json",),
+            # Deliberately NOT "segments": each segment draft depends only on
+            # the (unchanging) brief, segment, evidence pack, and glossary --
+            # never on a sibling segment's outcome -- so a retry from this
+            # stage can resume mid-script instead of re-writing and re-paying
+            # for every already-succeeded segment. write_script() already
+            # checks load_segment_draft_optional() per segment; this used to
+            # defeat that by wiping the cache on every single retry.
             "writing_segments": (
-                "segments",
                 "script-draft.json",
                 "speaker-balance-violations.json",
             ),

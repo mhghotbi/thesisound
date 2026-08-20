@@ -264,6 +264,46 @@ def test_invalidation_is_scoped_to_the_failed_stage(tmp_path: Path) -> None:
     assert (script_dir / "approved-plan-hash.txt").exists()
 
 
+def test_invalidating_writing_segments_keeps_already_written_segment_drafts(
+    tmp_path: Path,
+) -> None:
+    """A retry from a mid-script segment failure must not re-pay for segments
+
+    that already succeeded (checkpoint C-D, 2026-08-20): a transient provider
+    failure on segment N used to wipe every segment's cached draft, forcing a
+    full-script re-write on every retry even though write_script() already
+    resumes per-segment from load_segment_draft_optional().
+    """
+
+    store = ScriptArtifactStore(tmp_path / "ws")
+    project_id = uuid4()
+    script_dir = store.script_dir(project_id)
+    store.prepare_for_plan(project_id, "a" * 64)
+    store.save_glossary(Glossary(project_id=project_id, model_run_id=uuid4()))
+    store.save_segment_draft(
+        project_id,
+        "seg-1",
+        SegmentScriptDraft(
+            turns=[
+                ScriptTurnDraft(
+                    speaker="A",
+                    spoken_text_fa="متن",
+                    claim_ids=["c1"],
+                    evidence_ids=["e1"],
+                )
+            ]
+        ),
+    )
+    (script_dir / "script-draft.json").write_text("{}", encoding="utf-8")
+
+    removed = store.invalidate_from_stage(project_id, "writing_segments")
+
+    assert "script-draft.json" in removed
+    assert (script_dir / "glossary.json").exists()
+    assert (script_dir / "segments" / "seg-1.json").exists()
+    assert not (script_dir / "script-draft.json").exists()
+
+
 def test_stale_revision_checks_are_recomputed_on_retry(tmp_path: Path) -> None:
     workspace = WorkspaceStore(tmp_path / "workspaces")
     project = _project()
