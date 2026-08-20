@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% from "components.html" import status_label, technical_details, error_notice %}
+{% block title %}گزارش پایانی | مقال{% endblock %}
+{% block content %}
+<header class="page-heading page-heading--compact">
+  <div>
+    <p class="kicker">گزارش پایانی</p>
+    <h1>{{ project_title(project) }}</h1>
+    <p>کدام مفاهیم گفته شد، کدام با فشردگی کنار رفت، کدام پوشش نگرفت، و هزینهٔ تخمینی در برابر واقعی.</p>
+  </div>
+</header>
+
+{% if error %}
+{{ error_notice(error) }}
+{% elif report is none %}
+<section class="coverage-verdict">
+  <p>گزارش هنوز آماده نیست.</p>
+</section>
+{% elif not report.cells_covered and not report.omitted_by_compression %}
+<section class="coverage-verdict">
+  <p>این گزارش فقط برای گفتارهای «پوشش کامل منبع» ساخته می‌شود.</p>
+</section>
+{% else %}
+
+{% if report.parts %}
+<section class="transcript-section">
+  <h2>گفتارهای این منبع</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>گفتار</th>
+        <th>عنوان</th>
+        <th>دقیقه (واقعی / هدف)</th>
+        <th>پشتوانهٔ گراف</th>
+        <th>پرچم‌ها</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for part in report.parts %}
+      <tr>
+        <td>{{ part.part_index | fa_num }}</td>
+        <td>{{ part.title_fa }}</td>
+        <td>{{ part.estimated_minutes | round(1) | fa_num }} / {{ part.target_minutes | round(1) | fa_num }}</td>
+        <td>{{ 'بله' if part.graph_backed else 'خیر' }}</td>
+        <td>{{ part.flags | join('، ') if part.flags else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% else %}
+<section class="coverage-verdict">
+  <p>طرح گفتار هنوز ساخته نشده؛ فهرست گفتارها پس از برنامه‌ریزی نشان داده می‌شود.</p>
+</section>
+{% endif %}
+
+<section class="transcript-section">
+  <h2>پوشش مفاهیم در دامنه</h2>
+  <p>{{ report.cells_covered | length | fa_num }} مفهوم در دامنهٔ این درس.</p>
+  {% call technical_details(summary='فهرست کامل مفاهیم و وضعیت هرکدام') %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>مفهوم</th>
+        <th>سطح</th>
+        <th>وضعیت پوشش</th>
+        <th>دلیل حضور در دامنه</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cell in report.cells_covered %}
+      <tr>
+        <td>{{ cell.label_fa }}</td>
+        <td>{{ cell.tier | fa_num }}</td>
+        <td>
+          {% if cell.coverage_level == 'spoken' %}گفته‌شده
+          {% elif cell.coverage_level == 'planned' %}در طرح
+          {% elif cell.coverage_level == 'extracted' %}فقط شاهد استخراج‌شده
+          {% else %}پوشش نگرفته{% endif %}
+        </td>
+        <td>{{ cell.in_scope_reason }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endcall %}
+</section>
+
+{% if report.not_covered %}
+<section class="transcript-section">
+  <h2>در دامنه، بدون پوشش</h2>
+  <table class="data-table">
+    <thead>
+      <tr><th>مفهوم</th><th>سطح</th><th>دلیل</th></tr>
+    </thead>
+    <tbody>
+      {% for cell in report.not_covered %}
+      <tr>
+        <td>{{ cell.label_fa }}</td>
+        <td>{{ cell.tier | fa_num }}</td>
+        <td>
+          {% if cell.reason == 'no_claim' %}هیچ مدعایی از این مفهوم استخراج نشد
+          {% elif cell.reason == 'thin_extraction' %}استخراج از این بخش ناقص بود
+          {% else %}در طرح نیامد یا حذف شد{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+{% if report.omitted_by_compression %}
+<section class="transcript-section">
+  <h2>کنارگذاشته‌شده به دلیل فشردگی</h2>
+  <ul>
+    {% for cell in report.omitted_by_compression %}
+    <li>{{ cell.label_fa }} (سطح {{ cell.tier | fa_num }})</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if report.must_not_be_lost and report.must_not_be_lost.items %}
+<section class="transcript-section">
+  <h2>نکاتی که نباید گم شوند</h2>
+  <p>{{ report.must_not_be_lost.unused_count | fa_num }} نکته در طرح نیامده.</p>
+  <ul>
+    {% for item in report.must_not_be_lost.items %}
+    <li>{{ status_label('در طرح آمده' if item.used_in_plan else 'در طرح نیامده', '', 'success' if item.used_in_plan else 'attention') }} {{ item.claim }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section class="transcript-section">
+  <h2>هزینه: تخمینی در برابر واقعی</h2>
+  <table class="data-table">
+    <thead>
+      <tr><th>گام</th><th>توکن ورودی تخمینی</th><th>هزینهٔ تخمینی</th><th>هزینهٔ واقعی</th></tr>
+    </thead>
+    <tbody>
+      {% for item in report.cost_by_stage %}
+      <tr>
+        <td>{{ item.stage }}</td>
+        <td>{{ item.estimated_input_tokens | fa_num }}</td>
+        <td>{{ (item.estimated_cost_micros / 1000000) | round(4) | fa_num if item.estimated_cost_micros is not none else 'نامشخص' }}</td>
+        <td>{{ (item.actual_cost_micros / 1000000) | round(4) | fa_num if item.actual_cost_micros is not none else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if report.price_status and report.price_status != 'priced' %}
+  <p><small>{{ report.price_status }}</small></p>
+  {% endif %}
+</section>
+
+{% endif %}
+{% endblock %}

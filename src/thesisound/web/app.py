@@ -22,10 +22,23 @@ from thesisound.accounts import AccountError, AccountLockedError, accounts_store
 from thesisound.adapters.sms import KavenegarOtpSender
 from thesisound.audio_runtime import create_audio_builder
 from thesisound.config import Settings
-from thesisound.domain import Project, ProjectState, ResearchBrief, TopicType
+from thesisound.domain import (
+    Compression,
+    DeliveryMode,
+    LessonIntent,
+    Project,
+    ProjectState,
+    ResearchBrief,
+    TopicType,
+)
 from thesisound.observability import ledger_from_settings, tracer_from_settings
 from thesisound.pipeline import WorkspaceStore, transition
-from thesisound.product_metrics import ProductEvent, configure_product_metrics, emit, emit_failed_count
+from thesisound.product_metrics import (
+    ProductEvent,
+    configure_product_metrics,
+    emit,
+    emit_failed_count,
+)
 from thesisound.product_metrics.events import (
     AuthCodeFailed,
     AuthCodeRequested,
@@ -54,9 +67,11 @@ from thesisound.web.error_messages import user_facing_error
 from thesisound.web.observability_routes import register_observability_routes
 from thesisound.web.read_models import build_project_read_model
 from thesisound.web.readiness_routes import register_readiness_routes
+from thesisound.web.report_routes import register_report_routes
 from thesisound.web.script_routes import register_script_routes
 from thesisound.web.script_runtime import create_script_builder
 from thesisound.web.source_routes import register_source_routes
+
 _WEB_ROOT = Path(__file__).parent
 _TEMPLATES_ROOT = _WEB_ROOT / "templates"
 _STATIC_ROOT = _WEB_ROOT / "static"
@@ -853,6 +868,11 @@ def create_app(
         mode: Annotated[str, Form()] = "explanatory",
         must_include: Annotated[str, Form()] = "",
         exclusions: Annotated[str, Form()] = "",
+        lesson_intent: Annotated[str, Form()] = "focused_question",
+        delivery: Annotated[str, Form()] = "audio",
+        compression: Annotated[str, Form()] = "standard",
+        episode_target_minutes: Annotated[int, Form()] = 20,
+        known_concepts: Annotated[str, Form()] = "",
     ) -> Response:
         if redirect := _login_redirect(request):
             return redirect
@@ -877,7 +897,17 @@ def create_app(
                     item.strip() for item in exclusions.splitlines() if item.strip()
                 ],
             )
-            project = Project(raw_input=topic, brief=brief)
+            project = Project(
+                raw_input=topic,
+                brief=brief,
+                lesson_intent=LessonIntent(lesson_intent),
+                delivery=DeliveryMode(delivery),
+                compression=Compression(compression),
+                episode_target_minutes=episode_target_minutes,
+                known_concepts=[
+                    item.strip() for item in known_concepts.splitlines() if item.strip()
+                ],
+            )
             # This form is the whole gate: the operator wrote the question and
             # (optionally) the scope, so submitting it is the real confirmation --
             # there is no separate approval screen to stop at. BRIEF_READY is
@@ -930,6 +960,11 @@ def create_app(
                         "mode": mode,
                         "must_include": must_include,
                         "exclusions": exclusions,
+                        "lesson_intent": lesson_intent,
+                        "delivery": delivery,
+                        "compression": compression,
+                        "episode_target_minutes": episode_target_minutes,
+                        "known_concepts": known_concepts,
                     },
                 },
                 status_code=422,
@@ -1115,6 +1150,14 @@ def create_app(
         project_redirect=_project_redirect,
         validate_csrf=_validate_csrf,
         settings=runtime,
+    )
+    register_report_routes(
+        app,
+        workspace=workspace,
+        render=render,
+        login_redirect=_login_redirect,
+        project_redirect=_project_redirect,
+        ledger=observability_ledger,
     )
 
     register_readiness_routes(

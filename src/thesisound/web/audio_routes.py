@@ -269,6 +269,34 @@ def register_audio_routes(
             filename="final.mp3",
         )
 
+    @app.get("/projects/{project_id}/audio/parts/{part_index}/final.wav")
+    def part_final_audio(request: Request, project_id: UUID, part_index: int) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        project = workspace.load_project(project_id)
+        if project.state != ProjectState.COMPLETE:
+            return Response(status_code=404)
+        path = audio_store.part_final_audio_path(project_id, part_index)
+        if not path.exists():
+            return Response(status_code=404)
+        return FileResponse(path, media_type="audio/wav", filename=f"part-{part_index}.wav")
+
+    @app.get("/projects/{project_id}/audio/parts/{part_index}/final.mp3")
+    def part_final_audio_mp3(request: Request, project_id: UUID, part_index: int) -> Response:
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        project = workspace.load_project(project_id)
+        if project.state != ProjectState.COMPLETE:
+            return Response(status_code=404)
+        mp3_path = audio_store.part_final_mp3_path(project_id, part_index)
+        if not mp3_path.exists():
+            return Response(status_code=404)
+        return FileResponse(mp3_path, media_type="audio/mpeg", filename=f"part-{part_index}.mp3")
+
     @app.get("/projects/{project_id}/audio/segments/{chunk_id}.wav")
     def segment_audio(request: Request, project_id: UUID, chunk_id: str) -> Response:
         if redirect := login_redirect(request):

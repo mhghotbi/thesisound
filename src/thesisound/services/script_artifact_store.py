@@ -37,6 +37,12 @@ class ScriptArtifactStore:
             path.mkdir(parents=True, exist_ok=True)
         return path
 
+    def part_script_dir(self, project_id: UUID, part_index: int, *, create: bool = True) -> Path:
+        path = self.script_dir(project_id, create=create) / "parts" / str(part_index)
+        if create:
+            path.mkdir(parents=True, exist_ok=True)
+        return path
+
     def plan_binding_path(self, project_id: UUID) -> Path:
         return self.script_dir(project_id, create=False) / "approved-plan-hash.txt"
 
@@ -294,6 +300,31 @@ class ScriptArtifactStore:
     def save_script(self, project_id: UUID, script: Script, *, revised: bool = False) -> None:
         name = "script-revised.json" if revised else "script-draft.json"
         self._write_json(self.script_dir(project_id) / name, script)
+
+    def save_part_script(self, project_id: UUID, part_index: int, script: Script) -> None:
+        """A read-only, per-part slice of the verified script (`10c` P3 Step 9).
+
+        Derived, not authoritative: the whole-project `script-draft.json` /
+        `script-revised.json` (checked, verified, possibly revised as one
+        unit) remains the source of truth. This is a materialized view for
+        the parts list and per-part delivery, not a separate pipeline stage.
+        """
+
+        self._write_json(self.part_script_dir(project_id, part_index) / "script.json", script)
+
+    def load_part_script(self, project_id: UUID, part_index: int) -> Script:
+        path = self.part_script_dir(project_id, part_index, create=False) / "script.json"
+        return Script.model_validate_json(path.read_text(encoding="utf-8"))
+
+    def list_part_scripts(self, project_id: UUID) -> list[int]:
+        parts_dir = self.script_dir(project_id, create=False) / "parts"
+        if not parts_dir.exists():
+            return []
+        return sorted(
+            int(child.name)
+            for child in parts_dir.iterdir()
+            if child.is_dir() and child.name.isdigit() and (child / "script.json").exists()
+        )
 
     def load_script(self, project_id: UUID, *, revised: bool = False) -> Script:
         name = "script-revised.json" if revised else "script-draft.json"

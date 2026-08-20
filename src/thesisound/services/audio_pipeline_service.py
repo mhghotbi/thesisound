@@ -15,7 +15,7 @@ from thesisound.audio import (
     script_hash,
 )
 from thesisound.audio_ports import SpeechToTextPort, TextToSpeechPort, TtsRequest
-from thesisound.domain import ProjectState
+from thesisound.domain import EpisodePlan, ProjectState
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.services.lineage_events import emit_review_decision
 from thesisound.services.audio_artifact_store import AudioArtifactStore
@@ -222,6 +222,8 @@ class AudioPipelineService:
                 )
             final_ref, final_sha = self.audio_store.save_final_audio(project_id, final_wav)
             span.measure(duration_seconds=final_validation.duration_seconds or 0)
+            if project.episode_plan is not None and project.episode_plan.parts:
+                self._assemble_part_audio(project_id, project.episode_plan, chunks, wav_segments)
         manifest.status = "verified"
         manifest.final_audio_ref = final_ref
         manifest.final_audio_sha256 = final_sha
@@ -235,6 +237,40 @@ class AudioPipelineService:
             transition(project, ProjectState.COMPLETE)
             self.workspace_store.save_project(project)
         return manifest
+
+    def _assemble_part_audio(
+        self,
+        project_id: UUID,
+        episode_plan: EpisodePlan,
+        chunks: list[AudioChunk],
+        wav_segments: list[bytes],
+    ) -> None:
+        """One assembled, validated WAV/MP3 per part (`10c` P3 Step 9).
+
+        Chunks are already ordered and verified (this runs after QA); this
+        step re-groups the same validated segments by part and re-runs only
+        the deterministic assembly + validation, not synthesis or QA, once
+        per part.
+        """
+
+        part_by_segment = {
+            segment.segment_id: segment.part_index for segment in episode_plan.segments
+        }
+        wav_by_part: dict[int, list[bytes]] = {}
+        for chunk, wav_bytes in zip(chunks, wav_segments, strict=True):
+            part_index = part_by_segment.get(chunk.segment_id)
+            if part_index is None:
+                continue
+            wav_by_part.setdefault(part_index, []).append(wav_bytes)
+        for part_index, part_wav_segments in wav_by_part.items():
+            part_wav, _normalization = self.assembler.assemble(part_wav_segments)
+            part_validation = self.validator.validate(part_wav)
+            if part_validation.verdict != "pass":
+                raise ValueError(
+                    f"Part {part_index} audio validation failed: "
+                    + "; ".join(part_validation.issues)
+                )
+            self.audio_store.save_part_final_audio(project_id, part_index, part_wav)
 
     def _qa_acceptable(self, verdict: str) -> bool:
         if verdict == "pass":

@@ -8,6 +8,7 @@ from thesisound import tracing
 from thesisound.concepts import ConceptCell
 from thesisound.domain import (
     ClaimRecord,
+    EpisodePlan,
     ExtractedDefinition,
     Project,
     ProjectState,
@@ -616,6 +617,8 @@ class ScriptPipelineService:
             self.workspace_store.save_project(project)
             manifest.updated_at = datetime.now(UTC)
             self.script_store.save_manifest(manifest)
+            if project.episode_plan is not None and project.episode_plan.parts:
+                self._save_part_scripts(project_id, script, project.episode_plan)
             return ScriptPipelineResult(
                 glossary=glossary,
                 script=script,
@@ -625,6 +628,43 @@ class ScriptPipelineService:
         except (FileNotFoundError, ModelError, ValueError) as exc:
             self._mark_failed(project_id, str(exc))
             raise
+
+    def _save_part_scripts(
+        self,
+        project_id: UUID,
+        script: Script,
+        episode_plan: EpisodePlan,
+    ) -> None:
+        """Materialize a per-part slice of the verified script (`10c` P3 Step 9).
+
+        Purely a read-side view: turns are grouped by which part their segment
+        belongs to, in the whole script's own turn order. Nothing here is
+        re-checked or re-verified -- the whole script already was, as one unit.
+        """
+
+        part_by_segment = {
+            segment.segment_id: segment.part_index for segment in episode_plan.segments
+        }
+        turns_by_part: dict[int, list[ScriptTurn]] = {}
+        for turn in script.turns:
+            part_index = part_by_segment.get(turn.segment_id)
+            if part_index is None:
+                continue
+            turns_by_part.setdefault(part_index, []).append(turn)
+        for part_index, turns in turns_by_part.items():
+            part_title = next(
+                (part.title_fa for part in episode_plan.parts if part.part_index == part_index),
+                script.title,
+            )
+            self.script_store.save_part_script(
+                project_id,
+                part_index,
+                Script(
+                    title=part_title,
+                    turns=turns,
+                    glossary_terms_used=script.glossary_terms_used,
+                ),
+            )
 
     def _seed_quality_notes_from_episode(self, project_id: UUID) -> None:
         """Copy plan-time notes into the script ledger once per pipeline binding."""

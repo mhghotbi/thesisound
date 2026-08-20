@@ -234,3 +234,72 @@ class MustNotBeLostReview(BaseModel):
     items: list[MustNotBeLostReviewItem] = Field(default_factory=list)
     unused_count: int = Field(ge=0)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+NotCoveredReason = Literal["no_claim", "planned_but_excised", "thin_extraction"]
+
+
+class PartReportItem(BaseModel):
+    """One `LessonPart`'s outcome (`10c` P3 Step 11)."""
+
+    part_index: int = Field(ge=1)
+    title_fa: str = Field(min_length=1)
+    target_minutes: float = Field(ge=0)
+    estimated_minutes: float = Field(ge=0)
+    graph_backed: bool = False
+    flags: list[str] = Field(default_factory=list)
+
+
+class CellReportItem(BaseModel):
+    """One in-scope cell's coverage outcome."""
+
+    cell_key: str = Field(min_length=1)
+    label_fa: str = Field(min_length=1)
+    tier: int
+    in_scope_reason: str = Field(min_length=1)
+    coverage_level: Literal["extracted", "planned", "spoken"] | None = None
+
+
+class NotCoveredCellItem(BaseModel):
+    """An in-scope cell with no claim reaching the plan (`10c` P3 Step 11)."""
+
+    cell_key: str = Field(min_length=1)
+    label_fa: str = Field(min_length=1)
+    tier: int
+    reason: NotCoveredReason
+
+
+class OmittedCellItem(BaseModel):
+    """A cell dropped by the compression tier filter (not pulled in by closure)."""
+
+    cell_key: str = Field(min_length=1)
+    label_fa: str = Field(min_length=1)
+    tier: int
+
+
+class StageCostItem(BaseModel):
+    """Estimated vs. actual input-token cost for one pipeline stage."""
+
+    stage: str = Field(min_length=1)
+    estimated_input_tokens: int = Field(ge=0)
+    estimated_cost_micros: int | None = Field(default=None, ge=0)
+    actual_cost_micros: int | None = Field(default=None, ge=0)
+
+
+class LessonReport(BaseModel):
+    """The `source_coverage` completion report (`10c` P3 Step 11).
+
+    Persisted at `episode/report.json`, alongside `must-not-be-lost-review.json`.
+    Empty `parts` for `focused_question`, which this report does not cover.
+    """
+
+    project_id: UUID
+    parts: list[PartReportItem] = Field(default_factory=list)
+    cells_covered: list[CellReportItem] = Field(default_factory=list)
+    omitted_by_compression: list[OmittedCellItem] = Field(default_factory=list)
+    not_covered: list[NotCoveredCellItem] = Field(default_factory=list)
+    must_not_be_lost: MustNotBeLostReview | None = None
+    cost_by_stage: list[StageCostItem] = Field(default_factory=list)
+    pricing_version: str | None = None
+    price_status: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

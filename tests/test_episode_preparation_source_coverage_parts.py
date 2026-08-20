@@ -377,6 +377,9 @@ def test_multi_part_loop_stamps_part_index_and_accumulates_known_concepts(tmp_pa
     all_claim_ids = {claim_id for part in plan.parts for claim_id in part.claim_ids}
     assert all_claim_ids == {"clm-1", "clm-2", "clm-3", "clm-4"}
 
+    segment_ids = [segment.segment_id for segment in plan.segments]
+    assert len(segment_ids) == len(set(segment_ids)), "segment_id must be unique across parts"
+
     if len(plan.parts) > 1:
         second_call_known = runner.plan_calls[1]["known_concepts"]
         first_part_keys = set(plan.parts[0].cell_keys)

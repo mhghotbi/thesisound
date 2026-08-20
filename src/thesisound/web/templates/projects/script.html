@@ -120,6 +120,13 @@
   {% endif %}
 </div>
 
+{% if project.episode_plan and project.episode_plan.parts %}
+<div class="script-summary">
+  <span>{{ project.episode_plan.parts | length | fa_num }} گفتار جدا</span>
+  <a class="button button--quiet button--small" href="/projects/{{ project.project_id }}/report">گزارش پایانی</a>
+</div>
+{% endif %}
+
 {% if notable_quality_notes or informational_quality_notes %}
 <section class="section-block" aria-labelledby="degradation-title">
   <div class="section-heading"><h2 id="degradation-title">نکته‌های کیفیت در این ساخت</h2></div>

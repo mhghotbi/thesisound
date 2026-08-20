@@ -26,7 +26,7 @@ GATE_REGISTRY: tuple[GateDefinition, ...] = (
         1,
         "Brief confirmed",
         "human",
-        "src/thesisound/web/app.py:886",
+        "src/thesisound/web/app.py:916",
         "Project brief",
         "SOURCES_COLLECTING state",
         "The operator has not submitted the project brief (topic and, optionally, scope).",
@@ -68,7 +68,7 @@ GATE_REGISTRY: tuple[GateDefinition, ...] = (
         5,
         "Evidence retention",
         "machine",
-        "src/thesisound/services/source_analysis_service.py:65",
+        "src/thesisound/services/source_analysis_service.py:66",
         "Extraction plan and block outcomes",
         "Source-analysis manifest",
         (

@@ -6,6 +6,10 @@
 {% set selected_knowledge = values.prior_knowledge if values else 'introductory' %}
 {% set selected_duration = values.duration if values else 20 %}
 {% set selected_mode = values.mode if values else 'explanatory' %}
+{% set selected_lesson_intent = values.lesson_intent if values else 'focused_question' %}
+{% set selected_delivery = values.delivery if values else 'audio' %}
+{% set selected_compression = values.compression if values else 'standard' %}
+{% set selected_episode_target_minutes = values.episode_target_minutes if values else 20 %}
 
 <nav class="workflow-rail" aria-label="مراحل ساخت گفتار">
   <p class="workflow-rail__compact">
@@ -100,6 +104,41 @@
       <label><input type="radio" name="mode" value="comparative" {% if selected_mode == 'comparative' %}checked{% endif %}><span>مقایسه‌ای</span></label>
       <label><input type="radio" name="mode" value="debate" {% if selected_mode == 'debate' %}checked{% endif %}><span>مناظره‌ای</span></label>
     </fieldset>
+
+    <fieldset class="choice-group">
+      <legend>هدف این گفتار</legend>
+      <label><input type="radio" name="lesson_intent" value="focused_question" {% if selected_lesson_intent == 'focused_question' %}checked{% endif %}><span>پاسخ به همین پرسش</span></label>
+      <label><input type="radio" name="lesson_intent" value="source_coverage" {% if selected_lesson_intent == 'source_coverage' %}checked{% endif %}><span>یادگیری کامل یک منبع</span></label>
+      <small class="field-hint">در حالت «یادگیری کامل یک منبع»، منبع را در گام بعد انتخاب می‌کنید و به چند گفتار پیاپی تقسیم می‌شود.</small>
+    </fieldset>
+
+    <div class="field-grid">
+      <label class="field">
+        <span>شیوهٔ تحویل</span>
+        <select name="delivery">
+          <option value="audio" {% if selected_delivery == 'audio' %}selected{% endif %}>صوت</option>
+          <option value="text" {% if selected_delivery == 'text' %}selected{% endif %}>متن</option>
+          <option value="both" {% if selected_delivery == 'both' %}selected{% endif %}>هردو</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>فشردگی <small>(فقط برای «یادگیری کامل یک منبع»)</small></span>
+        <select name="compression">
+          <option value="concise" {% if selected_compression == 'concise' %}selected{% endif %}>فشرده — فقط مفاهیم اصلی</option>
+          <option value="standard" {% if selected_compression == 'standard' %}selected{% endif %}>معمولی</option>
+          <option value="full" {% if selected_compression == 'full' %}selected{% endif %}>کامل — همهٔ جزئیات</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>طول هر گفتار <small>(دقیقه؛ فقط برای «یادگیری کامل یک منبع»)</small></span>
+        <input type="number" name="episode_target_minutes" min="5" max="60" value="{{ selected_episode_target_minutes | int }}">
+      </label>
+    </div>
+
+    <label class="field">
+      <span>مفاهیمی که شنونده از پیش می‌داند <small>(اختیاری؛ هر مورد در یک خط)</small></span>
+      <textarea name="known_concepts" rows="2" placeholder="مثلاً: تعریف قدرت نزد وبر">{{ values.known_concepts if values else '' }}</textarea>
+    </label>
 
     <section class="data-panel operator-only" aria-label="پارامترهای عملیاتی">
       <h2>پارامترهای نسخهٔ فعلی</h2>

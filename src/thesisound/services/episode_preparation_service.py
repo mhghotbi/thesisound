@@ -453,7 +453,18 @@ class EpisodePreparationService:
                 segment_skeleton=[item.model_dump(mode="json") for item in skeleton],
                 known_concepts=known_so_far,
             )
-            all_segments.extend(part_plan.segments)
+            # `episode_planner.plan` numbers segment_id from 1 within each part
+            # call, so merging parts as-is collides ids across parts (part 2's
+            # "seg-001" overwrites part 1's evidence pack / turn attribution).
+            # Renumber globally, in the same book/part order the parts list is
+            # already in, before merging into the project-wide segment list.
+            renumbered_segments = [
+                segment.model_copy(
+                    update={"segment_id": f"seg-{len(all_segments) + offset + 1:03d}"}
+                )
+                for offset, segment in enumerate(part_plan.segments)
+            ]
+            all_segments.extend(renumbered_segments)
             all_draft_segments.extend(part_draft.segments)
             omitted_claims.extend(part_plan.deliberately_omitted_claims)
             follow_up_topics.extend(part_plan.follow_up_topics)

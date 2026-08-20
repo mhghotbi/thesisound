@@ -64,7 +64,7 @@
 | 19 | P3 | seeding استخراج + linkage + سطوح پوشش | انجام‌شده 2026-08-20 |
 | 20 | P3 | `part_packer` | انجام‌شده 2026-08-20 |
 | 21 | P3 | `segment_skeleton` + حلقهٔ plan per-part + ۵ نقطهٔ شرطی | انجام‌شده 2026-08-20 |
-| 22 | P3 | script/audio per-part + گزارش + UI | |
+| 22 | P3 | script/audio per-part + گزارش + UI | انجام‌شده 2026-08-20 |
 | C-D | ✔ | **چک‌پوینت D** — `source_coverage` سرتاسری روی منبع واقعی | |
 | 23 | P4 | تحویل متنی | |
 | 24 | P5 | یکپارچه‌سازی UI (نمای گراف، overview) | |

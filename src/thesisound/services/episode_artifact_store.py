@@ -16,6 +16,7 @@ from thesisound.episode import (
     EpisodePlanDraft,
     EpisodePreparationManifest,
     EpisodeStageInputs,
+    LessonReport,
     MustNotBeLostReview,
     SegmentEvidencePack,
 )
@@ -151,6 +152,20 @@ class EpisodeArtifactStore:
                 encoding="utf-8"
             )
         )
+
+    def save_report(self, report: LessonReport) -> None:
+        self._write_json(self.episode_dir(report.project_id) / "report.json", report)
+
+    def load_report(self, project_id: UUID) -> LessonReport:
+        return LessonReport.model_validate_json(
+            (self.episode_dir(project_id) / "report.json").read_text(encoding="utf-8")
+        )
+
+    def load_report_optional(self, project_id: UUID) -> LessonReport | None:
+        try:
+            return self.load_report(project_id)
+        except (OSError, ValueError):
+            return None
 
     def save_stage_inputs(self, project_id: UUID, inputs: EpisodeStageInputs) -> None:
         self._write_json(self.episode_dir(project_id) / "stage-inputs.json", inputs)

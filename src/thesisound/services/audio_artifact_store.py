@@ -252,6 +252,42 @@ class AudioArtifactStore:
     def final_mp3_path(self, project_id: UUID) -> Path:
         return self.audio_dir(project_id, create=False) / "final.mp3"
 
+    def part_audio_dir(self, project_id: UUID, part_index: int, *, create: bool = True) -> Path:
+        path = self.audio_dir(project_id, create=create) / "parts" / str(part_index)
+        if create:
+            path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def save_part_final_audio(
+        self, project_id: UUID, part_index: int, wav_bytes: bytes
+    ) -> tuple[str, str]:
+        """One part's assembled, verified audio (`10c` P3 Step 9)."""
+
+        path = self.part_audio_dir(project_id, part_index) / "final.wav"
+        _atomic_write_bytes(path, wav_bytes)
+        self._write_mp3_from_wav(
+            path,
+            self.part_final_mp3_path(project_id, part_index),
+            project_id=project_id,
+        )
+        return f"audio/parts/{part_index}/final.wav", hashlib.sha256(wav_bytes).hexdigest()
+
+    def part_final_audio_path(self, project_id: UUID, part_index: int) -> Path:
+        return self.part_audio_dir(project_id, part_index, create=False) / "final.wav"
+
+    def part_final_mp3_path(self, project_id: UUID, part_index: int) -> Path:
+        return self.part_audio_dir(project_id, part_index, create=False) / "final.mp3"
+
+    def list_part_audio(self, project_id: UUID) -> list[int]:
+        parts_dir = self.audio_dir(project_id, create=False) / "parts"
+        if not parts_dir.exists():
+            return []
+        return sorted(
+            int(child.name)
+            for child in parts_dir.iterdir()
+            if child.is_dir() and child.name.isdigit() and (child / "final.wav").exists()
+        )
+
     def write_final_mp3_from_wav(
         self,
         project_id: UUID,
@@ -262,6 +298,18 @@ class AudioArtifactStore:
         if not wav_path.exists():
             raise FileNotFoundError(f"Final WAV missing for {project_id}")
         mp3_path = self.audio_dir(project_id) / "final.mp3"
+        return self._write_mp3_from_wav(
+            wav_path, mp3_path, project_id=project_id, ffmpeg_command=ffmpeg_command
+        )
+
+    def _write_mp3_from_wav(
+        self,
+        wav_path: Path,
+        mp3_path: Path,
+        *,
+        project_id: UUID,
+        ffmpeg_command: str = "ffmpeg",
+    ) -> Path:
         command = shutil.which(ffmpeg_command)
         if command is None:
             raise RuntimeError("FFmpeg is required to build the streamable MP3.")

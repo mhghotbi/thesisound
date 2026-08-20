@@ -34,6 +34,7 @@ class CostEstimate(BaseModel):
     input_tokens: dict[str, int]
     total_input_tokens: int = Field(ge=0)
     cost_micros: int | None = Field(default=None, ge=0)
+    cost_micros_by_stage: dict[str, int] | None = None
     pricing_version: str | None = None
     price_status: str
 
@@ -142,6 +143,7 @@ def _with_price(
     }
     started_at = datetime.now(UTC)
     micros = 0
+    micros_by_stage: dict[str, int] = {}
     version: str | None = calculator.version if calculator.version != "unset" else None
     for stage in _STAGE_ORDER:
         priced = calculator.price(
@@ -162,11 +164,13 @@ def _with_price(
                 price_status=UNKNOWN_PRICE_STATUS,
             )
         micros += priced.cost_micros
+        micros_by_stage[stage] = priced.cost_micros
         version = priced.pricing_version
     return CostEstimate(
         input_tokens=input_tokens,
         total_input_tokens=total,
         cost_micros=micros,
+        cost_micros_by_stage=micros_by_stage,
         pricing_version=version,
         price_status=PRICED_STATUS,
     )

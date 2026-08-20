@@ -181,8 +181,27 @@
       دریافت فایل صوتی
     </a>
     <a class="button button--secondary" href="/projects/{{ project.project_id }}/script">خواندن متن با منابع</a>
+    {% if project.episode_plan and project.episode_plan.parts %}
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/report">گزارش پایانی</a>
+    {% endif %}
   </div>
 </section>
+
+{% if project.episode_plan and project.episode_plan.parts %}
+<section class="section-block chapter-list" aria-labelledby="episode-parts-title">
+  <div class="section-heading section-heading--rule"><h2 id="episode-parts-title">گفتارهای این منبع</h2><span>{{ project.episode_plan.parts | length | fa_num }} گفتار</span></div>
+  <ol>
+    {% for part in project.episode_plan.parts %}
+    <li>
+      <a class="button button--quiet button--small" href="/projects/{{ project.project_id }}/audio/parts/{{ part.part_index }}/final.wav" download>
+        <span>{{ part.part_index | fa_num }}. {{ part.title_fa }}</span>
+        <span class="chapter-list__time">دریافت</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
 
 {% if chapters %}
 <section class="section-block chapter-list" aria-labelledby="chapters-title">
