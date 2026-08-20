@@ -69,6 +69,28 @@ class SegmentScriptDraft(BaseModel):
     turns: list[ScriptTurnDraft] = Field(min_length=1)
 
 
+class ProseParagraphDraft(BaseModel):
+    """A single-narrator paragraph, the `delivery == text` counterpart to a turn."""
+
+    text_fa: str = Field(min_length=1)
+    claim_ids: list[str] = Field(default_factory=list)
+    evidence_ids: list[str] = Field(default_factory=list)
+    editorial_only: bool = False
+    heading_level: int = Field(default=0, ge=0, le=2)
+
+    @model_validator(mode="after")
+    def require_grounding(self) -> ProseParagraphDraft:
+        if not self.editorial_only and not self.claim_ids:
+            raise ValueError("Substantive draft paragraphs require claim IDs.")
+        if not self.editorial_only and not self.evidence_ids:
+            raise ValueError("Substantive draft paragraphs require evidence IDs.")
+        return self
+
+
+class ProseLessonDraft(BaseModel):
+    paragraphs: list[ProseParagraphDraft] = Field(min_length=1)
+
+
 class ScriptCheckIssue(BaseModel):
     turn_id: str | None = None
     segment_id: str | None = None

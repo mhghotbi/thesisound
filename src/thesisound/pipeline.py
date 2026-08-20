@@ -69,6 +69,9 @@ ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
     },
     ProjectState.SCRIPT_VERIFIED: {
         ProjectState.AUDIO_GENERATING,
+        # `delivery == text` projects skip audio entirely; ScriptPipelineService.run()
+        # makes this transition directly once the script is verified.
+        ProjectState.COMPLETE,
         ProjectState.FAILED_RETRYABLE,
     },
     ProjectState.AUDIO_GENERATING: {

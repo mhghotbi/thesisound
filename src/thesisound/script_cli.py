@@ -18,6 +18,7 @@ from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
 from thesisound.services.model_runner import ModelRunner
+from thesisound.services.persian_lesson_prose_writer import PersianLessonProseWriterService
 from thesisound.services.persian_script_writer import (
     PersianScriptWriterService,
     SpeakerBalancePolicy,
@@ -248,6 +249,7 @@ def _service(settings: Settings, root: Path) -> ScriptPipelineService:
             runner,
             SpeakerBalancePolicy(enabled=settings.script_speaker_balance_enabled),
         ),
+        prose_writer=PersianLessonProseWriterService(runner),
         script_checker=ScriptChecker(),
         verifier=ScriptVerifierService(runner),
         reviser=TargetedScriptReviserService(runner),

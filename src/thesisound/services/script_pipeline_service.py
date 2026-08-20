@@ -8,6 +8,7 @@ from thesisound import tracing
 from thesisound.concepts import ConceptCell
 from thesisound.domain import (
     ClaimRecord,
+    DeliveryMode,
     EpisodePlan,
     ExtractedDefinition,
     Project,
@@ -19,6 +20,7 @@ from thesisound.modeling import ModelError
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.script import (
     Glossary,
+    ProseLessonDraft,
     QualityNote,
     RevisionDecision,
     ScriptCheckReport,
@@ -30,6 +32,7 @@ from thesisound.script import (
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
 from thesisound.services.lineage_events import emit_cache_lookup, emit_quality_label
+from thesisound.services.persian_lesson_prose_writer import PersianLessonProseWriterService
 from thesisound.services.persian_script_writer import PersianScriptWriterService
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.quality_notes import make_quality_note
@@ -70,6 +73,7 @@ class ScriptPipelineService:
         script_checker: ScriptChecker,
         verifier: ScriptVerifierService,
         reviser: TargetedScriptReviserService,
+        prose_writer: PersianLessonProseWriterService | None = None,
         quality_gate_enabled: bool = False,
         min_quality_overall: float = 0.70,
     ) -> None:
@@ -80,6 +84,7 @@ class ScriptPipelineService:
         self.approval_store = approval_store
         self.glossary_builder = glossary_builder
         self.script_writer = script_writer
+        self.prose_writer = prose_writer
         self.script_checker = script_checker
         self.verifier = verifier
         self.reviser = reviser
@@ -148,10 +153,45 @@ class ScriptPipelineService:
         )
         run_ids = []
         segment_count = len(project.episode_plan.segments)
+        is_prose = project.delivery == DeliveryMode.TEXT
+        if is_prose and self.prose_writer is None:
+            raise ValueError("delivery == text requires a configured prose_writer.")
         for index, segment in enumerate(project.episode_plan.segments, start=1):
             pack = pack_by_segment.get(segment.segment_id)
             if pack is None:
                 raise ValueError(f"Missing evidence pack for segment {segment.segment_id}.")
+            if is_prose:
+                prose_draft = self.script_store.load_prose_segment_draft_optional(
+                    project_id,
+                    segment.segment_id,
+                )
+                if prose_draft is None:
+                    assert self.prose_writer is not None
+                    prose_result = self.prose_writer.write_segment(
+                        project_id=project_id,
+                        brief=project.brief,
+                        segment=segment,
+                        evidence_pack=pack,
+                        glossary=glossary,
+                        disagreement_graph=graph,
+                        model=model,
+                        prompt_version=prompt_version,
+                        segment_index=index,
+                        segment_count=segment_count,
+                    )
+                    segment_turns = prose_result.turns
+                    self.script_store.save_prose_segment_draft(
+                        project_id,
+                        segment.segment_id,
+                        prose_result.draft,
+                    )
+                    run_ids.append(prose_result.record.run_id)
+                else:
+                    segment_turns = self._materialize_prose_segment_turns(
+                        segment.segment_id, prose_draft
+                    )
+                turns.extend(segment_turns)
+                continue
             draft = self.script_store.load_segment_draft_optional(
                 project_id,
                 segment.segment_id,
@@ -266,6 +306,7 @@ class ScriptPipelineService:
                 else self.script_store.load_speaker_balance_violations_optional(project_id)
             ),
             must_not_be_lost_review=must_not_be_lost_review,
+            single_speaker=project.delivery == DeliveryMode.TEXT,
         )
         self.script_store.save_checks(report, revised=revised)
         manifest = self.script_store.load_manifest(project_id)
@@ -614,11 +655,23 @@ class ScriptPipelineService:
                 transition(project, ProjectState.SCRIPT_VERIFIED)
                 manifest.status = "verified"
                 manifest.last_error = None
+                if project.delivery == DeliveryMode.TEXT:
+                    # Text delivery has no audio stage: the verified prose script
+                    # (written via `self.prose_writer` above) is the finished product.
+                    transition(project, ProjectState.COMPLETE)
             self.workspace_store.save_project(project)
             manifest.updated_at = datetime.now(UTC)
             self.script_store.save_manifest(manifest)
             if project.episode_plan is not None and project.episode_plan.parts:
                 self._save_part_scripts(project_id, script, project.episode_plan)
+            if outcome != "review_required" and project.delivery == DeliveryMode.BOTH:
+                with tracing.span("script.building_prose_supplement", component="script"):
+                    self._build_prose_supplement(
+                        project_id,
+                        project,
+                        model=writer_model,
+                        prompt_version=prompt_version,
+                    )
             return ScriptPipelineResult(
                 glossary=glossary,
                 script=script,
@@ -665,6 +718,95 @@ class ScriptPipelineService:
                     glossary_terms_used=script.glossary_terms_used,
                 ),
             )
+
+    def _build_prose_supplement(
+        self,
+        project_id: UUID,
+        project: Project,
+        *,
+        model: str,
+        prompt_version: str | None,
+    ) -> None:
+        """`delivery == both`: a written-lesson supplement alongside the dialogue script.
+
+        Scope decision (`10c` P4, the same kind of call as the step-22 per-part
+        decision in STATUS.md): the supplement is grounded -- the prose writer's own
+        validator still enforces claim/evidence membership against the same evidence
+        packs -- but it does not run its own check/verify/revise cycle. Doing so would
+        duplicate the whole script state machine for a bonus artifact; the dialogue
+        script (checked, verified, possibly revised) remains the project's one
+        pipeline-gated product.
+        """
+
+        if self.prose_writer is None or project.brief is None or project.episode_plan is None:
+            return
+        glossary = self.script_store.load_glossary(project_id)
+        graph = self.episode_store.load_disagreement_graph(project_id)
+        pack_by_segment = {
+            pack.segment_id: pack for pack in self.episode_store.load_evidence_packs(project_id)
+        }
+        turns: list[ScriptTurn] = []
+        segment_count = len(project.episode_plan.segments)
+        for index, segment in enumerate(project.episode_plan.segments, start=1):
+            pack = pack_by_segment.get(segment.segment_id)
+            if pack is None:
+                continue
+            draft = self.script_store.load_prose_segment_draft_optional(
+                project_id, segment.segment_id
+            )
+            if draft is None:
+                result = self.prose_writer.write_segment(
+                    project_id=project_id,
+                    brief=project.brief,
+                    segment=segment,
+                    evidence_pack=pack,
+                    glossary=glossary,
+                    disagreement_graph=graph,
+                    model=model,
+                    prompt_version=prompt_version,
+                    segment_index=index,
+                    segment_count=segment_count,
+                )
+                turns.extend(result.turns)
+                self.script_store.save_prose_segment_draft(
+                    project_id, segment.segment_id, result.draft
+                )
+            else:
+                turns.extend(self._materialize_prose_segment_turns(segment.segment_id, draft))
+        prose_script = Script(
+            title=project.episode_plan.title,
+            turns=turns,
+            glossary_terms_used=[term.preferred_persian for term in glossary.terms],
+        )
+        self.script_store.save_prose_script(project_id, prose_script)
+        if project.episode_plan.parts:
+            part_by_segment = {
+                segment.segment_id: segment.part_index for segment in project.episode_plan.segments
+            }
+            turns_by_part: dict[int, list[ScriptTurn]] = {}
+            for turn in turns:
+                part_index = part_by_segment.get(turn.segment_id)
+                if part_index is None:
+                    continue
+                turns_by_part.setdefault(part_index, []).append(turn)
+            for part_index, part_turns in turns_by_part.items():
+                part_title = next(
+                    (
+                        part.title_fa
+                        for part in project.episode_plan.parts
+                        if part.part_index == part_index
+                    ),
+                    prose_script.title,
+                )
+                self.script_store.save_part_prose_script(
+                    project_id,
+                    part_index,
+                    Script(
+                        title=part_title,
+                        turns=part_turns,
+                        glossary_terms_used=prose_script.glossary_terms_used,
+                    ),
+                )
 
     def _seed_quality_notes_from_episode(self, project_id: UUID) -> None:
         """Copy plan-time notes into the script ledger once per pipeline binding."""
@@ -768,6 +910,25 @@ class ScriptPipelineService:
                 editorial_only=turn.editorial_only,
             )
             for index, turn in enumerate(draft.turns, start=1)
+        ]
+
+    @staticmethod
+    def _materialize_prose_segment_turns(
+        segment_id: str,
+        draft: ProseLessonDraft,
+    ) -> list[ScriptTurn]:
+        return [
+            ScriptTurn(
+                turn_id=f"{segment_id}-turn-{index:03d}",
+                segment_id=segment_id,
+                speaker="A",
+                spoken_text_fa=paragraph.text_fa.strip(),
+                claim_ids=paragraph.claim_ids,
+                evidence_ids=paragraph.evidence_ids,
+                editorial_only=paragraph.editorial_only,
+                heading_level=paragraph.heading_level,
+            )
+            for index, paragraph in enumerate(draft.paragraphs, start=1)
         ]
 
     @staticmethod

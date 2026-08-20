@@ -13,6 +13,7 @@ from thesisound.script import (
     AbsorbedFault,
     AbsorbedFaultsLedger,
     Glossary,
+    ProseLessonDraft,
     QualityNote,
     QualityNotesLedger,
     RevisionDecision,
@@ -342,6 +343,79 @@ class ScriptArtifactStore:
             return self.load_script(project_id, revised=revised)
         except FileNotFoundError:
             return None
+
+    def prose_dir(self, project_id: UUID, *, create: bool = True) -> Path:
+        path = self.script_dir(project_id, create=create) / "prose"
+        if create:
+            path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def save_prose_segment_draft(
+        self,
+        project_id: UUID,
+        segment_id: str,
+        draft: ProseLessonDraft,
+    ) -> None:
+        self._write_json(self.prose_dir(project_id) / "segments" / f"{segment_id}.json", draft)
+
+    def load_prose_segment_draft_optional(
+        self,
+        project_id: UUID,
+        segment_id: str,
+    ) -> ProseLessonDraft | None:
+        path = self.prose_dir(project_id, create=False) / "segments" / f"{segment_id}.json"
+        try:
+            return ProseLessonDraft.model_validate_json(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+
+    def save_prose_script(self, project_id: UUID, script: Script) -> None:
+        """The `delivery == both` written-lesson supplement (`10c` P4).
+
+        For `delivery == text`, the prose IS the script (`script-draft.json`,
+        via `save_script`); this method only exists for `both`, where a
+        dialogue script is the primary artifact and prose is written
+        alongside it from the same evidence, without a second full
+        check/verify/revise cycle (see `ScriptPipelineService.run`).
+        """
+
+        self._write_json(self.prose_dir(project_id) / "lesson.json", script)
+
+    def load_prose_script_optional(self, project_id: UUID) -> Script | None:
+        path = self.prose_dir(project_id, create=False) / "lesson.json"
+        try:
+            return Script.model_validate_json(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+
+    def part_prose_dir(self, project_id: UUID, part_index: int, *, create: bool = True) -> Path:
+        path = self.prose_dir(project_id, create=create) / "parts" / str(part_index)
+        if create:
+            path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def save_part_prose_script(self, project_id: UUID, part_index: int, script: Script) -> None:
+        self._write_json(self.part_prose_dir(project_id, part_index) / "lesson.json", script)
+
+    def load_part_prose_script(self, project_id: UUID, part_index: int) -> Script:
+        path = self.part_prose_dir(project_id, part_index, create=False) / "lesson.json"
+        return Script.model_validate_json(path.read_text(encoding="utf-8"))
+
+    def load_part_prose_script_optional(self, project_id: UUID, part_index: int) -> Script | None:
+        try:
+            return self.load_part_prose_script(project_id, part_index)
+        except FileNotFoundError:
+            return None
+
+    def list_part_prose_scripts(self, project_id: UUID) -> list[int]:
+        parts_dir = self.prose_dir(project_id, create=False) / "parts"
+        if not parts_dir.exists():
+            return []
+        return sorted(
+            int(child.name)
+            for child in parts_dir.iterdir()
+            if child.is_dir() and child.name.isdigit() and (child / "lesson.json").exists()
+        )
 
     def save_quality_notes(self, ledger: QualityNotesLedger) -> None:
         self._write_json(

@@ -9,6 +9,7 @@ from thesisound import tracing
 from thesisound.domain import (
     ClaimRecord,
     ClaimType,
+    DeliveryMode,
     EpisodePlan,
     EpisodeSegment,
     EvidenceItem,
@@ -30,6 +31,8 @@ from thesisound.pipeline import WorkspaceStore
 from thesisound.script import (
     GlossaryDraft,
     GlossaryTermDraft,
+    ProseLessonDraft,
+    ProseParagraphDraft,
     RevisedTurnDraft,
     ScriptQualityScore,
     ScriptTurnDraft,
@@ -39,6 +42,7 @@ from thesisound.script import (
 )
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.glossary_builder import GlossaryBuilderService
+from thesisound.services.persian_lesson_prose_writer import PersianLessonProseWriterService
 from thesisound.services.persian_script_writer import PersianScriptWriterService
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
@@ -201,6 +205,25 @@ class FakeScriptRunner:
                     unsupported_claim_ratio=0,
                     quality=quality,
                 )
+        elif output_type is ProseLessonDraft:
+            self.segment_calls += 1
+            segment = variables["segment"]
+            pack = variables["evidence_pack"]
+            assert isinstance(segment, dict)
+            assert isinstance(pack, dict)
+            if segment["segment_id"] in self.fail_segment_ids:
+                raise RuntimeError("simulated segment failure")
+            claim_id = segment["claim_ids"][0]
+            evidence_id = pack["evidence_items"][0]["evidence_id"]
+            output = ProseLessonDraft(
+                paragraphs=[
+                    ProseParagraphDraft(
+                        text_fa=_spoken("پاراگراف", 50),
+                        claim_ids=[claim_id],
+                        evidence_ids=[evidence_id],
+                    ),
+                ]
+            )
         elif output_type is TargetedRevisionDraft:
             targets = variables["target_turns"]
             assert isinstance(targets, list)
@@ -376,6 +399,7 @@ def _service(root: Path, runner: FakeScriptRunner) -> ScriptPipelineService:
         approval_store=EpisodePlanApprovalStore(root),
         glossary_builder=GlossaryBuilderService(runner),
         script_writer=PersianScriptWriterService(runner),
+        prose_writer=PersianLessonProseWriterService(runner),
         script_checker=ScriptChecker(words_per_minute=20),
         verifier=ScriptVerifierService(runner),
         reviser=TargetedScriptReviserService(runner),
@@ -421,6 +445,60 @@ def test_script_pipeline_revises_only_flagged_turn_and_verifies(tmp_path: Path) 
     assert decision is not None
     assert decision.accepted is True
     assert decision.delta is not None and decision.delta > 0
+
+
+def test_text_delivery_completes_without_audio_and_uses_prose_writer(tmp_path: Path) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    workspace = WorkspaceStore(root)
+    project = workspace.load_project(project_id)
+    project.delivery = DeliveryMode.TEXT
+    workspace.save_project(project)
+    _approve(root, project_id)
+    runner = FakeScriptRunner()
+
+    result = _service(root, runner).run(
+        project_id,
+        glossary_model="fake",
+        writer_model="fake",
+        verifier_model="fake",
+        reviser_model="fake",
+    )
+
+    project = workspace.load_project(project_id)
+    assert project.state == ProjectState.COMPLETE
+    assert result.script.turns
+    assert all(turn.speaker == "A" for turn in result.script.turns)
+
+
+def test_both_delivery_writes_a_prose_supplement_and_still_needs_audio(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "workspaces"
+    project_id, _, _ = _seed(root)
+    workspace = WorkspaceStore(root)
+    project = workspace.load_project(project_id)
+    project.delivery = DeliveryMode.BOTH
+    workspace.save_project(project)
+    _approve(root, project_id)
+    runner = FakeScriptRunner()
+
+    result = _service(root, runner).run(
+        project_id,
+        glossary_model="fake",
+        writer_model="fake",
+        verifier_model="fake",
+        reviser_model="fake",
+    )
+
+    project = workspace.load_project(project_id)
+    # Dialogue script is the primary, audio-gated product for `both`.
+    assert project.state == ProjectState.SCRIPT_VERIFIED
+    assert any(turn.speaker == "B" for turn in result.script.turns)
+    prose = ScriptArtifactStore(root).load_prose_script_optional(project_id)
+    assert prose is not None
+    assert prose.turns
+    assert all(turn.speaker == "A" for turn in prose.turns)
 
 
 def test_full_run_produces_a_span_per_stage_and_a_revision_cycle(
@@ -647,6 +725,27 @@ def test_script_turn_contract_rejects_substantive_turn_without_evidence() -> Non
             claim_ids=["clm-1"],
             evidence_ids=[],
         )
+
+
+def test_prose_paragraph_draft_rejects_substantive_paragraph_without_evidence() -> None:
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        ProseParagraphDraft(
+            text_fa="این یک جملهٔ محتوایی است.",
+            claim_ids=["clm-1"],
+            evidence_ids=[],
+        )
+
+
+def test_prose_paragraph_draft_allows_editorial_heading_without_grounding() -> None:
+    paragraph = ProseParagraphDraft(
+        text_fa="بخش نخست",
+        editorial_only=True,
+        heading_level=1,
+    )
+    assert paragraph.claim_ids == []
+    assert paragraph.heading_level == 1
 
 
 def _quality_score(value: float, feedback: str) -> ScriptQualityScore:

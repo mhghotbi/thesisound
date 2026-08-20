@@ -149,3 +149,41 @@ def test_unsupported_specifics_skips_editorial_only_turns() -> None:
         editorial_only=True,
     )
     assert _unsupported(report) == []
+
+
+def _single_speaker_report(*, single_speaker: bool):
+    source_id = uuid4()
+    project_id = uuid4()
+    turns = [
+        ScriptTurn(
+            turn_id=f"t{index}",
+            segment_id="seg-1",
+            speaker="A",
+            spoken_text_fa=f"جمله شمارهٔ {index} دربارهٔ همین مدعا.",
+            claim_ids=["claim-1"],
+            evidence_ids=["ev-1"],
+        )
+        for index in range(4)
+    ]
+    return ScriptChecker(words_per_minute=130).check(
+        project_id=project_id,
+        script=Script(title="متن", turns=turns),
+        episode_plan=_plan(),
+        evidence_packs=[_pack(source_id, "شاهد همین مدعا.")],
+        claims=[_claim()],
+        glossary=Glossary(project_id=project_id, model_run_id=uuid4()),
+        single_speaker=single_speaker,
+    )
+
+
+def test_more_than_three_consecutive_same_speaker_turns_is_flagged_by_default() -> None:
+    report = _single_speaker_report(single_speaker=False)
+    assert any(issue.issue_type == "speaker_pattern" for issue in report.issues)
+
+
+def test_single_speaker_delivery_skips_the_consecutive_speaker_check() -> None:
+    # `delivery == text` prose has every turn on speaker "A" by construction
+    # (services/persian_lesson_prose_writer.py) -- the dialogue-only
+    # consecutive-speaker floor would otherwise flag every such script.
+    report = _single_speaker_report(single_speaker=True)
+    assert not any(issue.issue_type == "speaker_pattern" for issue in report.issues)

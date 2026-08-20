@@ -116,6 +116,7 @@ class ScriptChecker:
         glossary: Glossary,
         speaker_balance_violations: dict[str, list[str]] | None = None,
         must_not_be_lost_review: MustNotBeLostReview | None = None,
+        single_speaker: bool = False,
     ) -> ScriptCheckReport:
         issues: list[ScriptCheckIssue] = []
         segment_by_id = {segment.segment_id: segment for segment in episode_plan.segments}
@@ -290,7 +291,7 @@ class ScriptChecker:
             else:
                 previous_speaker = turn.speaker
                 consecutive_speaker = 1
-            if consecutive_speaker > 3:
+            if not single_speaker and consecutive_speaker > 3:
                 issues.append(
                     ScriptCheckIssue(
                         turn_id=turn.turn_id,

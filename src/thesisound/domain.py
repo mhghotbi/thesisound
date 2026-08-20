@@ -472,6 +472,9 @@ class ScriptTurn(BaseModel):
     claim_ids: list[str] = Field(default_factory=list)
     evidence_ids: list[str] = Field(default_factory=list)
     editorial_only: bool = False
+    # Only meaningful for a `delivery == text` paragraph (speaker fixed to "A");
+    # 0 for ordinary dialogue turns. See services/persian_lesson_prose_writer.py.
+    heading_level: int = Field(default=0, ge=0, le=2)
 
     @model_validator(mode="after")
     def enforce_grounding(self) -> ScriptTurn:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from thesisound.domain import Project, ProjectState
+from thesisound.domain import DeliveryMode, Project, ProjectState
 from thesisound.web.error_messages import user_facing_error
 
 
@@ -68,6 +68,14 @@ _STEP_BY_STATE = {
 }
 
 
+def _state_label(project: Project) -> str:
+    # `delivery == text` reaches COMPLETE straight from SCRIPT_VERIFIED (no audio
+    # stage) and its written lesson is read, not listened to.
+    if project.state == ProjectState.COMPLETE and project.delivery == DeliveryMode.TEXT:
+        return "متن گفتار آمادهٔ خواندن است"
+    return _STATE_LABELS[project.state]
+
+
 def _read_model(
     project: Project,
     *,
@@ -84,7 +92,7 @@ def _read_model(
 ) -> ProjectReadModel:
     return ProjectReadModel(
         project=project,
-        state_label=_STATE_LABELS[project.state],
+        state_label=_state_label(project),
         attention_label=attention_label,
         primary_action_label=primary_action_label,
         primary_action_url=primary_action_url,
@@ -293,6 +301,18 @@ def build_project_read_model(
         )
 
     if project.state == ProjectState.COMPLETE:
+        if project.delivery == DeliveryMode.TEXT:
+            return _read_model(
+                project,
+                attention_label="گفتار آمادهٔ خواندن است",
+                primary_action_label="خواندن گفتار",
+                primary_action_url=f"/projects/{project_id}/lesson/1",
+                tone="success",
+                group_key="complete",
+                group_label="آمادهٔ خواندن",
+                requires_action=False,
+                overview_summary="نسخهٔ نوشتاری و مسیر ردیابی شاهدها آماده‌اند.",
+            )
         return _read_model(
             project,
             attention_label="گفتار آمادهٔ شنیدن است",

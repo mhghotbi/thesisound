@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "components.html" import error_notice, evidence_claim_groups %}
+{% block title %}نسخهٔ نوشتاری | مقال{% endblock %}
+{% block content %}
+<header class="page-heading page-heading--compact">
+  <div>
+    <p class="kicker">نسخهٔ نوشتاری · گفتار {{ part_index | fa_num }}{% if part_count > 1 %} از {{ part_count | fa_num }}{% endif %}</p>
+    <h1>{{ project_title(project) }}</h1>
+    <p>همین گفتار به‌جای صدا، به‌صورت یک درس نوشتاری خوانده می‌شود؛ ردیابی هر پاراگراف تا شاهد و منبع در همان‌جا در دسترس است.</p>
+  </div>
+</header>
+
+{% if error %}
+{{ error_notice(error) }}
+{% else %}
+
+<nav class="lesson-nav">
+  {% if part_index > 1 %}
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/lesson/{{ part_index - 1 }}">گفتار پیشین</a>
+  {% endif %}
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/lesson/{{ part_index }}/export.md">دریافت نسخهٔ Markdown</a>
+  {% if part_index < part_count %}
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}/lesson/{{ part_index + 1 }}">گفتار بعدی</a>
+  {% endif %}
+</nav>
+
+<article class="transcript-section lesson-text">
+  {% for item in paragraphs %}
+    {% set turn = item.turn %}
+    {% if turn.heading_level == 2 %}
+    <h2>{{ turn.spoken_text_fa }}</h2>
+    {% elif turn.heading_level == 1 %}
+    <h3>{{ turn.spoken_text_fa }}</h3>
+    {% else %}
+    <p class="lesson-text__paragraph">{{ turn.spoken_text_fa }}</p>
+    {% if not turn.editorial_only %}
+    {{ evidence_claim_groups(item.claim_groups, project.project_id, true, turn.turn_id) }}
+    {% endif %}
+    {% endif %}
+  {% endfor %}
+</article>
+
+{% endif %}
+{% endblock %}

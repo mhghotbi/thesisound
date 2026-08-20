@@ -64,6 +64,7 @@ from thesisound.web.corpus_runtime import create_corpus_builder, run_corpus_then
 from thesisound.web.episode_routes import register_episode_routes
 from thesisound.web.episode_runtime import create_episode_planner
 from thesisound.web.error_messages import user_facing_error
+from thesisound.web.lesson_routes import register_lesson_routes
 from thesisound.web.observability_routes import register_observability_routes
 from thesisound.web.read_models import build_project_read_model
 from thesisound.web.readiness_routes import register_readiness_routes
@@ -1158,6 +1159,13 @@ def create_app(
         login_redirect=_login_redirect,
         project_redirect=_project_redirect,
         ledger=observability_ledger,
+    )
+    register_lesson_routes(
+        app,
+        workspace=workspace,
+        render=render,
+        login_redirect=_login_redirect,
+        project_redirect=_project_redirect,
     )
 
     register_readiness_routes(
