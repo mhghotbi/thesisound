@@ -9,6 +9,8 @@ from thesisound.config import Settings
 from thesisound.domain import (
     ClaimRecord,
     ClaimType,
+    EpisodePlan,
+    EpisodeSegment,
     EvidenceExtraction,
     EvidenceItem,
     Locator,
@@ -23,8 +25,6 @@ from thesisound.domain import (
     SourceRole,
     SupportStatus,
     TopicType,
-    EpisodePlan,
-    EpisodeSegment,
 )
 from thesisound.pipeline import WorkspaceStore
 from thesisound.script import ScriptCheckReport, ScriptPipelineManifest, VerificationDraft
@@ -380,7 +380,9 @@ def test_source_file_pdf_inline_with_security_headers(tmp_path: Path) -> None:
     project = _project(source_id, state=ProjectState.SOURCES_COLLECTING)
     project.script = None
     workspace.save_project(project)
-    _write_upload(workspace, project.project_id, source_id, filename="book.pdf", content=b"%PDF-1.4")
+    _write_upload(
+        workspace, project.project_id, source_id, filename="book.pdf", content=b"%PDF-1.4"
+    )
     UiSourceManifestStore(workspace.project_dir(project.project_id)).save(
         [
             UiSourceManifest(
@@ -445,7 +447,7 @@ def test_source_file_non_pdf_forced_attachment(tmp_path: Path) -> None:
     assert response.status_code == 200
     assert "attachment" in response.headers.get("content-disposition", "")
     assert response.headers.get("x-content-type-options") == "nosniff"
-    assert "content-security-policy" not in {k.lower() for k in response.headers.keys()} or (
+    assert "content-security-policy" not in {k.lower() for k in response.headers} or (
         response.headers.get("content-security-policy") != "sandbox"
     )
 

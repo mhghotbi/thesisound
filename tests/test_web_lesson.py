@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from uuid import uuid4
 
 from fastapi.testclient import TestClient
+from test_web_report import _login, _settings
 
 from thesisound.domain import (
     DeliveryMode,
@@ -19,8 +19,6 @@ from thesisound.domain import (
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.web.app import create_app
-
-from test_web_report import _login, _settings
 
 
 def _project(*, delivery: DeliveryMode) -> Project:

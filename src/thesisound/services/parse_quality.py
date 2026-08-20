@@ -205,7 +205,10 @@ def assess_parse_quality(
     fragmentation = fragmentation_stats(inspection, non_empty)
     if fragmentation is not None:
         blocks_per_page, mean_chars = fragmentation
-        if blocks_per_page > _FRAGMENTATION_BLOCKS_PER_PAGE and mean_chars < _FRAGMENTATION_MEAN_CHARS:
+        if (
+            blocks_per_page > _FRAGMENTATION_BLOCKS_PER_PAGE
+            and mean_chars < _FRAGMENTATION_MEAN_CHARS
+        ):
             issues.append(
                 ParseIssue(
                     issue_type="other",
@@ -258,7 +261,11 @@ def reading_order_regression_ratio(blocks: list[ParsedBlock]) -> float:
     pages = [block.page_start for block in blocks if block.page_start is not None]
     if len(pages) < _READING_ORDER_MIN_LOCATED:
         return 0.0
-    regressions = sum(1 for previous, current in zip(pages, pages[1:]) if current < previous)
+    regressions = sum(
+        1
+        for previous, current in zip(pages, pages[1:], strict=False)
+        if current < previous
+    )
     transitions = len(pages) - 1
     return regressions / transitions if transitions else 0.0
 

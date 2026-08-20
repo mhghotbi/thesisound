@@ -21,7 +21,6 @@ from thesisound.audio import (
 from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.semantic_identity import first_mismatch
 
-
 _QA_IDENTITY_FIELDS = (
     "qa_version",
     "pass_threshold",

@@ -8,7 +8,6 @@ from thesisound.adapters.parsers.docling_adapter import DoclingParser, DocumentP
 from thesisound.ports import DocumentInspection, ParsedBlock, ParsedDocument
 from thesisound.services.document_ingestion import ingest_document
 
-
 _WORKER = "thesisound.adapters.parsers.docling_adapter"
 
 

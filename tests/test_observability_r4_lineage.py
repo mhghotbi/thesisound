@@ -11,11 +11,11 @@ from thesisound import tracing
 from thesisound.config import Settings
 from thesisound.modeling import ModelUsage
 from thesisound.observability import (
+    _MIGRATIONS,
     ModelCallSpec,
     ObservabilityLedger,
     PipelineRunSpec,
     ProviderMetadata,
-    _MIGRATIONS,
     ledger_from_settings,
 )
 from thesisound.services.lineage_events import (

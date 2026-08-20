@@ -34,7 +34,6 @@ from thesisound.services.script_reviser import TargetedScriptReviserService
 from thesisound.services.script_verifier import ScriptVerifierService
 from thesisound.source_analysis import SourceDocumentBlock
 
-
 _SOURCE_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 
 

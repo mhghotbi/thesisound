@@ -112,7 +112,8 @@ B1 = MetricDefinition(
            CAST(SUM(CASE WHEN name = 'auth.code_verified' THEN 1 ELSE 0 END) AS REAL)
              / NULLIF(SUM(CASE WHEN name = 'auth.code_requested' THEN 1 ELSE 0 END), 0) AS value,
            CAST(SUM(CASE WHEN name = 'auth.code_verified' THEN 1 ELSE 0 END) AS REAL) AS numerator,
-           CAST(SUM(CASE WHEN name = 'auth.code_requested' THEN 1 ELSE 0 END) AS REAL) AS denominator
+           CAST(SUM(CASE WHEN name = 'auth.code_requested' THEN 1 ELSE 0 END) AS REAL)
+             AS denominator
       FROM product_events
      WHERE name IN ('auth.code_requested', 'auth.code_verified') AND {_REAL}
      GROUP BY date(occurred_at)
@@ -144,7 +145,7 @@ B3 = MetricDefinition(
     grain="day",
     owner="product",
     caveat="Includes SMS delivery latency.",
-    sql=f"""
+    sql="""
     WITH paired AS (
       SELECT date(v.occurred_at) AS day,
              (julianday(v.occurred_at) - julianday(
@@ -162,7 +163,7 @@ B3 = MetricDefinition(
        WHERE v.name = 'auth.code_verified' AND v.is_synthetic = 0
          AND v.environment = 'production'
     )
-    SELECT day, '{{}}' AS dimension_json,
+    SELECT day, '{}' AS dimension_json,
            CAST(AVG(secs) AS REAL) AS value,
            NULL AS numerator, NULL AS denominator
       FROM paired
@@ -847,7 +848,10 @@ E13 = MetricDefinition(
     question="Median replans of the episode plan before script approval?",
     grain="day",
     owner="product",
-    caveat="Counts episode_planned → episode_planning stage transitions; AVG used as SQLite median proxy.",
+    caveat=(
+        "Counts episode_planned → episode_planning stage transitions; "
+        "AVG used as SQLite median proxy."
+    ),
     sql=f"""
     WITH replans AS (
       SELECT project_id, COUNT(*) AS n

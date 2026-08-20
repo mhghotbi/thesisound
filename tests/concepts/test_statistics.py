@@ -193,7 +193,10 @@ def test_needs_review_for_label_overlap_ratio_single_tier_oversize_and_disagreem
     stats = compute_statistics(
         concept_map,
         sections=[_section("s001", "b0001"), _section("s002", "b0002")],
-        block_texts={"b0001": "the author discusses labour in general", "b0002": "a later paragraph"},
+        block_texts={
+            "b0001": "the author discusses labour in general",
+            "b0002": "a later paragraph",
+        },
     )
     joined = " | ".join(stats.needs_review)
     assert "chapter detection disagreed" in joined
@@ -206,7 +209,10 @@ def test_needs_review_for_label_overlap_ratio_single_tier_oversize_and_disagreem
 
 
 def test_cells_sections_ratio_is_flagged_when_too_high() -> None:
-    cells = [_cell(f"ch00-c{n:03d}", section_ids=["s001"], block_ids=["b0001"], tier=n) for n in (1, 2, 3)]
+    cells = [
+        _cell(f"ch00-c{n:03d}", section_ids=["s001"], block_ids=["b0001"], tier=n)
+        for n in (1, 2, 3)
+    ]
     extra = [
         _cell("ch00-c004", section_ids=["s001"], block_ids=["b0001"], tier=2),
         _cell("ch00-c005", section_ids=["s001"], block_ids=["b0001"], tier=3),
@@ -217,7 +223,10 @@ def test_cells_sections_ratio_is_flagged_when_too_high() -> None:
         _map(cells + extra, chapters=[_chapter(0, block_ids=["b0001"])]),
         sections=[_section("s001", "b0001")],
     )
-    assert any("cells/sections ratio" in flag and "chapter 0" in flag for flag in stats.needs_review)
+    assert any(
+        "cells/sections ratio" in flag and "chapter 0" in flag
+        for flag in stats.needs_review
+    )
 
 
 def test_uncovered_section_is_critical() -> None:

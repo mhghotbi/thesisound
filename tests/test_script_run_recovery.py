@@ -22,8 +22,8 @@ from thesisound.script import (
     Glossary,
     RevisionDecision,
     ScriptPipelineManifest,
-    SegmentScriptDraft,
     ScriptTurnDraft,
+    SegmentScriptDraft,
 )
 from thesisound.services.plan_approval import EpisodePlanApprovalStore
 from thesisound.services.run_recovery import (

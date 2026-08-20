@@ -247,7 +247,12 @@ def test_script_pipeline_identity_change_clears_artifacts(
         reviser_model="m1",
         reviser_prompt_version=None,
     )
-    assert artifacts.prepare_for_pipeline(project.project_id, approval.plan_hash, identity_a) is False
+    assert (
+        artifacts.prepare_for_pipeline(
+            project.project_id, approval.plan_hash, identity_a
+        )
+        is False
+    )
     artifacts.save_segment_draft(
         project.project_id,
         "seg-1",

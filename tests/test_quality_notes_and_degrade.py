@@ -49,8 +49,8 @@ from thesisound.services.absorption_triggers import (
     count_degradation,
     evaluate_absorption_triggers,
 )
-from thesisound.services.evidence_extractor import _validate_claim_excerpt
 from thesisound.services.episode_planner import EpisodePlannerService, _validate_draft
+from thesisound.services.evidence_extractor import _validate_claim_excerpt
 from thesisound.services.model_retry import error_fingerprint
 from thesisound.services.quality_notes import (
     all_quality_note_kinds,

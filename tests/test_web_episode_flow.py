@@ -72,7 +72,7 @@ def _project(state: ProjectState, *, duration: int = 20) -> Project:
 
 
 def test_web_prepare_still_queues_when_planning_stalled(tmp_path: Path) -> None:
-    """Recovery: POST /episode/prepare still works when corpus is ready but planning never started."""
+    """POST /episode/prepare still works when corpus is ready but planning never started."""
     settings = _settings(tmp_path)
     workspace = WorkspaceStore(settings.workspace_root)
     project = _project(ProjectState.CORPUS_READY)

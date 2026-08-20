@@ -1,8 +1,9 @@
-from pathlib import Path
 import threading
 import time
+from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from thesisound import tracing
 from thesisound.audio import AsrTranscript
@@ -212,9 +213,11 @@ def test_tts_synthesis_runs_chunks_in_parallel(tmp_path: Path) -> None:
 
 def test_tts_workers_defaults_to_four_and_is_bounded() -> None:
     assert Settings(environment="test").tts_workers == 4
-    with pytest.raises(Exception):
+    # Naming the type matters: a bare Exception also passes on an import error or a
+    # typo in the keyword, so the bound would look enforced when it is not.
+    with pytest.raises(ValidationError):
         Settings(environment="test", tts_workers=0)
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         Settings(environment="test", tts_workers=17)
 
 

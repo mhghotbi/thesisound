@@ -16,6 +16,7 @@ from thesisound.product_metrics.events import (
     ProjectStageFailed,
     ProjectTransitionRejected,
 )
+
 ALLOWED_TRANSITIONS: dict[ProjectState, set[ProjectState]] = {
     ProjectState.DRAFT: {ProjectState.BRIEF_READY, ProjectState.FAILED_RETRYABLE},
     ProjectState.BRIEF_READY: {

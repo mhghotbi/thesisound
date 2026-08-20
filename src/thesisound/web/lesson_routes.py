@@ -12,7 +12,11 @@ from thesisound.domain import DeliveryMode, Project, Script
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.source_artifact_store import SourceArtifactStore
-from thesisound.web.evidence_views import claim_groups_for_ids, load_claim_index, load_evidence_index
+from thesisound.web.evidence_views import (
+    claim_groups_for_ids,
+    load_claim_index,
+    load_evidence_index,
+)
 
 Render = Callable[..., HTMLResponse]
 LoginRedirect = Callable[[Request], RedirectResponse | None]

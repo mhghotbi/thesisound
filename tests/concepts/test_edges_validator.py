@@ -142,7 +142,10 @@ class TestCycleDetection:
         assert [(edge.source_key, edge.target_key) for edge in draft.edges] == [
             ("ch00-c001", "ch00-c002")
         ]
-        assert any("break cycle" in warning and "ch00-c002→ch00-c001" in warning for warning in draft.warnings)
+        assert any(
+            "break cycle" in warning and "ch00-c002→ch00-c001" in warning
+            for warning in draft.warnings
+        )
 
     def test_three_cycle_is_repaired_on_final_attempt(self) -> None:
         draft = _draft(

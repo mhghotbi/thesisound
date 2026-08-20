@@ -36,7 +36,9 @@ class GroundingRemediationResult:
     substantive_turn_count: int
 
 
-def _provenance_evidence_ids(claim_ids: list[str], claim_by_id: dict[str, ClaimRecord]) -> list[str]:
+def _provenance_evidence_ids(
+    claim_ids: list[str], claim_by_id: dict[str, ClaimRecord]
+) -> list[str]:
     ordered: list[str] = []
     seen: set[str] = set()
     for claim_id in claim_ids:

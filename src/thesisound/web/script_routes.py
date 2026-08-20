@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.status import HTTP_303_SEE_OTHER
 
 from thesisound.domain import ProjectState
-from thesisound.pipeline import WorkspaceStore, transition
+from thesisound.pipeline import WorkspaceStore
 from thesisound.product_metrics import ProductEvent, emit
 from thesisound.product_metrics.events import (
     EpisodeEvidenceJudged,
@@ -17,11 +17,11 @@ from thesisound.product_metrics.events import (
     GateScriptApproved,
     GateScriptReviewRequested,
 )
+from thesisound.services.lineage_events import emit_review_decision
 from thesisound.services.plan_approval import (
     EpisodePlanApprovalStore,
     episode_plan_hash,
 )
-from thesisound.services.lineage_events import emit_review_decision
 from thesisound.services.runtime_preflight import RuntimePreflight
 from thesisound.services.script_artifact_store import ScriptArtifactStore
 from thesisound.services.script_review_decision import apply_script_review_decision

@@ -78,7 +78,10 @@ def load_evidence_index(
             continue
         status = "ok" if source_id in usable_set else "source_removed"
         for item in items:
-            if item.evidence_id in evidence_by_id and evidence_by_id[item.evidence_id]["status"] == "ok":
+            if (
+                item.evidence_id in evidence_by_id
+                and evidence_by_id[item.evidence_id]["status"] == "ok"
+            ):
                 continue
             row: dict[str, object] = {
                 "evidence_id": item.evidence_id,

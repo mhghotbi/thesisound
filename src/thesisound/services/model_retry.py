@@ -144,7 +144,10 @@ def decide_retry(
         return RetryDecision(should_retry=False, stop_reason="schema_retries_disabled")
 
     policy = stage_retry_policy(prompt_id)
-    if policy.max_contract_repairs is not None and contract_repairs_used >= policy.max_contract_repairs:
+    if (
+        policy.max_contract_repairs is not None
+        and contract_repairs_used >= policy.max_contract_repairs
+    ):
         return RetryDecision(should_retry=False, stop_reason="stage_policy")
 
     fingerprint = error_fingerprint(error)

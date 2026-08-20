@@ -436,7 +436,9 @@ class ScriptArtifactStore:
         except FileNotFoundError:
             return None
 
-    def append_quality_notes(self, project_id: UUID, notes: list[QualityNote]) -> QualityNotesLedger:
+    def append_quality_notes(
+        self, project_id: UUID, notes: list[QualityNote]
+    ) -> QualityNotesLedger:
         if not notes:
             existing = self.load_quality_notes_optional(project_id)
             return existing or QualityNotesLedger(project_id=project_id, notes=[])
@@ -448,7 +450,9 @@ class ScriptArtifactStore:
         self.save_quality_notes(merged)
         return merged
 
-    def replace_quality_notes(self, project_id: UUID, notes: list[QualityNote]) -> QualityNotesLedger:
+    def replace_quality_notes(
+        self, project_id: UUID, notes: list[QualityNote]
+    ) -> QualityNotesLedger:
         ledger = QualityNotesLedger(project_id=project_id, notes=list(notes))
         self.save_quality_notes(ledger)
         return ledger

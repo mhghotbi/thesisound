@@ -160,7 +160,9 @@ def test_ungrounded_provider_disconnect_falls_back_to_okian(tmp_path: Path) -> N
         settings.resolved_observability_artifact_root,
     )
     gemini_call_id = uuid4()
-    models = FakeModels(error=DisconnectException("Server disconnected without sending a response."))
+    models = FakeModels(
+        error=DisconnectException("Server disconnected without sending a response.")
+    )
     adapter = GeminiStructuredModel(
         client=FakeClient(models),
         settings=settings,
@@ -199,7 +201,9 @@ def test_ungrounded_provider_disconnect_falls_back_to_okian(tmp_path: Path) -> N
 
 def test_grounded_errors_do_not_fall_back_to_okian(tmp_path: Path) -> None:
     settings = _settings(tmp_path, with_okian=True)
-    models = FakeModels(error=DisconnectException("Server disconnected without sending a response."))
+    models = FakeModels(
+        error=DisconnectException("Server disconnected without sending a response.")
+    )
     adapter = GeminiStructuredModel(
         client=FakeClient(models),
         settings=settings,

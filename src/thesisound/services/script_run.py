@@ -14,14 +14,14 @@ from pydantic import BaseModel, Field
 from thesisound import tracing
 from thesisound.domain import ProjectState
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
-from thesisound.services.plan_approval import (
-    EpisodePlanApproval,
-    EpisodePlanApprovalStore,
-)
 from thesisound.services.absorption_triggers import (
     DegradationCounters,
     count_degradation,
     evaluate_absorption_triggers,
+)
+from thesisound.services.plan_approval import (
+    EpisodePlanApproval,
+    EpisodePlanApprovalStore,
 )
 from thesisound.services.run_recovery import (
     RunFailureClass,

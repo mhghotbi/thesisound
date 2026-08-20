@@ -118,7 +118,10 @@ def test_legacy_payload_without_more_claims_available_defaults_false() -> None:
     payload = {
         "source_id": str(_SOURCE_ID),
         "block_id": "blk-fixture-legacy",
-        "extraction": {"segment_function": "argument", "claims": [_claim(source_id=_SOURCE_ID, block_id="blk-fixture-legacy")]},
+        "extraction": {
+            "segment_function": "argument",
+            "claims": [_claim(source_id=_SOURCE_ID, block_id="blk-fixture-legacy")],
+        },
         "status": "extracted",
         "schema_version": CURRENT_EXTRACTION_SCHEMA_VERSION,
     }

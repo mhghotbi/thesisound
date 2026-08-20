@@ -116,7 +116,9 @@ def _check(
     return ScriptChecker(words_per_minute=130).check(
         project_id=project_id,
         script=Script(title="متن", turns=turns),
-        episode_plan=_plan(*(claim.claim_id for claim in claims) or ("claim-1",)),
+        # A generator is always truthy, so the previous `(...) or (...)` never
+        # reached its fallback. Build the tuple first so an empty claim set does.
+        episode_plan=_plan(*(tuple(claim.claim_id for claim in claims) or ("claim-1",))),
         evidence_packs=[pack],
         claims=claims,
         glossary=Glossary(project_id=project_id, model_run_id=uuid4()),
@@ -361,7 +363,6 @@ def test_locator_label_with_page_keeps_chapter() -> None:
 
 
 def test_claim_groups_two_claims_intersect_evidence() -> None:
-    source_id = uuid4()
     claims = {
         "c1": _claim("ev-1", claim_id="c1", text="مدعای یک"),
         "c2": _claim("ev-2", claim_id="c2", text="مدعای دو"),

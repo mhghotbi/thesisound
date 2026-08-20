@@ -7,8 +7,9 @@ locator. Nothing is invented.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from copy import deepcopy
-from typing import Any, Mapping
+from typing import Any
 
 from thesisound.domain import Locator
 
