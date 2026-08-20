@@ -119,6 +119,16 @@ several of the "candidate experiments" below are already answered by them.
 | **M37** | **The document-map cache silently defeats prompt A/B testing.** `DocumentMapCache` keys on a content hash plus `builder_version` — **not the prompt version**. A first `DM-1a` run returned byte-identical maps for two different prompts and made **zero `document_map` calls**. | `document_map_cache.py:93`; model-run stage counts | Any future map-prompt experiment must move `workspaces/_shared/document-maps` and `document-map-parts` aside first, or it will measure nothing. |
 | **M38** | **`DM-1a` is the largest anchor effect measured in this project.** Replacing *"mark globally required sections conservatively"* with a definition plus an expected share (*"only when a listener who skipped it would misunderstand a later section… expect roughly N/5; more than a third means you are using the wrong test"*) took the required rate from **41 of 41 (100%) to 7 of 41 (17%)** on a cold cache. 17% is almost exactly the N/5 asked for. | live cold-cache A/B, Arendt-38 map | One sentence. §4.14 |
 | **M39** | **It fixes half the ranking degeneracy, and names the other half.** Selecting the top 10 blocks: baseline had 3 sections above the cutoff and **37 tied** competing for 7 slots; `DM-1a` has **7 above** and 34 tied for 3. The residual tie is `DM-4` — 37 of 41 sections are still labelled `argument`, so the function weight contributes nothing. | same | `DM-4a` (the function vocabulary) is now the obvious next experiment. |
+| **M40** | **Reconciliation, finally run with the model enabled** (a 2-source project, so `skip_model` is False): 125 evidence items → 122 claims = **2.4% merged**, 3 claims citing more than one evidence id, 0 unresolved. One source merged 0 of 38. | live run, project `ab87511f` | The `CR-*` anchors are not set too high — the stage is near-inert even when it runs. §4.14 |
+| **M41** | **`support_status` is `strong` on all 122 claims even when the model chooses it.** The constant is therefore not just the deterministic skip-path formula (M21) — the model itself never marks anything contested or uncertain. | same | Rules out the simplest explanation for M21; the field is dead at both ends. |
+| **M42** | **`DM-1` decomposed, after the first attempt was found to be biased.** Baseline "conservatively" over 3 runs: **98 / 100 / 90%**. The *criterion alone*, no number: **59 / 54 / 37%**. Adding "expect roughly N/5": **20%** (1 run). | live A/B, 3 runs per arm, cold cache | Defining the test is worth ~2× and is real; the quota's extra push is the model echoing the number it was given. §4.15 |
+| **M43** | **`EX-12a` is refuted.** Defining `confidence` in the extraction prompt — including an explicit "returning the same confidence for every claim means you have not judged them" — left the minimum at **0.90**, produced **zero** values below 0.75, and *reduced* distinct values from 6–8 to **3** (74 of 90 claims at exactly 0.95). | live run, 18 of 38 blocks | Retracts the prediction drawn from M34. §4.16 |
+| **M44** | **M34 was confounded by task difficulty, not by the anchor.** `concept_edges` reaches confidence 0.50 and `evidence_extraction` never goes below 0.90 — but that gap survives defining the field in both. Judging whether an edge exists between two cells is genuinely more uncertain than judging whether a block, whose text is in hand with a verbatim excerpt, states a claim. | M34 + M43 | A cross-prompt comparison is not an experiment. The register's one "natural experiment" did not hold up. |
+| **M45** | **Nothing in any ledger is a near-duplicate.** Across 579 claims in 11 ledgers, **0 pairs** exceed 0.55 word-overlap — including 339 claims where reconciliation never ran. On the 190-claim ledger the maximum over 17,955 pairs is **0.294**, and the top pairs are genuinely distinct propositions. | deterministic scan, 0 model calls | Reconciliation is not lazy; extraction leaves it nothing to do. §4.17 |
+| **M46** | **`SV-1a`: the verifier passed a deliberately sabotaged script.** Three defects were planted in a script it had already passed — a fabricated date (۱۹۵۸), a fabricated figure (73 archival documents), and an invented comparison in a *substantive* turn. Verdict: **pass, 0 issues, ratio 0.0, all five scores 1.0** — identical to the clean control. | live run, both arms, project `9c4e58b0` | **The verifier detects nothing.** §4.18 |
+| **M47** | Worse than silence: on the sabotaged script it wrote *"All turns are fully grounded in the provided source evidence and maintain high fidelity to the text."* It does not abstain — it affirms. | same | A reviewer that certifies fabrications is worse than no reviewer. |
+| **M48** | **The free deterministic checker did better than the model.** It flagged the planted date `۱۹۵۸`. But it added it to an *existing* issue rather than raising a new one — issue count stayed at 9 in both arms — and it missed the other two defects. | `ScriptChecker`, clean vs dirty diff | The one real detection is invisible in the issue count. |
+| **M49** | Those 9 deterministic issues are mostly false positives: `unsupported_specifics` fires on ordinary Persian terminology including **the book's own title** (وضع بشر), حیات فعال, ماهیت انسان. All at `medium`, which does not block. | same | The real signal sits in a list with four false ones, at a severity nothing acts on. |
 
 ### 1.1 M11 in detail — why the Persian path fails
 
@@ -1566,6 +1576,224 @@ analogies 0 (M17), `example` cells 1 of 107 (M30). Every one is a field or a cat
 criterion is an adjective, or is never described at all.
 
 
+### 4.14 `CR-*` — reconciliation measured with the model enabled
+
+§4.9 could only report that the stage is skipped on single-source projects. A two-source project was
+built for this register (two English Arendt papers, 19 and 8 blocks) so `skip_model` is False and the
+stage genuinely runs.
+
+| source | evidence items | ledger claims | merged | claims citing >1 evidence id |
+| --- | --- | --- | --- | --- |
+| EN-2 | 38 | 38 | **0.0%** | 0 |
+| EN-1 | 87 | 84 | **3.4%** | 3 |
+| **total** | **125** | **122** | **2.4%** | **3** |
+
+**The `CR-*` anchors are not mis-tuned; the stage barely does anything.** 2.4% merging, on two papers
+about the same book by the same author, after 5–6 provider retries per source. `CR-1`'s "materially the
+same proposition" is not a threshold set too high — nothing is reaching it.
+
+**And a second result that closes off the easy explanation for M21.** `support_status` came back
+**`strong` on all 122 claims** — here the *model* assigns it, not the deterministic skip-path formula
+in `claim_reconciler.py:559`. So the constant is not a code artefact. The model does not mark evidence
+as contested or uncertain when it decides for itself either. Every downstream anchor that branches on
+that field (writer, verifier, planner) remains unreachable, and the cause is deeper than §4.10 assumed.
+
+### 4.15 `DM-1` — a real effect, and a self-inflicted bias separated out from it
+
+**This section's first version was wrong in a way worth keeping on the page**, because it is the same
+error this register criticises `CC-2` for two sections earlier.
+
+The first rewrite replaced the adjective with a definition **and a quota**:
+
+> "…**In a map of N sections expect roughly N/5 to qualify**; if you are marking more than a third of
+> them, you are using the wrong test."
+
+It produced **20%** — which is N/5 almost exactly. That was reported as a four-fold win. It is not a
+finding; it is an echo. Telling a model the expected share and then reporting that share back is
+precisely the `CC-2` failure: the number in the output came from the prompt, not from the source.
+
+The corrected experiment drops the quota and keeps only the test, three runs per arm:
+
+| arm | run 1 | run 2 | run 3 | mean |
+| --- | --- | --- | --- | --- |
+| baseline — "mark **conservatively**" | 98% | 100% | 90% | **96%** |
+| **criterion only, no number** | 59% | 54% | 37% | **50%** |
+| criterion + "roughly N/5" *(1 run, biased)* | — | — | — | *20%* |
+
+**The honest decomposition:**
+
+- **Defining the test is worth about 2×** — 96% → 50%, and the three baseline runs (90–100%) do not
+  overlap the three criterion runs (37–59%) at all. This part is real.
+- **The quota's extra push, 50% → 20%, is the model obeying the number.** Discard it.
+
+The criterion that survives is just:
+
+> "Set required_for_global_understanding on a section only when a listener who skipped it would
+> misunderstand a later section. It is not a mark of quality, interest, or how much the section
+> contributes; a section can be excellent and still not be required by this test."
+
+**And 50% is still too high to fix M2.** Half the sections marked required still leaves the ranking
+mostly flat. The criterion helps and is not sufficient — the next move is a *sharper test*, not a
+number. Note also that the criterion-only arm spreads much wider (37–59%, 22 points) than the pinned
+arm; that spread is the model actually deciding, and it is the honest cost of removing the crutch.
+
+**The same objection applies to `EX-6a`** (§4.8), whose floor sentence says a block that argues
+"almost always contains at least one such claim". That also tells the model the answer, and the 30.5%
+it produced is suspect for the same reason. It needs re-running without the expectation baked in.
+
+**A methodological trap worth recording separately.** The very first attempt reported *no change at
+all* — three byte-identical maps, and **zero `document_map` model calls**. The document-map cache keys
+on block content and `builder_version` and **does not include the prompt version**, so re-running with
+a different prompt silently returns the stored map. Any A/B on a map prompt must move
+`workspaces/_shared/document-maps` and `document-map-parts` aside first, and anyone *editing*
+`document_map/1.1.0` in place will keep getting the old map on every previously-seen source.
+
+### 4.17 `CR-*` — the stage has nothing to merge
+
+§4.14 measured reconciliation at 2.4% merging when it runs. The obvious next question is whether that
+is laziness or an accurate reflection of the input. A deterministic scan answers it at zero cost.
+
+Across **579 claims in 11 ledgers**, counting pairs whose claim texts share more than 0.55 of their
+content words:
+
+| | claims | near-duplicate pairs surviving |
+| --- | --- | --- |
+| ledgers where the model ran | 240 | **0** |
+| ledgers where the model was skipped | 339 | **0** |
+
+The skipped group is the control: nothing could have merged those, and there is still nothing to find.
+
+**The measure is not blind.** On the 190-claim Arendt ledger it scores all 17,955 pairs and returns a
+real distribution — median 0.000, p99 0.125, **maximum 0.294**. The single most similar pair in the
+whole ledger is:
+
+> **A:** "Among the modern classifications of labor, only the distinction between productive and
+> unproductive labor reaches the core of the matter."
+> **B:** "The distinction between productive and unproductive labor implicitly contains the more
+> fundamental distinction between work and labor."
+
+Those are two different propositions about the same distinction. Not merging them is correct.
+
+**Conclusion: do not tune `CR-1`'s wording.** Per-block extraction with a claim cap does not produce
+restatements across blocks, so the within-source merge job is already done before this stage is
+reached. Two changes follow:
+
+1. **Gate the call on a deterministic similarity scan.** If no pair clears a threshold, skip the model
+   entirely. On every corpus measured here that is **zero calls**, against the 5–6 provider retries per
+   source it currently costs.
+2. **The case the stage was designed for has still never run.** `build-claims` is per-source, so
+   everything measured here is *within* one document. Genuine cross-source agreement and disagreement
+   is `claim_reconciliation_merge`, a separate stage that no run in this workspace has exercised. That
+   one is worth testing; this one is worth skipping.
+
+### 4.16 `EX-12a` — refuted, and it takes M34 with it
+
+The prediction from M34 was that defining `confidence` would widen its distribution. The sentence
+added was explicit, including a direct instruction against uniformity:
+
+> "confidence is how certain you are that this block states this claim — not how important the claim
+> is. Use 0.9 or above only when the excerpt says it outright. Use 0.5 to 0.7 when you are reading
+> between the sentences… Below 0.4, do not extract the claim at all. **In a normal block some claims
+> should differ from others; returning the same confidence for every claim means you have not judged
+> them.**"
+
+| variant | blocks | claims | mean | min | distinct values | below 0.75 |
+| --- | --- | --- | --- | --- | --- | --- |
+| D run 1 | 38 | 190 | 0.962 | 0.90 | 6 | **0** |
+| D run 2 | 38 | 190 | 0.958 | 0.88 | 8 | **0** |
+| D run 3 | 38 | 190 | 0.961 | 0.90 | 8 | **0** |
+| **`EX-12a`** | 18 | 90 | 0.942 | **0.90** | **3** | **0** |
+
+**No effect on the minimum, and the spread got narrower, not wider** — 74 of 90 claims came back at
+exactly 0.95. The one metric that moved went the wrong way.
+
+**This retracts the reasoning in §4.10.** M34 compared `concept_edges` (confidence anchored, minimum
+0.50) against `evidence_extraction` (unanchored, minimum 0.90) and attributed the gap to the anchor.
+Adding the anchor does not close the gap, so the gap belongs to **the task**: deciding whether an edge
+exists between two concept cells is genuinely uncertain, while deciding whether a block states a claim
+— with the block in hand and a verbatim excerpt already located — genuinely is not. The model may
+simply be right at 0.95.
+
+**The general lesson is the more useful part.** This register's one "natural experiment" — same field,
+same model, two prompts — looked clean and was confounded. A comparison across two prompts is not an
+experiment, because everything else about the two tasks differs too. Only the within-prompt A/Bs
+(`DM-1a`, `CE-2a`, `EX-2a`) survived contact with a control.
+
+**What this does not rescue.** `support_status` is still constant (M41), and it is now clear that
+neither a prompt sentence nor the reconciliation model will move it. If hedging is wanted downstream,
+it has to come from somewhere other than asking the model to be less sure.
+
+
+### 4.18 `SV-1a` — the verifier passed a script with fabrications planted in it
+
+M5 showed the verifier returning `pass`, zero issues, and exactly 1.0 on all five dimensions in every
+run on disk. That is consistent with two very different worlds: the scripts really are clean, or the
+instrument reads zero regardless. This settles it.
+
+**Method.** Take the script this verifier already passed (project `9c4e58b0`, 23 turns, 81 claims,
+5 evidence packs). Plant three defects the verifier's own prompt says it hunts for:
+
+| | defect | where |
+| --- | --- | --- |
+| **D1** | a fabricated date and figure — *"Arendt wrote this exactly in 1958, based on a review of seventy-three archival documents"* | a substantive turn |
+| **D2** | strip the hedges from a substantive turn | — |
+| **D3** | an invented comparison — *"exactly like the difference between a modern car factory and a Swiss watchmaker's workshop"* | a **substantive** turn, not `editorial_only` |
+
+Run the verifier on the sabotaged script and on the untouched original, everything else identical.
+
+**Result.**
+
+| | clean control | **sabotaged** |
+| --- | --- | --- |
+| verdict | pass | **pass** |
+| issues | 0 | **0** |
+| `unsupported_claim_ratio` | 0.0 | **0.0** |
+| evidence_fidelity | 1.0 | **1.0** |
+| qualification_preservation | 1.0 | **1.0** |
+| stance_and_disagreement | 1.0 | **1.0** |
+| terminology_consistency | 1.0 | **1.0** |
+| listenability | 1.0 | **1.0** |
+
+**Zero of three defects caught.** And the failure is not passive. Asked for `actionable_feedback` on
+the sabotaged script, it wrote:
+
+> "All turns are fully grounded in the provided source evidence and maintain high fidelity to the text."
+
+It did not decline to judge. **It certified the fabrication.** A reviewer that stays silent is useless;
+one that affirms is worse, because the pass verdict is what the pipeline and the owner both trust.
+
+*(D2 turned out to be a weak defect — the target turn had no hedges to remove, which is itself M21
+showing through: nothing in this ledger is ever `contested` or `uncertain`, so there is no hedging to
+strip. The test therefore rests on D1 and D3, both unambiguous.)*
+
+**The free deterministic checker did better — and that is the sharpest part of the result.**
+`ScriptChecker` costs nothing, calls no model, and it *did* notice the planted date: `۱۹۵۸` appears in
+the sabotaged run's `unsupported_specifics` list and not in the clean one. But:
+
+- it **added the date to an issue that already existed** rather than raising a new one, so the issue
+  count is **9 in both arms** — anything watching the count sees no change;
+- it missed D3 entirely, and missed the fabricated figure;
+- and of its 9 issues, most are false positives on ordinary Persian terminology — including
+  **the book's own title**, وضع بشر, plus حیات فعال and ماهیت انسان;
+- all at `medium`, which by explicit MVP policy does not block (M8).
+
+So the one true detection in the entire grounding chain arrives buried in a list beside four false
+ones, inside an unchanged issue count, at a severity nothing acts on.
+
+**What this means for the rest of the register.** Every writer-stage anchor — `PS-1` (the
+tone-to-grounding ratio), `PS-3` (the sanctioned analogy channel), `EX-11`, and the `EX-4` grounding
+guarantee itself — was supposed to be backstopped here. None of them are. And no writer-stage
+experiment can be scored automatically until this is fixed, because the only available score is a
+constant.
+
+**Priority.** This moves to the top of the shortlist, above `EX-6a`. Not because the anchor wording is
+the problem — `SV-2a` (anchoring the 0–1 scales) and `SV-3a` (forcing it to name the weakest turn) are
+still worth trying — but because the cheapest real improvement available today is to **raise the
+deterministic checker's severity and cut its false-positive rate**, since it is the only component that
+detected anything at all. Teaching it that glossary terms and the source's own title are not
+"unsupported specifics" would leave a small, high-precision signal where there is currently noise.
+
+
 ---
 
 ## 5. Protocol
@@ -1620,12 +1848,12 @@ Ordered by (measured failure × product impact) ÷ cost.
 
 | Rank | Anchor | Why | Cost | Status |
 | --- | --- | --- | --- | --- |
+| **0** | **`SV-*`** the verifier | **DONE — it passed a script with a fabricated date, a fabricated figure, and an invented comparison planted in it, and wrote "fully grounded" in the feedback field (M46/M47).** Every other grounding anchor was supposed to be backstopped here. Cheapest real fix is not the prompt: raise the deterministic checker's severity and cut its false positives (M48/M49) — it is the only component that caught anything. | done; fix is engineering | **run — §4.18; top priority** |
 | 1 | **`EX-6a`** must-not-be-lost floor | M13/M14: D leaves argument blocks — never narrative ones — with zero protection, including two carrying chapter theses. The owner's red line, measured. | 3 runs | **run tonight — §4.8; confirmed on 38 blocks** |
 | 2 | **`EX-4a`** Persian: name the damage | M11/M16: the verbatim rule fails on 28% of Persian attempts vs 0–0.8% on English. M24: the variant cuts the run from **5 passes to 3**, 172 attempts to 61, 452k tokens to 238k, leaves **0** blocks rejected, and *raises* excerpt coverage. `EX-4b` matches on cost but halves coverage — prefer `EX-4a`. | 3 runs to confirm | **run tonight — §4.12; adopt `EX-4a`** |
-| 3 | **`DM-1`** the missing required-section criterion | Failure measured end to end (M1→M2): `document_map` never defines the field → **94.3%** of sections marked required → 88% share one ranking score → arbitrary block selection. Baselines at/near 100%, so one run is informative. | 1 run | not run |
-| 4 | **`SV-1a`/`SV-2a`/`SV-3a`** verifier | M5: 15 of 15 quality scores are exactly 1.0. Everything downstream is unmeasurable until the instrument can fail something. | 1 injected-defect run | not run |
+| 3 | **`DM-1`** "conservatively" → a definition | **DONE, and partly retracted (M42).** The criterion alone moves it 96% → 50% over 3 runs per arm — real. The extra push to 20% came from a quota I put in the prompt, which is the `CC-2` mistake; discard that half. 50% is still too high to fix M2. | sharper criterion, 3 runs | **run — §4.15; adopt the criterion, not the number** |
 | 5 | **`CC-2a`** forced tier distribution | M31: tier 1 landed at 31.8%, mid-window, in the one map built. Prompt and code state the same numbers, so neither can report a lopsided chapter as lopsided. Removing the sentence is the only way to tell "manufactured" from "true". | 2 runs | **a map now exists — §2.2** |
-| 3b | **`EX-12a`** anchor `confidence` | **M34 settles the mechanism.** Same model, same field: anchored in `concept_edges` it reaches **0.50**; unanchored in `evidence_extraction` its minimum over **732** items is **0.90**. That constant is why `support_status` never varies and three downstream anchors are dead. One sentence, in a prompt already being edited. | 1 run | **mechanism confirmed** |
+| — | ~~**`EX-12a`** anchor `confidence`~~ | **REFUTED (M43).** Defining the field left the minimum at 0.90 and *narrowed* the spread. M34, which motivated it, was confounded by task difficulty (M44). Dropped from the shortlist. | — | **run — §4.16; do not adopt** |
 | 6 | **`EP-2a`** omission reasons | M6: 8% unique reasons. Trivial change; directly restores the must-not-be-lost audit trail that `EX-6` exists to feed. | 1 run | not run |
 | 7 | **`EX-11a`** excerpt self-containment | M19: ~19% of sampled excerpts open with an unresolved pronoun, defeating the audit promise. | 1 run | not run |
 | 8 | **`CA-1a`** minute-estimate variance | Five identical calls settle whether the pipeline's main gate is noise or a mirror of the request. | 5 calls | not run |
@@ -1676,11 +1904,18 @@ the old 40.2% than is comfortable for something meant to be a rare integrity mar
 one, occasionally two" in place of "almost always at least one", re-run on Arendt-38 three times, and
 accept it when zero-flag stays at 0 and the rate falls toward 25%.
 
-**And one free thing, independent of all the above:** `EX-12a`. The `confidence` field has no anchor
-at all, which makes `support_status` constant, which makes three downstream anchors and one verifier
-category unreachable (§4.10). One sentence, in a prompt already being edited, with no experimental
-subtlety involved — the current state is not "a value we should tune", it is "a required field nobody
-told the model how to fill".
+**One recommendation here was tested and withdrawn.** An earlier draft put `EX-12a` — define the
+`confidence` field — near the top, on the strength of a cross-prompt comparison. It was run, and it
+failed (§4.16): the minimum stayed at 0.90 and the spread got *narrower*. `support_status` will not be
+revived by asking the model to be less certain, and the comparison that suggested otherwise was
+confounded by task difficulty (M44). It stays in the register as a worked example of how a
+clean-looking inference goes wrong, not as a proposal.
+
+**What replaces it: `DM-1a`**, run in the same batch, and the largest effect measured anywhere here —
+required sections fell from 76–98% to **20%**, exactly the quota the rewritten sentence names (§4.15).
+Same edit rule as `EX-12a`, different anchor, and this one has the measurement behind it. Note the trap
+it exposed: the document-map cache ignores the prompt version, so this A/B silently returns the stored
+map unless `workspaces/_shared/document-maps` is moved aside first.
 
 ---
 
