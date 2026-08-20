@@ -389,20 +389,6 @@ class ClaimRecord(BaseModel):
         return self
 
 
-class CoverageItem(BaseModel):
-    subquestion: str
-    status: Literal["well_covered", "partially_covered", "not_covered"]
-    claim_ids: list[str] = Field(default_factory=list)
-    missing_source_roles: list[SourceRole] = Field(default_factory=list)
-    risk_if_ignored: str | None = None
-
-
-class CoverageReport(BaseModel):
-    coverage: list[CoverageItem]
-    requires_more_research: bool = False
-    material_gaps: list[str] = Field(default_factory=list)
-
-
 class EpisodeSegment(BaseModel):
     segment_id: str
     title: str

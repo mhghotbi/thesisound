@@ -7,6 +7,8 @@ from uuid import UUID
 from pydantic import BaseModel, Field, model_validator
 
 from thesisound.domain import (
+    BRIEF_DURATION_MINUTES_MAX,
+    BRIEF_DURATION_MINUTES_MIN,
     ClaimRecord,
     ClaimType,
     EvidenceExtraction,
@@ -59,13 +61,14 @@ class BlockBuildReport(BaseModel):
 
 class AnalysisProfile(BaseModel):
     depth: AnalysisDepth
-    target_duration_minutes: int = Field(ge=5, le=120)
+    target_duration_minutes: int = Field(
+        ge=BRIEF_DURATION_MINUTES_MIN, le=BRIEF_DURATION_MINUTES_MAX
+    )
     block_coverage_target: float = Field(ge=0, le=1)
     evidence_input_token_budget: int = Field(ge=1)
     max_claims_per_block: int = Field(ge=1, le=12)
     neighbor_context_blocks: int = Field(ge=0, le=2)
     include_examples: bool
-    include_objections_and_responses: bool
     second_pass_for_core_sections: bool
     rationale: list[str] = Field(default_factory=list)
 
@@ -174,7 +177,6 @@ class EvidenceClaimDraft(BaseModel):
     must_not_be_lost: bool = False
     term: str | None = None
     contrast: tuple[str, str] | None = None
-    responds_to_excerpt: str | None = None
 
 
 class EvidenceExtractionDraft(BaseModel):

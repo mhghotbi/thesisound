@@ -11,7 +11,12 @@ from pydantic import BaseModel, Field
 
 from thesisound import tracing
 from thesisound.config import Settings
-from thesisound.domain import LessonIntent, ProjectState
+from thesisound.domain import (
+    BRIEF_DURATION_MINUTES_MAX,
+    BRIEF_DURATION_MINUTES_MIN,
+    LessonIntent,
+    ProjectState,
+)
 from thesisound.pipeline import WorkspaceStore, mark_failed, transition
 from thesisound.product_metrics import ProductEvent, emit
 from thesisound.product_metrics.emit import classify_gate_reason
@@ -45,7 +50,9 @@ class EpisodePlanningRun(BaseModel):
     project_id: UUID
     status: EpisodePlanningStatus = "queued"
     stage: EpisodePlanningStage = "queued"
-    target_duration_minutes: int = Field(ge=5, le=120)
+    target_duration_minutes: int = Field(
+        ge=BRIEF_DURATION_MINUTES_MIN, le=BRIEF_DURATION_MINUTES_MAX
+    )
     max_supported_minutes: int | None = Field(default=None, ge=0, le=120)
     effective_supported_minutes: float | None = Field(default=None, ge=0, le=120)
     coverage_recommendation: str | None = None
@@ -238,8 +245,11 @@ class EpisodePlanningRunService:
             )
         if project.brief is None:
             raise ValueError("ResearchBrief is required before episode planning.")
-        if not 5 <= duration_minutes <= 120:
-            raise ValueError("Duration must be between 5 and 120 minutes.")
+        if not BRIEF_DURATION_MINUTES_MIN <= duration_minutes <= BRIEF_DURATION_MINUTES_MAX:
+            raise ValueError(
+                f"Duration must be between {BRIEF_DURATION_MINUTES_MIN} and "
+                f"{BRIEF_DURATION_MINUTES_MAX} minutes."
+            )
         supported = previous.supported_duration_minutes
         if supported is not None and duration_minutes > supported:
             raise ValueError("The selected duration is still longer than the supported corpus.")

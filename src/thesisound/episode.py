@@ -7,6 +7,8 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from thesisound.domain import (
+    BRIEF_DURATION_MINUTES_MAX,
+    BRIEF_DURATION_MINUTES_MIN,
     ClaimRecord,
     DeliberatelyOmittedClaim,
     EvidenceItem,
@@ -68,7 +70,9 @@ class ClaimPriorityRecord(BaseModel):
 
 class ClaimPriorityReport(BaseModel):
     project_id: UUID
-    target_duration_minutes: int = Field(ge=5, le=120)
+    target_duration_minutes: int = Field(
+        ge=BRIEF_DURATION_MINUTES_MIN, le=BRIEF_DURATION_MINUTES_MAX
+    )
     priorities: list[ClaimPriorityRecord] = Field(default_factory=list)
     available_content_seconds: int = Field(ge=0)
     estimated_selected_seconds: int = Field(ge=0)
@@ -162,7 +166,9 @@ class DisagreementGraph(BaseModel):
 
 class EpisodeBudgetReport(BaseModel):
     project_id: UUID
-    target_duration_minutes: int = Field(ge=5, le=120)
+    target_duration_minutes: int = Field(
+        ge=BRIEF_DURATION_MINUTES_MIN, le=BRIEF_DURATION_MINUTES_MAX
+    )
     words_per_minute: int = Field(ge=80, le=220)
     available_claim_seconds: int = Field(ge=0)
     original_evidence_tokens: int = Field(ge=0)

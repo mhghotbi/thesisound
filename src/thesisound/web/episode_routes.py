@@ -8,7 +8,11 @@ from fastapi import BackgroundTasks, FastAPI, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.status import HTTP_303_SEE_OTHER
 
-from thesisound.domain import ProjectState
+from thesisound.domain import (
+    BRIEF_DURATION_MINUTES_MAX,
+    BRIEF_DURATION_MINUTES_MIN,
+    ProjectState,
+)
 from thesisound.pipeline import WorkspaceStore
 from thesisound.product_metrics import ProductEvent, emit
 from thesisound.product_metrics.events import PlanOmittedListOpened, PlanReviewed
@@ -159,7 +163,9 @@ def register_episode_routes(
     def duration_cost(
         request: Request,
         project_id: UUID,
-        minutes: Annotated[int, Query(ge=5, le=120)],
+        minutes: Annotated[
+            int, Query(ge=BRIEF_DURATION_MINUTES_MIN, le=BRIEF_DURATION_MINUTES_MAX)
+        ],
     ) -> Response:
         if redirect := login_redirect(request):
             return redirect
