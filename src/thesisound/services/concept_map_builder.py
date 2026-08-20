@@ -394,6 +394,47 @@ def _sections_for_chapters(
     return selected
 
 
+def _remap_block_ids(
+    concept_map: SourceConceptMap,
+    blocks: Sequence[SourceDocumentBlock],
+) -> SourceConceptMap:
+    """Retarget a cached map's block references onto this source's own block_ids.
+
+    The shared cache keys on `block_sequence_key` (text + heading path only,
+    `10b` B1.3) precisely so a map can be reused across different projects and
+    source ids for identical content -- but `block_id` itself embeds the
+    building source_id (`block_builder._block_id`: ``blk-{source_id[:8]}-
+    {index:05d}-{digest}``). Without this, a cache hit under a different
+    source_id returns cells whose `block_ids` match nothing in the current
+    source, and cell-seeded extraction (`10c` P3 Step 4) silently selects zero
+    blocks. The `{index:05d}-{digest}` suffix is source_id-independent and
+    identical for the same content built in the same order, so it is the
+    stable join key back to this run's real block_ids.
+    """
+
+    new_id_by_suffix = {
+        block.block_id.split("-", 2)[2]: block.block_id
+        for block in blocks
+        if block.block_id.count("-") >= 2
+    }
+
+    def remap(block_id: str) -> str:
+        parts = block_id.split("-", 2)
+        if len(parts) != 3:
+            return block_id
+        return new_id_by_suffix.get(parts[2], block_id)
+
+    chapters = [
+        chapter.model_copy(update={"block_ids": [remap(b) for b in chapter.block_ids]})
+        for chapter in concept_map.chapters
+    ]
+    cells = [
+        cell.model_copy(update={"block_ids": [remap(b) for b in cell.block_ids]})
+        for cell in concept_map.cells
+    ]
+    return concept_map.model_copy(update={"chapters": chapters, "cells": cells})
+
+
 class ConceptMapBuilder:
     """Run Pass 0–5 with shared cache, per-chapter sub-entries, and resume."""
 
@@ -435,7 +476,7 @@ class ConceptMapBuilder:
         )
         if cached is not None:
             self._clear_partial(project_id, source_id)
-            return cached
+            return _remap_block_ids(cached, blocks)
 
         chapters = detect_chapters(blocks, parsed_document)
         if chapter_indexes is not None:

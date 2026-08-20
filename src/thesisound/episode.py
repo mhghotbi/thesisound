@@ -118,14 +118,17 @@ class RetrievalHit(BaseModel):
 
 class SegmentEvidencePack(BaseModel):
     segment_id: str = Field(min_length=1)
-    claim_ids: list[str] = Field(min_length=1)
+    # No `min_length=1` on claim_ids/evidence_items/original_blocks: the
+    # deterministic `source_coverage` skeleton's trailing recap segment
+    # (`10b` B1.6) is editorial-only and legitimately grounds nothing.
+    claim_ids: list[str] = Field(default_factory=list)
     claims: list[ClaimRecord] = Field(default_factory=list)
-    evidence_items: list[EvidenceItem] = Field(min_length=1)
-    original_blocks: list[SourceDocumentBlock] = Field(min_length=1)
+    evidence_items: list[EvidenceItem] = Field(default_factory=list)
+    original_blocks: list[SourceDocumentBlock] = Field(default_factory=list)
     context_blocks: list[SourceDocumentBlock] = Field(default_factory=list)
     retrieval_hits: list[RetrievalHit] = Field(default_factory=list)
     token_budget: int = Field(ge=1)
-    actual_tokens: int = Field(ge=1)
+    actual_tokens: int = Field(ge=0)
     warnings: list[str] = Field(default_factory=list)
 
 

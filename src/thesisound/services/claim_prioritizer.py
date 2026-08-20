@@ -27,6 +27,15 @@ _BASE_TYPE_SCORE = {
     ClaimType.COUNTERARGUMENT: 10,
     ClaimType.HISTORICAL_CONTEXT: 7,
     ClaimType.EDITORIAL_EXPLANATION: 0,
+    # Extraction 2.0 (10c P2 Step 1) claim types, missing here since that
+    # step shipped -- every claim of one of these types crashed `_score`
+    # with a KeyError (found for real at checkpoint C-D, 2026-08-20: any
+    # extracted `definition` claim reached this lookup and failed).
+    # Definitions/distinctions are prerequisite scaffolding a segment often
+    # cannot be understood without; examples are illustrative and expendable.
+    ClaimType.DEFINITION: 16,
+    ClaimType.DISTINCTION: 16,
+    ClaimType.EXAMPLE: 6,
 }
 
 
