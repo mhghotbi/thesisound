@@ -49,6 +49,9 @@ class CachedPartitionSection(BaseModel):
 class CachedDocumentMapPart(BaseModel):
     content_key: str
     builder_version: int = 1
+    # Empty on entries written before prompt fingerprinting; `load` treats that as
+    # a miss rather than trusting a draft whose prompt cannot be identified.
+    prompt_fingerprint: str = ""
     block_count: int = Field(ge=1)
     working_thesis: str | None = None
     sections: list[CachedPartitionSection] = Field(default_factory=list)
@@ -77,6 +80,8 @@ class DocumentMapPartCache:
         self,
         content_key: str,
         blocks: list[SourceDocumentBlock],
+        *,
+        prompt_fingerprint: str,
     ) -> DocumentMapDraft | None:
         """Rebuild a stored partition draft, or return None to map from scratch.
 
@@ -95,6 +100,8 @@ class DocumentMapPartCache:
         if cached.content_key != content_key:
             return None
         if cached.builder_version != PART_BUILDER_VERSION:
+            return None
+        if cached.prompt_fingerprint != prompt_fingerprint:
             return None
         if cached.block_count != len(blocks):
             return None
@@ -129,6 +136,8 @@ class DocumentMapPartCache:
         content_key: str,
         blocks: list[SourceDocumentBlock],
         draft: DocumentMapDraft,
+        *,
+        prompt_fingerprint: str,
     ) -> Path | None:
         if not blocks:
             return None
@@ -159,6 +168,7 @@ class DocumentMapPartCache:
         cached = CachedDocumentMapPart(
             content_key=content_key,
             builder_version=PART_BUILDER_VERSION,
+            prompt_fingerprint=prompt_fingerprint,
             block_count=len(blocks),
             working_thesis=draft.working_thesis,
             sections=sections,

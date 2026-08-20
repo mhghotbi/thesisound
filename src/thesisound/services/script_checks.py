@@ -65,6 +65,10 @@ _SPEAKER_B_SUBSTANTIVE_MIN_RATIO = 0.25
 _FILLER_RATE_HIGH = 0.20
 _TRIGRAM_JACCARD_HIGH = 0.6
 _OPENING_TOKEN_COUNT = 4
+# A quoted span shorter than this is terminology, not a citation. Digits, years
+# and Latin names are checked regardless of length -- a fabricated date is a
+# date whether or not anyone put quotes around it.
+_QUOTED_SPAN_MIN_WORDS = 4
 _DROPPED_CONTENT_HIGH_RATIO = 0.25
 
 
@@ -119,6 +123,7 @@ class ScriptChecker:
         single_speaker: bool = False,
     ) -> ScriptCheckReport:
         issues: list[ScriptCheckIssue] = []
+        glossary_forms = _glossary_forms(glossary)
         segment_by_id = {segment.segment_id: segment for segment in episode_plan.segments}
         pack_by_segment = {pack.segment_id: pack for pack in evidence_packs}
         claim_by_id = {claim.claim_id: claim for claim in claims}
@@ -241,7 +246,9 @@ class ScriptChecker:
                     )
                 )
             if not turn.editorial_only:
-                issues.extend(_unsupported_specifics_issues(turn, pack))
+                issues.extend(
+                    _unsupported_specifics_issues(turn, pack, glossary_forms)
+                )
 
             normalized = _normalize_spoken(turn.spoken_text_fa)
             tokens = _tokens(normalized)
@@ -569,10 +576,18 @@ def _specifics_in_spoken(text: str) -> list[str]:
         add(match.group(0))
     for match in _LATIN_CAPITALISED.finditer(text):
         add(match.group(0))
+    # Persian guillemets mark terminology as often as quotation -- «حیات فعال» is a
+    # term, «...» around a sentence is a quotation. Only the second kind can be a
+    # fabricated citation, and length is what separates them: a term is a noun
+    # phrase, a quotation is a clause. Below the threshold the check cannot tell a
+    # coined term from a coined quote, so it says nothing rather than crying wolf on
+    # every turn -- which is what made its real hits invisible.
     for span in _GUILLEMET_SPAN.findall(text):
-        add(span)
+        if len(span.split()) >= _QUOTED_SPAN_MIN_WORDS:
+            add(span)
     for span in _ASCII_QUOTE_SPAN.findall(_ascii_double_quoted(text)):
-        add(span)
+        if len(span.split()) >= _QUOTED_SPAN_MIN_WORDS:
+            add(span)
     return ordered
 
 
@@ -589,15 +604,43 @@ def _pack_specifics_haystack(turn: ScriptTurn, pack: SegmentEvidencePack) -> str
     return normalize_for_match(joined)[0]
 
 
+def _glossary_forms(glossary: Glossary) -> set[str]:
+    """Every agreed spoken form of a glossary term, normalised for matching.
+
+    Persian writes quotations and terminology alike in guillemets, so a term the
+    glossary itself defines -- often the source's own title -- reads to the specifics
+    check as an unattributed quotation. Those hits are not findings: the term is
+    agreed vocabulary, and flagging it on every turn buries the fabricated date or
+    name the check exists to catch.
+    """
+
+    forms: set[str] = set()
+    for term in glossary.terms:
+        for value in (
+            term.source_term,
+            term.preferred_persian,
+            term.first_use_form,
+            term.subsequent_use_form,
+        ):
+            needle, _ = normalize_for_match(value or "")
+            if needle:
+                forms.add(needle)
+    return forms
+
+
 def _unsupported_specifics_issues(
     turn: ScriptTurn,
     pack: SegmentEvidencePack,
+    glossary_forms: set[str] | None = None,
 ) -> list[ScriptCheckIssue]:
     haystack = _pack_specifics_haystack(turn, pack)
+    known = glossary_forms or set()
     offending: list[str] = []
     for token in _specifics_in_spoken(turn.spoken_text_fa):
         needle, _ = normalize_for_match(token)
-        if needle and needle not in haystack:
+        if not needle or needle in known:
+            continue
+        if needle not in haystack:
             offending.append(token)
     if not offending:
         return []

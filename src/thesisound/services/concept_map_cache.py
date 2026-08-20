@@ -54,11 +54,27 @@ def chapter_hash(chapter: SourceChapter, blocks: Sequence[SourceDocumentBlock]) 
     )
 
 
+_PATH_DIGEST_CHARS = 24
+"""How much of a digest names a file on disk.
+
+Two full sha256 digests spend 134 characters on the nested chapter path alone,
+which pushed the whole path past the Windows 260-character limit under a pytest
+temporary directory and made every chapter write fail there. The stored value
+still has to be a full digest -- callers are validated below -- but 96 bits is far
+more identity than a per-machine cache of books needs to stay collision-free.
+"""
+
+
+def _path_name(digest: str) -> str:
+    return digest[:_PATH_DIGEST_CHARS]
+
+
 class ConceptMapCache:
     """Share the expensive concept map between uploads of the same book.
 
     Source-level path: ``_shared/concept-maps/<fingerprint>.json``.
-    Per-chapter path: ``_shared/concept-maps/<fingerprint>/<chapter_hash>.json``.
+    Per-chapter path: ``_shared/concept-maps/<fingerprint>/<chapter_hash>.json``,
+    where each name is the leading `_PATH_DIGEST_CHARS` of the digest.
     """
 
     def __init__(self, workspace_root: Path) -> None:
@@ -66,12 +82,12 @@ class ConceptMapCache:
 
     def source_path(self, fingerprint: str) -> Path:
         _require_digest(fingerprint, "source fingerprint")
-        return self.root / f"{fingerprint}.json"
+        return self.root / f"{_path_name(fingerprint)}.json"
 
     def chapter_path(self, fingerprint: str, chapter_key: str) -> Path:
         _require_digest(fingerprint, "source fingerprint")
         _require_digest(chapter_key, "chapter hash")
-        return self.root / fingerprint / f"{chapter_key}.json"
+        return self.root / _path_name(fingerprint) / f"{_path_name(chapter_key)}.json"
 
     def load_source(self, fingerprint: str) -> SourceConceptMap | None:
         try:

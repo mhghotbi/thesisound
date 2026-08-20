@@ -173,7 +173,12 @@ class SourceAnalysisService:
                 span.set(source="project_reuse")
                 return self._mark_document_mapped(project_id, source_id, model=model)
             content_key = block_sequence_key(blocks)
-            shared = self.document_map_cache.load(content_key, blocks, source_id=source_id)
+            shared = self.document_map_cache.load(
+                content_key,
+                blocks,
+                source_id=source_id,
+                prompt_fingerprint=self._document_map_fingerprint(prompt_version),
+            )
             emit_cache_lookup(
                 cache="shared_document_map",
                 result="hit" if shared is not None else "miss",
@@ -230,11 +235,32 @@ class SourceAnalysisService:
             )
             self.artifact_store.save_document_map(project_id, source_id, document_map)
             if is_shareable_document_map(document_map):
-                self.document_map_cache.save(content_key, blocks, document_map)
+                self.document_map_cache.save(
+                    content_key,
+                    blocks,
+                    document_map,
+                    prompt_fingerprint=self._document_map_fingerprint(prompt_version),
+                )
             span.set(source="model")
             return self._mark_document_mapped(
                 project_id, source_id, run_id=run.run_id if run is not None else None, model=model
             )
+
+    def _document_map_fingerprint(self, prompt_version: str | None) -> str:
+        """Identity of the `document_map` prompt a cached map must have come from.
+
+        Content alone is not a sufficient cache key: the stored map is model output,
+        so it is only reusable by the prompt that produced it. Version alone is not
+        enough either, because a prompt edited in place keeps its version -- and that
+        is exactly when a stale map is most misleading, since the edit was made to
+        change the output.
+        """
+
+        runner = getattr(self.document_mapper, "model_runner", None)
+        loader = getattr(runner, "prompt_loader", None)
+        if loader is None:
+            return f"unfingerprinted:{prompt_version}"
+        return loader.content_hash("document_map", version=prompt_version)
 
     def has_reusable_document_map(self, project_id: UUID, source_id: UUID) -> bool:
         blocks = self.artifact_store.load_blocks(project_id, source_id)
@@ -245,6 +271,7 @@ class SourceAnalysisService:
                 block_sequence_key(blocks),
                 blocks,
                 source_id=source_id,
+                prompt_fingerprint=self._document_map_fingerprint(None),
             )
             is not None
         )

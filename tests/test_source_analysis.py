@@ -1348,7 +1348,12 @@ def test_degraded_document_map_is_not_reused_or_shared(tmp_path: Path) -> None:
     )
     cache.path(content_key).parent.mkdir(parents=True, exist_ok=True)
     cache.path(content_key).write_text(legacy_cache_entry.model_dump_json(), encoding="utf-8")
-    assert cache.load(content_key, blocks, source_id=source_id) is None
+    assert (
+        cache.load(
+            content_key, blocks, source_id=source_id, prompt_fingerprint="fp"
+        )
+        is None
+    )
 
     complete_mapper = Mapper([])
     service.document_mapper = complete_mapper

@@ -76,6 +76,12 @@ class EpubDocumentParser:
                     package_path=package_path,
                     manifest=manifest,
                     spine=spine,
+                    toc_titles=_toc_titles(
+                        archive,
+                        package=package,
+                        package_path=package_path,
+                        manifest=manifest,
+                    ),
                 )
         except BadZipFile as exc:
             raise EpubDocumentParseError("EPUB is not a valid ZIP archive.") from exc
@@ -151,12 +157,91 @@ def _spine(package: ElementTree.Element) -> list[str]:
     ]
 
 
+def _toc_titles(
+    archive: ZipFile,
+    *,
+    package: ElementTree.Element,
+    package_path: str,
+    manifest: dict[str, tuple[str, str, str]],
+) -> dict[str, str]:
+    """Map each spine member to the title the book's own contents page gives it.
+
+    A spine item whose XHTML carries no h1-h6 has no heading to name it, and the
+    file name is not a name: real books ship members like `9780226924571_16_not
+    .xhtml`, which becomes the chapter title, the block heading_path, and thus the
+    only label a reader or a downstream filter ever sees. The table of contents is
+    where the book states those names, so read it.
+
+    Both EPUB generations are handled: the EPUB 3 navigation document and the
+    EPUB 2 NCX. Failure is never fatal -- a missing or malformed contents page
+    just leaves the caller with its previous fallback.
+    """
+
+    package_dir = posixpath.dirname(package_path)
+    candidates: list[str] = []
+    for _item_id, (href, media_type, properties) in manifest.items():
+        if "nav" in properties.split() or media_type == "application/x-dtbncx+xml":
+            candidates.append(href)
+    spine_node = package.find(".//{*}spine")
+    if spine_node is not None:
+        ncx_id = (spine_node.get("toc") or "").strip()
+        if ncx_id in manifest:
+            candidates.insert(0, manifest[ncx_id][0])
+
+    titles: dict[str, str] = {}
+    for href in candidates:
+        try:
+            member = _resolve_member(package_dir, href)
+            root = _read_xml(archive, member, "EPUB table of contents")
+        except (EpubDocumentParseError, ValueError, KeyError):
+            continue
+        base = posixpath.dirname(member)
+        for target, text in _toc_entries(root):
+            try:
+                resolved = _resolve_member(base, target)
+            except (EpubDocumentParseError, ValueError):
+                continue
+            # First mention wins: a contents page may point several entries at one
+            # file, and the earliest is the one that names it.
+            titles.setdefault(resolved, text)
+    return titles
+
+
+def _toc_entries(root: ElementTree.Element) -> list[tuple[str, str]]:
+    """(href, label) pairs from an EPUB 3 nav document or an EPUB 2 NCX."""
+
+    entries: list[tuple[str, str]] = []
+    for point in root.iter():
+        name = _local_name(point.tag)
+        # `_local_name` folds case, as everywhere else in this module.
+        if name == "navpoint":
+            label = point.find(".//{*}navLabel/{*}text")
+            content = point.find("./{*}content")
+            if label is None or content is None:
+                continue
+            text = _SPACE.sub(" ", (label.text or "")).strip()
+            src = (content.get("src") or "").strip()
+            if text and src:
+                entries.append((src, text))
+        elif name == "a":
+            href = (point.get("href") or "").strip()
+            text = _element_text(point)
+            if href and text:
+                entries.append((href, text))
+    return entries
+
+
+def _toc_member_title(titles: dict[str, str], member: str) -> str | None:
+    return titles.get(member)
+
+
 def _parse_spine(
     archive: ZipFile,
     *,
     package_path: str,
     manifest: dict[str, tuple[str, str, str]],
     spine: list[str],
+    toc_titles: dict[str, str] | None = None,
 ) -> tuple[list[ParsedBlock], list[str]]:
     blocks: list[ParsedBlock] = []
     warnings: list[str] = []
@@ -186,7 +271,13 @@ def _parse_spine(
         except ElementTree.ParseError as exc:
             warnings.append(f"Malformed XHTML skipped at {member}: {exc}")
             continue
-        item_blocks = _xhtml_blocks(root, member=member, idref=idref, spine_index=spine_index)
+        item_blocks = _xhtml_blocks(
+            root,
+            member=member,
+            idref=idref,
+            spine_index=spine_index,
+            toc_title=(toc_titles or {}).get(member),
+        )
         if not item_blocks:
             warnings.append(f"No readable text found in spine item: {member}")
             continue
@@ -201,11 +292,14 @@ def _xhtml_blocks(
     member: str,
     idref: str,
     spine_index: int,
+    toc_title: str | None = None,
 ) -> list[ParsedBlock]:
     body = next((node for node in root.iter() if _local_name(node.tag) == "body"), root)
     output: list[ParsedBlock] = []
     heading_path: list[str] = []
-    fallback_chapter = _humanize_member(member)
+    # The book's own contents page names this section; the archive member name
+    # only identifies a file. Fall back to the file name when there is no entry.
+    fallback_chapter = toc_title or _humanize_member(member)
 
     def visit(node: ElementTree.Element, ignored: bool = False) -> None:
         nonlocal heading_path

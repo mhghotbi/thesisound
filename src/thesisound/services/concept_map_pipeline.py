@@ -12,6 +12,7 @@ from thesisound.config import Settings
 from thesisound.domain import Project
 from thesisound.pipeline import WorkspaceStore
 from thesisound.prompt_loader import PromptLoader
+from thesisound.services.analysis_profile import eligible_blocks
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.concept_map_builder import ConceptMapBuilder, detect_chapters
 from thesisound.services.cost_estimate import estimate_tokens
@@ -168,6 +169,14 @@ def build_concept_map_from_path(
         raise ValueError("Block builder produced no analyzable content.")
     artifacts.save_ingestion(project_id, source_id, ingestion)
     artifacts.save_blocks(project_id, source_id, blocks, report)
+
+    # The block artifact stays whole -- it describes the source. Everything below
+    # reasons about the book's argument, so it works on the eligible set only: the
+    # extraction path has always dropped front matter and note-like blocks here, and
+    # the concept map did not, which is how endnotes and the index came to produce
+    # concept cells a lesson could then be planned around.
+    analyzable = eligible_blocks(blocks) or blocks
+    blocks = analyzable
 
     detected = detect_chapters(blocks, ingestion.parsed)
     if chapters is not None:

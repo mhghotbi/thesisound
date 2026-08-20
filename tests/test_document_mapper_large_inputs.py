@@ -1022,13 +1022,14 @@ def test_concurrent_saves_of_one_content_key_leave_a_valid_file(tmp_path: Path) 
 
     with ThreadPoolExecutor(max_workers=8) as pool:
         for future in [
-            pool.submit(cache.save, content_key, blocks, draft) for _ in range(8)
+            pool.submit(cache.save, content_key, blocks, draft, prompt_fingerprint="fp")
+            for _ in range(8)
         ]:
             future.result()
 
     assert len(list(cache.root.glob("*.json"))) == 1
     assert list(cache.root.glob("*.tmp")) == []
-    assert cache.load(content_key, blocks) is not None
+    assert cache.load(content_key, blocks, prompt_fingerprint="fp") is not None
 
 
 def test_cache_cleanup_failure_does_not_abort_the_document_map(
@@ -1060,7 +1061,7 @@ def test_cache_cleanup_failure_does_not_abort_the_document_map(
     monkeypatch.setattr(Path, "replace", fail_replace)
     monkeypatch.setattr(Path, "unlink", fail_unlink)
 
-    assert cache.save(content_key, blocks, draft) is None
+    assert cache.save(content_key, blocks, draft, prompt_fingerprint="fp") is None
 
 
 # --------------------------------------------------------------------------

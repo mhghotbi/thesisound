@@ -72,6 +72,9 @@ class CachedDocumentMap(BaseModel):
 
     content_key: str
     builder_version: int = 1
+    # Empty on entries written before prompt fingerprinting; `load` treats that as a
+    # miss rather than trusting a map whose prompt cannot be identified.
+    prompt_fingerprint: str = ""
     content_block_count: int = Field(ge=1)
     working_thesis: str | None = None
     sections: list[CachedMapSection] = Field(default_factory=list)
@@ -101,6 +104,7 @@ class DocumentMapCache:
         blocks: list[SourceDocumentBlock],
         *,
         source_id: UUID,
+        prompt_fingerprint: str,
     ) -> DocumentMap | None:
         """Rebuild a stored map for these blocks, or return None to map from scratch."""
 
@@ -118,6 +122,8 @@ class DocumentMapCache:
         if cached.content_block_count != len(content):
             return None
         if cached.builder_version != MAP_BUILDER_VERSION:
+            return None
+        if cached.prompt_fingerprint != prompt_fingerprint:
             return None
         if not _warnings_are_shareable(cached.warnings):
             return None
@@ -154,6 +160,8 @@ class DocumentMapCache:
         content_key: str,
         blocks: list[SourceDocumentBlock],
         document_map: DocumentMap,
+        *,
+        prompt_fingerprint: str,
     ) -> Path | None:
         if not is_shareable_document_map(document_map):
             return None
@@ -164,6 +172,7 @@ class DocumentMapCache:
         cached = CachedDocumentMap(
             content_key=content_key,
             builder_version=MAP_BUILDER_VERSION,
+            prompt_fingerprint=prompt_fingerprint,
             content_block_count=len(content),
             working_thesis=document_map.working_thesis,
             sections=[

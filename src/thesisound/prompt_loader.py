@@ -113,6 +113,22 @@ class PromptLoader:
             content_hash=content_hash,
         )
 
+    def content_hash(self, name: str, *, version: str | None = None) -> str:
+        """Identify a prompt by its contract and templates without rendering it.
+
+        The same digest `load_bundle` puts on a `PromptBundle`, available to callers
+        that must decide whether cached output is still valid before they have any
+        variables to render with. Version alone is not enough for that decision: a
+        prompt edited in place keeps its version, and a cache keyed on version would
+        keep serving output the current prompt would no longer produce.
+        """
+
+        version_dir = self._resolve_version_dir(name, version)
+        contract = self.load_contract(name, version=version)
+        system_template = self._read_required(version_dir / contract.system_file)
+        user_template = self._read_required(version_dir / contract.user_file)
+        return _prompt_hash(contract, system_template, user_template)
+
     def _resolve_version_dir(self, name: str, version: str | None) -> Path:
         prompt_dir = self.prompt_root / name
         if not prompt_dir.is_dir():

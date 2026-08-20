@@ -217,7 +217,7 @@ class DocumentMapperService:
         records: list[ModelRunRecord | None] = [None] * len(partitions)
         pending: list[int] = []
         for index, partition in enumerate(partitions):
-            cached = self._load_cached_partition(project_id, partition)
+            cached = self._load_cached_partition(project_id, partition, prompt_version)
             if cached is None:
                 pending.append(index)
             else:
@@ -243,7 +243,7 @@ class DocumentMapperService:
                 )
             # Inside the worker on purpose: when one partition fails, the ones
             # still in flight were already paid for and must reach the cache.
-            self._save_cached_partition(partition, draft)
+            self._save_cached_partition(partition, draft, prompt_version)
             return index, draft, record
 
         workers = min(self.max_workers, len(pending))
@@ -342,15 +342,35 @@ class DocumentMapperService:
         )
         return execution.output, execution.record
 
+    def _prompt_fingerprint(self, prompt_version: str | None) -> str:
+        """Identity of the prompt that produced -- or would produce -- a cached draft.
+
+        A cached partition is only reusable by the prompt that wrote it. Keying on
+        version alone would miss an edit made in place, which is the common case
+        while a prompt is being tuned and the one time a stale draft misleads most.
+
+        Runners without a prompt loader (test doubles) fall back to the version, which
+        still separates two versions from each other; only in-place edits go unnoticed,
+        and those cannot happen to a double that never reads the prompt.
+        """
+
+        loader = getattr(self.model_runner, "prompt_loader", None)
+        if loader is None:
+            return f"unfingerprinted:{prompt_version}"
+        return loader.content_hash("document_map", version=prompt_version)
+
     def _load_cached_partition(
         self,
         project_id: UUID,
         partition: list[SourceDocumentBlock],
+        prompt_version: str | None = None,
     ) -> DocumentMapDraft | None:
         if self.part_cache is None:
             return None
         content_key = partition_block_key(partition)
-        draft = self.part_cache.load(content_key, partition)
+        draft = self.part_cache.load(
+            content_key, partition, prompt_fingerprint=self._prompt_fingerprint(prompt_version)
+        )
         emit_cache_lookup(
             cache="document_map_part",
             result="hit" if draft is not None else "miss",
@@ -364,10 +384,16 @@ class DocumentMapperService:
         self,
         partition: list[SourceDocumentBlock],
         draft: DocumentMapDraft,
+        prompt_version: str | None = None,
     ) -> None:
         if self.part_cache is None:
             return
-        self.part_cache.save(partition_block_key(partition), partition, draft)
+        self.part_cache.save(
+            partition_block_key(partition),
+            partition,
+            draft,
+            prompt_fingerprint=self._prompt_fingerprint(prompt_version),
+        )
 
 
 def _resolve_partitions(

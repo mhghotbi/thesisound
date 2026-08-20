@@ -102,7 +102,7 @@ GATE_REGISTRY: tuple[GateDefinition, ...] = (
         8,
         "Deterministic script checks",
         "machine",
-        "src/thesisound/services/script_checks.py:108",
+        "src/thesisound/services/script_checks.py:112",
         "Script, plan, evidence packs and glossary",
         "Script check report",
         "A deterministic blocking violation exists.",
