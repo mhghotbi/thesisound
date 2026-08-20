@@ -30,6 +30,10 @@ _INCOMPLETE_CROSS_PARTITION_MERGE_PREFIXES = (
 # Synthetic maps written when selection is exhaustive (spec 06). Never share: a
 # project whose budget *does* force selection would silently lose ranking.
 EXHAUSTIVE_SELECTION_SKIP_PREFIX = "Document map skipped: selection is exhaustive"
+# Maps built for a chapter subset (spec 13). The cache key is the identity of the
+# whole parsed body, so a subset map stored under it would be served to every
+# later project on the same file as if it were complete.
+SCOPED_CHAPTERS_PREFIX = "Document map covers a chapter subset"
 
 
 def is_shareable_document_map(document_map: DocumentMap) -> bool:
@@ -41,6 +45,7 @@ def _warnings_are_shareable(warnings: list[str]) -> bool:
     return not any(
         warning.startswith(_INCOMPLETE_CROSS_PARTITION_MERGE_PREFIXES)
         or warning.startswith(EXHAUSTIVE_SELECTION_SKIP_PREFIX)
+        or warning.startswith(SCOPED_CHAPTERS_PREFIX)
         for warning in warnings
     )
 

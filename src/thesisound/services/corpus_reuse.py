@@ -3,8 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID
 
-from thesisound.domain import ResearchBrief
-from thesisound.services.analysis_profile import plan_evidence_extraction
+from thesisound.domain import Project
+from thesisound.services.analysis_profile import (
+    plan_evidence_extraction,
+    resolve_extraction_seeds,
+)
+from thesisound.services.concept_map_overlay import effective_concept_map
 from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.semantic_identity import claim_reconciler_identity, first_mismatch
 from thesisound.services.source_artifact_store import SourceArtifactStore
@@ -21,10 +25,9 @@ _RECONCILER_IDENTITY_FIELDS = (
 def reusable_claim_ledger(
     *,
     artifact_store: SourceArtifactStore,
-    project_id: UUID,
+    project: Project,
     source_id: UUID,
     ingestion_path: Path,
-    brief: ResearchBrief | None,
     model: str,
     prompt_version: str | None = None,
 ) -> ClaimLedger | None:
@@ -39,10 +42,18 @@ def reusable_claim_ledger(
     Semantic identity (reconciler model/prompt/versions) must also match; otherwise
     a model or prompt bump would silently reuse stale claims.
 
+    The replan is seeded exactly like the real one (``resolve_extraction_seeds`` over
+    the effective concept map). A ``source_coverage`` project selects blocks by
+    in-scope cell, not by duration ranking; replanning it without the cells produced a
+    duration-ranked plan that never matched the stored one, so a finished source was
+    rebuilt from scratch on every confirm.
+
     Anything missing, unreadable or out of date returns ``None``, which means the
     source is queued and built from scratch.
     """
 
+    project_id = project.project_id
+    brief = project.brief
     current_identity = claim_reconciler_identity(
         model=model,
         prompt_version=prompt_version,
@@ -80,7 +91,16 @@ def reusable_claim_ledger(
     if ledger.source_id != source_id:
         return _miss("source_id_mismatch")
 
-    planned = plan_evidence_extraction(brief, document_map, blocks)
+    seed_cells, force_depth = resolve_extraction_seeds(
+        project, effective_concept_map(artifact_store, project_id, source_id)
+    )
+    planned = plan_evidence_extraction(
+        brief,
+        document_map,
+        blocks,
+        seed_cells=seed_cells,
+        force_depth=force_depth,
+    )
     if planned.profile != stored_plan.profile:
         return _miss("profile_mismatch")
     if planned.selected_block_ids != stored_plan.selected_block_ids:

@@ -744,18 +744,10 @@ def test_extract_source_materializes_auxiliary_evidence_with_provenance() -> Non
                         ),
                         EvidenceClaimDraft(
                             claim="Some deny action is distinct from labor.",
-                            claim_type=ClaimType.OBJECTION,
+                            claim_type=ClaimType.COUNTERARGUMENT,
                             supporting_excerpt="cannot be reduced to the fabrication",
                             support_kind="inferential",
                             confidence=0.6,
-                        ),
-                        EvidenceClaimDraft(
-                            claim="The distinction rests on plurality, not effort.",
-                            claim_type=ClaimType.RESPONSE,
-                            supporting_excerpt="between persons",
-                            support_kind="inferential",
-                            confidence=0.6,
-                            responds_to_excerpt="cannot be reduced to the fabrication",
                         ),
                     ],
                 )
@@ -800,7 +792,7 @@ def test_extract_source_materializes_auxiliary_evidence_with_provenance() -> Non
     )[0][0]
 
     extraction = record.extraction
-    assert len(extraction.claims) == 6
+    assert len(extraction.claims) == 5
     for claim in extraction.claims:
         assert claim.source_id == source_id
         assert claim.block_id == block.block_id
@@ -812,8 +804,7 @@ def test_extract_source_materializes_auxiliary_evidence_with_provenance() -> Non
     assert by_type[ClaimType.DISTINCTION].contrast == ("Action", "Fabrication")
     assert by_type[ClaimType.AUTHOR_POSITION].must_not_be_lost is False
     assert by_type[ClaimType.EXAMPLE].claim_type == ClaimType.EXAMPLE
-    assert by_type[ClaimType.OBJECTION].claim_type == ClaimType.OBJECTION
-    assert by_type[ClaimType.RESPONSE].claim_type == ClaimType.RESPONSE
+    assert by_type[ClaimType.COUNTERARGUMENT].claim_type == ClaimType.COUNTERARGUMENT
 
 
 def test_complete_one_source_pipeline_writes_auditable_artifacts(

@@ -187,7 +187,6 @@ def _profile(*, depth: str = "brief") -> AnalysisProfile:
         max_claims_per_block=2 if depth == "brief" else 7,
         neighbor_context_blocks=0 if depth == "brief" else 2,
         include_examples=False,
-        include_objections_and_responses=False,
         second_pass_for_core_sections=depth != "brief",
         rationale=["test"],
     )

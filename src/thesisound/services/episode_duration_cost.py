@@ -5,7 +5,11 @@ from __future__ import annotations
 from uuid import UUID
 
 from thesisound.domain import Project, ResearchBrief
-from thesisound.services.analysis_profile import plan_evidence_extraction
+from thesisound.services.analysis_profile import (
+    plan_evidence_extraction,
+    resolve_extraction_seeds,
+)
+from thesisound.services.concept_map_overlay import effective_concept_map
 from thesisound.services.evidence_scope import extraction_profiles_compatible
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import EvidenceExtractionPlan
@@ -57,7 +61,11 @@ def reextraction_required_for_duration(
     """True when any claim-ready source would re-extract under ``duration_minutes``.
 
     Mirrors ``SourceAnalysisService.sync_to_current_profile`` compatibility checks
-    without writing or calling models.
+    without writing or calling models -- including its cell seeding, so the two
+    cannot disagree. A ``source_coverage`` project plans from in-scope cells at a
+    forced depth, which makes its plan duration-independent: changing the length
+    repacks episodes and never re-extracts. Predicting that without the cells
+    warned about a cost the run would not have paid.
     """
 
     if project.brief is None:
@@ -72,23 +80,33 @@ def reextraction_required_for_duration(
     for source_id in source_ids:
         if source_id not in claim_ready:
             continue
-        if _source_would_reextract(project.project_id, source_id, brief, source_store):
+        if _source_would_reextract(project, source_id, brief, source_store):
             return True
     return False
 
 
 def _source_would_reextract(
-    project_id: UUID,
+    project: Project,
     source_id: UUID,
     brief: ResearchBrief,
     source_store: SourceArtifactStore,
 ) -> bool:
+    project_id = project.project_id
     try:
         blocks = source_store.load_blocks(project_id, source_id)
         document_map = source_store.load_document_map(project_id, source_id)
     except (OSError, ValueError):
         return True
-    planned = plan_evidence_extraction(brief, document_map, blocks)
+    seed_cells, force_depth = resolve_extraction_seeds(
+        project, effective_concept_map(source_store, project_id, source_id)
+    )
+    planned = plan_evidence_extraction(
+        brief,
+        document_map,
+        blocks,
+        seed_cells=seed_cells,
+        force_depth=force_depth,
+    )
     try:
         stored_plan = source_store.load_extraction_plan(project_id, source_id)
     except (OSError, ValueError):

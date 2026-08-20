@@ -16,6 +16,7 @@ from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.concept_map_builder import ConceptMapBuilder, detect_chapters
 from thesisound.services.cost_estimate import estimate_tokens
 from thesisound.services.document_ingestion import ingest_document
+from thesisound.services.document_map_cache import SCOPED_CHAPTERS_PREFIX
 from thesisound.services.document_map_part_cache import DocumentMapPartCache
 from thesisound.services.document_mapper import DocumentMapperService
 from thesisound.services.model_run_store import WorkspaceModelRunStore
@@ -54,7 +55,10 @@ def parse_chapter_selector(raw: str | None) -> tuple[int, ...] | None:
         indexes.append(number - 1)
     if not indexes:
         return None
-    return tuple(dict.fromkeys(indexes))
+    # Book order, not the order they were typed: the mapper partitions in book
+    # order and the builder follows this tuple, so `--chapters 3,1` would
+    # otherwise map and cell the same two chapters in two different orders.
+    return tuple(sorted(dict.fromkeys(indexes)))
 
 
 def chapter_token_total(
@@ -184,6 +188,14 @@ def build_concept_map_from_path(
         [by_id[block_id] for block_id in chapter.block_ids if block_id in by_id]
         for chapter in selected
     ]
+    # The mapper validates coverage against the block list it is given: every
+    # partition must appear in it, in order, and the merged map must cover all
+    # of its content blocks. With a chapter subset that list is the selected
+    # chapters, not the document -- passing the whole document made
+    # `_resolve_partitions` raise on every `--chapters` run. `blocks` stays whole
+    # everywhere else: the saved block artifact and the concept-map fingerprint
+    # are properties of the source, not of this selection.
+    mapped_blocks = [block for partition in partitions for block in partition]
     mapper = DocumentMapperService(
         runner,
         part_cache=DocumentMapPartCache(workspace_root),
@@ -192,10 +204,16 @@ def build_concept_map_from_path(
     document_map, _run = mapper.map_document(
         project_id=project_id,
         source_id=source_id,
-        blocks=blocks,
+        blocks=mapped_blocks,
         model=settings.model_fast,
         partitions=partitions,
     )
+    if chapters is not None:
+        numbers = ", ".join(str(chapter.chapter_index + 1) for chapter in selected)
+        document_map.warnings.append(
+            f"{SCOPED_CHAPTERS_PREFIX}: {numbers} of {len(detected)}. "
+            "It does not describe the whole source."
+        )
     artifacts.save_document_map(project_id, source_id, document_map)
 
     builder = ConceptMapBuilder(runner, workspace_root=workspace_root)

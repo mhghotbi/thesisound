@@ -26,8 +26,6 @@ def extraction_profiles_compatible(
         and stored.max_claims_per_block == current.max_claims_per_block
         and stored.neighbor_context_blocks == current.neighbor_context_blocks
         and stored.include_examples == current.include_examples
-        and stored.include_objections_and_responses
-        == current.include_objections_and_responses
         and stored.second_pass_for_core_sections == current.second_pass_for_core_sections
     )
 

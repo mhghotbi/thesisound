@@ -363,7 +363,6 @@ def test_evidence_retention_unknown_when_plan_references_missing_block(tmp_path:
             max_claims_per_block=3,
             neighbor_context_blocks=0,
             include_examples=False,
-            include_objections_and_responses=False,
             second_pass_for_core_sections=False,
         ),
         selected_block_ids=["missing"],

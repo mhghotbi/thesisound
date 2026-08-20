@@ -408,10 +408,9 @@ class CorpusBuildingService:
         queued = CorpusSourceRun(**source.model_dump())
         ledger = reusable_claim_ledger(
             artifact_store=self.source_store,
-            project_id=project.project_id,
+            project=project,
             source_id=source.source_id,
             ingestion_path=source.ingestion_path,
-            brief=project.brief,
             model=self.strong_model,
         )
         # Hit/miss lineage is emitted inside reusable_claim_ledger.

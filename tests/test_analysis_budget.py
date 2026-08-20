@@ -119,7 +119,6 @@ def test_build_second_pass_profile_raises_levers_to_the_ceiling() -> None:
     assert deepened.neighbor_context_blocks == 2
     assert deepened.max_claims_per_block == 12
     assert deepened.include_examples is True
-    assert deepened.include_objections_and_responses is True
     assert deepened.rationale[-1].startswith("Second pass:")
     # model_copy leaves the original untouched.
     assert profile.neighbor_context_blocks == 0

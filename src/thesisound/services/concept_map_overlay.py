@@ -17,6 +17,7 @@ from thesisound.concepts import (
     SourceConceptMap,
 )
 from thesisound.services.concept_map_builder import compute_statistics
+from thesisound.services.source_artifact_store import SourceArtifactStore
 
 _EDGE_KEY_SEP = "|"
 
@@ -178,3 +179,28 @@ class ConceptMapOverlayService:
         )
         self.save(project_id, source_id, overlay)
         return overlay
+
+
+def effective_concept_map(
+    store: SourceArtifactStore,
+    project_id: UUID,
+    source_id: UUID,
+) -> SourceConceptMap | None:
+    """The map every planner must reason about: cache ⊕ overlay, or ``None`` if unmapped.
+
+    One definition on purpose. Extraction planning is now cell-seeded for
+    ``source_coverage`` (``resolve_extraction_seeds``), so any caller that
+    reconstructs a plan -- the real planner, the reuse check, the duration cost
+    predictor -- has to see the same map, including the owner's edits. A caller
+    that skipped the overlay, or the map entirely, would compute a different plan
+    from the stored one and mistake that for a reason to re-extract.
+    """
+
+    concept_map = store.load_concept_map_optional(project_id, source_id)
+    if concept_map is None:
+        return None
+    overlay_service = ConceptMapOverlayService(store.workspace_root)
+    overlay = overlay_service.load(project_id, source_id)
+    if overlay is None:
+        return concept_map
+    return overlay_service.apply(concept_map, overlay)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from uuid import uuid4
 
 from typer.testing import CliRunner
 
@@ -15,8 +16,13 @@ from thesisound.concepts import (
     ConceptEdgesDraft,
     ConsolidateActionDraft,
 )
+from thesisound.domain import DocumentMap, Locator
 from thesisound.modeling import ModelUsage, StructuredModelResponse
 from thesisound.services.concept_map_pipeline import parse_chapter_selector
+from thesisound.services.document_map_cache import (
+    SCOPED_CHAPTERS_PREFIX,
+    is_shareable_document_map,
+)
 from thesisound.source_analysis import (
     DocumentMapDraft,
     DocumentMapDraftSection,
@@ -188,3 +194,79 @@ def test_concept_map_cli_smoke_json(tmp_path: Path, monkeypatch) -> None:
     assert payload["estimated_tokens"]["map"] >= 0
     assert payload["estimated_tokens"]["cells"] >= payload["estimated_tokens"]["map"]
     assert payload["statistics"]["cell_count"] >= 1
+
+
+def test_parse_chapter_selector_sorts_into_book_order() -> None:
+    assert parse_chapter_selector("3,1") == (0, 2)
+
+
+def test_concept_map_cli_chapter_subset(tmp_path: Path, monkeypatch) -> None:
+    """A strict chapter subset maps and cells only those chapters.
+
+    The mapper validates its partitions against the block list it is handed, so
+    passing the whole document alongside subset partitions raised
+    `AssertionError: Chapter partitions changed block order or coverage.` on
+    every `--chapters` run.
+    """
+
+    monkeypatch.setattr(
+        "thesisound.services.concept_map_pipeline.structured_model_from_settings",
+        lambda _settings: CombinedFakeModel(),
+    )
+    source = tmp_path / "book.md"
+    source.write_text(_markdown_source(), encoding="utf-8")
+    workspace = tmp_path / "workspaces"
+    result = runner.invoke(
+        app,
+        [
+            "concept-map",
+            str(source),
+            "--chapters",
+            "2",
+            "--json",
+            "--workspace-root",
+            str(workspace),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert len(payload["chapters"]) == 1
+    assert payload["chapters"][0]["number"] == 2
+    assert payload["chapters"][0]["title"] == "فصل دو"
+    assert payload["statistics"]["cell_count"] >= 1
+
+    concept_map = json.loads(
+        next(workspace.glob("*/sources/*/concept-map.json")).read_text(encoding="utf-8")
+    )
+    assert concept_map["cells"]
+    assert all(cell["chapter_index"] == 1 for cell in concept_map["cells"])
+
+    document_map = json.loads(
+        next(workspace.glob("*/sources/*/document-map.json")).read_text(encoding="utf-8")
+    )
+    assert any(
+        warning.startswith(SCOPED_CHAPTERS_PREFIX) for warning in document_map["warnings"]
+    ), document_map["warnings"]
+    mapped_block_ids = {
+        block_id for section in document_map["sections"] for block_id in section["source_block_ids"]
+    }
+    saved_blocks = [
+        json.loads(line)
+        for line in next(workspace.glob("*/sources/*/document-blocks.jsonl"))
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line.strip()
+    ]
+    # The map covers only the selected chapter; the block artifact still describes
+    # the whole source, so widening the selection later costs no re-parse.
+    assert len(mapped_block_ids) < len(saved_blocks)
+
+
+def test_scoped_document_map_is_never_shared() -> None:
+    document_map = DocumentMap(
+        source_id=uuid4(),
+        scope_locator=Locator(),
+        sections=[],
+        warnings=[f"{SCOPED_CHAPTERS_PREFIX}: 2 of 5. It does not describe the whole source."],
+    )
+    assert not is_shareable_document_map(document_map)

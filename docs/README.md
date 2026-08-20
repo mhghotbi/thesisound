@@ -120,6 +120,7 @@ grep -rn "docs/<old-path>" --include="*.py" --include="*.md" .
 | [`10-automatic-run-recovery.md`](07-specs/10-automatic-run-recovery.md) | Automatic run recovery | — |
 | [`11-failure-disclosure-and-stop-criteria.md`](07-specs/11-failure-disclosure-and-stop-criteria.md) | Failure disclosure and stop criteria | — |
 | [`12-stop-budget.md`](07-specs/12-stop-budget.md) | A stop budget for the build | — |
+| [`13-chapter-scope-before-extraction.md`](07-specs/13-chapter-scope-before-extraction.md) | انتخاب فصل‌های در‌دامنه روی صفحهٔ منابع و اعمال آن **پیش از** map و pass سلول‌ها، نه بعد از آن | ۱۲ (بودجهٔ توقف)، ۰۶ (قاعدهٔ cache نکردن map ناقص) |
 
 specهای اجرایی فازهای P1–P4 سند ۱۰ (نقشهٔ مفهومی، استخراج ۲.۰، بخش‌بندی، تحویل متنی) هنگام شروع هر فاز این‌جا اضافه می‌شوند؛ تا آن زمان مرجع، خودِ سند ۱۰ §9 و ضمیمهٔ A است.
 

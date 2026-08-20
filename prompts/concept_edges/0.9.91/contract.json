@@ -1,0 +1,10 @@
+{
+  "id": "concept_edges",
+  "version": "0.9.91",
+  "model_tier": "fast",
+  "output_model": "ConceptEdgesDraft",
+  "max_attempts": 2,
+  "retry_schema_errors": true,
+  "system_file": "system.md",
+  "user_file": "user.md"
+}

@@ -31,7 +31,7 @@ from thesisound.services.analysis_profile import (
 from thesisound.services.block_builder import BlockBuilder
 from thesisound.services.claim_reconciler import ClaimReconcilerService
 from thesisound.services.concept_map_builder import ConceptMapBuilder
-from thesisound.services.concept_map_overlay import ConceptMapOverlayService
+from thesisound.services.concept_map_overlay import effective_concept_map
 from thesisound.services.document_identity import block_sequence_key
 from thesisound.services.document_map_cache import DocumentMapCache, is_shareable_document_map
 from thesisound.services.document_mapper import DocumentMapperService, build_exhaustive_document_map
@@ -39,6 +39,7 @@ from thesisound.services.episode_duration_cost import source_needs_reextraction
 from thesisound.services.evidence_extractor import EvidenceExtractorService
 from thesisound.services.evidence_scope import extraction_profiles_compatible
 from thesisound.services.evidence_validator import validate_evidence_collection
+from thesisound.services.excerpt_matching import excerpt_char_coverage
 from thesisound.services.lineage_events import emit_cache_lookup
 from thesisound.services.semantic_identity import (
     claim_reconciler_identity,
@@ -300,7 +301,7 @@ class SourceAnalysisService:
         if project.brief is None:
             raise ValueError("ResearchBrief is required to plan evidence depth.")
         seed_cells, force_depth = resolve_extraction_seeds(
-            project, self._effective_concept_map(project.project_id, source_id)
+            project, effective_concept_map(self.artifact_store, project.project_id, source_id)
         )
         return plan_evidence_extraction(
             project.brief,
@@ -309,16 +310,6 @@ class SourceAnalysisService:
             seed_cells=seed_cells,
             force_depth=force_depth,
         )
-
-    def _effective_concept_map(self, project_id: UUID, source_id: UUID):
-        concept_map = self.artifact_store.load_concept_map_optional(project_id, source_id)
-        if concept_map is None:
-            return None
-        overlay_service = ConceptMapOverlayService(self.workspace_store.root)
-        overlay = overlay_service.load(project_id, source_id)
-        if overlay is None:
-            return concept_map
-        return overlay_service.apply(concept_map, overlay)
 
     def extract_evidence(
         self,
@@ -439,6 +430,19 @@ class SourceAnalysisService:
             blocks,
         )
         self.artifact_store.save_evidence(project_id, source_id, scoped_records)
+
+        # Coverage is only knowable once claims exist, so the plan saved before
+        # extraction is rewritten here with the measured per-block fractions.
+        # Measurement only: no gate reads this yet (the tier-1 `thin_extraction`
+        # reading lands with `lesson_intent == source_coverage`).
+        plan = plan.model_copy(
+            update={
+                "excerpt_char_coverage": _measure_excerpt_coverage(
+                    blocks, scoped_records
+                )
+            }
+        )
+        self.artifact_store.save_extraction_plan(project_id, source_id, plan)
 
         kept_ids = {
             record.block_id for record in scoped_records if record.status == "extracted"
@@ -839,6 +843,31 @@ class SourceAnalysisService:
         manifest.last_error = message
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
+
+
+def _measure_excerpt_coverage(
+    blocks: list[SourceDocumentBlock],
+    records: list[BlockEvidenceExtraction],
+) -> dict[str, float]:
+    """Fraction of each extracted block's characters covered by its claim excerpts.
+
+    Only ``extracted`` blocks are measured: a skipped block has no claims, and a 0.0
+    entry would read as a thin extraction rather than an absent one.
+    """
+
+    text_by_id = {block.block_id: block.text for block in blocks}
+    coverage: dict[str, float] = {}
+    for record in records:
+        if record.status != "extracted":
+            continue
+        text = text_by_id.get(record.block_id)
+        if not text:
+            continue
+        coverage[record.block_id] = excerpt_char_coverage(
+            text,
+            [claim.supporting_excerpt for claim in record.extraction.claims],
+        )
+    return coverage
 
 
 def _coverage_cause(plan: EvidenceExtractionPlan) -> str:

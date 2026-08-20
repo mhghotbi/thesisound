@@ -1,0 +1,10 @@
+{
+  "id": "concept_cells",
+  "version": "0.9.91",
+  "model_tier": "fast",
+  "output_model": "ConceptCellsDraft",
+  "max_attempts": 3,
+  "retry_schema_errors": true,
+  "system_file": "system.md",
+  "user_file": "user.md"
+}

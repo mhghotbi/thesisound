@@ -782,7 +782,6 @@ def _batch_prompt_version(model_runner: ModelRunner, prompt_version: str | None)
 
 
 _EXAMPLE_TYPES = frozenset({ClaimType.EXAMPLE})
-_OBJECTION_RESPONSE_TYPES = frozenset({ClaimType.OBJECTION, ClaimType.RESPONSE})
 
 
 def _validate_draft(
@@ -812,8 +811,7 @@ def _validate_claim_type_fields(claim: EvidenceClaimDraft) -> None:
     """Extraction 2.0 (10c P2 Step 2): a claim's type binds which fields it needs.
 
     ``definition`` requires ``term``; ``distinction`` requires ``contrast``.
-    Other claim_type-specific fields (``responds_to_excerpt``,
-    ``must_not_be_lost``) are optional by design and not enforced here.
+``must_not_be_lost`` is optional by design and not enforced here.
     """
 
     if claim.claim_type == ClaimType.DEFINITION and not claim.term:
@@ -839,12 +837,6 @@ def _validate_profile_budget(
     ):
         raise DeterministicValidationError(
             "This analysis profile does not allocate budget for examples."
-        )
-    if not profile.include_objections_and_responses and any(
-        claim.claim_type in _OBJECTION_RESPONSE_TYPES for claim in draft.claims
-    ):
-        raise DeterministicValidationError(
-            "This analysis profile does not allocate budget for objections or responses."
         )
 
 
@@ -971,8 +963,6 @@ def _salvage_entry_inplace(
 def _claim_type_allowed(claim_type: ClaimType, profile: AnalysisProfile) -> bool:
     if claim_type in _EXAMPLE_TYPES:
         return profile.include_examples
-    if claim_type in _OBJECTION_RESPONSE_TYPES:
-        return profile.include_objections_and_responses
     return True
 
 
@@ -1216,7 +1206,6 @@ def _full_profile() -> AnalysisProfile:
         max_claims_per_block=12,
         neighbor_context_blocks=0,
         include_examples=True,
-        include_objections_and_responses=True,
         second_pass_for_core_sections=False,
         rationale=["Compatibility profile for direct service calls without a plan."],
     )

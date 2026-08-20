@@ -158,7 +158,6 @@ def _write_source_with_extraction(
             max_claims_per_block=3,
             neighbor_context_blocks=0,
             include_examples=False,
-            include_objections_and_responses=False,
             second_pass_for_core_sections=False,
         ),
         selected_block_ids=[block_id],
