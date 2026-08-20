@@ -12,7 +12,7 @@ The `Reads`, `Writes`, `Enforced at`, and `Blocked means` cells below intentiona
 
 | Step | Code | Actor | Reads | Writes | Enforced at | Blocked means | Operator action |
 |---:|---|---|---|---|---|---|---|
-| 1 | `brief-confirmed` | Human | Project brief | SOURCES_COLLECTING state | `src/thesisound/web/app.py:917` | The operator has not submitted the project brief (topic and, optionally, scope). | Write a topic (and, optionally, scope) and submit the project-creation form; edit the brief afterward at any time. |
+| 1 | `brief-confirmed` | Human | Project brief | SOURCES_COLLECTING state | `src/thesisound/web/app.py:925` | The operator has not submitted the project brief (topic and, optionally, scope). | Write a topic (and, optionally, scope) and submit the project-creation form; edit the brief afterward at any time. |
 | 2 | `source-selection-confirmed` | Human | Selected source manifest | CORPUS_BUILDING state and queued corpus run | `src/thesisound/web/source_routes.py:738` | The operator has not confirmed the source set. | Review source relevance and inclusion, then confirm the set. |
 | 3 | `parse-quality` | Machine | Parsed documents | Parse-quality verdicts | `src/thesisound/services/parse_quality.py:27` | At least one selected source is unsafe for claim extraction. | Re-parse, OCR, or replace unsafe sources. |
 | 4 | `evidence-validation` | Machine | Block extractions and source text | Validated evidence items | `src/thesisound/services/evidence_validator.py:55` | Quoted support cannot be matched or validated. | Repair the extraction or remove unsupported material. |

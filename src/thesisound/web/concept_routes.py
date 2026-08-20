@@ -17,8 +17,12 @@ from thesisound.concepts import (
     ConceptEdgeType,
     SourceConceptMap,
 )
+from thesisound.domain import Project
+from thesisound.episode import LessonReport
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.concept_map_overlay import ConceptMapOverlayService, edge_overlay_key
+from thesisound.services.episode_artifact_store import EpisodeArtifactStore
+from thesisound.services.lesson_report import LessonReportBuilder
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.source_manifest import UiSourceManifestStore
 
@@ -66,6 +70,10 @@ def register_concept_routes(
 ) -> None:
     artifacts = SourceArtifactStore(workspace.root)
     overlays = ConceptMapOverlayService(workspace.root)
+    report_builder = LessonReportBuilder(
+        source_store=artifacts,
+        episode_store=EpisodeArtifactStore(workspace.root),
+    )
 
     def _page_url(project_id: UUID, source_id: UUID) -> str:
         return f"/projects/{project_id}/sources/{source_id}/concept-map"
@@ -87,9 +95,9 @@ def register_concept_routes(
         context = _page_context(
             project_id,
             source_id,
+            project,
             error=request.query_params.get("error"),
         )
-        context["project"] = project
         return render(request, "concepts/concept_map.html", context)
 
     @app.post("/projects/{project_id}/sources/{source_id}/concept-map/cells")
@@ -295,13 +303,13 @@ def register_concept_routes(
         error: str,
     ) -> HTMLResponse:
         project = workspace.load_project(project_id)
-        context = _page_context(project_id, source_id, error=error)
-        context["project"] = project
+        context = _page_context(project_id, source_id, project, error=error)
         return render(request, "concepts/concept_map.html", context, status_code=422)
 
     def _page_context(
         project_id: UUID,
         source_id: UUID,
+        project: Project,
         *,
         error: str | None = None,
     ) -> dict[str, object]:
@@ -320,7 +328,10 @@ def register_concept_routes(
         source_title = _source_title(workspace, project_id, source_id)
         cells = list(effective.cells) if effective is not None else []
         edges = list(effective.edges) if effective is not None else []
+        report = _lesson_report(report_builder, project_id, project)
+        coverage = _cell_coverage_map(report)
         return {
+            "project": project,
             "source_id": source_id,
             "source_title": source_title,
             "concept_map": effective,
@@ -341,6 +352,8 @@ def register_concept_routes(
             "error": error or None,
             "cell_rows": [_cell_row(cell, block_texts) for cell in cells],
             "edge_rows": [_edge_row(edge) for edge in edges],
+            "graph_payload": _graph_payload(cells, edges, coverage),
+            "has_coverage_overlay": bool(coverage),
         }
 
 
@@ -353,6 +366,88 @@ def _load_map(
         return artifacts.load_concept_map(project_id, source_id)
     except (FileNotFoundError, ValueError, OSError):
         return None
+
+
+def _lesson_report(
+    builder: LessonReportBuilder,
+    project_id: UUID,
+    project: Project,
+) -> LessonReport | None:
+    """The completion report, if one can be built yet (`10c` P5 coverage overlay).
+
+    `focused_question` projects and any `source_coverage` project short of a
+    built concept map / extracted evidence return `None` -- the graph then
+    renders with tier colors only, no coverage state.
+    """
+
+    try:
+        report = builder.build(project_id, project)
+    except (FileNotFoundError, OSError, ValueError):
+        return None
+    if not report.cells_covered and not report.omitted_by_compression and not report.not_covered:
+        return None
+    return report
+
+
+def _cell_coverage_map(report: LessonReport | None) -> dict[str, dict[str, object]]:
+    coverage: dict[str, dict[str, object]] = {}
+    if report is None:
+        return coverage
+    for item in report.cells_covered:
+        coverage[item.cell_key] = {
+            "state": "covered",
+            "coverage_level": item.coverage_level,
+            "closure": item.in_scope_reason.startswith("prerequisite_of:"),
+        }
+    for item in report.omitted_by_compression:
+        coverage[item.cell_key] = {"state": "omitted", "coverage_level": None, "closure": False}
+    for item in report.not_covered:
+        coverage[item.cell_key] = {
+            "state": "not_covered",
+            "coverage_level": None,
+            "closure": False,
+            "reason": item.reason,
+        }
+    return coverage
+
+
+def _graph_payload(
+    cells: list[ConceptCell],
+    edges: list[ConceptEdge],
+    coverage: dict[str, dict[str, object]],
+) -> dict[str, object]:
+    nodes = []
+    for cell in cells:
+        info = coverage.get(cell.cell_key, {})
+        nodes.append(
+            {
+                "data": {
+                    "id": cell.cell_key,
+                    "label": cell.label_fa,
+                    "kind": cell.kind,
+                    "kind_label": _KIND_LABELS_FA.get(cell.kind, cell.kind),
+                    "tier": cell.tier,
+                    "chapter": cell.chapter_index,
+                    "coverage": info.get("state"),
+                    "coverage_level": info.get("coverage_level"),
+                    "closure": bool(info.get("closure")),
+                }
+            }
+        )
+    edge_elements = [
+        {
+            "data": {
+                "id": f"edge-{index}",
+                "source": edge.source_key,
+                "target": edge.target_key,
+                "type": edge.type,
+                "type_label": _EDGE_LABELS_FA.get(edge.type, edge.type),
+                "cross_chapter": edge.is_cross_chapter,
+            }
+        }
+        for index, edge in enumerate(edges)
+    ]
+    return {"nodes": nodes, "edges": edge_elements}
 
 
 def _block_texts(

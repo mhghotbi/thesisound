@@ -64,6 +64,34 @@
   </div>
 </section>
 
+<section class="section-block" aria-labelledby="graph-title">
+  <div class="section-heading section-heading--rule">
+    <h2 id="graph-title">نمای گراف</h2>
+    <span>مفاهیم و رابطه‌ها</span>
+  </div>
+  {% if has_coverage_overlay %}
+  <ul class="concept-graph__legend" aria-label="راهنمای رنگ پوشش">
+    <li><span class="concept-graph__swatch concept-graph__swatch--covered"></span>گفته‌شده یا در طرح</li>
+    <li><span class="concept-graph__swatch concept-graph__swatch--omitted"></span>کنارگذاشته‌شده به دلیل فشردگی</li>
+    <li><span class="concept-graph__swatch concept-graph__swatch--not-covered"></span>پوشش‌نگرفته</li>
+    <li><span class="concept-graph__swatch concept-graph__swatch--closure"></span>پیش‌نیاز مفهومی دیگر</li>
+  </ul>
+  {% else %}
+  <ul class="concept-graph__legend" aria-label="راهنمای رنگ سطح">
+    <li><span class="concept-graph__swatch concept-graph__swatch--tier1"></span>سطح ۱</li>
+    <li><span class="concept-graph__swatch concept-graph__swatch--tier2"></span>سطح ۲</li>
+    <li><span class="concept-graph__swatch concept-graph__swatch--tier3"></span>سطح ۳</li>
+  </ul>
+  {% endif %}
+  <div id="concept-graph" class="concept-graph" role="img" aria-label="گراف مفاهیم و رابطه‌های این منبع"></div>
+  <p class="concept-graph__hint operator-only">اسکرول برای بزرگ‌نمایی، کشیدن برای جابه‌جایی. کلیک روی یک گره برای دیدن جزئیات آن در جدول مفاهیم.</p>
+  <script type="application/json" id="concept-graph-data">{{ graph_payload | tojson }}</script>
+  <script src="{{ url_for('static', path='/vendor/dagre.min.js') }}" defer></script>
+  <script src="{{ url_for('static', path='/vendor/cytoscape.min.js') }}" defer></script>
+  <script src="{{ url_for('static', path='/vendor/cytoscape-dagre.min.js') }}" defer></script>
+  <script src="{{ url_for('static', path='/concept-graph.js') }}" defer></script>
+</section>
+
 <section class="section-block" aria-labelledby="cells-title">
   <div class="section-heading section-heading--rule">
     <h2 id="cells-title">مفاهیم</h2>
@@ -83,7 +111,7 @@
       <tbody>
         {% for row in cell_rows %}
         {% set cell = row.cell %}
-        <tr>
+        <tr data-cell-key="{{ cell.cell_key }}">
           <td>
             {{ cell.label_fa }}
             {% if cell.created_by == 'user' %}<small>افزودهٔ شما</small>{% endif %}

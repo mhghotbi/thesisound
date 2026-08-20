@@ -15,10 +15,12 @@ from thesisound.concepts import (
 )
 from thesisound.config import Settings
 from thesisound.domain import Locator
+from thesisound.episode import CellReportItem, LessonReport, NotCoveredCellItem, OmittedCellItem
 from thesisound.services.concept_map_cache import CONCEPT_MAP_BUILDER_VERSION
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.source_analysis import BlockBuildReport, SourceDocumentBlock
 from thesisound.web.app import create_app
+from thesisound.web.concept_routes import _cell_coverage_map, _graph_payload
 
 _FINGERPRINT = "b" * 64
 
@@ -198,6 +200,34 @@ def test_concept_map_page_renders_tables(tmp_path: Path) -> None:
     assert "تغییر اهمیت" in page.text
 
 
+def test_concept_map_page_renders_graph_payload_and_vendored_scripts(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+        audio_executor=lambda _: None,
+    )
+    with TestClient(app) as client:
+        _login(client)
+        project_id = _create_project(client)
+        source_id = uuid4()
+        _save_map(settings.workspace_root, project_id, source_id)
+        page = client.get(f"/projects/{project_id}/sources/{source_id}/concept-map")
+    assert page.status_code == 200
+    # No completion report exists yet (focused_question, no plan) -- tier legend, not coverage.
+    assert "سطح ۱" in page.text
+    assert '"id": "ch00-c001"' in page.text
+    assert '"id": "ch00-c002"' in page.text
+    assert '"source": "ch00-c001"' in page.text
+    assert '"target": "ch00-c002"' in page.text
+    assert "/static/vendor/cytoscape.min.js" in page.text
+    assert "/static/vendor/dagre.min.js" in page.text
+    assert "/static/vendor/cytoscape-dagre.min.js" in page.text
+    assert "/static/concept-graph.js" in page.text
+
+
 def test_concept_map_overlay_add_and_tier(tmp_path: Path) -> None:
     settings = _settings(tmp_path)
     app = create_app(
@@ -260,3 +290,80 @@ def test_concept_map_empty_state(tmp_path: Path) -> None:
         page = client.get(f"/projects/{project_id}/sources/{uuid4()}/concept-map")
     assert page.status_code == 200
     assert "هنوز نقشه‌ای برای این منبع ساخته نشده" in page.text
+
+
+def test_cell_coverage_map_merges_all_three_report_buckets() -> None:
+    report = LessonReport(
+        project_id=uuid4(),
+        cells_covered=[
+            CellReportItem(
+                cell_key="ch00-c001",
+                label_fa="پوشش‌یافته",
+                tier=1,
+                in_scope_reason="tier",
+                coverage_level="spoken",
+            ),
+            CellReportItem(
+                cell_key="ch00-c002",
+                label_fa="پیش‌نیاز دیگری",
+                tier=2,
+                in_scope_reason="prerequisite_of:ch00-c001",
+                coverage_level="planned",
+            ),
+        ],
+        omitted_by_compression=[
+            OmittedCellItem(cell_key="ch00-c003", label_fa="حذف‌شده", tier=3),
+        ],
+        not_covered=[
+            NotCoveredCellItem(
+                cell_key="ch00-c004", label_fa="پوشش‌نگرفته", tier=1, reason="no_claim"
+            ),
+        ],
+    )
+    coverage = _cell_coverage_map(report)
+    assert coverage["ch00-c001"]["state"] == "covered"
+    assert coverage["ch00-c001"]["closure"] is False
+    assert coverage["ch00-c002"]["state"] == "covered"
+    assert coverage["ch00-c002"]["closure"] is True
+    assert coverage["ch00-c003"]["state"] == "omitted"
+    assert coverage["ch00-c004"]["state"] == "not_covered"
+
+
+def test_cell_coverage_map_empty_without_a_report() -> None:
+    assert _cell_coverage_map(None) == {}
+
+
+def test_graph_payload_carries_coverage_and_closure_onto_nodes() -> None:
+    cells = [
+        ConceptCell(
+            cell_key="ch00-c001",
+            label_fa="مفهوم اصلی",
+            kind="definition",
+            tier=1,
+            chapter_index=0,
+            section_ids=["s001"],
+            block_ids=["b0001"],
+            granularity_rationale="یک واحد مستقل و قابل ردیابی است.",
+            estimated_minutes=5.0,
+        ),
+    ]
+    edges = [
+        ConceptEdge(
+            source_key="ch00-c001",
+            target_key="ch00-c002",
+            type="prerequisite",
+            weight=0.5,
+            confidence=0.8,
+            rationale_fa="بدون این، ادامه ممکن نیست.",
+        )
+    ]
+    coverage = {"ch00-c001": {"state": "covered", "coverage_level": "spoken", "closure": True}}
+    payload = _graph_payload(cells, edges, coverage)
+    node = payload["nodes"][0]["data"]
+    assert node["id"] == "ch00-c001"
+    assert node["coverage"] == "covered"
+    assert node["closure"] is True
+    edge = payload["edges"][0]["data"]
+    assert edge["source"] == "ch00-c001"
+    assert edge["target"] == "ch00-c002"
+    assert edge["type"] == "prerequisite"

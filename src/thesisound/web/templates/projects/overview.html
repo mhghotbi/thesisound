@@ -67,6 +67,45 @@
 <div class="notice notice--danger" role="alert">{{ model.technical_detail | user_error('generic') }}</div>
 {% endif %}
 
+{% if project.lesson_intent.value == 'source_coverage' %}
+{% set compression_labels = {'concise': 'فشرده — فقط مفاهیم اصلی', 'standard': 'معمولی', 'full': 'کامل — همهٔ جزئیات'} %}
+<section class="section-block" aria-labelledby="overview-scope">
+  <div class="section-heading"><h2 id="overview-scope">دربارهٔ این گفتار</h2></div>
+  <dl class="summary-list">
+    <div class="summary-row"><dt>نیت گفتار</dt><dd>یادگیری کامل یک منبع</dd></div>
+    <div class="summary-row"><dt>فشردگی</dt><dd>{{ compression_labels.get(project.compression.value, project.compression.value) }}</dd></div>
+    <div class="summary-row"><dt>طول هر بخش</dt><dd>{{ project.episode_target_minutes | fa_num }} دقیقه</dd></div>
+    <div class="summary-row">
+      <dt>دامنه</dt>
+      <dd>
+        {% if project.scope and project.scope.chapter_indexes %}
+        {{ project.scope.chapter_indexes | length | fa_num }} فصل منتخب از این منبع
+        {% else %}
+        همهٔ فصل‌های منبع
+        {% endif %}
+      </dd>
+    </div>
+    {% if project.episode_plan and project.episode_plan.parts %}
+    <div class="summary-row"><dt>بخش‌ها</dt><dd>{{ project.episode_plan.parts | length | fa_num }} گفتار</dd></div>
+    {% endif %}
+    {% if lesson_report and lesson_report.cost_by_stage %}
+    {% set estimated_values = lesson_report.cost_by_stage | selectattr('estimated_cost_micros', 'ne', none) | map(attribute='estimated_cost_micros') | list %}
+    {% set actual_values = lesson_report.cost_by_stage | selectattr('actual_cost_micros', 'ne', none) | map(attribute='actual_cost_micros') | list %}
+    {% if estimated_values or actual_values %}
+    <div class="summary-row">
+      <dt>هزینه</dt>
+      <dd>
+        {% if estimated_values %}تخمینی {{ (estimated_values | sum / 1000000) | round(3) | fa_num }} دلار{% endif %}
+        {% if actual_values %}· واقعی تاکنون {{ (actual_values | sum / 1000000) | round(3) | fa_num }} دلار{% endif %}
+      </dd>
+    </div>
+    {% endif %}
+    {% endif %}
+  </dl>
+  <p><a href="/projects/{{ project.project_id }}/report">گزارش کامل: پوشش مفاهیم و هزینهٔ تخمینی در برابر واقعی</a></p>
+</section>
+{% endif %}
+
 <details class="technical-details technical-details--wide">
   <summary>پرسش و محدودهٔ این گفتار</summary>
   <div class="technical-details__body">

@@ -205,3 +205,117 @@ def test_source_coverage_project_report_renders_parts_and_coverage(tmp_path: Pat
         page = client.get(f"/projects/{project.project_id}/report")
     assert page.status_code == 200
     assert "برچسب" in page.text
+
+
+def test_overview_shows_source_coverage_scope_and_cost(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    source_store = SourceArtifactStore(settings.workspace_root)
+    source_id = uuid4()
+    project = Project(
+        raw_input="کتاب",
+        state=ProjectState.CORPUS_READY,
+        brief=ResearchBrief(
+            normalized_topic="کتاب آزمون",
+            topic_type=TopicType.WORK,
+            central_question="کتاب چه می‌گوید؟",
+            target_duration_minutes=10,
+        ),
+        lesson_intent=LessonIntent.SOURCE_COVERAGE,
+        compression=Compression.CONCISE,
+        episode_target_minutes=15,
+        scope=ProjectScope(source_id=source_id, chapter_indexes=[0]),
+        sources=[
+            SourceCandidate(
+                source_id=source_id,
+                title="منبع آزمون",
+                role=SourceRole.USER_CONTEXT,
+                source_type="pdf",
+                origin="user_upload",
+                access=SourceAccess.FULL_TEXT,
+                user_decision=SourceDecision.INCLUDE,
+            )
+        ],
+    )
+    workspace.save_project(project)
+
+    cell = ConceptCell(
+        cell_key="ch00-c001",
+        label_fa="برچسب",
+        kind="argument",
+        tier=1,
+        chapter_index=0,
+        section_ids=["section-1"],
+        block_ids=["block-1"],
+        granularity_rationale="یک واحد مستقل و قابل ردیابی است.",
+        estimated_minutes=4.0,
+    )
+    source_store.save_concept_map(
+        project.project_id,
+        source_id,
+        SourceConceptMap(
+            source_fingerprint=_FINGERPRINT,
+            builder_version=1,
+            chapters=[
+                SourceChapter(
+                    chapter_index=0,
+                    title="فصل ۰",
+                    heading_path=["فصل ۰"],
+                    block_ids=["block-1"],
+                    estimated_minutes=4.0,
+                    detected_from="heading",
+                    detection_agreement="agreed",
+                )
+            ],
+            cells=[cell],
+            edges=[],
+            statistics=ConceptMapStatistics(cell_count=1),
+            created_at=datetime.now(UTC),
+        ),
+    )
+    claim = ClaimRecord(
+        claim_id="clm-1",
+        claim="مدعا",
+        claim_type=ClaimType.AUTHOR_POSITION,
+        evidence_ids=["ev-1"],
+        support_status=SupportStatus.STRONG,
+    )
+    evidence_item = EvidenceItem(
+        evidence_id="ev-1",
+        source_id=source_id,
+        block_id="block-1",
+        claim="مدعا",
+        claim_type=ClaimType.AUTHOR_POSITION,
+        supporting_excerpt="نقل قول",
+        locator=Locator(page_start=1, page_end=1),
+        support_kind="direct",
+        confidence=0.9,
+    )
+    source_store.save_evidence(
+        project.project_id,
+        source_id,
+        [
+            BlockEvidenceExtraction(
+                source_id=source_id,
+                block_id="block-1",
+                extraction=EvidenceExtraction(segment_function="argument", claims=[evidence_item]),
+            )
+        ],
+    )
+    source_store.save_claim_ledger(
+        project.project_id, source_id, ClaimLedger(source_id=source_id, claims=[claim])
+    )
+
+    app = create_app(
+        settings, corpus_executor=lambda _: None,
+        episode_executor=lambda _: None, script_executor=lambda _: None,
+    )
+    with TestClient(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}")
+    assert page.status_code == 200
+    assert "یادگیری کامل یک منبع" in page.text
+    assert "فشرده — فقط مفاهیم اصلی" in page.text
+    assert "۱۵ دقیقه" in page.text
+    assert "۱ فصل منتخب از این منبع" in page.text
+    assert f"/projects/{project.project_id}/report" in page.text

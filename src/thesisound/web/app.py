@@ -53,10 +53,13 @@ from thesisound.product_metrics.events import (
     UserRegistered,
 )
 from thesisound.product_metrics.store import ProductEventStore
+from thesisound.services.episode_artifact_store import EpisodeArtifactStore
+from thesisound.services.lesson_report import LessonReportBuilder
 from thesisound.services.observability_reporting import ObservabilityReporter
 from thesisound.services.product_metrics_rollup import ProductMetricsRollup
 from thesisound.services.readiness import project_readiness
 from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
+from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.audio_routes import register_audio_routes
 from thesisound.web.auth import NullOtpSender, OtpError, OtpSenderPort, OtpService
 from thesisound.web.concept_routes import register_concept_routes
@@ -310,6 +313,11 @@ def create_app(
     observability = ObservabilityReporter(observability_ledger)
     tracing.install_tracer(tracer_from_settings(runtime))
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
+    overview_report_builder = LessonReportBuilder(
+        source_store=SourceArtifactStore(workspace.root),
+        episode_store=EpisodeArtifactStore(workspace.root),
+        ledger=observability_ledger,
+    )
     accounts = accounts_store_from_settings(runtime)
     configure_product_metrics(
         runtime,
@@ -993,6 +1001,12 @@ def create_app(
                 workspace_root=workspace.root,
             )
         )
+        lesson_report = None
+        if project.lesson_intent == LessonIntent.SOURCE_COVERAGE:
+            try:
+                lesson_report = overview_report_builder.build(project_id, project)
+            except (FileNotFoundError, OSError, ValueError):
+                lesson_report = None
         return render(
             request,
             "projects/overview.html",
@@ -1000,6 +1014,7 @@ def create_app(
                 "project": project,
                 "model": model,
                 "schema_drift": schema_drift,
+                "lesson_report": lesson_report,
             },
         )
 
