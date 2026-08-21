@@ -382,11 +382,10 @@ def _default_client_factory(api_key: str) -> Any:
         options = require_gemini_http_options()
     except RuntimeError as exc:
         raise ModelConfigurationError(str(exc)) from exc
-    return genai.Client(
-        api_key=api_key,
-        vertexai=False,
-        http_options=types.HttpOptions(**options),
-    )
+    kwargs: dict[str, Any] = {"api_key": api_key, "vertexai": False}
+    if options is not None:
+        kwargs["http_options"] = types.HttpOptions(**options)
+    return genai.Client(**kwargs)
 
 
 def _default_adc_client_factory() -> Any:

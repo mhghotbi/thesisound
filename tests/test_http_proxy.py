@@ -60,3 +60,38 @@ def test_require_gemini_http_options_rejects_unproxied_api_key_traffic(tmp_path)
     configure_gemini_http_proxy("http://127.0.0.1:10809")
     options = require_gemini_http_options()
     assert options["client_args"]["proxy"] == "http://127.0.0.1:10809"
+
+
+def test_proxy_requirement_can_be_relaxed_for_unproxied_api_key_traffic() -> None:
+    from thesisound.http_proxy import configure_gemini_proxy_required, require_gemini_http_options
+
+    configure_gemini_http_proxy("none")
+    configure_gemini_proxy_required(False)
+    try:
+        assert require_gemini_http_options() is None
+    finally:
+        # Module-level global: never leave it relaxed for other tests.
+        configure_gemini_proxy_required(True)
+        configure_gemini_http_proxy("http://127.0.0.1:10809")
+
+
+def test_settings_wires_gemini_proxy_required(tmp_path) -> None:
+    from thesisound.http_proxy import (
+        configure_gemini_http_proxy,
+        configure_gemini_proxy_required,
+        gemini_proxy_required,
+        require_gemini_http_options,
+    )
+
+    try:
+        Settings(
+            _env_file=None,
+            workspace_root=tmp_path / "workspaces",
+            http_proxy="none",
+            gemini_proxy_required=False,
+        )
+        assert gemini_proxy_required() is False
+        assert require_gemini_http_options() is None
+    finally:
+        configure_gemini_proxy_required(True)
+        configure_gemini_http_proxy("http://127.0.0.1:10809")

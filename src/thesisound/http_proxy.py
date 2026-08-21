@@ -10,6 +10,25 @@ from __future__ import annotations
 DEFAULT_HTTP_PROXY = "http://127.0.0.1:10809"
 
 _gemini_proxy: str | None = DEFAULT_HTTP_PROXY
+_gemini_proxy_required: bool = True
+
+
+def configure_gemini_proxy_required(required: bool) -> None:
+    """Whether API-key Gemini clients must have a working proxy configured.
+
+    Defaults to True (the original policy). Set THESISOUND_GEMINI_PROXY_REQUIRED=false
+    (see Settings.gemini_proxy_required) to allow unproxied API-key traffic -- e.g.
+    while a local proxy is temporarily broken and direct access to Gemini is confirmed
+    to work. This is an operator override for a specific environment, not a statement
+    that the proxy is never needed.
+    """
+
+    global _gemini_proxy_required
+    _gemini_proxy_required = required
+
+
+def gemini_proxy_required() -> bool:
+    return _gemini_proxy_required
 
 
 def normalize_proxy_url(proxy: str | None) -> str | None:
@@ -54,13 +73,18 @@ def gemini_http_options(proxy: str | None = None) -> dict[str, object] | None:
     }
 
 
-def require_gemini_http_options(proxy: str | None = None) -> dict[str, object]:
-    """HttpOptions for Gemini API-key clients; proxy is mandatory."""
+def require_gemini_http_options(proxy: str | None = None) -> dict[str, object] | None:
+    """HttpOptions for Gemini API-key clients; proxy is mandatory unless relaxed.
+
+    Returns None when proxying is unconfigured and gemini_proxy_required() is False
+    (THESISOUND_GEMINI_PROXY_REQUIRED=false) -- callers must then build an unproxied
+    client, the same way the ADC path already tolerates a None result.
+    """
     options = gemini_http_options(proxy)
-    if options is None:
+    if options is None and _gemini_proxy_required:
         raise RuntimeError(
             "Gemini API key requests require THESISOUND_HTTP_PROXY "
             f"(default {DEFAULT_HTTP_PROXY}). Unproxied GEMINI_API_KEYS traffic "
-            "is not allowed; set the proxy or use 'none' only for non-key clients."
+            "is not allowed unless THESISOUND_GEMINI_PROXY_REQUIRED=false is set."
         )
     return options

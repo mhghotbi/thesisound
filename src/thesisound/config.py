@@ -7,7 +7,11 @@ from typing import Literal
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from thesisound.http_proxy import DEFAULT_HTTP_PROXY, configure_gemini_http_proxy
+from thesisound.http_proxy import (
+    DEFAULT_HTTP_PROXY,
+    configure_gemini_http_proxy,
+    configure_gemini_proxy_required,
+)
 
 
 class Settings(BaseSettings):
@@ -32,6 +36,11 @@ class Settings(BaseSettings):
     # Gemini-only proxy (local Xray HTTP inbound). Okian and OpenAI always connect directly.
     # Set to "none" / empty to disable Gemini proxying.
     http_proxy: str | None = DEFAULT_HTTP_PROXY
+    # API-key Gemini traffic normally refuses to run unproxied (see http_proxy.py).
+    # Set to false as a temporary override when the proxy itself is broken and direct
+    # access to Gemini has been confirmed to work -- not a statement that proxying is
+    # never needed.
+    gemini_proxy_required: bool = True
 
     model_fast: str = "gemini-3.5-flash-lite"
     model_strong: str = "gemini-3.6-flash"
@@ -283,6 +292,7 @@ class Settings(BaseSettings):
         if not self.model_reviewer.strip():
             self.model_reviewer = self.model_strong
         configure_gemini_http_proxy(self.http_proxy)
+        configure_gemini_proxy_required(self.gemini_proxy_required)
         return self
 
     def ensure_workspace_root(self) -> Path:
