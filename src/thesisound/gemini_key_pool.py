@@ -87,6 +87,7 @@ class GeminiKeyPool:
     ) -> T:
         last_quota_error: Exception | None = None
         last_auth_error: Exception | None = None
+        last_transient_error: Exception | None = None
         now = self._clock()
         order = self._candidate_order()
         attempted = False
@@ -134,6 +135,20 @@ class GeminiKeyPool:
                         state.blocked_until = self._clock() + duration
                         self._current_index = (index + 1) % len(self._states)
                     continue
+                if is_transient_network_error(exc):
+                    # A reset/timeout on THIS key's connection says nothing about
+                    # whether another key in the pool can reach the provider right
+                    # now -- unlike quota errors, don't cool this key down, just
+                    # try the next one. Previously any non-quota, non-auth error
+                    # aborted the whole call on the very first candidate key, so a
+                    # single flaky connection could starve out six working keys.
+                    event["status"] = "transient_failed"
+                    event["failure_scope"] = "network"
+                    _emit(on_attempt, event)
+                    last_transient_error = exc
+                    with self._lock:
+                        self._current_index = (index + 1) % len(self._states)
+                    continue
                 _emit(on_attempt, event)
                 raise
 
@@ -158,6 +173,8 @@ class GeminiKeyPool:
             raise last_quota_error
         if last_auth_error is not None or self._has_authentication_failures():
             return self._call_with_adc(operation, last_auth_error, on_attempt=on_attempt)
+        if last_transient_error is not None:
+            raise last_transient_error
         if not attempted:
             wait_seconds = max(
                 0,
@@ -296,6 +313,32 @@ def is_gemini_quota_error(exc: Exception) -> bool:
             "ratelimit",
             "quota_exceeded",
             "too many requests",
+        )
+    )
+
+
+def is_transient_network_error(exc: Exception) -> bool:
+    """A connection-level failure that says nothing about this key specifically.
+
+    No HTTP status means the request never reached (or never got a reply from)
+    the provider -- a reset, refused, or timed-out connection -- as opposed to a
+    real response the provider sent back (quota, auth, or a genuine 4xx/5xx).
+    """
+
+    if _status_code(exc) is not None:
+        return False
+    name = type(exc).__name__.casefold()
+    return any(
+        token in name
+        for token in (
+            "connect",
+            "timeout",
+            "remoteprotocol",
+            "readerror",
+            "writeerror",
+            "connectionreset",
+            "connectionrefused",
+            "networkerror",
         )
     )
 

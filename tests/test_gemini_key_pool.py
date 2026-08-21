@@ -55,6 +55,48 @@ def test_pool_rotates_on_quota_and_sticks_to_next_key() -> None:
     assert clients["key-a"].calls == 1
 
 
+class ConnectError(RuntimeError):
+    """No status_code -- shaped like httpx.ConnectError, not a provider response."""
+
+
+def test_pool_tries_the_next_key_after_a_transient_connection_error() -> None:
+    """A reset/timeout on one key must not starve out the rest of the pool.
+
+    Found live (2026-08-20): every non-quota, non-auth error -- including a
+    plain connection reset that says nothing about a *specific* key -- aborted
+    the whole call on the first candidate key, even with six other configured
+    keys confirmed reachable seconds earlier by a direct probe.
+    """
+
+    attempted: list[str] = []
+    pool = GeminiKeyPool(
+        ["flaky-key", "good-key"],
+        client_factory=lambda key: FakeClient(key_name=key),
+    )
+
+    def operation(client: FakeClient) -> str:
+        attempted.append(client.key_name)
+        if client.key_name == "flaky-key":
+            raise ConnectError("[WinError 10054] An existing connection was forcibly closed")
+        return client.key_name
+
+    assert pool.call(operation) == "good-key"
+    assert attempted == ["flaky-key", "good-key"]
+
+
+def test_pool_raises_the_transient_error_when_every_key_fails_that_way() -> None:
+    pool = GeminiKeyPool(
+        ["key-a", "key-b"],
+        client_factory=lambda key: FakeClient(key_name=key),
+    )
+
+    def operation(client: FakeClient) -> str:
+        raise ConnectError("The read operation timed out")
+
+    with pytest.raises(ConnectError, match="timed out"):
+        pool.call(operation)
+
+
 def test_pool_does_not_hide_auth_or_input_errors() -> None:
     attempted: list[str] = []
     pool = GeminiKeyPool(
