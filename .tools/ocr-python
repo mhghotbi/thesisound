@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Wrap the OCR venv so Paddle can run on this KVM CPU (SSE2-only).
+# Paddle 3.x wheels contain AVX opcodes; qemu-user emulates them.
+exec /home/ubuntu/thesisound/.tools/qemu-x86_64-static -cpu Haswell \
+  /home/ubuntu/thesisound/.venv-ocr/bin/python "$@"
