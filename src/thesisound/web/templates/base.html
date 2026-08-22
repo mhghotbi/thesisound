@@ -25,12 +25,10 @@
       }
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.bunny.net">
-  <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
-  <link href="https://fonts.bunny.net/css?family=vazirmatn:300,400,500,600,700,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='/fonts.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='/logo.css') }}">
-  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="{{ url_for('static', path='/vendor/htmx.min.js') }}" defer></script>
   <script src="{{ url_for('static', path='/app.js') }}?v=20260812-sources-scroll" defer></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">

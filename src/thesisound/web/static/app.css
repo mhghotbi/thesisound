@@ -9,7 +9,7 @@ html[data-theme="cobalt"],
   --ink: #221f1c;
   --ink-soft: #443c34;
   --muted: #6d6157;
-  --muted-light: #877a6c;
+  --muted-light: #776b5f;
   --disabled: #9d9083;
   --border: #d8ccbc;
   --border-strong: #c4b6a4;
@@ -23,7 +23,7 @@ html[data-theme="cobalt"],
   --accent-wash: #e7ebff;
   --success: #35644c;
   --success-wash: #e4eee7;
-  --warning: #91651f;
+  --warning: #8d621e;
   --warning-wash: #f4ead4;
   --danger: #8b3728;
   --danger-wash: #f7e3da;
@@ -44,7 +44,7 @@ html[data-theme="olive"] {
   --ink: #24231d;
   --ink-soft: #454438;
   --muted: #686757;
-  --muted-light: #81806d;
+  --muted-light: #706f5e;
   --disabled: #969581;
   --border: #d2d1bd;
   --border-strong: #b9b99f;
@@ -58,7 +58,7 @@ html[data-theme="olive"] {
   --accent-wash: #f1e5d2;
   --success: #4e6848;
   --success-wash: #e3ecdf;
-  --warning: #94691f;
+  --warning: #8a621d;
   --warning-wash: #f3e9d2;
   --danger: #873d2d;
   --danger-wash: #f3e2da;
@@ -79,7 +79,7 @@ html[data-theme="wood"] {
   --ink: #271f19;
   --ink-soft: #4b3b30;
   --muted: #715e50;
-  --muted-light: #8a7768;
+  --muted-light: #7b6a5d;
   --disabled: #a29182;
   --border: #dbc8b4;
   --border-strong: #c9ad91;
@@ -93,7 +93,7 @@ html[data-theme="wood"] {
   --accent-wash: #f4dfd8;
   --success: #526342;
   --success-wash: #e7eddf;
-  --warning: #9a651d;
+  --warning: #915f1b;
   --warning-wash: #f5e9cf;
   --danger: #903727;
   --danger-wash: #f7e1d8;
@@ -114,7 +114,7 @@ html[data-theme="slate"] {
   --ink: #1a1a1a;
   --ink-soft: #3a3a3a;
   --muted: #6b6b6b;
-  --muted-light: #858585;
+  --muted-light: #707070;
   --disabled: #9a9a9a;
   --border: #d0d0d0;
   --border-strong: #b5b5b5;
@@ -128,7 +128,7 @@ html[data-theme="slate"] {
   --accent-wash: #ececec;
   --success: #3f5f4a;
   --success-wash: #e6eee8;
-  --warning: #8a6a2a;
+  --warning: #846528;
   --warning-wash: #f2ead8;
   --danger: #7a3a32;
   --danger-wash: #f3e4df;
@@ -233,15 +233,6 @@ html[data-mode="operator"] .simple-only { display: none !important; }
   white-space: nowrap;
 }
 .brand:hover { color: var(--paper); }
-.brand__mark {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--brand-soft);
-  border-radius: 50%;
-  font: 800 13px/1 ui-monospace, monospace;
-}
 .brand strong {
   display: block;
   font-size: 13px;
@@ -589,7 +580,7 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.2;
   text-decoration: none;
   transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
@@ -634,7 +625,7 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
 .form-sheet { padding: 22px; display: grid; gap: 19px; }
 .field { display: grid; gap: 7px; }
 .field > span,
-.field > label { color: var(--ink-soft); font-size: 12px; font-weight: 650; }
+.field > label { color: var(--ink-soft); font-size: 12px; font-weight: 700; }
 .field small { color: var(--muted); font-weight: 400; }
 .field input,
 .field select,
@@ -678,7 +669,7 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
   gap: 8px;
   border: 0;
 }
-.choice-group legend { width: 100%; margin-block-end: 6px; color: var(--ink-soft); font-size: 12px; font-weight: 650; }
+.choice-group legend { width: 100%; margin-block-end: 6px; color: var(--ink-soft); font-size: 12px; font-weight: 700; }
 .choice-group label { position: relative; }
 .choice-group input { position: absolute; opacity: 0; pointer-events: none; }
 .choice-group span {
@@ -693,33 +684,32 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
   cursor: pointer;
   font-size: 12px;
 }
-.choice-group input:checked + span { border-color: var(--brand); background: var(--brand-wash); color: var(--brand-strong); font-weight: 650; }
+.choice-group input:checked + span { border-color: var(--brand); background: var(--brand-wash); color: var(--brand-strong); font-weight: 700; }
 .choice-group input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 3px; }
 
-.notice,
-.attention-panel {
+.notice {
   margin-block: 15px;
   padding: 15px 17px;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   background: var(--paper-muted);
 }
-.notice p,
-.attention-panel p { margin: 5px 0 0; }
+.notice p { margin: 5px 0 0; }
 .notice--success { border-color: var(--success); background: var(--success-wash); }
 .notice--warning { border-color: var(--warning); background: var(--warning-wash); }
 .notice--danger { border-color: var(--danger); background: var(--danger-wash); }
 .notice--info { border-color: var(--info); background: var(--info-wash); }
 
+/* attention-panel is a rule-and-type divider, not a boxed notice: it never
+   shared .notice's border/background, so it no longer shares the selector
+   either -- the two blocks used to collide, with this one winning outright
+   on every property and leaving the shared declaration dead. */
 .attention-panel {
   margin-block: 20px;
   padding: 14px 0 0;
   display: grid;
   gap: 12px;
-  border: 0;
   border-block-start: 1px solid var(--ink);
-  border-radius: 0;
-  background: none;
 }
 .attention-panel__line {
   display: flex;
@@ -745,7 +735,7 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
   gap: 7px;
   color: var(--ink-soft);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .status-label__mark { width: 11px; height: 11px; flex: 0 0 auto; }
 span.status-label__mark {
@@ -897,7 +887,7 @@ span.status-label__mark {
   color: var(--brand-strong);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .readiness-technical { margin-block-start: 15px; }
 .readiness-technical dd { overflow-wrap: anywhere; }
@@ -1299,7 +1289,7 @@ span.status-label__mark {
   margin: 0;
   color: var(--ink-soft);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.7;
   text-wrap: pretty;
 }
@@ -1681,10 +1671,16 @@ code {
   .segmented-control button { padding-inline: 9px; }
   .theme-switcher > summary { padding-inline: 9px; }
   .header-link { display: none; }
-  .form-actions > .button,
+  /* Primary, secondary, and danger buttons stretch for an easy mobile tap
+     target; --quiet stays sized-to-content because it carries no fill or
+     border, and a full-width transparent hit area with centred text reads as
+     a dead zone rather than a control. --small is excluded on the same
+     principle: a variant that opts into a compact size should not be
+     silently overridden back to full width by a later, more general rule. */
+  .form-actions > .button:not(.button--quiet):not(.button--small),
   .form-actions > form,
-  .form-actions > form .button { width: 100%; }
-  .button { width: 100%; }
+  .form-actions > form .button:not(.button--quiet):not(.button--small) { width: 100%; }
+  .button:not(.button--quiet):not(.button--small) { width: 100%; }
   .choice-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .choice-group label,
   .choice-group span { width: 100%; }
@@ -1692,7 +1688,18 @@ code {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto !important; }
+  /* Scoped to the one looping animation in the system (status-pulse), not a
+     blanket kill of every transition. The functional 120-180ms hover/focus
+     transitions stay: they are brief, non-looping, and not the kind of motion
+     prefers-reduced-motion targets. Freezing the mark at opacity 1 rather than
+     removing the fill keeps the running state legible without motion --- it
+     was already carried by fill + colour + the status word, never by the
+     pulse alone, but a frozen, undimmed mark keeps the strongest of the three
+     signals intact. */
+  .status-label--running span.status-label__mark,
+  .timeline__mark--running,
+  .stage-row.is-current .stage-row__mark { animation: none !important; opacity: 1; }
 }
 
 .table-wrap { max-width: 100%; overflow-x: auto; }
@@ -1711,7 +1718,7 @@ code {
 .data-table th {
   color: var(--ink-soft);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .data-table tbody tr:hover { background: var(--paper-muted); }
 .data-table td small { display: block; color: var(--muted); font-size: 12px; }
@@ -1719,7 +1726,7 @@ code {
   margin-inline-start: 6px;
   color: var(--brand);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .source-trace { margin: 0 0 6px; color: var(--muted); font-size: 13px; }
 .source-trace span { display: block; }
@@ -1777,7 +1784,7 @@ tr.is-highlighted { background: var(--accent-wash); transition: background 0.2s 
 .obs-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .obs-table th,
 .obs-table td { padding: 9px; border-block-end: 1px solid var(--border); text-align: start; vertical-align: top; }
-.obs-table th { color: var(--muted); font-size: 12px; font-weight: 650; }
+.obs-table th { color: var(--muted); font-size: 12px; font-weight: 700; }
 .obs-waterfall { display: grid; gap: 9px; }
 .obs-waterfall__row {
   display: grid;

@@ -12,7 +12,7 @@ colors:
   ink: "#221f1c"
   ink-soft: "#443c34"
   muted: "#6d6157"
-  muted-light: "#877a6c"
+  muted-light: "#776b5f"
   disabled: "#9d9083"
   border: "#d8ccbc"
   border-strong: "#c4b6a4"
@@ -26,7 +26,7 @@ colors:
   accent-wash: "#e7ebff"
   success: "#35644c"
   success-wash: "#e4eee7"
-  warning: "#91651f"
+  warning: "#8d621e"
   warning-wash: "#f4ead4"
   danger: "#8b3728"
   danger-wash: "#f7e3da"
@@ -69,12 +69,12 @@ typography:
   control:
     fontFamily: "Vazirmatn, Tahoma, sans-serif"
     fontSize: "13px"
-    fontWeight: 650
+    fontWeight: 700
     lineHeight: 1.2
   label:
     fontFamily: "Vazirmatn, Tahoma, sans-serif"
     fontSize: "12px"
-    fontWeight: 650
+    fontWeight: 700
     lineHeight: 1.5
   caption:
     fontFamily: "Vazirmatn, Tahoma, sans-serif"
@@ -194,11 +194,11 @@ The system ships **four peer themes** — `cobalt`, `wood`, `olive`, `slate` —
 - **Paper Muted** (`#f0e7db`) / **Paper Strong** (`#e7dac9`): quiet fills for notices and for the row that is currently active.
 - **Ink** (`#221f1c`): body text.
 - **Ink Soft** (`#443c34`): secondary headings and field labels.
-- **Muted** (`#6d6157`) / **Muted Light** (`#877a6c`) / **Disabled** (`#9d9083`): supporting copy, metadata, and unreachable states, in that order of recession.
+- **Muted** (`#6d6157`) / **Muted Light** (`#776b5f`) / **Disabled** (`#9d9083`): supporting copy, metadata, and unreachable states, in that order of recession.
 - **Border** (`#d8ccbc`) / **Border Strong** (`#c4b6a4`): the hairline vocabulary. Border separates; Border Strong encloses something interactive.
 
 ### Semantic
-Each state carries a text-weight colour and a wash: **Success** `#35644c`, **Warning** `#91651f`, **Danger** `#8b3728`, **Info** `#315b7d`, each with a matching `-wash` fill. These are separate from Brand and Accent and are never borrowed for emphasis.
+Each state carries a text-weight colour and a wash: **Success** `#35644c`, **Warning** `#8d621e`, **Danger** `#8b3728`, **Info** `#315b7d`, each with a matching `-wash` fill. These are separate from Brand and Accent and are never borrowed for emphasis. Muted Light and Warning are both darkened from their original theme-extraction values to clear the 4.5:1 AA floor against paper and warning-wash respectively — the audit finding this fixes.
 
 ### Named Rules
 
@@ -213,7 +213,7 @@ Each state carries a text-weight colour and a wash: **Success** `#35644c`, **War
 **Body Font:** Vazirmatn (with Tahoma, sans-serif)
 **Data Font:** ui-monospace / SFMono-Regular / Menlo — identifiers, hashes, durations, costs, model names
 
-**Character:** One Persian family carries the whole system. Its weight range does the work that a second family would do elsewhere: 400 for reading, 650 for labels and controls, 800 for page titles. Digits are `tabular-nums` everywhere, so numbers in a column stay in a column.
+**Character:** One Persian family carries the whole system. Its weight range does the work that a second family would do elsewhere: 400 for reading, 700 for labels and controls, 800 for page titles. The family ships in discrete steps — 400/500/600/700/800 — and 650 is not one of them; a browser silently rounds it to 700, so the system names 700 directly rather than a weight it never actually renders. Digits are `tabular-nums` everywhere, so numbers in a column stay in a column.
 
 ### Hierarchy
 The ladder is 35 → 26 → 17 → 16 → 15 → 14 → 13 → 12 → 11, and every step below the display size earns its place by carrying a different kind of content.
@@ -224,8 +224,8 @@ The ladder is 35 → 26 → 17 → 16 → 15 → 14 → 13 → 12 → 11, and ev
 - **Title** (700, 16px, 1.5): section headings inside a page.
 - **Body** (400, 15px, 1.75): running Persian text.
 - **Dense** (400, 14px, 1.6): table cells and stage-row names — the reading size for scanned rather than read content.
-- **Control** (650, 13px, 1.2): buttons, header navigation, field hints and field errors. Anything the reader acts on or is corrected by.
-- **Label** (650, 12px): field labels, status labels, chips.
+- **Control** (700, 13px, 1.2): buttons, header navigation, field hints and field errors. Anything the reader acts on or is corrected by.
+- **Label** (700, 12px): field labels, status labels, chips.
 - **Caption** (600, 11px, tracking `0.03em`): kickers and peripheral metadata. The floor.
 - **Data** (mono, 12px): anything that is an identifier rather than a sentence.
 
@@ -285,7 +285,7 @@ Borders are the primary separator and they are quiet: 1px, `--border` to separat
 ## Components
 
 ### Buttons
-- **Shape:** Control radius (6px), 44px tall, `0 16px` padding, 13px at weight 650. The height is the accessibility floor from PRODUCT.md, not a style choice.
+- **Shape:** Control radius (6px), 44px tall, `0 16px` padding, 13px at weight 700. The height is the accessibility floor from PRODUCT.md, not a style choice.
 - **Primary:** Brand ground, Paper text; hover deepens to Brand Strong.
 - **Secondary:** Paper Raised ground with a Border Strong outline and Ink Soft text; hover darkens the outline and the text to Ink.
 - **Quiet:** transparent until hover, when it takes a Paper Muted ground.
@@ -300,7 +300,7 @@ Borders are the primary separator and they are quiet: 1px, `--border` to separat
 
 ### Chips (choice groups)
 - **Style:** Pill radius, 44px tall, Paper ground with a Border Strong outline and Muted text.
-- **Selected:** Brand outline, Brand Wash ground, Brand Strong text at weight 650 — three simultaneous signals, so selection never depends on colour alone.
+- **Selected:** Brand outline, Brand Wash ground, Brand Strong text at weight 700 — three simultaneous signals, so selection never depends on colour alone.
 - The underlying radio input is visually hidden but focusable; focus draws a 2px Focus outline at 3px offset around the chip.
 
 ### Cards and panels
@@ -347,4 +347,4 @@ Accessibility and inclusion commitments — RTL as the native direction, WCAG AA
 - **Don't** build an English-first layout and translate it into Persian.
 - **Don't** let any colour change with `data-mode`.
 - **Don't** animate a loading percentage unless its units are real.
-- **Don't** kill all motion for `prefers-reduced-motion` without leaving an alternative signal. *The current global `animation: none !important` removes the running pulse; the status word and colour still carry the state, but the blanket rule is a finding.*
+- **Don't** kill all motion for `prefers-reduced-motion` without leaving an alternative signal. The reduced-motion rule is scoped to the one looping animation in the system (the running pulse); it freezes the mark at full opacity rather than removing it, and the system's brief, non-looping functional transitions keep running.
