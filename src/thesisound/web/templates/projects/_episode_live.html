@@ -17,7 +17,7 @@
     {{ status_label('در حال انجام', 'اقدامی لازم نیست', 'running', planning_run.stage) }}
   </div>
   <p class="lede">درصد یا زمان باقی‌ماندهٔ حدسی نمایش داده نمی‌شود؛ فقط مرحله‌ای که واقعاً ذخیره‌شده است.</p>
-  <p class="operator-only">No synthetic ETA; persisted stage only.</p>
+  <p class="operator-only">زمان باقی‌مانده تخمین ساختگی ندارد؛ فقط مرحلهٔ ثبت‌شده نمایش داده می‌شود.</p>
   {% if current_span %}
 <p class="operator-only live-note">عملیات جاری: <bdi dir="ltr">{{ current_span.name }}</bdi>{% if current_span.subject_id %} · <bdi dir="ltr">{{ current_span.subject_type }}:{{ current_span.subject_id }}</bdi>{% endif %} · {{ current_span.elapsed_ms | fa_num }} ms</p>
 {% endif %}

@@ -9,8 +9,8 @@
 <div class="page-content--narrow">
   <header class="page-heading page-heading--compact">
     <div>
-      <p class="kicker">برداشت اولیه</p>
       <h1>من این‌طور فهمیدم</h1>
+      <p class="page-heading__project">{{ project_title(project) }}</p>
       {% if project.state.value == 'brief_ready' %}
       <p>این تأیید واقعی است: تا زمانی که برداشت اولیه را تأیید نکنید، افزودن یا تحلیل منابع شروع نمی‌شود.</p>
       {% else %}

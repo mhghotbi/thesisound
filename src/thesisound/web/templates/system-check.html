@@ -4,9 +4,8 @@
 {% block content %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">حالت پیشرفته · Runtime preflight</p>
     <h1>آمادگی اجرای واقعی</h1>
-    <p>پیش‌نیازهای مسدودکننده پیش از queue شدن مرحله‌های هزینه‌دار بررسی می‌شوند؛ بنابراین مشکل کلید، SDK، مسیر نوشتن یا FFmpeg پس از مصرف API آشکار نمی‌شود.</p>
+    <p>پیش‌نیازهای مسدودکننده پیش از به‌صف‌رفتن مرحله‌های هزینه‌دار بررسی می‌شوند؛ بنابراین مشکل کلید، کتابخانه، مسیر نوشتن یا FFmpeg پس از مصرف سرویس آشکار نمی‌شود.</p>
   </div>
   {% if ready %}{{ status_label('آمادهٔ اجرا', 'هیچ مانع مسدودکننده‌ای ثبت نشده', 'success', 'scope=' ~ selected_scope) }}
   {% else %}{{ status_label('آماده نیست', 'حداقل یک مانع مسدودکننده وجود دارد', 'danger', 'scope=' ~ selected_scope) }}{% endif %}
@@ -20,13 +19,13 @@
 </nav>
 
 {% if blocked %}
-<div class="notice notice--danger" role="alert"><strong>اجرای مرحله متوقف شد.</strong><p>حداقل یک پیش‌نیاز مسدودکننده آماده نیست؛ هیچ run هزینه‌داری queue نشده است.</p></div>
+<div class="notice notice--danger" role="alert"><strong>اجرای مرحله متوقف شد.</strong><p>حداقل یک پیش‌نیاز مسدودکننده آماده نیست؛ هیچ اجرای هزینه‌داری به صف نرفته است.</p></div>
 {% endif %}
 
 {% if ready %}
 <div class="notice notice--success"><strong>پیش‌نیازهای مسدودکنندهٔ این دامنه آماده‌اند.</strong><p>این نتیجه وضعیت همین لحظهٔ محیط است و تضمین دائمی ارائه‌دهندهٔ بیرونی نیست.</p></div>
 {% else %}
-<div class="notice notice--danger"><strong>تا رفع موارد ناموفق، اجرای واقعی شروع نمی‌شود.</strong><p>موارد هشداردهنده مانع اجرا نیستند، اما باید پیش از استفادهٔ production بررسی شوند.</p></div>
+<div class="notice notice--danger"><strong>تا رفع موارد ناموفق، اجرای واقعی شروع نمی‌شود.</strong><p>موارد هشداردهنده مانع اجرا نیستند، اما باید پیش از استفاده در محیط تولید بررسی شوند.</p></div>
 {% endif %}
 
 <section class="section-block" aria-labelledby="checks-title">
@@ -45,13 +44,13 @@
 </section>
 
 <section class="data-panel section-block">
-  <div class="section-heading"><h2>بررسی معادل در خط فرمان</h2><span>برای سرور و CI</span></div>
+  <div class="section-heading"><h2>بررسی معادل در خط فرمان</h2><span>برای سرور و یکپارچه‌سازی پیوسته</span></div>
   <pre><code>uv run thesisound doctor</code></pre>
-  <p class="lede">خروجی CLI باید با همین دامنه و تنظیمات محیط اجرا شود. اسرار و مقدار کامل کلیدها در رابط نمایش داده نمی‌شوند.</p>
+  <p class="lede">خروجی خط فرمان باید با همین دامنه و تنظیمات محیط اجرا شود. اسرار و مقدار کامل کلیدها در رابط نمایش داده نمی‌شوند.</p>
 </section>
 
 {% call technical_details('قرارداد این صفحه', always_visible=true) %}
-  <p>Selected scope: <code><bdi dir="ltr">{{ selected_scope }}</bdi></code> · blocking checks ready: <code><bdi dir="ltr">{{ ready }}</bdi></code> · checks: <code><bdi dir="ltr">{{ checks | length }}</bdi></code></p>
+  <p>دامنهٔ انتخاب‌شده: <code><bdi dir="ltr">{{ selected_scope }}</bdi></code> · بررسی‌های مسدودکنندهٔ آماده: <code><bdi dir="ltr">{{ ready }}</bdi></code> · بررسی‌ها: <code><bdi dir="ltr">{{ checks | length }}</bdi></code></p>
 {% endcall %}
 
 <div class="form-actions section-block">

@@ -5,8 +5,8 @@
 {% set speaker_labels = {'A': 'اول', 'B': 'دوم'} %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">شنیدن و دریافت</p>
-    <h1>{{ project_title(project) }}</h1>
+    <h1>شنیدن و دریافت</h1>
+    <p class="page-heading__project">{{ project_title(project) }}</p>
     <p>نسخهٔ شنیداری فقط پس از وارسی ساختار صوت، رونویسی و مقایسه با متن گفتار آماده می‌شود.</p>
   </div>
   {% if audio_active %}
@@ -60,7 +60,7 @@
     <details class="disclosure">
       <summary>تنظیم صدا، ریتم و لحن (اختیاری)</summary>
       <p class="simple-only">اگر باز نکنید، تنظیمات پیش‌فرض همین اجرا اعمال می‌شود.</p>
-      <p class="operator-only">Run به hash نسخهٔ فعلی Script متصل است. پیش از queue، کلید Gemini، SDK، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
+      <p class="operator-only">این اجرا به هش نسخهٔ فعلی متن گفتار بسته است. پیش از به‌صف‌رفتن، کلید Gemini، کتابخانهٔ مدل، مسیرهای نوشتن و FFmpeg بررسی می‌شوند.</p>
 
       <div class="field-grid">
         <label class="field">
@@ -248,11 +248,11 @@
         <div class="evidence-card">
           {% if item.record %}
           <audio controls preload="none"><source src="/projects/{{ project.project_id }}/audio/segments/{{ item.chunk.chunk_id }}.wav" type="audio/wav"></audio>
-          <span>chunk <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi> · duration <bdi dir="ltr">{{ item.record.validation.duration_seconds | round(2) }}s</bdi> · attempts <bdi dir="ltr">{{ item.record.generation_attempts }}</bdi></span>
+          <span>قطعه <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi> · مدت <bdi dir="ltr">{{ item.record.validation.duration_seconds | round(2) }}s</bdi> · تلاش‌ها <bdi dir="ltr">{{ item.record.generation_attempts }}</bdi></span>
           {% endif %}
           {% if item.transcript %}<span class="operator-only"><strong>رونویسی خودکار · ASR:</strong> {{ item.transcript.text }}</span>{% endif %}
           {% if item.qa %}
-          <span>verdict <bdi dir="ltr">{{ item.qa.verdict }}</bdi> · similarity <bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></span>
+          <span>حکم <bdi dir="ltr">{{ item.qa.verdict }}</bdi> · شباهت <bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></span>
           {% if item.qa.missing_sentences %}<ul>{% for value in item.qa.missing_sentences %}<li>افتادگی احتمالی: {{ value }}</li>{% endfor %}</ul>{% endif %}
           {% endif %}
         </div>
@@ -272,7 +272,7 @@
       <div class="source-row__identity"><strong>گویندهٔ {{ item.chunk.speaker }} · <bdi dir="ltr">{{ item.chunk.chunk_id }}</bdi></strong><span>{% if item.qa %}<bdi dir="ltr">{{ item.qa.verdict }}</bdi>{% else %}در انتظار QA{% endif %}</span></div>
       <p class="source-row__summary">{{ item.chunk.text }}</p>
       {% if item.record %}<audio controls preload="none"><source src="/projects/{{ project.project_id }}/audio/segments/{{ item.chunk.chunk_id }}.wav" type="audio/wav"></audio>{% endif %}
-      {% if item.transcript %}{% call technical_details('رونویسی خودکار و اختلاف با متن', always_visible=true) %}<p>{{ item.transcript.text }}</p>{% if item.qa %}<p class="operator-only">Similarity: <code><bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></code></p>{% endif %}{% endcall %}{% endif %}
+      {% if item.transcript %}{% call technical_details('رونویسی خودکار و اختلاف با متن', always_visible=true) %}<p>{{ item.transcript.text }}</p>{% if item.qa %}<p class="operator-only">شباهت: <code><bdi dir="ltr">{{ (item.qa.similarity_ratio * 100) | round(2) }}%</bdi></code></p>{% endif %}{% endcall %}{% endif %}
     </article>
     {% endfor %}
   </div>

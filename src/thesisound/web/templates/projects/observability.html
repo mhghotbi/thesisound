@@ -2,35 +2,9 @@
 {% block title %}رصد اجرا — مقال{% endblock %}
 {% block content_class %}page-content page-content--wide{% endblock %}
 {% block content %}
-<style>
-  .obs-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(10rem,1fr)); gap:.75rem; }
-  .obs-metric { border:1px solid var(--line, #d9d7cf); border-radius:.65rem; padding:1rem; background:var(--surface, #fff); }
-  .obs-metric strong { display:block; font-size:1.35rem; direction:ltr; text-align:right; }
-  .obs-table { width:100%; border-collapse:collapse; font-size:.88rem; }
-  .obs-table th,.obs-table td { padding:.6rem; border-bottom:1px solid var(--line, #ddd); text-align:right; vertical-align:top; }
-  .obs-waterfall { display:grid; gap:.55rem; }
-  .obs-waterfall__row { display:grid; grid-template-columns:minmax(11rem,1fr) minmax(16rem,3fr) 6rem; gap:.75rem; align-items:center; }
-  .obs-waterfall__track { position:relative; height:1.1rem; border-radius:999px; background:color-mix(in srgb, currentColor 8%, transparent); overflow:hidden; direction:ltr; }
-  .obs-waterfall__bar { position:absolute; inset-block:0; border-radius:999px; background:currentColor; min-width:2px; opacity:.7; }
-  .obs-tree,.obs-tree ul { list-style:none; margin:.45rem 0; padding-inline-start:1.1rem; }
-  .obs-tree li { border-inline-start:1px solid var(--line, #ddd); padding-inline-start:.7rem; }
-  .obs-tree__node { display:flex; flex-wrap:wrap; gap:.55rem; align-items:center; padding:.42rem .55rem; border-radius:.4rem; }
-  .obs-tree__node--error,.obs-tree__node--failed,.obs-tree__node--rejected { background:rgba(145,32,32,.08); }
-  .obs-tree__node--running { background:rgba(45,91,145,.08); }
-  .obs-tree__kind { font-size:.72rem; border:1px solid currentColor; border-radius:999px; padding:.05rem .4rem; opacity:.7; }
-  .obs-tree__truncated { margin:.25rem 0 .5rem; font-size:.8rem; opacity:.7; }
-  .obs-pager { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; margin-block:1rem; }
-  .obs-pager a { border:1px solid var(--line, #ddd); border-radius:.4rem; padding:.35rem .65rem; text-decoration:none; }
-  .obs-code { direction:ltr; text-align:left; overflow-wrap:anywhere; }
-  @media (max-width:720px) {
-    .obs-waterfall__row { grid-template-columns:1fr; }
-    .obs-table { display:block; overflow-x:auto; }
-  }
-</style>
-
 <header class="page-hero">
-  <p class="kicker">حالت پیشرفته · فقط خواندنی</p>
   <h1>رصد اجرای «{{ project_title(project) }}»</h1>
+  <p class="subtitle">حالت پیشرفته · فقط خواندنی</p>
   <p class="lede">زمان، هزینه، کش، تلاش دوباره و تاریخچهٔ خطاها مستقیماً از ledger خوانده می‌شود.</p>
 </header>
 
@@ -131,7 +105,7 @@
   {% endif %}
   {% if stage_summary %}
   <table class="obs-table">
-    <thead><tr><th>عملیات</th><th>تعداد</th><th>self time</th><th>total time</th><th>خطا</th></tr></thead>
+    <thead><tr><th>عملیات</th><th>تعداد</th><th>زمان خود</th><th>زمان کل</th><th>خطا</th></tr></thead>
     <tbody>{% for row in stage_summary %}<tr><td><bdi dir="ltr">{{ row.name }}</bdi></td><td>{{ row.call_count | fa_num }}</td><td>{{ row.self_total_ms | fa_num }} ms</td><td>{{ row.total_ms | fa_num }} ms</td><td>{{ row.error_count | fa_num }}</td></tr>{% endfor %}</tbody>
   </table>
   {% endif %}
@@ -160,7 +134,7 @@
     <tr><th>وضعیت</th><td>{{ selected_call.call.status }}</td></tr>
     <tr><th>توکن</th><td>{{ (selected_call.call.total_tokens or 0) | fa_num }}</td></tr>
     <tr><th>هزینه</th><td>{% if selected_call.call.cost_micros is not none %}${{ "%.4f" | format(selected_call.call.cost_micros / 1000000) }}{% else %}نامشخص{% endif %}</td></tr>
-    <tr><th>prompt</th><td><bdi dir="ltr">{{ selected_call.prompt_id or '—' }} / {{ selected_call.prompt_version or '—' }}</bdi></td></tr>
+    <tr><th>پرامپت</th><td><bdi dir="ltr">{{ selected_call.prompt_id or '—' }} / {{ selected_call.prompt_version or '—' }}</bdi></td></tr>
     <tr><th>خطا</th><td>{{ selected_call.call.error_type or '—' }}{% if selected_call.call.error_message %}<br>{{ selected_call.call.error_message }}{% endif %}</td></tr>
   </tbody></table>
 </section>

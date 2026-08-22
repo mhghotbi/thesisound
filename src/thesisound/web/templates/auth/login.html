@@ -15,8 +15,8 @@
 </section>
 
 <section class="auth-card" aria-labelledby="login-title">
-  <p class="kicker">ورود امن با کد یک‌بارمصرف</p>
   <h2 id="login-title">شماره موبایل خود را وارد کنید:</h2>
+  <p class="subtitle">ورود امن با کد یک‌بارمصرف</p>
 
   {% if error %}
     <div class="notice notice--danger" role="alert">{{ error }}</div>
@@ -26,9 +26,10 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="next_path" value="{{ next_path }}">
     <label class="field">
-      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="09[0-9]{9}" placeholder="09120000000" value="{{ phone or '' }}" required autofocus aria-label="شمارهٔ موبایل">
+      <span>شمارهٔ موبایل</span>
+      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="09[0-9]{9}" placeholder="09120000000" value="{{ phone or '' }}" required autofocus>
     </label>
-    <button class="button button--primary button--full" type="submit" disabled>ارسال کد ورود</button>
+    <button class="button button--primary button--full" type="submit">ارسال کد ورود</button>
   </form>
 
   <div class="form-actions auth-card__footer">

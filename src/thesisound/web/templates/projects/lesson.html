@@ -4,8 +4,8 @@
 {% block content %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">نسخهٔ نوشتاری · گفتار {{ part_index | fa_num }}{% if part_count > 1 %} از {{ part_count | fa_num }}{% endif %}</p>
-    <h1>{{ project_title(project) }}</h1>
+    <h1>نسخهٔ نوشتاری</h1>
+    <p class="page-heading__project">{{ project_title(project) }} · گفتار {{ part_index | fa_num }}{% if part_count > 1 %} از {{ part_count | fa_num }}{% endif %}</p>
     <p>همین گفتار به‌جای صدا، به‌صورت یک درس نوشتاری خوانده می‌شود؛ ردیابی هر پاراگراف تا شاهد و منبع در همان‌جا در دسترس است.</p>
   </div>
 </header>

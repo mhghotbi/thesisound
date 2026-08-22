@@ -71,6 +71,7 @@ from thesisound.web.lesson_routes import register_lesson_routes
 from thesisound.web.observability_routes import register_observability_routes
 from thesisound.web.read_models import build_project_read_model
 from thesisound.web.readiness_routes import register_readiness_routes
+from thesisound.web.system_check_views import build_system_check_rows
 from thesisound.web.report_routes import register_report_routes
 from thesisound.web.script_routes import register_script_routes
 from thesisound.web.script_runtime import create_script_builder
@@ -825,7 +826,7 @@ def create_app(
             request,
             "system-check.html",
             {
-                "checks": checks,
+                "checks": build_system_check_rows(checks),
                 "ready": not any(check.blocking for check in checks),
                 "selected_scope": selected_scope,
                 "blocked": request.query_params.get("blocked") == "1",

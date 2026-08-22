@@ -4,8 +4,8 @@
 {% block content %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">نقشهٔ مفهومی منبع</p>
     <h1>{{ source_title }}</h1>
+    <p class="subtitle">نقشهٔ مفهومی منبع</p>
     <p>فصل‌ها، مفاهیم و رابطه‌ها را ببینید و در صورت نیاز اصلاح کنید. اصلاح شما با بازسازی نقشه پاک نمی‌شود.</p>
     {% if statistics %}
     <div class="page-heading__meta">
@@ -295,9 +295,9 @@
 </section>
 
 {% call technical_details('جزئیات فنی نقشه') %}
-  <p>Source ID: <code><bdi dir="ltr">{{ source_id }}</bdi></code></p>
-  <p>Fingerprint: <code><bdi dir="ltr">{{ concept_map.source_fingerprint }}</bdi></code></p>
-  <p>Builder version: <code><bdi dir="ltr">{{ concept_map.builder_version }}</bdi></code></p>
+  <p>شناسهٔ منبع: <code><bdi dir="ltr">{{ source_id }}</bdi></code></p>
+  <p>اثر انگشت منبع: <code><bdi dir="ltr">{{ concept_map.source_fingerprint }}</bdi></code></p>
+  <p>نسخهٔ سازنده: <code><bdi dir="ltr">{{ concept_map.builder_version }}</bdi></code></p>
 {% endcall %}
 
 {% endif %}

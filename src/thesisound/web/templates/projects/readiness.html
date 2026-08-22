@@ -1,30 +1,88 @@
 {% extends "base.html" %}
+{% from "components.html" import status_label %}
 {% block title %}آمادگی گفتار | مقال{% endblock %}
 {% block content %}
+{% set tone_class = {'attention': 'notice--warning', 'success': 'notice--success', 'danger': 'notice--danger'}.get(readiness.tone, '') %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">آمادگی گفتار</p>
-    <h1>{{ project_title(project) }}</h1>
-    <p>این صفحه منطق واقعی کنترل‌ها را دوباره روی خروجی‌های ذخیره‌شده اجرا می‌کند.</p>
+    <h1>آمادگی گفتار</h1>
+    <p class="page-heading__project">{{ project_title(project) }}</p>
+    <p>منطق واقعی کنترل‌ها دوباره روی خروجی‌های ذخیره‌شده اجرا شد.</p>
   </div>
 </header>
-<section class="section-block">
+
+<section class="notice readiness-verdict {{ tone_class }}" aria-labelledby="readiness-verdict-title">
+  <h2 id="readiness-verdict-title">{{ readiness.headline }}</h2>
+  <p>{{ readiness.explanation }}</p>
+  {% if readiness.action_url %}
+  <div class="form-actions readiness-verdict__actions">
+    <a class="button button--primary" href="{{ readiness.action_url }}">{{ readiness.action_label }}</a>
+  </div>
+  {% endif %}
+</section>
+
+{% if readiness.facts %}
+<dl class="summary-list">
+  {% for name, value in readiness.facts %}
+  <div class="summary-row">
+    <dt>{{ name }}</dt>
+    <dd>{{ value }}</dd>
+  </div>
+  {% endfor %}
+</dl>
+{% endif %}
+
+<section class="section-block" aria-labelledby="readiness-groups-title">
+  <div class="section-heading section-heading--rule">
+    <h2 id="readiness-groups-title">وضعیت در یک نگاه</h2>
+  </div>
+  <div class="readiness-groups">
+    {% for group in readiness.groups %}
+    <div class="readiness-group{% if group.is_blocking %} is-blocking{% endif %}">
+      <span class="readiness-group__title">{{ group.title }}</span>
+      {{ status_label(group.summary, '', group.tone) }}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<details class="readiness-all">
+  <summary>دیدن هر {{ readiness.rows | length | fa_num }} بررسی</summary>
   <div class="table-wrap">
-    <table>
-      <thead><tr><th>وضعیت</th><th>دلیل</th><th>کنترل</th><th>مسئول</th><th>شرح</th></tr></thead>
+    <table class="data-table">
+      <thead>
+        <tr><th>بررسی</th><th>وضعیت</th><th>مسئول</th><th>شرح</th></tr>
+      </thead>
       <tbody>
-      {% for result in gate_results %}
+      {% for row in readiness.rows %}
         <tr>
-          <td><code><bdi dir="ltr">{{ result.status }}</bdi></code></td>
-          <td>{% if result.reason %}<code><bdi dir="ltr">{{ result.reason }}</bdi></code>{% else %}—{% endif %}</td>
-          <td>{{ result.label }} <span class="operator-only"><code>{{ result.code }}</code></span></td>
-          <td>{{ 'انسان' if result.actor == 'human' else 'سامانه' }}</td>
-          <td>{{ result.detail }}{% if result.evidence %}<div class="operator-only"><code><bdi dir="ltr">{{ result.evidence }}</bdi></code></div>{% endif %}</td>
+          <td>{{ row.label }}</td>
+          <td>{{ status_label(row.status_label, '', row.tone) }}</td>
+          <td>{{ row.actor }}</td>
+          <td>{{ row.detail }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
   </div>
-</section>
-<div class="form-actions"><a class="button button--secondary" href="/projects/{{ project.project_id }}">بازگشت به خانهٔ گفتار</a></div>
+
+  <details class="readiness-technical">
+    <summary>مشاهدهٔ جزئیات فنی</summary>
+    <dl class="summary-list">
+      {% for row in readiness.rows %}
+      <div class="summary-row">
+        <dt><code><bdi dir="ltr">{{ row.code }}</bdi></code></dt>
+        <dd>
+          <bdi dir="ltr">{{ row.raw_detail }}</bdi>
+          {% if row.evidence %}<div><code><bdi dir="ltr">{{ row.evidence }}</bdi></code></div>{% endif %}
+        </dd>
+      </div>
+      {% endfor %}
+    </dl>
+  </details>
+</details>
+
+<div class="form-actions">
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}">بازگشت به خانهٔ گفتار</a>
+</div>
 {% endblock %}

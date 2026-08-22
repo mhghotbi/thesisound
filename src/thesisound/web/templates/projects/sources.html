@@ -4,8 +4,8 @@
 {% block content %}
 <header class="page-heading page-heading--compact" data-sources-workspace>
   <div>
-    <p class="kicker">منابع گفتار</p>
     <h1>منابع را اضافه و انتخاب کنید</h1>
+    <p class="page-heading__project">{{ project_title(project) }}</p>
     <p>فقط متن کامل و عبورکرده از وارسی کیفیت می‌تواند مبنای استخراج شاهد قرار گیرد.</p>
   </div>
   <span data-selected-badge>{{ status_label((selected_count | fa_num) ~ ' منبع منتخب', 'مجموعه منابع', 'success' if selected_count else 'attention') }}</span>
@@ -29,7 +29,7 @@
 <div class="notice notice--info">
   <strong>مجموعه منابع فقط خواندنی است.</strong>
   <p>نسخهٔ تأییدشده وارد تحلیل شده است و با تغییر آن، خروجی‌های بعدی نیازمند ساخت دوباره می‌شوند.</p>
-  <p class="operator-only">Dependent artifacts become <code><bdi dir="ltr">stale</bdi></code>.</p>
+  <p class="operator-only">خروجی‌های وابسته <code><bdi dir="ltr">stale</bdi></code> علامت می‌خورند.</p>
 </div>
 {% endif %}
 
@@ -67,7 +67,7 @@
   <summary>یا پیدا کردن منبع در وب</summary>
   <div class="search-path__body">
     <p>جست‌وجو چند پیشنهاد منبع می‌سازد؛ سپس متن کامل هر نشانی جداگانه بازیابی و از وارسی کیفیت عبور داده می‌شود.</p>
-    <p class="operator-only">Provider: <code><bdi dir="ltr">Gemini</bdi></code> · candidates → URL retrieval → quality gate</p>
+    <p class="operator-only">ارائه‌دهنده: <code><bdi dir="ltr">Gemini</bdi></code> · نامزدها ← بازیابی نشانی ← وارسی کیفیت</p>
     <form method="post" action="/projects/{{ project.project_id }}/sources/search">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <label class="field">
@@ -167,10 +167,10 @@
         <p class="source-row__meta"><a href="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/concept-map">نقشهٔ مفاهیم</a></p>
 
         {% call technical_details('جزئیات فنی استخراج') %}
-          <p>Source ID: <code><bdi dir="ltr">{{ source.source_id }}</bdi></code></p>
-          <p>Parser: <code><bdi dir="ltr">{{ source.parser_name or 'unknown' }}</bdi></code> · verdict: <code><bdi dir="ltr">{{ source.quality_verdict or 'unknown' }}</bdi></code> · {{ source.block_count | fa_num }} پاره‌متن · {{ source.text_characters | fa_num }} نویسه</p>
+          <p>شناسهٔ منبع: <code><bdi dir="ltr">{{ source.source_id }}</bdi></code></p>
+          <p>پارسر: <code><bdi dir="ltr">{{ source.parser_name or 'unknown' }}</bdi></code> · حکم: <code><bdi dir="ltr">{{ source.quality_verdict or 'unknown' }}</bdi></code> · {{ source.block_count | fa_num }} پاره‌متن · {{ source.text_characters | fa_num }} نویسه</p>
           {% if source.retrieval_scope %}<p>دامنهٔ بازیابی: <code><bdi dir="ltr">{{ source.retrieval_scope }}</bdi></code></p>{% endif %}
-          {% if source.attempted_parsers %}<p>Parserهای آزموده‌شده: <code><bdi dir="ltr">{{ source.attempted_parsers | join(' → ') }}</bdi></code></p>{% endif %}
+          {% if source.attempted_parsers %}<p>پارسرهای آزموده‌شده: <code><bdi dir="ltr">{{ source.attempted_parsers | join(' → ') }}</bdi></code></p>{% endif %}
           {% if source.quality_issues %}<ul>{% for issue in source.quality_issues %}<li>{{ issue }}</li>{% endfor %}</ul>{% endif %}
         {% endcall %}
 

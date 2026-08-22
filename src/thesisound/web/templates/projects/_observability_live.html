@@ -1,13 +1,13 @@
 <section class="data-panel section-block" aria-labelledby="obs-live-title">
   <div class="section-heading">
     <div>
-      <p class="kicker">وضعیت زنده</p>
       <h2 id="obs-live-title">
         {% if current_span %}عملیات جاری: <bdi dir="ltr">{{ current_span.name }}</bdi>
         {% else %}عملیات بازی وجود ندارد{% endif %}
       </h2>
+      <p class="subtitle">وضعیت زنده</p>
     </div>
-    {% if current_span %}<span class="status-chip status-chip--running">running</span>
+    {% if current_span %}<span class="status-chip status-chip--running">در حال اجرا</span>
     {% elif latest_trace %}<span class="status-chip">{{ latest_trace.status }}</span>{% endif %}
   </div>
   {% if current_span %}

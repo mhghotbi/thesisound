@@ -4,10 +4,10 @@
 {% block content %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">تحلیل منابع</p>
-    <h1>{{ project_title(project) }}</h1>
+    <h1>تحلیل منابع</h1>
+    <p class="page-heading__project">{{ project_title(project) }}</p>
     <p>فقط مرحلهٔ واقعی ذخیره‌شده نمایش داده می‌شود؛ درصد و زمان باقی‌مانده حدس زده نمی‌شود.</p>
-    <p class="operator-only">Persisted stage only; no synthetic progress.</p>
+    <p class="operator-only">فقط مرحلهٔ ثبت‌شده نمایش داده می‌شود؛ هیچ پیشرفت ساختگی‌ای ساخته نمی‌شود.</p>
   </div>
   {% if corpus_active or planning_active %}
     {{ status_label('در حال انجام', 'اقدامی از شما لازم نیست', 'running') }}

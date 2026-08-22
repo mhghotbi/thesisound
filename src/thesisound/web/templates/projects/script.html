@@ -5,8 +5,8 @@
 {% set speaker_labels = {'A': 'اول', 'B': 'دوم'} %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">متن گفتار · مستند و قابل‌ردیابی</p>
-    <h1>{{ project_title(project) }}</h1>
+    <h1>متن گفتار</h1>
+    <p class="page-heading__project">{{ project_title(project) }}</p>
     <p>در حالت ساده، متن برای خواندن آرام و پیوسته نمایش داده می‌شود. ردیابی هر گفته تا شاهد و منبع در همان‌جا در دسترس است.</p>
   </div>
   {% if script_active %}
@@ -69,7 +69,7 @@
 {% if approval %}
 <div class="notice notice--info">
   <strong>نسخهٔ طرح گفتار برای نگارش تأییدشده است.</strong>
-  <p class="operator-only">تأییدکننده: <code><bdi dir="ltr">{{ approval.approved_by }}</bdi></code> · hash: <code><bdi dir="ltr">{{ approval.plan_hash }}</bdi></code></p>
+  <p class="operator-only">تأییدکننده: <code><bdi dir="ltr">{{ approval.approved_by }}</bdi></code> · هش: <code><bdi dir="ltr">{{ approval.plan_hash }}</bdi></code></p>
 </div>
 {% endif %}
 
@@ -159,17 +159,17 @@
       {% if checks.issues %}<p>{{ checks.issues | length | fa_num }} ایراد ثبت شده است که جزئیات آن در حالت پیشرفته دیده می‌شود.</p>{% else %}<p>همهٔ گفته‌های محتوایی به مدعا و شاهد لازم متصل‌اند و ایراد ساختاری باقی نمانده است.</p>{% endif %}
     </article>
     <article class="quality-row">
-      <h3>راستی‌آزمایی مستقل <span class="operator-only">· Verifier</span></h3>
+      <h3>راستی‌آزمایی مستقل <span class="operator-only">· وارسی‌کننده</span></h3>
       {% if verification.issues %}<p>راستی‌آزما هنوز {{ verification.issues | length | fa_num }} نکته ثبت کرده است؛ این نسخه فقط پس از عبور نهایی قابل‌استفاده است.</p>{% else %}<p>راستی‌آزما مدعای بی‌پشتوانه یا انتساب نادرست باقی‌مانده‌ای ثبت نکرده است.</p>{% endif %}
     </article>
   </div>
 
   {% call technical_details('جزئیات کامل گزارش کیفیت') %}
-    <p>Deterministic verdict: <code><bdi dir="ltr">{{ checks.verdict }}</bdi></code> · substantive turns: <code><bdi dir="ltr">{{ checks.substantive_turn_count }}</bdi></code> · estimated minutes: <code><bdi dir="ltr">{{ checks.estimated_minutes | round(2) }}</bdi></code></p>
+    <p>حکم بررسی‌های قطعی: <code><bdi dir="ltr">{{ checks.verdict }}</bdi></code> · نوبت‌های محتوایی: <code><bdi dir="ltr">{{ checks.substantive_turn_count }}</bdi></code> · دقیقهٔ تخمینی: <code><bdi dir="ltr">{{ checks.estimated_minutes | round(2) }}</bdi></code></p>
     {% if checks.issues %}<ul>{% for issue in checks.issues %}<li><code><bdi dir="ltr">{{ issue.turn_id if issue.turn_id is defined else '' }}</bdi></code> — {{ issue.explanation }}</li>{% endfor %}</ul>{% endif %}
-    <p>Verifier verdict: <code><bdi dir="ltr">{{ verification.verdict }}</bdi></code> · unsupported claim ratio: <code><bdi dir="ltr">{{ (verification.unsupported_claim_ratio * 100) | round(2) }}%</bdi></code></p>
+    <p>حکم وارسی مستقل: <code><bdi dir="ltr">{{ verification.verdict }}</bdi></code> · نسبت مدعای بی‌پشتوانه: <code><bdi dir="ltr">{{ (verification.unsupported_claim_ratio * 100) | round(2) }}%</bdi></code></p>
     {% if verification.issues %}<ul>{% for issue in verification.issues %}<li><code><bdi dir="ltr">{{ issue.turn_id }}</bdi></code> — {{ issue.explanation }}</li>{% endfor %}</ul>{% endif %}
-    {% if quality_notes %}<p class="operator-only">Quality notes: <code><bdi dir="ltr">{{ quality_notes | length }}</bdi></code>{% if script_run %} · disposition: <code><bdi dir="ltr">{{ script_run.quality_disposition }}</bdi></code>{% endif %}</p>{% endif %}
+    {% if quality_notes %}<p class="operator-only">یادداشت‌های کیفیت: <code><bdi dir="ltr">{{ quality_notes | length }}</bdi></code>{% if script_run %} · disposition: <code><bdi dir="ltr">{{ script_run.quality_disposition }}</bdi></code>{% endif %}</p>{% endif %}
   {% endcall %}
 </section>
 

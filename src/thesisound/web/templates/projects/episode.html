@@ -4,8 +4,8 @@
 {% block content %}
 <header class="page-heading page-heading--compact">
   <div>
-    <p class="kicker">کفایت منابع و ساختار</p>
-    <h1>{{ project_title(project) }}</h1>
+    <h1>کفایت منابع و ساختار</h1>
+    <p class="page-heading__project">{{ project_title(project) }}</p>
     <p>ابتدا روشن می‌شود منابع چه مدت گفتار مستند را پشتیبانی می‌کنند؛ سپس ساختار گفتار برای تأیید شما ساخته می‌شود.</p>
     {% if must_not_be_lost_unused_count is not none %}
     <div class="page-heading__meta">
@@ -25,8 +25,8 @@
 
 {% if can_start and not planning_active and not episode_plan %}
 <section class="coverage-verdict">
-  <p class="kicker">گام بعد</p>
   <h2>منابع آماده‌اند؛ سنجش کفایت به‌زودی شروع می‌شود</h2>
+  <p class="subtitle">گام بعد</p>
   <p>مدت درخواستی {{ project.brief.target_duration_minutes | fa_num }} دقیقه است. پس از تأیید منابع، سنجش کفایت و ساخت طرح به‌صورت خودکار در صف قرار می‌گیرد.</p>
 </section>
 {% endif %}
@@ -58,7 +58,6 @@
 
 {% if planning_run and planning_run.status == 'blocked' %}
 <section class="coverage-verdict" aria-labelledby="coverage-blocked-title">
-  <p class="kicker">حکم کفایت منابع</p>
   <h2 id="coverage-blocked-title">
     {% if planning_run.supported_duration_minutes is not none %}
       منابع برای حدود {{ planning_run.supported_duration_minutes | round(1) | fa_num }} دقیقه از هدف {{ planning_run.target_duration_minutes | fa_num }} دقیقه، شاهد کافی دارند
@@ -66,6 +65,7 @@
       منابع برای ساخت گفتار در مدت هدف کافی نیستند
     {% endif %}
   </h2>
+  <p class="subtitle">حکم کفایت منابع</p>
   <p>برای حفظ دقت، ادامه با مجموعه منابع ناکافی مجاز نیست. ابتدا کم‌هزینه‌ترین اصلاح را انتخاب کنید.</p>
   <p class="operator-only">ادامه‌دادن با corpus ناکافی مجاز نیست.</p>
 </section>
@@ -99,10 +99,10 @@
 
 {% if episode_plan and ((planning_run and planning_run.status == 'succeeded') or project.state.value in ['episode_planned', 'script_drafting', 'script_ready', 'script_verifying', 'script_verified', 'audio_generating', 'audio_ready', 'audio_verifying', 'complete']) %}
 <section class="coverage-verdict">
-  <p class="kicker">حکم کفایت منابع</p>
   <h2>
     {% if budget %}منابع برای حدود {{ budget.effective_supported_minutes | round(1) | fa_num }} دقیقه گفتار، شاهد کافی دارند{% else %}منابع برای طرح پیشنهادی کافی‌اند{% endif %}
   </h2>
+  <p class="subtitle">حکم کفایت منابع</p>
   <p>طرح «{{ episode_plan.title }}» حدود {{ episode_plan.estimated_duration_minutes | round(1) | fa_num }} دقیقه است و از سقف قابل‌پشتیبانی عبور نمی‌کند.</p>
 </section>
 
@@ -203,7 +203,7 @@
 {% endif %}
 
 {% call technical_details('جزئیات بسندگی شاهدها و بودجه') %}
-  <p>Target: <code><bdi dir="ltr">{{ project.brief.target_duration_minutes }}</bdi></code> min · plan: <code><bdi dir="ltr">{{ episode_plan.estimated_duration_minutes | round(2) }}</bdi></code> min{% if coverage %} · coverage max: <code><bdi dir="ltr">{{ coverage.max_supported_minutes }}</bdi></code>{% endif %}{% if budget %} · effective: <code><bdi dir="ltr">{{ budget.effective_supported_minutes | round(2) }}</bdi></code>{% endif %}</p>
+  <p>هدف: <code><bdi dir="ltr">{{ project.brief.target_duration_minutes }}</bdi></code> دقیقه · طرح: <code><bdi dir="ltr">{{ episode_plan.estimated_duration_minutes | round(2) }}</bdi></code> min{% if coverage %} · coverage max: <code><bdi dir="ltr">{{ coverage.max_supported_minutes }}</bdi></code>{% endif %}{% if budget %} · effective: <code><bdi dir="ltr">{{ budget.effective_supported_minutes | round(2) }}</bdi></code>{% endif %}</p>
 {% endcall %}
 
 {% if project.state.value == 'episode_planned' %}

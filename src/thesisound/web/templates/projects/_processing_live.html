@@ -42,8 +42,8 @@
 <section class="section-block" aria-labelledby="corpus-run-title">
   <div class="section-heading">
     <div>
-      <p class="kicker">تحلیل مجموعه منابع</p>
       <h2 id="corpus-run-title">{{ corpus_run.completed_source_count | fa_num }} از {{ corpus_run.selected_source_count | fa_num }} منبع تکمیل‌شده است</h2>
+      <p class="subtitle">تحلیل مجموعه منابع</p>
       {% if corpus_run.skipped_source_count %}<p>{{ corpus_run.skipped_source_count | fa_num }} منبع به خواست شما کنار گذاشته شد و در این گفتار نمی‌آید.</p>{% endif %}
     </div>
     {{ status_label('در حال اجرا' if corpus_run.status in ['queued', 'running'] else ('انجام شد' if corpus_run.status == 'succeeded' else 'متوقف شد'), '', 'running' if corpus_run.status in ['queued', 'running'] else ('success' if corpus_run.status == 'succeeded' else 'danger'), corpus_run.status) }}
@@ -75,7 +75,6 @@
 <section class="section-block" aria-labelledby="planning-run-title">
   <div class="section-heading">
     <div>
-      <p class="kicker">کفایت منابع و طرح گفتار</p>
       <h2 id="planning-run-title">
         {% if planning_run.stage == 'queued' %}در صف اجرا
         {% elif planning_run.stage == 'auditing_coverage' %}سنجش کفایت منابع
@@ -88,6 +87,7 @@
         {% elif planning_run.stage == 'complete' %}طرح گفتار آمادهٔ بررسی است
         {% else %}متوقف‌شده{% endif %}
       </h2>
+      <p class="subtitle">کفایت منابع و طرح گفتار</p>
     </div>
     {{ status_label('در حال انجام' if planning_run.status in ['queued', 'running'] else ('منتظر تصمیم شما' if planning_run.status == 'blocked' else ('انجام شد' if planning_run.status == 'succeeded' else 'متوقف شد')), '', 'running' if planning_run.status in ['queued', 'running'] else ('attention' if planning_run.status == 'blocked' else ('success' if planning_run.status == 'succeeded' else 'danger')), planning_run.status) }}
   </div>

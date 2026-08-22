@@ -15,6 +15,7 @@ html[data-theme="cobalt"],
   --border-strong: #c4b6a4;
   --brand: #1d4268;
   --brand-strong: #14304c;
+  --header: #14304c;
   --brand-soft: #a8c1d8;
   --brand-line: #9db2c6;
   --brand-wash: #e1eaf1;
@@ -49,6 +50,7 @@ html[data-theme="olive"] {
   --border-strong: #b9b99f;
   --brand: #5a6140;
   --brand-strong: #434829;
+  --header: #434829;
   --brand-soft: #c3c7a8;
   --brand-line: #adb192;
   --brand-wash: #e4e6d5;
@@ -83,6 +85,7 @@ html[data-theme="wood"] {
   --border-strong: #c9ad91;
   --brand: #7d4a26;
   --brand-strong: #5e3619;
+  --header: #4a2a12;
   --brand-soft: #dcbc9b;
   --brand-line: #c2a184;
   --brand-wash: #f0dfcd;
@@ -117,6 +120,7 @@ html[data-theme="slate"] {
   --border-strong: #b5b5b5;
   --brand: #2a2a2a;
   --brand-strong: #111111;
+  --header: #111111;
   --brand-soft: #c4c4c4;
   --brand-line: #adadad;
   --brand-wash: #ebebeb;
@@ -183,6 +187,9 @@ html[data-mode="operator"] .operator-only { display: revert !important; }
 html[data-mode="operator"] .simple-only { display: none !important; }
 
 .skip-link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   position: fixed;
   inset-block-start: 10px;
   inset-inline-start: 10px;
@@ -205,7 +212,7 @@ html[data-mode="operator"] .simple-only { display: none !important; }
   position: sticky;
   inset-block-start: 0;
   z-index: 40;
-  background: var(--brand);
+  background: var(--header);
   border-bottom: 3px solid var(--ink);
   color: var(--paper);
 }
@@ -244,7 +251,7 @@ html[data-mode="operator"] .simple-only { display: none !important; }
 .brand small {
   display: block;
   color: var(--brand-soft);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0;
 }
@@ -273,12 +280,12 @@ html[data-mode="operator"] .simple-only { display: none !important; }
 .segmented-control {
   display: inline-flex;
   align-items: stretch;
-  border: 1px solid var(--brand-soft);
+  border: 1px solid var(--brand-line);
   border-radius: 999px;
   overflow: hidden;
 }
 .segmented-control button {
-  min-height: 30px;
+  min-height: 44px;
   padding: 0 11px;
   border: 0;
   border-inline-start: 1px solid var(--brand-line);
@@ -291,17 +298,17 @@ html[data-mode="operator"] .simple-only { display: none !important; }
 .segmented-control button:first-child { border-inline-start: 0; }
 .segmented-control button[aria-pressed="true"] {
   background: var(--paper);
-  color: var(--brand);
+  color: var(--brand-strong);
 }
 
 .theme-switcher { position: relative; }
 .theme-switcher > summary {
-  min-height: 30px;
+  min-height: 44px;
   padding: 0 11px;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid var(--brand-soft);
+  border: 1px solid var(--brand-line);
   border-radius: 999px;
   color: var(--brand-soft);
   cursor: pointer;
@@ -326,7 +333,7 @@ html[data-mode="operator"] .simple-only { display: none !important; }
   box-shadow: var(--shadow);
 }
 .theme-option {
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 9px;
   display: flex;
   align-items: center;
@@ -356,7 +363,10 @@ html[data-mode="operator"] .simple-only { display: none !important; }
 .logout-form { margin: 0; }
 .header-link,
 .logout-button {
+  min-height: 44px;
   padding: 5px 0;
+  display: inline-flex;
+  align-items: center;
   border: 0;
   background: transparent;
   color: var(--brand-soft);
@@ -377,23 +387,10 @@ html[data-mode="operator"] .simple-only { display: none !important; }
   white-space: nowrap;
 }
 
-/* Operator mode swaps the brand header for the dense, near-black shell. */
-html[data-mode="operator"] .app-header {
-  background: var(--ink);
-  border-bottom-color: var(--ink);
-}
+/* One shell, both modes. The header treatment is identical in simple and
+   operator; only its density changes. No colour may shift with the mode —
+   every header colour comes from the active theme's own tokens. */
 html[data-mode="operator"] .app-header__inner { min-height: 56px; }
-html[data-mode="operator"] .brand small,
-html[data-mode="operator"] .app-nav a,
-html[data-mode="operator"] .header-link,
-html[data-mode="operator"] .logout-button,
-html[data-mode="operator"] .theme-switcher > summary { color: var(--border-strong); }
-html[data-mode="operator"] .mode-flag,
-html[data-mode="operator"] .segmented-control,
-html[data-mode="operator"] .theme-switcher > summary { border-color: #45403a; }
-html[data-mode="operator"] .mode-flag { color: var(--border-strong); }
-html[data-mode="operator"] .segmented-control button { color: var(--border-strong); border-inline-start-color: #45403a; }
-html[data-mode="operator"] .segmented-control button[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
 
 .mobile-nav {
   position: fixed;
@@ -498,6 +495,13 @@ html[data-mode="operator"] .segmented-control button[aria-pressed="true"] { back
 .workflow-step__lock { width: 14px; height: 14px; flex: 0 0 auto; }
 .workflow-step a,
 .workflow-step > span { color: inherit; text-decoration: none; }
+/* Rail steps are navigation, so they carry the same 44px floor as any control.
+   An invisible hit-area overlay was tried first and lost to neighbouring rows. */
+.workflow-step a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
 .workflow-step a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
 .workflow-step.is-complete { color: var(--brand-strong); font-weight: 600; }
 .workflow-step.is-complete .workflow-step__mark { border-color: var(--brand); background: var(--brand); color: var(--paper); }
@@ -522,6 +526,9 @@ html[data-mode="operator"] .segmented-control button[aria-pressed="true"] { back
 }
 .workflow-rail__rewind form { margin: 0; }
 .workflow-rail__rewind button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   padding: 0;
   border: 0;
   background: none;
@@ -543,6 +550,10 @@ html[data-mode="operator"] .segmented-control button[aria-pressed="true"] { back
   margin-block-end: 26px;
 }
 .page-heading--compact { margin-block-end: 22px; }
+/* A heading leads; its supporting line sits underneath. Never above it —
+   a label stacked over a heading is the eyebrow the craft floor bans. */
+.page-heading__project,
+.subtitle { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
 .page-heading h1 {
   max-width: 34ch;
   margin: 0;
@@ -568,7 +579,7 @@ html[data-mode="operator"] .segmented-control button[aria-pressed="true"] { back
 .lede { color: var(--muted); font-size: 14px; }
 
 .button {
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 16px;
   display: inline-flex;
   align-items: center;
@@ -597,7 +608,7 @@ html[data-mode="operator"] .segmented-control button[aria-pressed="true"] { back
 .button--danger-solid { background: var(--danger); color: var(--paper); }
 .button--danger-solid:hover { background: var(--danger); color: var(--paper); filter: brightness(.92); }
 .button--full { width: 100%; }
-.button--small { min-height: 32px; padding-inline: 11px; font-size: 11px; }
+.button--small { min-height: 44px; padding-inline: 11px; font-size: 11px; }
 
 .form-actions {
   display: flex;
@@ -629,7 +640,7 @@ html[data-mode="operator"] .segmented-control button[aria-pressed="true"] { back
 .field select,
 .field textarea {
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   padding: 10px 12px;
   border: 1px solid var(--border-strong);
   border-radius: 6px;
@@ -671,7 +682,7 @@ html[data-mode="operator"] .segmented-control button[aria-pressed="true"] { back
 .choice-group label { position: relative; }
 .choice-group input { position: absolute; opacity: 0; pointer-events: none; }
 .choice-group span {
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 13px;
   display: inline-flex;
   align-items: center;
@@ -743,7 +754,7 @@ span.status-label__mark {
   border: 1px solid currentColor;
   border-radius: 50%;
 }
-.status-label small { color: var(--muted); font-size: 10px; font-weight: 500; }
+.status-label small { color: var(--muted); font-size: 11px; font-weight: 500; }
 .status-label--running { color: var(--accent); }
 .status-label--running span.status-label__mark { background: currentColor; animation: status-pulse 1.8s ease-in-out infinite; }
 .status-label--attention { color: var(--warning); }
@@ -798,6 +809,16 @@ span.status-label__mark {
 }
 .project-group--attention .project-group__title { border-block-end-color: var(--ink); }
 .project-list { display: grid; }
+/* The row title keeps its type size; the tap area reaches down over the meta
+   line, which carries no other target. */
+.project-row h3 a { position: relative; }
+.project-row h3 a::after {
+  content: "";
+  position: absolute;
+  inset-block: -10px;
+  inset-inline: -4px;
+}
+
 .project-row {
   padding: 14px 0;
   display: grid;
@@ -844,6 +865,43 @@ span.status-label__mark {
 .summary-row dt { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
 .summary-row dd { margin: 0; min-width: 0; color: var(--ink-soft); }
 
+/* Readiness: the verdict leads, three groups summarise, the full list waits
+   one click below. The leading rail marks the blocking group only. */
+.readiness-verdict { padding: 18px 19px; }
+.readiness-verdict h2 { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.5; }
+.readiness-verdict p { margin: 7px 0 0; color: var(--ink-soft); font-size: 14px; }
+.readiness-verdict__actions { margin-block-start: 13px; }
+.readiness-groups { display: grid; }
+.readiness-group {
+  padding: 13px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-block-end: 1px solid var(--border);
+  font-size: 14px;
+}
+.readiness-group:first-child { border-block-start: 1px solid var(--border); }
+/* The blocking group is marked by ground and by its own status label. No rail:
+   this is a blocked category, not the row the reader is standing on, and the
+   Current-Row Rule does not stretch that far. */
+.readiness-group.is-blocking {
+  padding-inline: 13px;
+  background: var(--paper-strong);
+}
+.readiness-all > summary,
+.readiness-technical > summary {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--brand-strong);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+}
+.readiness-technical { margin-block-start: 15px; }
+.readiness-technical dd { overflow-wrap: anywhere; }
+
 .timeline { margin: 0; padding: 0; display: grid; gap: 10px; list-style: none; }
 .timeline li {
   display: grid;
@@ -876,7 +934,7 @@ span.status-label__mark {
   flex-wrap: wrap;
   gap: 16px;
   border: 1px dashed var(--border-strong);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--paper-muted);
 }
 .drop-zone.is-dragging { border-color: var(--brand); background: var(--brand-wash); }
@@ -1118,7 +1176,7 @@ span.status-label__mark {
 .impact-summary__head h1 {
   margin: 0;
   color: var(--ink);
-  font-size: clamp(21px, 2.6vw, 26px);
+  font-size: clamp(20px, 2.4vw, 26px);
   font-weight: 800;
   letter-spacing: -.045em;
   line-height: 1.35;
@@ -1166,7 +1224,7 @@ span.status-label__mark {
   max-width: 30ch;
   margin: 0;
   color: var(--ink);
-  font-size: clamp(20px, 2.4vw, 24px);
+  font-size: clamp(20px, 2.4vw, 26px);
   font-weight: 800;
   letter-spacing: -.045em;
   line-height: 1.3;
@@ -1207,7 +1265,7 @@ span.status-label__mark {
 .reading-column__title {
   margin: 26px 0 0;
   color: var(--ink);
-  font-size: 19px;
+  font-size: clamp(20px, 2.4vw, 26px);
   font-weight: 800;
   letter-spacing: -.03em;
   line-height: 1.4;
@@ -1375,7 +1433,7 @@ div.evidence-card ul { margin: 0; padding-inline-start: 18px; }
   min-height: 48px;
   padding: 6px 8px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--paper);
   color: var(--ink);
   font: inherit;
@@ -1410,7 +1468,7 @@ div.evidence-card ul { margin: 0; padding-inline-start: 18px; }
 .listen-head h2 {
   margin: 0;
   color: var(--ink);
-  font-size: clamp(21px, 2.6vw, 26px);
+  font-size: clamp(20px, 2.4vw, 26px);
   font-weight: 800;
   letter-spacing: -.045em;
   line-height: 1.28;
@@ -1484,7 +1542,7 @@ code {
 }
 
 .check-list { display: grid; gap: 7px; }
-.check-row { padding: 14px 15px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; border: 1px solid var(--border); border-radius: 7px; background: var(--paper-raised); }
+.check-row { padding: 14px 15px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; border: 1px solid var(--border); border-radius: 9px; background: var(--paper-raised); }
 .check-row p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 12px; }
 
 .auth-page { display: grid; place-items: center; padding: 28px 16px; }
@@ -1518,7 +1576,7 @@ code {
 .auth-story h1 {
   max-width: 12em;
   margin: 0;
-  font-size: clamp(28px, 3.6vw, 40px);
+  font-size: clamp(24px, 3vw, 35px);
   line-height: 1.45;
   letter-spacing: -.04em;
 }
@@ -1581,7 +1639,6 @@ code {
   .workflow-rail__progress .is-complete { background: var(--brand); }
   .workflow-rail__progress .is-current { background: var(--ink); }
   .page-heading { display: grid; gap: 16px; }
-  .page-heading h1 { font-size: 27px; }
   .field-grid,
   .impact-summary__grid,
   .quality-summary { grid-template-columns: 1fr; }
@@ -1611,6 +1668,15 @@ code {
 }
 
 @media (max-width: 470px) {
+  /* At the declared 320px floor the header controls no longer fit on one line —
+     more so since they carry the 44px touch floor. Let the shell wrap instead of
+     pushing the whole header off the viewport, and keep the theme menu inside it. */
+  .app-header__inner { flex-wrap: wrap; gap: 9px 12px; }
+  .app-header__tools { gap: 7px; }
+  /* Anchored to a 52px control near the edge, a 184px menu cannot fit at 320px.
+     Drop the switcher's positioning context so the menu spans the header instead. */
+  .theme-switcher { position: static; }
+  .theme-switcher__panel { inset-inline: 12px; width: auto; }
   .app-nav { gap: 12px; overflow-x: auto; }
   .segmented-control button { padding-inline: 9px; }
   .theme-switcher > summary { padding-inline: 9px; }
@@ -1696,3 +1762,61 @@ code {
 .concept-graph__empty { padding: 20px; color: var(--muted); text-align: center; }
 .concept-graph__hint { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
 tr.is-highlighted { background: var(--accent-wash); transition: background 0.2s ease; }
+
+/* Observability. Moved out of an inline <style> in the template, where it called
+   --line and --surface — tokens this project never defined, so every fallback
+   was a fixed grey-on-white that ignored all four themes. */
+.obs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px; }
+.obs-metric {
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--paper-raised);
+}
+.obs-metric strong { display: block; font-size: 16px; font-weight: 700; direction: ltr; text-align: right; }
+.obs-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.obs-table th,
+.obs-table td { padding: 9px; border-block-end: 1px solid var(--border); text-align: start; vertical-align: top; }
+.obs-table th { color: var(--muted); font-size: 12px; font-weight: 650; }
+.obs-waterfall { display: grid; gap: 9px; }
+.obs-waterfall__row {
+  display: grid;
+  grid-template-columns: minmax(176px, 1fr) minmax(256px, 3fr) 96px;
+  gap: 11px;
+  align-items: center;
+}
+.obs-waterfall__track {
+  position: relative;
+  height: 18px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  overflow: hidden;
+  direction: ltr;
+}
+.obs-waterfall__bar { position: absolute; inset-block: 0; border-radius: 999px; background: currentColor; min-width: 2px; opacity: .7; }
+.obs-tree,
+.obs-tree ul { list-style: none; margin: 7px 0; padding-inline-start: 18px; }
+.obs-tree li { border-inline-start: 1px solid var(--border); padding-inline-start: 11px; }
+.obs-tree__node { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; padding: 7px 9px; border-radius: 6px; }
+.obs-tree__node--error,
+.obs-tree__node--failed,
+.obs-tree__node--rejected { background: var(--danger-wash); }
+.obs-tree__node--running { background: var(--accent-wash); }
+.obs-tree__kind { padding: 1px 7px; border: 1px solid currentColor; border-radius: 999px; font-size: 11px; opacity: .7; }
+.obs-tree__truncated { margin: 4px 0 8px; color: var(--muted); font-size: 12px; }
+.obs-pager { margin-block: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.obs-pager a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  text-decoration: none;
+}
+.obs-code { direction: ltr; text-align: left; overflow-wrap: anywhere; }
+
+@media (max-width: 720px) {
+  .obs-waterfall__row { grid-template-columns: 1fr; }
+  .obs-table { display: block; overflow-x: auto; }
+}
