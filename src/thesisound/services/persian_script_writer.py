@@ -185,6 +185,14 @@ def _speaker_balance_failures(
 
     if not policy.enabled:
         return []
+    if not segment.claim_ids:
+        # A claimless segment (the skeleton's trailing recap, `10c` P3 Step 7) has
+        # no claims to ground turns in, so it is expected to be near-entirely
+        # editorial -- F1's ratio cap assumes a claim-bearing segment and would
+        # otherwise reject every recap draft by construction, not by any real
+        # writing defect. F2/F3 already pass vacuously here (no claims to require
+        # B substance for, or to repeat), so this only needs to skip F1.
+        return []
     total_words = sum(len(_WORD.findall(turn.spoken_text_fa)) for turn in draft.turns)
     editorial_words = sum(
         len(_WORD.findall(turn.spoken_text_fa))

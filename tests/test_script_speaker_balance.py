@@ -123,6 +123,35 @@ def test_floor_reports_f1_f2_f3_in_order_and_can_be_disabled() -> None:
     ) == []
 
 
+def test_claimless_recap_segment_is_exempt_from_the_editorial_word_floor() -> None:
+    """Found live (checkpoint C-D, 2026-08-22): the skeleton's trailing recap
+
+    segment (segment_skeleton.py) has claim_ids=[] by design -- there is
+    nothing left to ground turns in, so its draft is necessarily all
+    editorial_only. F1's ratio cap assumed a claim-bearing segment and
+    rejected every real recap draft as if the writer had padded a normal
+    segment with filler, permanently blocking that segment's script stage.
+    """
+
+    recap_segment = EpisodeSegment(
+        segment_id="seg-005",
+        title="مرور",
+        purpose="جمع‌بندی",
+        estimated_minutes=1.5,
+        claim_ids=[],
+        key_question="پرسش؟",
+        speaker_dynamic="recap",
+    )
+    draft = _draft(_editorial("A", "x x x x"), _editorial("B", "x x x x"))
+    failures = _speaker_balance_failures(
+        draft,
+        recap_segment,
+        SpeakerBalancePolicy(),
+        is_opening=False,
+    )
+    assert failures == []
+
+
 def test_script_checker_populates_balance_measurements_as_low_severity() -> None:
     project_id = uuid4()
     plan = EpisodePlan(
