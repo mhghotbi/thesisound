@@ -27,9 +27,12 @@
 <article class="transcript-section lesson-text">
   {% for item in paragraphs %}
     {% set turn = item.turn %}
-    {% if turn.heading_level == 2 %}
+    {# heading_level 1 is the larger, top-level heading and 2 is the nested
+       one -- fixed to match lesson_routes.py's markdown export, where level 1
+       becomes ### and level 2 becomes ####. This view previously inverted it. #}
+    {% if turn.heading_level == 1 %}
     <h2>{{ turn.spoken_text_fa }}</h2>
-    {% elif turn.heading_level == 1 %}
+    {% elif turn.heading_level == 2 %}
     <h3>{{ turn.spoken_text_fa }}</h3>
     {% else %}
     <p class="lesson-text__paragraph">{{ turn.spoken_text_fa }}</p>
