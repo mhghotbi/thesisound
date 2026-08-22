@@ -3,7 +3,9 @@
   "configurations": [
     {
       "name": "thesisound-web",
-      "url": "http://localhost:8000"
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "thesisound-web"],
+      "port": 8000
     }
   ]
 }

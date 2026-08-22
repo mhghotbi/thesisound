@@ -1,14 +1,27 @@
 {
-  "surface": "product",
-  "product_file": "PRODUCT.md",
-  "design_file": "DESIGN.md",
-  "locale": "fa-IR",
-  "direction": "rtl",
-  "anti_patterns": [
-    "gradient-overuse",
-    "nested-cards",
-    "generic-ai-illustration",
-    "fake-progress",
-    "rounded-icon-tiles"
-  ]
+  "stalenessCheck": true,
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-color",
+        "value": "#7d4a26",
+        "createdAt": "2026-08-22T18:34:43.154Z",
+        "reason": "user confirmed the four themes are peers; DESIGN.md 'The Role, Not the Hue Rule' sanctions the theme-picker swatches as the only colour literals, since each must show its own theme regardless of the active one"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#5a6140",
+        "createdAt": "2026-08-22T18:34:43.401Z",
+        "reason": "user confirmed the four themes are peers; DESIGN.md 'The Role, Not the Hue Rule' sanctions the theme-picker swatches as the only colour literals, since each must show its own theme regardless of the active one"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#2a2a2a",
+        "createdAt": "2026-08-22T18:34:43.634Z",
+        "reason": "user confirmed the four themes are peers; DESIGN.md 'The Role, Not the Hue Rule' sanctions the theme-picker swatches as the only colour literals, since each must show its own theme regardless of the active one"
+      }
+    ]
+  }
 }
