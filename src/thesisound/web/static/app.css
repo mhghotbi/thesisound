@@ -729,6 +729,38 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
 .attention-panel p { max-width: 62ch; margin: 0; color: var(--ink-soft); font-size: 14px; text-wrap: pretty; }
 .attention-panel__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 
+.quality-notes-disclosure { margin-block-start: 12px; display: grid; gap: 8px; }
+.quality-notes-disclosure h3 { margin: 0; color: var(--ink-soft); font-size: 13px; font-weight: 700; }
+.quality-notes-disclosure > p { margin: 0; color: var(--muted); font-size: 12px; }
+
+.quality-notes {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+  list-style: none;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.quality-notes--informational { color: var(--muted); font-size: 12px; }
+
+/* An optional sub-form toggle, same family as .search-path: the summary is
+   the only thing styled, native marker kept, children grid-spaced without
+   a body wrapper since the fields sit directly under <details>. */
+.disclosure { display: grid; gap: 14px; }
+.disclosure > summary {
+  width: fit-content;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.disclosure > summary:hover { color: var(--ink); }
+
 .status-label {
   display: inline-flex;
   align-items: center;
@@ -872,6 +904,7 @@ span.status-label__mark {
   font-size: 14px;
 }
 .readiness-group:first-child { border-block-start: 1px solid var(--border); }
+.readiness-group__title { color: var(--ink-soft); font-weight: 600; }
 /* The blocking group is marked by ground and by its own status label. No rail:
    this is a blocked category, not the row the reader is standing on, and the
    Current-Row Rule does not stretch that far. */

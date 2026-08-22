@@ -233,7 +233,7 @@ The ladder is 35 → 26 → 17 → 16 → 15 → 14 → 13 → 12 → 11, and ev
 
 **The Bidi Isolation Rule.** Identifiers, filenames, timestamps, costs, model names, phone numbers, OTP values, hashes, and URLs are Latin content inside Persian sentences. They carry `dir="ltr"` and bidi isolation, or they will visually reorder the sentence around them.
 
-**The Persian Floor Rule.** Persian script needs more vertical room than Latin at the same nominal size. 11px is the floor of the whole system and it is reserved for genuinely peripheral metadata; anything the reader acts on or is corrected by sits at Control (13px) or above, and running text stays at 15px. *Two declarations currently sit below the floor at 10px — the wordmark's subtitle and the small text inside a status label. Both are findings.*
+**The Persian Floor Rule.** Persian script needs more vertical room than Latin at the same nominal size. 11px is the floor of the whole system and it is reserved for genuinely peripheral metadata; anything the reader acts on or is corrected by sits at Control (13px) or above, and running text stays at 15px.
 
 **The One Display Rule.** A view has one Display, and it names the page. Everything else that wants to be large is a Headline, and Headline has exactly one value. Four separate display-scale clamps once coexisted here, plus a fixed mobile override that fought the clamp; they are now one Display and one Headline.
 
@@ -280,7 +280,7 @@ Borders are the primary separator and they are quiet: 1px, `--border` to separat
 
 ### Named Rules
 
-**The Five Radii Rule.** Six values, listed above, plus the two round ones. Strays currently exist in the stylesheet (`4px`, `7px`, `10px`); they are drift, not vocabulary.
+**The Five Radii Rule.** Six values, listed above, plus the two round ones. No other radius appears in the stylesheet.
 
 ## Components
 

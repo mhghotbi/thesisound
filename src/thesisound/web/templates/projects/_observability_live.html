@@ -1,3 +1,4 @@
+{% from "components.html" import status_label %}
 <section class="data-panel section-block" aria-labelledby="obs-live-title">
   <div class="section-heading">
     <div>
@@ -7,8 +8,8 @@
       </h2>
       <p class="subtitle">وضعیت زنده</p>
     </div>
-    {% if current_span %}<span class="status-chip status-chip--running">در حال اجرا</span>
-    {% elif latest_trace %}<span class="status-chip">{{ latest_trace.status }}</span>{% endif %}
+    {% if current_span %}{{ status_label('در حال اجرا', '', 'running', current_span.name) }}
+    {% elif latest_trace %}{{ status_label('انجام شد' if latest_trace.status == 'succeeded' else 'متوقف شد', '', 'success' if latest_trace.status == 'succeeded' else 'danger', latest_trace.status) }}{% endif %}
   </div>
   {% if current_span %}
   <p class="lede">

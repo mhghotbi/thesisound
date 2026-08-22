@@ -21,6 +21,21 @@
         "value": "#2a2a2a",
         "createdAt": "2026-08-22T18:34:43.634Z",
         "reason": "user confirmed the four themes are peers; DESIGN.md 'The Role, Not the Hue Rule' sanctions the theme-picker swatches as the only colour literals, since each must show its own theme regardless of the active one"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgb(0, 0, 0)",
+        "createdAt": "2026-08-22T21:43:33.909Z",
+        "reason": "Static analysis reads unrendered Jinja source, so control-flow text nodes (e.g. {% if %} literals inside h1/body/span) get the browser's black UA-default text color; this never appears at runtime since the template always renders real content inheriting --ink. Confirmed as the cause of all ~30 occurrences across templates, none are real color drift."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/thesisound/web/static/app.css"
+        ],
+        "createdAt": "2026-08-22T21:45:05.892Z",
+        "reason": "DESIGN.md Current-Row Rule sanctions this exact border on .stage-row.is-current as one of several signals (ground+weight+state-word+rail) marking the pipeline's current stage, not decoration; side-tab has no extractable value so a wildcard scoped to this file is the only way to record the exception"
       }
     ]
   }

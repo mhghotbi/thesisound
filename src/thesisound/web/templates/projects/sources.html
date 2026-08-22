@@ -49,7 +49,7 @@
 </form>
 
 {% if url_source_fetch_enabled %}
-<form class="section-block url-import" method="post" action="/projects/{{ project.project_id }}/sources/from-url">
+<form class="section-block" method="post" action="/projects/{{ project.project_id }}/sources/from-url">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <label class="field">
     <span>یا افزودن از نشانی وب</span>

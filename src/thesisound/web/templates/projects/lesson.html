@@ -14,7 +14,7 @@
 {{ error_notice(error) }}
 {% else %}
 
-<nav class="lesson-nav">
+<nav class="form-actions" aria-label="ناوبری گفتار">
   {% if part_index > 1 %}
   <a class="button button--secondary" href="/projects/{{ project.project_id }}/lesson/{{ part_index - 1 }}">گفتار پیشین</a>
   {% endif %}
@@ -24,7 +24,7 @@
   {% endif %}
 </nav>
 
-<article class="transcript-section lesson-text">
+<article class="transcript-section reading-column">
   {% for item in paragraphs %}
     {% set turn = item.turn %}
     {# heading_level 1 is the larger, top-level heading and 2 is the nested

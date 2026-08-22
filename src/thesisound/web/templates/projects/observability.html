@@ -2,13 +2,15 @@
 {% block title %}رصد اجرا — مقال{% endblock %}
 {% block content_class %}page-content page-content--wide{% endblock %}
 {% block content %}
-<header class="page-hero">
-  <h1>رصد اجرای «{{ project_title(project) }}»</h1>
-  <p class="subtitle">حالت پیشرفته · فقط خواندنی</p>
-  <p class="lede">زمان، هزینه، کش، تلاش دوباره و تاریخچهٔ خطاها مستقیماً از ledger خوانده می‌شود.</p>
+<header class="page-heading page-heading--compact">
+  <div>
+    <h1>رصد اجرای «{{ project_title(project) }}»</h1>
+    <p class="subtitle">حالت پیشرفته · فقط خواندنی</p>
+    <p>زمان، هزینه، کش، تلاش دوباره و تاریخچهٔ خطاها مستقیماً از ledger خوانده می‌شود.</p>
+  </div>
 </header>
 
-<div id="observability-live"
+<div id="observability-live" data-live-region aria-live="polite"
      hx-get="/projects/{{ project.project_id }}/observability/live"
      hx-trigger="every 2s"
      hx-swap="innerHTML">
