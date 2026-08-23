@@ -255,3 +255,39 @@ def test_cell_without_block_is_critical() -> None:
             _map([broken], chapters=[_chapter(0, block_ids=["b0001"])]),
             sections=[_section("s001", "b0001")],
         )
+
+
+def test_a_gate_warning_reaches_needs_review() -> None:
+    """A validator that gave up on its last attempt must be visible to a person.
+
+    The tier-distribution gate records why it accepted a draft by appending to
+    `warnings`, but `needs_review` was rebuilt from the finished map alone -- and
+    the concept-map page and CLI only read `needs_review`. The 2026-08-23 rebuild
+    stored "60% tier-1 (need 15-45%)" on disk and still reported nothing to review.
+    """
+
+    concept_map = _map([_cell("ch00-c001", tier=1), _cell("ch00-c002", tier=2)])
+    concept_map = concept_map.model_copy(
+        update={
+            "warnings": [
+                "needs_review: Tier distribution for 10 cells is 60% tier-1",
+                "Dropped 2 edge(s) to meet cap 40 (kept highest weight).",
+            ]
+        }
+    )
+
+    stats = compute_statistics(concept_map, sections=[_section("s001"), _section("s002")])
+
+    assert "Tier distribution for 10 cells is 60% tier-1" in stats.needs_review
+    # An ordinary warning is not a review flag and must not become one.
+    assert not any("Dropped 2 edge" in flag for flag in stats.needs_review)
+
+
+def test_a_map_with_no_gate_warnings_reports_nothing_to_review() -> None:
+    """The carry-over must not invent flags for a clean map."""
+
+    concept_map = _map([_cell("ch00-c001", tier=1), _cell("ch00-c002", tier=2)])
+
+    stats = compute_statistics(concept_map, sections=[_section("s001"), _section("s002")])
+
+    assert stats.needs_review == []

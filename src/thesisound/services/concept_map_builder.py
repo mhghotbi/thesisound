@@ -2069,12 +2069,35 @@ def _reject_map_integrity(
         )
 
 
+def _carried_review_warnings(concept_map: SourceConceptMap) -> list[str]:
+    """Review flags raised during the passes, not re-derivable from the final map.
+
+    A validator that gives up on its last attempt records the reason by appending
+    `_NEEDS_REVIEW_PREFIX` to the draft's warnings -- the tier-distribution gate is
+    the main one. Those land in `concept_map.warnings`, while `needs_review` was
+    rebuilt from scratch off the finished map, and the concept-map page and CLI
+    only ever read `needs_review`. So the 2026-08-23 rebuild stored "60% tier-1
+    (need 15-45%)" on disk and still reported "0 needing review" everywhere a
+    person looks.
+
+    Carried rather than re-derived: by Pass 5 the draft is gone, and a gate that
+    accepted a distribution on its final attempt is exactly the kind of decision
+    that cannot be reconstructed from the artifact it accepted.
+    """
+
+    return [
+        warning.removeprefix(_NEEDS_REVIEW_PREFIX)
+        for warning in concept_map.warnings
+        if warning.startswith(_NEEDS_REVIEW_PREFIX)
+    ]
+
+
 def _needs_review_flags(
     concept_map: SourceConceptMap,
     sections: Sequence[DocumentMapSection],
     block_texts: Mapping[str, str],
 ) -> list[str]:
-    flags: list[str] = []
+    flags: list[str] = _carried_review_warnings(concept_map)
     disagreed = [
         chapter
         for chapter in concept_map.chapters
