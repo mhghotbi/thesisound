@@ -14,7 +14,7 @@ from thesisound import tracing
 from thesisound.config import Settings
 from thesisound.domain import Project, ProjectState, ResearchBrief
 from thesisound.episode_cli import _service as build_episode_service
-from thesisound.observability import ObservabilityLedger, tracer_from_settings
+from thesisound.observability import ObservabilityLedger, install_tracer_from_settings
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.script_cli import _service as build_script_service
 from thesisound.services.observability_rollup import ObservabilityRollup
@@ -249,7 +249,7 @@ def _run_case(case: EvalCase, root: Path, *, settings: Settings | None) -> CaseM
             "observability_artifact_root": root / "_observability" / "artifacts",
         }
     )
-    tracing.install_tracer(tracer_from_settings(configured))
+    install_tracer_from_settings(configured)
     workspace = WorkspaceStore(root)
     project = Project(raw_input=case.brief.normalized_topic, brief=case.brief)
     transition(project, ProjectState.BRIEF_READY)

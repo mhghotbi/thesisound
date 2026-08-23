@@ -22,6 +22,7 @@ Named ``tracing.py``, not ``trace.py`` -- ``trace`` is a stdlib module.
 from __future__ import annotations
 
 import contextvars
+import logging
 import os
 import subprocess
 from collections.abc import Callable, Iterator
@@ -421,14 +422,54 @@ class Tracer:
 # --------------------------------------------------------------------------
 
 _TRACER: Tracer = Tracer(NullSpanSink(), enabled=False)
+# Whether a composition root ever called `install_tracer`. Distinct from
+# `Tracer.enabled`: tracing deliberately switched off via settings is a
+# decision, while never installing one at all is an oversight that silently
+# discards every span and event.
+_TRACER_INSTALLED = False
+_WARNED_UNINSTALLED = False
 
 
 def install_tracer(new_tracer: Tracer) -> None:
     """Replace the ambient tracer. Call once from a composition root
-    (``web.app.create_app``, the CLI's Typer callback, ``ocr_worker.main``)."""
+    (``web.app.create_app``, the CLI's Typer callback, ``ocr_worker.main``).
 
-    global _TRACER
+    A process that never calls this keeps the disabled default, so every
+    ``span``/``event`` is dropped while `ObservabilityLedger` writes -- which go
+    straight to SQLite -- keep landing. That asymmetry is very hard to read back:
+    a ledger showing `model_calls` but no `cache.lookup` and zero
+    `pipeline_spans` looks like code that never ran rather than like telemetry
+    that was never wired. See `warn_if_no_tracer_installed`.
+    """
+
+    global _TRACER, _TRACER_INSTALLED
     _TRACER = new_tracer
+    _TRACER_INSTALLED = True
+
+
+def tracer_installed() -> bool:
+    """Whether a composition root installed a tracer in this process."""
+
+    return _TRACER_INSTALLED
+
+
+def warn_if_no_tracer_installed() -> None:
+    """Log once if spans/events are being discarded for lack of a tracer.
+
+    Cheap and idempotent, so entry points that are unsure can call it freely.
+    Silent once a tracer is installed, including a deliberately disabled one.
+    """
+
+    global _WARNED_UNINSTALLED
+    if _TRACER_INSTALLED or _WARNED_UNINSTALLED:
+        return
+    _WARNED_UNINSTALLED = True
+    logging.getLogger(__name__).warning(
+        "No tracer installed: spans and events are being discarded. Model calls "
+        "still reach the ledger, so this shows up later as a run with model_calls "
+        "but no pipeline_spans and no cache.lookup rows. Call "
+        "thesisound.observability.install_tracer_from_settings() at the entry point."
+    )
 
 
 def tracer() -> Tracer:

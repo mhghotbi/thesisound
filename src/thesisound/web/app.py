@@ -31,7 +31,7 @@ from thesisound.domain import (
     ResearchBrief,
     TopicType,
 )
-from thesisound.observability import ledger_from_settings, tracer_from_settings
+from thesisound.observability import install_tracer_from_settings, ledger_from_settings
 from thesisound.pipeline import WorkspaceStore, transition
 from thesisound.product_metrics import (
     ProductEvent,
@@ -312,7 +312,7 @@ def create_app(
     observability_ledger = ledger_from_settings(runtime)
     observability_ledger.reap_orphaned_spans()
     observability = ObservabilityReporter(observability_ledger)
-    tracing.install_tracer(tracer_from_settings(runtime))
+    install_tracer_from_settings(runtime)
     workspace = WorkspaceStore(runtime.ensure_workspace_root())
     overview_report_builder = LessonReportBuilder(
         source_store=SourceArtifactStore(workspace.root),

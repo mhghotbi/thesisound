@@ -21,7 +21,7 @@ from thesisound.domain import Project
 from thesisound.episode_cli import register_episode_commands
 from thesisound.migrate_cli import register_migrate_commands
 from thesisound.modeling import ModelError
-from thesisound.observability import tracer_from_settings
+from thesisound.observability import install_tracer_from_settings
 from thesisound.pipeline import WorkspaceStore
 from thesisound.ports import DocumentParserPort
 from thesisound.prompt_loader import PromptLoader
@@ -53,7 +53,7 @@ def _install_observability() -> None:
     web.app.create_app -- every thesisound/thesisound-web entry point gets
     one, whichever process starts first."""
 
-    tracing.install_tracer(tracer_from_settings())
+    install_tracer_from_settings()
 
 WorkspaceRootOption = Annotated[
     Path | None,

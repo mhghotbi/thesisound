@@ -558,6 +558,11 @@ class ObservabilityLedger:
                     int(self.is_synthetic),
                 ),
             )
+        # The first model call is exactly where the asymmetry starts: this row
+        # lands in SQLite whether or not a tracer exists, while every span and
+        # event beside it is dropped. Warn here so the gap is visible while the
+        # run is happening rather than only to whoever reads the ledger later.
+        tracing.warn_if_no_tracer_installed()
         if self._should_soft_report_linkage(spec.project_id, spec.workflow_run_id):
             missing = _missing_call_linkage_fields(spec)
             if missing:
@@ -1859,6 +1864,21 @@ def tracer_from_settings(settings: Any | None = None) -> Tracer:
         enabled=settings.tracing_enabled,
         detail=settings.tracing_detail,
     )
+
+
+def install_tracer_from_settings(settings: "Settings | None" = None) -> Tracer:
+    """Build the ambient tracer from settings and install it. Returns it.
+
+    The one call an entry point needs so spans and events reach the same ledger
+    the model calls do. `tracer_from_settings` only builds one -- forgetting the
+    `install_tracer` half is invisible at runtime and produces a ledger with
+    `model_calls` but no `pipeline_spans` and no `cache.lookup`, which reads like
+    code that never ran. Safe to call more than once.
+    """
+
+    built = tracer_from_settings(settings)
+    tracing.install_tracer(built)
+    return built
 
 
 def is_sensitive_key(name: str) -> bool:
