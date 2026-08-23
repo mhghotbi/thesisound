@@ -28,6 +28,7 @@ def _map(fingerprint: str, cell_count: int):
         SourceChapter,
         SourceConceptMap,
     )
+    from thesisound.services.concept_map_cache import CONCEPT_MAP_BUILDER_VERSION
 
     cells = [
         ConceptCell(
@@ -45,7 +46,7 @@ def _map(fingerprint: str, cell_count: int):
     ]
     return SourceConceptMap(
         source_fingerprint=fingerprint,
-        builder_version=1,
+        builder_version=CONCEPT_MAP_BUILDER_VERSION,
         chapters=[
             SourceChapter(
                 chapter_index=0,
@@ -95,7 +96,7 @@ def test_a_builder_version_bump_still_lets_a_fresh_map_through(tmp_path) -> None
     fingerprint = "e" * 64
     cache.save_source(_map(fingerprint, 11))
 
-    stale = _map(fingerprint, 11).model_copy(update={"builder_version": 0})
+    stale = _map(fingerprint, 11).model_copy(update={"builder_version": 1})
     module._atomic_write(
         cache.source_path(fingerprint),
         stale.model_dump_json(),

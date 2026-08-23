@@ -20,8 +20,15 @@ from thesisound.services.document_identity import content_key
 from thesisound.source_analysis import SourceDocumentBlock
 
 _CONTENT_KEY = re.compile(r"\A[0-9a-f]{64}\Z")
-CONCEPT_MAP_BUILDER_VERSION = 1
-"""Bumped when a cells/edges/statistics change makes previously cached maps wrong."""
+CONCEPT_MAP_BUILDER_VERSION = 2
+"""Bumped when a cells/edges/statistics change makes previously cached maps wrong.
+
+2 (2026-08-23): `promote_tiers` stopped raising every required-section cell out of
+tier 3. Every map cached under version 1 carries the old distribution -- in
+practice tier 3 empty -- which is not a cosmetic difference: `select_cells` filters
+on tier, so a stale map makes `full` compression identical to `standard`. Without
+this bump the fix would never reach any source already in the cache.
+"""
 
 
 class CachedChapterConceptMap(BaseModel):
