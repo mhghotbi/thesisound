@@ -284,3 +284,93 @@ def test_focused_question_project_gets_an_empty_report(tmp_path: Path) -> None:
     )
     assert report.parts == []
     assert report.cells_covered == []
+
+
+def test_a_provider_failure_is_reported_as_extraction_failed_not_no_claim(
+    tmp_path: Path,
+) -> None:
+    """A block whose call never reached the model must not read as a silent source.
+
+    Regression for the 2026-08-23 two-compression run, where one block took a 400
+    from the provider and its cell surfaced as `no_claim` -- the same block yielded
+    six claims in the other run, so "the source says nothing here" was simply false.
+    """
+
+    root = tmp_path / "workspaces"
+    workspace = WorkspaceStore(root)
+    source_store = SourceArtifactStore(root)
+    episode_store = EpisodeArtifactStore(root)
+    source_id = uuid4()
+    project = _project(uuid4(), source_id)
+    project_id = project.project_id
+    workspace.save_project(project)
+
+    lost = _cell("ch00-c001", "block-1", tier=1)
+    concept_map = SourceConceptMap(
+        source_fingerprint=_FINGERPRINT,
+        builder_version=1,
+        chapters=[
+            SourceChapter(
+                chapter_index=0,
+                title="فصل ۰",
+                heading_path=["فصل ۰"],
+                block_ids=["block-1"],
+                estimated_minutes=4.0,
+                detected_from="heading",
+                detection_agreement="agreed",
+            )
+        ],
+        cells=[lost],
+        edges=[],
+        statistics=ConceptMapStatistics(cell_count=1),
+        created_at=datetime.now(UTC),
+    )
+    source_store.save_concept_map(project_id, source_id, concept_map)
+    source_store.save_evidence(
+        project_id,
+        source_id,
+        [
+            BlockEvidenceExtraction(
+                source_id=source_id,
+                block_id="block-1",
+                extraction=EvidenceExtraction(segment_function="rejected"),
+                status="skipped",
+                rejection_reason="Bad Request",
+                failure_kind="provider",
+            )
+        ],
+    )
+    source_store.save_claim_ledger(
+        project_id, source_id, ClaimLedger(source_id=source_id, claims=[])
+    )
+    # Thin excerpt coverage on the same block: without the fix this classified as
+    # `thin_extraction`, which is measured over text the failed call never returned.
+    source_store.save_extraction_plan(
+        project_id,
+        source_id,
+        EvidenceExtractionPlan(
+            source_id=source_id,
+            profile=AnalysisProfile(
+                depth="extended",
+                target_duration_minutes=10,
+                block_coverage_target=1.0,
+                evidence_input_token_budget=20_000,
+                max_claims_per_block=7,
+                neighbor_context_blocks=2,
+                include_examples=True,
+                second_pass_for_core_sections=False,
+            ),
+            selected_block_ids=["block-1"],
+            selected_source_tokens=100,
+            total_source_tokens=100,
+            achieved_token_coverage=1.0,
+            excerpt_char_coverage={"block-1": 0.1},
+        ),
+    )
+
+    report = LessonReportBuilder(source_store=source_store, episode_store=episode_store).build(
+        project_id, project
+    )
+
+    not_covered_by_key = {item.cell_key: item for item in report.not_covered}
+    assert not_covered_by_key["ch00-c001"].reason == "extraction_failed"

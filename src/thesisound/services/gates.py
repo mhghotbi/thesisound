@@ -26,7 +26,7 @@ GATE_REGISTRY: tuple[GateDefinition, ...] = (
         1,
         "Brief confirmed",
         "human",
-        "src/thesisound/web/app.py:925",
+        "src/thesisound/web/app.py:926",
         "Project brief",
         "SOURCES_COLLECTING state",
         "The operator has not submitted the project brief (topic and, optionally, scope).",

@@ -245,7 +245,9 @@ class MustNotBeLostReview(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
-NotCoveredReason = Literal["no_claim", "planned_but_excised", "thin_extraction"]
+NotCoveredReason = Literal[
+    "no_claim", "planned_but_excised", "thin_extraction", "extraction_failed"
+]
 
 
 class PartReportItem(BaseModel):

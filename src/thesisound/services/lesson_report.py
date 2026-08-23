@@ -6,7 +6,7 @@ import contextlib
 from uuid import UUID
 
 from thesisound.concepts import ConceptCell, SourceConceptMap
-from thesisound.domain import EpisodePlan, LessonIntent, Project
+from thesisound.domain import EpisodePlan, LessonIntent, Locator, Project
 from thesisound.episode import (
     CellReportItem,
     LessonReport,
@@ -27,7 +27,7 @@ from thesisound.services.concept_map_overlay import effective_concept_map
 from thesisound.services.cost_estimate import estimate as estimate_cost
 from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.source_artifact_store import SourceArtifactStore
-from thesisound.source_analysis import EvidenceExtractionPlan
+from thesisound.source_analysis import BlockEvidenceExtraction, EvidenceExtractionPlan
 
 # Same threshold `10b` B5.2 C2 names for the (not yet gated) tier-1
 # `thin_extraction` signal; used here for report-only classification.
@@ -70,6 +70,7 @@ class LessonReportBuilder:
         extraction_plan = None
         with contextlib.suppress(OSError, ValueError):
             extraction_plan = self.source_store.load_extraction_plan(project_id, source_id)
+        provider_failed_blocks = self._provider_failed_blocks(project_id, source_id)
 
         claim_to_cells = link_claims_to_cells(source_ledger.claims, evidence_items, in_scope_cells)
         plan = self.episode_store.load_plan(project_id) if project.episode_plan else None
@@ -92,7 +93,9 @@ class LessonReportBuilder:
                 cell_key=cell.cell_key,
                 label_fa=cell.label_fa,
                 tier=cell.tier,
-                reason=self._not_covered_reason(cell, coverage[cell.cell_key], extraction_plan),
+                reason=self._not_covered_reason(
+                    cell, coverage[cell.cell_key], extraction_plan, provider_failed_blocks
+                ),
             )
             for cell in in_scope_cells
             if coverage[cell.cell_key].level is None
@@ -140,13 +143,46 @@ class LessonReportBuilder:
             for part in plan.parts
         ]
 
+    def _provider_failed_blocks(self, project_id: UUID, source_id: UUID) -> frozenset[str]:
+        """Blocks whose extraction call never reached the model (provider error).
+
+        A cell built only on such blocks was never actually asked about, so it must
+        not be reported as `no_claim` -- that reading tells the reader the source is
+        silent here, when the run simply lost the call. Missing or unreadable block
+        records degrade to "nothing known to have failed", which keeps the previous
+        classification rather than inventing a failure.
+        """
+
+        # Locators only matter to the schema upgrade for pre-v2 records, so they are
+        # loaded separately: a missing block file must not cost us the failure signal
+        # carried by extraction records that are readable on their own.
+        locators: dict[str, Locator] = {}
+        with contextlib.suppress(OSError, ValueError):
+            locators = self.source_store.load_block_locators(project_id, source_id)
+        records: list[BlockEvidenceExtraction] = []
+        with contextlib.suppress(OSError, ValueError):
+            # The aggregate ledger, not the per-block directory: `save_evidence`
+            # writes it in the same call as `evidence-items.jsonl`, so the failure
+            # set cannot desync from the claims this report is built on.
+            records = self.source_store.load_extractions(
+                project_id, source_id, block_locators=locators
+            )
+        return frozenset(
+            record.block_id for record in records if record.failure_kind == "provider"
+        )
+
     @staticmethod
     def _not_covered_reason(
         cell: ConceptCell,
         coverage: CellCoverage,
         extraction_plan: EvidenceExtractionPlan | None,
+        provider_failed_blocks: frozenset[str] = frozenset(),
     ) -> NotCoveredReason:
         if not coverage.extracted:
+            # Checked before thinness: a lost call explains the gap better than any
+            # measurement taken over the text it never returned.
+            if any(block_id in provider_failed_blocks for block_id in cell.block_ids):
+                return "extraction_failed"
             if extraction_plan is not None and extraction_plan.excerpt_char_coverage:
                 values = [
                     extraction_plan.excerpt_char_coverage[block_id]

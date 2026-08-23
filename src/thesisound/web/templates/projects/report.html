@@ -99,7 +99,8 @@
         <td>{{ cell.label_fa }}</td>
         <td>{{ cell.tier | fa_num }}</td>
         <td>
-          {% if cell.reason == 'no_claim' %}هیچ مدعایی از این مفهوم استخراج نشد
+          {% if cell.reason == 'extraction_failed' %}استخراج این بخش با خطای سرویس ناتمام ماند (اجرای دوباره می‌تواند جبرانش کند)
+          {% elif cell.reason == 'no_claim' %}هیچ مدعایی از این مفهوم استخراج نشد
           {% elif cell.reason == 'thin_extraction' %}استخراج از این بخش ناقص بود
           {% else %}در طرح نیامد یا حذف شد{% endif %}
         </td>
