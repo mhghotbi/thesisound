@@ -29,7 +29,14 @@ class PromptContract(BaseModel):
     # How much temperature each retry adds on top of `temperature`. A pinned
     # stage that repeated itself verbatim would defeat contract repair, since
     # `model_retry` stops early on an identical answer.
-    retry_temperature_step: float = Field(default=0.3, ge=0, le=1)
+    #
+    # 0.5 so that with the usual `max_attempts: 3` the last attempt lands at ~1.0,
+    # the provider default every stage used before pinning existed. Attempt 1 is
+    # reproducible, which is the point, and the final attempt is no less diverse
+    # than it used to be -- which matters for validators that need the model to
+    # *find* something (concept_cells must cover every section, and routinely
+    # needs all three attempts to do it).
+    retry_temperature_step: float = Field(default=0.5, ge=0, le=1)
     system_file: str = "system.md"
     user_file: str = "user.md"
 

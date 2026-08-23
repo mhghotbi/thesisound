@@ -18,9 +18,6 @@ PINNED_STAGES = frozenset(
         "evidence_extraction_batch",
         "document_map",
         "document_map_merge",
-        "concept_cells",
-        "concept_cells_consolidate",
-        "concept_edges",
         "claim_reconciliation",
         "claim_reconciliation_merge",
         "coverage_audit",
@@ -57,6 +54,20 @@ def test_retries_add_temperature_so_contract_repair_can_differ() -> None:
     assert sampling_for_attempt(contract, attempt=3)[0] == 0.6
 
 
+def test_the_last_attempt_is_as_diverse_as_the_old_provider_default() -> None:
+    """Pinning must not make a stage worse at validators that need it to search.
+
+    `concept_cells` has to cover every section and routinely needs all three
+    attempts; before pinning, every attempt ran at the provider default (~1.0).
+    With the default step the third attempt lands back there, so attempt 1 gains
+    reproducibility and the last attempt loses nothing.
+    """
+
+    contract = _contract(temperature=0, seed=7)
+    assert sampling_for_attempt(contract, attempt=1)[0] == 0
+    assert sampling_for_attempt(contract, attempt=3)[0] == 1.0
+
+
 def test_the_seed_is_held_across_attempts_so_the_whole_ladder_replays() -> None:
     contract = _contract(temperature=0, seed=7)
     seeds = {sampling_for_attempt(contract, attempt=n)[1] for n in (1, 2, 3)}
@@ -85,7 +96,18 @@ def test_every_analytical_contract_on_disk_is_pinned() -> None:
 def test_creative_contracts_are_left_unpinned() -> None:
     """Pinning the Persian writer would flatten it; that is a deliberate choice."""
 
-    for stage in ("persian_script_segment", "persian_lesson_prose", "script_reviser"):
+    for stage in (
+        "persian_script_segment",
+        "persian_lesson_prose",
+        "script_reviser",
+        # Not creative, but a search: `_reject_uncovered_sections` requires a cell
+        # for every section, and pinning cost the independent draws it needs. A
+        # live rebuild on 2026-08-23 failed all three attempts pinned, on the same
+        # source and prompt version that had succeeded unpinned.
+        "concept_cells",
+        "concept_cells_consolidate",
+        "concept_edges",
+    ):
         for path in sorted((PROMPTS / stage).glob("*/contract.json")):
             data = json.loads(path.read_text(encoding="utf-8"))
             assert data.get("temperature") is None, f"{stage}/{path.parent.name}"

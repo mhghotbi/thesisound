@@ -753,6 +753,7 @@ def _validate_cells_draft(
 ) -> None:
     """Deterministic Pass 2 gate. Last attempt auto-merges duplicates and flags distribution."""
 
+    _repair_near_miss_block_ids(draft, known_block_ids)
     _reject_unknown_ids(draft, known_block_ids, known_section_ids)
     _reject_cells_without_blocks(draft)
     _reject_banned_labels(draft, attempt=attempt, max_attempts=max_attempts)
@@ -1577,6 +1578,43 @@ def _block_payload(block: SourceDocumentBlock) -> dict[str, Any]:
         "block_type": block.block_type,
         "text": block.text,
     }
+
+
+def _repair_near_miss_block_ids(
+    draft: ConceptCellsDraft,
+    known_block_ids: set[str],
+) -> None:
+    """Re-point a block_id whose content digest names exactly one real block.
+
+    Block ids are ``blk-{source}-{index:05d}-{digest}``, and the digest alone is
+    the content identity -- the index is redundant with it. The model reliably
+    mistypes the padding (``-0008-`` for ``-00008-``) while copying the digest
+    verbatim, which `_reject_unknown_ids` then treats as a hallucinated block. It
+    is not one: the intended block is unambiguous.
+
+    Deliberately narrow. The digest must match exactly one known block, so this
+    resolves a typo and never guesses; anything genuinely invented has no digest
+    to match and still fails validation. Applied on every attempt rather than
+    only the last, because retrying cannot help a mistake this mechanical --
+    and with sampling pinned, attempt 1 reproduces it exactly.
+    """
+
+    if not known_block_ids:
+        return
+    by_digest: dict[str, list[str]] = {}
+    for block_id in known_block_ids:
+        digest = block_id.rsplit("-", 1)[-1]
+        by_digest.setdefault(digest, []).append(block_id)
+
+    for cell in draft.cells:
+        repaired: list[str] = []
+        for block_id in cell.block_ids:
+            if block_id in known_block_ids:
+                repaired.append(block_id)
+                continue
+            matches = by_digest.get(block_id.rsplit("-", 1)[-1], ())
+            repaired.append(matches[0] if len(matches) == 1 else block_id)
+        cell.block_ids = repaired
 
 
 def _reject_unknown_ids(

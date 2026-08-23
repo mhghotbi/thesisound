@@ -366,3 +366,48 @@ def _block(block_id: str, text: str) -> SourceDocumentBlock:
         estimated_token_count=20,
         source_block_keys=[block_id],
     )
+
+
+def test_a_mistyped_block_index_is_repaired_from_its_digest() -> None:
+    """`blk-…-0008-<digest>` for `blk-…-00008-<digest>` is a typo, not a hallucination.
+
+    Observed live on 2026-08-23: the model copied the content digest verbatim and
+    dropped one zero from the index, and validation rejected the whole draft. With
+    sampling pinned, attempt 1 reproduced the same mistake exactly, so retrying
+    could not clear it.
+    """
+
+    from thesisound.services.concept_map_builder import _repair_near_miss_block_ids
+
+    known = {"blk-8d1eb351-00008-8155df4ffb85", "blk-8d1eb351-00009-e9d61c2b08d8"}
+    draft = _draft([_draft_cell("مفهوم", block_ids=["blk-8d1eb351-0008-8155df4ffb85"])])
+
+    _repair_near_miss_block_ids(draft, known)
+
+    assert draft.cells[0].block_ids == ["blk-8d1eb351-00008-8155df4ffb85"]
+
+
+def test_an_invented_block_id_is_left_alone_to_fail() -> None:
+    """No digest to match means nothing to resolve; the guard must still bite."""
+
+    from thesisound.services.concept_map_builder import _repair_near_miss_block_ids
+
+    known = {"blk-8d1eb351-00008-8155df4ffb85"}
+    draft = _draft([_draft_cell("مفهوم", block_ids=["blk-8d1eb351-00042-ffffffffffff"])])
+
+    _repair_near_miss_block_ids(draft, known)
+
+    assert draft.cells[0].block_ids == ["blk-8d1eb351-00042-ffffffffffff"]
+
+
+def test_an_ambiguous_digest_is_never_guessed() -> None:
+    """Two blocks sharing a digest means the intended one is unknown."""
+
+    from thesisound.services.concept_map_builder import _repair_near_miss_block_ids
+
+    known = {"blk-a-00008-deadbeef", "blk-b-00009-deadbeef"}
+    draft = _draft([_draft_cell("مفهوم", block_ids=["blk-c-0008-deadbeef"])])
+
+    _repair_near_miss_block_ids(draft, known)
+
+    assert draft.cells[0].block_ids == ["blk-c-0008-deadbeef"]
