@@ -295,3 +295,44 @@ def test_okian_port_is_built_once_under_concurrency(monkeypatch: pytest.MonkeyPa
 
     assert len(built) == 1
     assert ports and all(port is built[0] for port in ports)
+
+
+def test_gemini_adapter_sends_a_pinned_temperature_and_seed() -> None:
+    """Gemini's default is ~1.0, so an analytical stage has to say otherwise.
+
+    Before per-contract sampling existed this config carried no sampling fields
+    at all, which is why two extraction runs over one identical document
+    disagreed on both claim count and concept-map size.
+    """
+
+    response = SimpleNamespace(
+        parsed=ExampleOutput(value="ok"),
+        text='{"value":"ok"}',
+        candidates=[SimpleNamespace(finish_reason="STOP")],
+        prompt_feedback=None,
+        usage_metadata=SimpleNamespace(
+            prompt_token_count=12,
+            candidates_token_count=3,
+            total_token_count=15,
+            thoughts_token_count=0,
+        ),
+    )
+    models = FakeModels(response=response)
+    adapter = GeminiStructuredModel(client=FakeClient(models))
+
+    adapter.generate_structured(
+        system_prompt="system",
+        user_prompt="user",
+        output_type=ExampleOutput,
+        model="gemini-test",
+        metadata=RunMetadata(
+            stage="evidence_extraction",
+            model_or_provider="fake",
+            temperature=0,
+            seed=20260823,
+        ),
+    )
+
+    config = models.calls[0]["config"]
+    assert config["temperature"] == 0
+    assert config["seed"] == 20260823

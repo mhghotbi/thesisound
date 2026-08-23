@@ -21,8 +21,40 @@ class PromptContract(BaseModel):
     output_model: str = Field(min_length=1)
     max_attempts: int = Field(default=2, ge=1, le=5)
     retry_schema_errors: bool = True
+    # Sampling. `None` leaves the provider default alone, which is what every
+    # creative stage wants. An analytical stage that must answer the same way
+    # twice pins `temperature: 0` and a `seed`; see `sampling_for_attempt`.
+    temperature: float | None = Field(default=None, ge=0, le=2)
+    seed: int | None = None
+    # How much temperature each retry adds on top of `temperature`. A pinned
+    # stage that repeated itself verbatim would defeat contract repair, since
+    # `model_retry` stops early on an identical answer.
+    retry_temperature_step: float = Field(default=0.3, ge=0, le=1)
     system_file: str = "system.md"
     user_file: str = "user.md"
+
+
+def sampling_for_attempt(
+    contract: PromptContract,
+    attempt: int,
+) -> tuple[float | None, int | None]:
+    """Resolve ``(temperature, seed)`` for one attempt of ``contract``.
+
+    An unpinned contract stays unpinned: the provider default is left alone and
+    nothing about today's behaviour changes. A pinned one answers the same way
+    on attempt 1 every run, which is the point -- but each retry adds
+    ``retry_temperature_step``, because `model_retry` treats an identical repair
+    as a reason to stop, so a stage frozen at temperature 0 would burn its
+    repair budget re-sending one wrong answer.
+
+    The seed is deliberately *not* varied across attempts: with the temperature
+    moving, holding the seed keeps a rerun of the whole ladder reproducible.
+    """
+
+    if contract.temperature is None:
+        return None, contract.seed
+    temperature = contract.temperature + contract.retry_temperature_step * (attempt - 1)
+    return min(2.0, temperature), contract.seed
 
 
 class PromptBundle(BaseModel):

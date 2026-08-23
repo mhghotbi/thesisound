@@ -8,6 +8,7 @@ from uuid import UUID
 import pytest
 
 from thesisound import tracing
+from thesisound.services import evidence_extractor
 from thesisound.config import Settings
 from thesisound.observability import ObservabilityLedger
 from thesisound.tracing import EventRecord, SpanRecord, Tracer
@@ -186,3 +187,14 @@ def recording_tracer(frozen_clock: FrozenClock) -> Tracer:
         yield test_tracer
     finally:
         tracing.install_tracer(previous)
+
+
+@pytest.fixture(autouse=True)
+def _no_provider_retry_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise the provider retry without paying its wall-clock backoff.
+
+    The retry itself stays on -- only the sleep between attempts is removed, so
+    tests still cover the retry path rather than skipping it.
+    """
+
+    monkeypatch.setattr(evidence_extractor, "_PROVIDER_RETRY_BASE_SECONDS", 0.0)

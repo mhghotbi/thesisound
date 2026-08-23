@@ -132,6 +132,13 @@ class GeminiStructuredModel:
                 "retry_options": {"attempts": 1},
             },
         }
+        # Left absent unless the contract pins them: an unset temperature means
+        # the provider default (~1.0 on Gemini), which is what the creative
+        # stages want and what every stage got before pinning existed.
+        if metadata.temperature is not None:
+            config["temperature"] = metadata.temperature
+        if metadata.seed is not None:
+            config["seed"] = metadata.seed
         tools = self._tools(metadata)
         if tools:
             config["tools"] = tools

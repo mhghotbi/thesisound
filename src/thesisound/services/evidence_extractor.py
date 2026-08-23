@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
@@ -47,6 +48,13 @@ _BREAKER_CONSECUTIVE_FAILURES = 3
 # Cap the source text carried by one batch. Ordinary blocks fit the configured maximum;
 # this only isolates pathological blocks so one truncated output cannot lose siblings.
 _MAX_BATCH_SOURCE_TOKENS = 12_000
+# A provider error means the call never reached the model, so the block's content
+# had no say in it and a fresh call is a genuinely different draw. One 400 in the
+# 2026-08-23 run cost six claims and a whole concept cell, reported to the reader
+# as if the source were silent there. Kept small: the model_runner already
+# retries inside a call, and these are whole extra calls on top.
+_PROVIDER_RETRY_ATTEMPTS = 3
+_PROVIDER_RETRY_BASE_SECONDS = 2.0
 
 
 class ExcerptNotFoundError(DeterministicValidationError):
@@ -60,6 +68,7 @@ class EvidenceExtractorService:
         *,
         max_workers: int = 1,
         batch_size: int = 1,
+        provider_retry_base_seconds: float | None = None,
     ) -> None:
         if max_workers < 1:
             raise ValueError("max_workers must be at least 1.")
@@ -68,6 +77,13 @@ class EvidenceExtractorService:
         self.model_runner = model_runner
         self.max_workers = max_workers
         self.batch_size = batch_size
+        # Read at construction rather than bound as a default, so a test can
+        # exercise the retry path without paying its backoff.
+        self.provider_retry_base_seconds = (
+            _PROVIDER_RETRY_BASE_SECONDS
+            if provider_retry_base_seconds is None
+            else provider_retry_base_seconds
+        )
 
     def extract_source(
         self,
@@ -165,6 +181,7 @@ class EvidenceExtractorService:
                         model=model,
                         prompt_version=prompt_version,
                         max_attempts=max_attempts,
+                        retry_provider_failures=any_block_succeeded,
                     )
                     record, run = outcome
                     record, second_run = self._maybe_dense_second_pass(
@@ -326,6 +343,76 @@ class EvidenceExtractorService:
         return records, runs
 
     def _extract_block(
+        self,
+        *,
+        project_id: UUID,
+        source_id: UUID,
+        block: SourceDocumentBlock,
+        section: DocumentMapSection | None,
+        blocks: list[SourceDocumentBlock],
+        index_by_id: dict[str, int],
+        document_map: DocumentMap,
+        profile: AnalysisProfile,
+        model: str,
+        prompt_version: str | None,
+        max_attempts: int,
+        initial_counters: dict[str, int | bool] | None = None,
+        retry_provider_failures: Callable[[], bool] | None = None,
+    ) -> tuple[BlockEvidenceExtraction, ModelRunRecord | None]:
+        """Extract one block, retrying a call the provider never delivered.
+
+        Only `failure_kind == "provider"` is retried. A rejected draft is the
+        model's considered answer about this block and re-asking is unlikely to
+        change it, but a transport-level failure carries no information about the
+        block at all -- and losing one silently costs a whole concept cell.
+
+        ``retry_provider_failures`` is consulted *after* a failure, not before the
+        call: under fan-out the whole first wave is in flight before anything has
+        succeeded, so asking up front would refuse to retry exactly the blocks
+        most worth retrying. Asking late also keeps the circuit breaker's premise
+        intact -- while genuinely nothing has succeeded, a revoked key or dead
+        endpoint fails every block identically and retrying would multiply the
+        very cost the breaker exists to cap.
+        """
+
+        outcome = None
+        for attempt in range(1, _PROVIDER_RETRY_ATTEMPTS + 1):
+            outcome = self._extract_block_once(
+                project_id=project_id,
+                source_id=source_id,
+                block=block,
+                section=section,
+                blocks=blocks,
+                index_by_id=index_by_id,
+                document_map=document_map,
+                profile=profile,
+                model=model,
+                prompt_version=prompt_version,
+                max_attempts=max_attempts,
+                # Copied per attempt: the validator closure mutates this, and a
+                # retry must not inherit the abandoned attempt's tallies.
+                initial_counters=dict(initial_counters) if initial_counters else None,
+            )
+            if outcome[0].failure_kind != "provider":
+                return outcome
+            if retry_provider_failures is None or not retry_provider_failures():
+                return outcome
+            if attempt < _PROVIDER_RETRY_ATTEMPTS:
+                tracing.event(
+                    "corpus.block_provider_retry",
+                    component="corpus",
+                    level="warn",
+                    project_id=project_id,
+                    subject_type="block",
+                    subject_id=block.block_id,
+                    attempt=attempt,
+                    reason=outcome[0].rejection_reason,
+                )
+                time.sleep(self.provider_retry_base_seconds * attempt)
+        assert outcome is not None
+        return outcome
+
+    def _extract_block_once(
         self,
         *,
         project_id: UUID,
@@ -739,6 +826,7 @@ class EvidenceExtractorService:
                 prompt_version=prompt_version,
                 max_attempts=fallback_max_attempts,
                 initial_counters=_single_block_counters(_batch_counter(stats, block.block_id)),
+                retry_provider_failures=fallback_allowed,
             )
         return (
             [(block.block_id, outcomes[block.block_id]) for block in unit],

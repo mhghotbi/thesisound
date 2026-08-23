@@ -482,3 +482,49 @@ def test_okian_adapter_attaches_billed_usage_to_schema_errors(tmp_path: Path) ->
 
     assert exc_info.value.usage is not None
     assert exc_info.value.usage.input_tokens == 11
+
+
+def test_okian_sends_the_contract_temperature_and_seed(tmp_path: Path) -> None:
+    """A pinned analytical stage must reach the wire, not just the contract."""
+
+    client = FakeOkianClient()
+    adapter = OkianStructuredModel(client=client, settings=_settings(tmp_path))
+
+    adapter.generate_structured(
+        system_prompt="Return JSON.",
+        user_prompt="Answer.",
+        output_type=ExampleOutput,
+        model="qwen-private-id",
+        metadata=RunMetadata(
+            stage="evidence_extraction",
+            model_or_provider="qwen-private-id",
+            provider="okian",
+            temperature=0.3,
+            seed=20260823,
+        ),
+    )
+
+    payload = client.requests[0][0]
+    assert payload["temperature"] == 0.3
+    assert payload["seed"] == 20260823
+
+
+def test_okian_keeps_its_temperature_0_default_when_unpinned(tmp_path: Path) -> None:
+    client = FakeOkianClient()
+    adapter = OkianStructuredModel(client=client, settings=_settings(tmp_path))
+
+    adapter.generate_structured(
+        system_prompt="Return JSON.",
+        user_prompt="Answer.",
+        output_type=ExampleOutput,
+        model="qwen-private-id",
+        metadata=RunMetadata(
+            stage="persian_script_segment",
+            model_or_provider="qwen-private-id",
+            provider="okian",
+        ),
+    )
+
+    payload = client.requests[0][0]
+    assert payload["temperature"] == 0
+    assert "seed" not in payload

@@ -21,6 +21,7 @@ from thesisound.modeling import (
     ModelExecution,
     ModelProviderError,
     ModelRunRecord,
+    sampling_for_attempt,
 )
 from thesisound.ports import RunMetadata, TextModelPort
 from thesisound.prompt_loader import PromptLoader
@@ -142,6 +143,7 @@ class ModelRunner:
         for attempt_number in range(1, bundle.contract.max_attempts + 1):
             started = perf_counter()
             attempt_started_at = datetime.now(UTC)
+            temperature, seed = sampling_for_attempt(bundle.contract, attempt_number)
             metadata = RunMetadata(
                 stage=stage,
                 prompt_version=bundle.contract.version,
@@ -158,6 +160,8 @@ class ModelRunner:
                 prompt_id=bundle.contract.id,
                 subject_type="model_stage",
                 subject_id=stage,
+                temperature=temperature,
+                seed=seed,
                 max_provider_attempts=1,
             )
             response = None

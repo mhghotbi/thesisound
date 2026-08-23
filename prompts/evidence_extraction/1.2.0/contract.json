@@ -6,5 +6,7 @@
   "max_attempts": 3,
   "retry_schema_errors": true,
   "system_file": "system.md",
-  "user_file": "user.md"
+  "user_file": "user.md",
+  "temperature": 0,
+  "seed": 20260823
 }

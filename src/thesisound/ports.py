@@ -61,6 +61,10 @@ class RunMetadata(BaseModel):
     subject_type: str | None = None
     subject_id: str | None = None
     timeout_ms: int | None = Field(default=None, ge=1)
+    # Resolved sampling for this one attempt (see `PromptContract`). `None`
+    # means "leave the provider default alone".
+    temperature: float | None = Field(default=None, ge=0, le=2)
+    seed: int | None = None
     max_provider_attempts: int = Field(default=1, ge=1, le=5)
     provider_retry_base_seconds: float = Field(default=1, ge=0, le=60)
     # Set when GeminiStructuredModel retries an ungrounded call on Okian after

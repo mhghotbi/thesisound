@@ -325,7 +325,9 @@ class OkianStructuredModel:
                 },
                 {"role": "user", "content": user_prompt},
             ],
-            "temperature": 0,
+            # Okian has always run at 0; a contract that pins its own
+            # temperature (and escalates it across repair attempts) overrides it.
+            "temperature": 0 if metadata.temperature is None else metadata.temperature,
             # Streaming keeps bytes on the wire, so the timeout means "the
             # provider went silent" instead of "the whole completion took too
             # long". A blocking document_map call generates for ~9 minutes behind
@@ -341,6 +343,8 @@ class OkianStructuredModel:
                 },
             },
         }
+        if metadata.seed is not None:
+            payload["seed"] = metadata.seed
         spec = ModelCallSpec(
             call_id=metadata.call_id,
             trace_id=metadata.trace_id,

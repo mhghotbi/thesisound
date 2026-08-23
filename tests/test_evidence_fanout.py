@@ -239,3 +239,86 @@ def test_old_extraction_artifacts_default_failure_kind_to_none() -> None:
 
     record = BlockEvidenceExtraction.model_validate(payload)
     assert record.failure_kind is None
+
+
+@pytest.mark.parametrize("max_workers", [1, 4])
+def test_a_transient_provider_failure_is_retried_and_recovered(max_workers: int) -> None:
+    """One lost call must not cost the block.
+
+    In the 2026-08-23 run a single 400 on one block cost six claims and an entire
+    concept cell, and the report then told the reader the source said nothing
+    there. A provider error means the call never reached the model, so the block's
+    own content had no say in it.
+    """
+
+    # More blocks than workers, so the breaker's opening probe (3 units) settles
+    # before block-8 is ever attempted -- otherwise "has anything succeeded yet"
+    # is a race with the fake runner answering instantly.
+    source_id, blocks, document_map = _fixture(8)
+    failed_once: set[str] = set()
+
+    def behavior(block_id: str) -> str:
+        if block_id == "block-8" and block_id not in failed_once:
+            failed_once.add(block_id)
+            return "provider"
+        return "success"
+
+    records, _ = EvidenceExtractorService(
+        SelectiveRunner(behavior), max_workers=max_workers
+    ).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+    )
+
+    assert [record.status for record in records] == ["extracted"] * 8
+    assert all(record.failure_kind is None for record in records)
+
+
+@pytest.mark.parametrize("max_workers", [1, 4])
+def test_a_persistent_provider_failure_still_gives_up(max_workers: int) -> None:
+    """Retrying is bounded; the block still lands as a provider skip for the report."""
+
+    source_id, blocks, document_map = _fixture(8)
+    runner = SelectiveRunner(
+        lambda block_id: "provider" if block_id == "block-8" else "success"
+    )
+
+    records, _ = EvidenceExtractorService(
+        runner, max_workers=max_workers
+    ).extract_source(
+        project_id=uuid4(),
+        source_id=source_id,
+        blocks=blocks,
+        document_map=document_map,
+        model="fake",
+    )
+
+    by_id = {record.block_id: record for record in records}
+    assert by_id["block-8"].status == "skipped"
+    assert by_id["block-8"].failure_kind == "provider"
+    # Retried rather than abandoned on the first error.
+    assert runner.calls.count("block-8") > 1
+
+
+@pytest.mark.parametrize("max_workers", [1, 4])
+def test_the_breaker_still_caps_calls_when_nothing_has_succeeded(
+    max_workers: int,
+) -> None:
+    """The retry must not multiply the cost the circuit breaker exists to cap."""
+
+    source_id, blocks, document_map = _fixture()
+    runner = SelectiveRunner(lambda _: "provider")
+
+    with pytest.raises(ModelProviderError, match="circuit breaker"):
+        EvidenceExtractorService(runner, max_workers=max_workers).extract_source(
+            project_id=uuid4(),
+            source_id=source_id,
+            blocks=blocks,
+            document_map=document_map,
+            model="fake",
+        )
+
+    assert len(runner.calls) == 3
