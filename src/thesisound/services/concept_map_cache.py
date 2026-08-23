@@ -103,9 +103,25 @@ class ConceptMapCache:
         return cached
 
     def save_source(self, concept_map: SourceConceptMap) -> Path | None:
+        """Store the map, but never replace a valid entry for the same key.
+
+        "The AI map is immutable once Pass 5 succeeds" is this module's stated
+        contract, and an unconditional write broke it: the same fingerprint built
+        twice left whichever run finished last in the cache. That is how the
+        2026-08-23 comparison lost its first map -- an 11-cell build was silently
+        replaced by a 10-cell one, so every later project on that source would have
+        inherited the worse of two builds with nothing recording the swap.
+
+        Same key, same builder version, therefore same answer: first writer wins,
+        and repeat runs over one document converge instead of drifting. A
+        builder-version bump still invalidates the entry via `load_source`.
+        """
+
         if concept_map.builder_version != CONCEPT_MAP_BUILDER_VERSION:
             return None
         path = self.source_path(concept_map.source_fingerprint)
+        if self.load_source(concept_map.source_fingerprint) is not None:
+            return path
         _atomic_write(
             path,
             json.dumps(concept_map.model_dump(mode="json"), ensure_ascii=False, indent=2),
@@ -132,9 +148,13 @@ class ConceptMapCache:
         return cached
 
     def save_chapter(self, entry: CachedChapterConceptMap) -> Path | None:
+        """Same first-writer-wins rule as `save_source`; the key is content too."""
+
         if entry.builder_version != CONCEPT_MAP_BUILDER_VERSION:
             return None
         path = self.chapter_path(entry.source_fingerprint, entry.chapter_hash)
+        if self.load_chapter(entry.source_fingerprint, entry.chapter_hash) is not None:
+            return path
         _atomic_write(
             path,
             json.dumps(entry.model_dump(mode="json"), ensure_ascii=False, indent=2),
