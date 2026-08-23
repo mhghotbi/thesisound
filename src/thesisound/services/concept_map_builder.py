@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import math
 from bisect import bisect_right
+from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -1253,11 +1254,25 @@ def promote_tiers(
         if edge.type == "prerequisite":
             prereq_out[edge.source_key] = prereq_out.get(edge.source_key, 0) + 1
     overrides = dict(tier_overrides or {})
+
+    # Structural promotion first: a cell others actually depend on is load-bearing
+    # on the evidence of the graph, so it promotes unconditionally.
+    tier_by_key = {
+        cell.cell_key: _structurally_promoted_tier(
+            cell.tier, prereq_out=prereq_out.get(cell.cell_key, 0)
+        )
+        for cell in cells
+    }
+    _apply_required_section_promotion(
+        cells,
+        tier_by_key=tier_by_key,
+        required_sections=required_sections,
+        prereq_out=prereq_out,
+    )
+
     promoted: list[ConceptCell] = []
     for cell in cells:
-        out_degree = prereq_out.get(cell.cell_key, 0)
-        required = any(section_id in required_sections for section_id in cell.section_ids)
-        new_tier = _promoted_tier(cell.tier, required=required, prereq_out=out_degree)
+        new_tier = tier_by_key[cell.cell_key]
         auto_promoted = new_tier < cell.tier
         if cell.cell_key in overrides:
             new_tier = overrides[cell.cell_key]
@@ -1269,6 +1284,60 @@ def promote_tiers(
             cell.model_copy(update={"tier": new_tier, "tier_promoted": auto_promoted})
         )
     return promoted
+
+
+def _apply_required_section_promotion(
+    cells: Sequence[ConceptCell],
+    *,
+    tier_by_key: dict[str, int],
+    required_sections: set[str],
+    prereq_out: Mapping[str, int],
+) -> None:
+    """Raise tier-3 cells sitting in a required section, but keep tier 3 non-empty.
+
+    B1.3 promotes every cell in a `required_for_global_understanding` section out of
+    tier 3. That assumed the flag is selective. It is not: across the workspaces on
+    disk, document maps mark 74–100% of their sections required (median 100%), so the
+    rule fires on essentially every cell and empties tier 3 outright — which silently
+    collapses `full` compression into `standard`, since tier 3 is the only thing
+    `full` adds. The 2026-08-23 two-compression run is exactly that failure: the model
+    produced 3 tier-3 cells of 11, comfortably over the distribution gate's 10% floor,
+    and promotion deleted all three.
+
+    So this arm is now rationed by the very floor `_tier_distribution_failure` already
+    enforces on the same cells: promote the weakest candidates first and stop before
+    tier 3 would fall below `_TIER3_SHARE_MIN`. Rationing is applied per chapter and
+    only where the gate itself applies (`_TIER_DISTRIBUTION_MIN_CELLS`), so the two
+    cannot disagree about a chapter. Prerequisite-driven promotion is never rationed.
+    """
+
+    by_chapter: dict[int, list[ConceptCell]] = defaultdict(list)
+    for cell in cells:
+        by_chapter[cell.chapter_index].append(cell)
+
+    for chapter_cells in by_chapter.values():
+        candidates = sorted(
+            (
+                cell
+                for cell in chapter_cells
+                if tier_by_key[cell.cell_key] == 3
+                and any(section_id in required_sections for section_id in cell.section_ids)
+            ),
+            # Weakest first: fewest dependents, then by key so a rebuild of the same
+            # map promotes the same cells.
+            key=lambda cell: (prereq_out.get(cell.cell_key, 0), cell.cell_key),
+        )
+        if not candidates:
+            continue
+        budget = len(candidates)
+        if len(chapter_cells) >= _TIER_DISTRIBUTION_MIN_CELLS:
+            tier_3_count = sum(
+                1 for cell in chapter_cells if tier_by_key[cell.cell_key] == 3
+            )
+            floor = math.ceil(len(chapter_cells) * _TIER3_SHARE_MIN)
+            budget = max(0, tier_3_count - floor)
+        for cell in candidates[:budget]:
+            tier_by_key[cell.cell_key] = 2
 
 
 def compute_statistics(
@@ -1885,9 +1954,11 @@ def _lowest_weight_index(edges: Sequence[ConceptEdgeDraft], indices: Sequence[in
     )
 
 
-def _promoted_tier(current: int, *, required: bool, prereq_out: int) -> int:
+def _structurally_promoted_tier(current: int, *, prereq_out: int) -> int:
+    """Promotion justified by the edge graph alone; never rationed."""
+
     tier = current
-    if required or prereq_out >= _PREREQ_OUTDEGREE_TIER2:
+    if prereq_out >= _PREREQ_OUTDEGREE_TIER2:
         tier = min(tier, 2)
     if prereq_out >= _PREREQ_OUTDEGREE_TIER1:
         tier = min(tier, 1)

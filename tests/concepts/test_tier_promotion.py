@@ -121,3 +121,71 @@ def test_owner_override_wins_over_promotion() -> None:
     )
     assert promoted[0].tier == 3
     assert promoted[0].tier_promoted is False
+
+
+def test_required_section_promotion_stops_at_the_tier_3_floor() -> None:
+    """A map whose sections are all required must still keep a tier-3 remnant.
+
+    Regression for the 2026-08-23 two-compression run: document maps mark 74-100%
+    of their sections required, so B1.3's required-section arm fired on every cell
+    and emptied tier 3 -- which makes `full` compression identical to `standard`,
+    since tier 3 is the only thing `full` adds. Rationing keeps at least
+    `_TIER3_SHARE_MIN` of the chapter in tier 3.
+    """
+
+    cells = [_cell(f"ch00-c{n:03d}", tier=3 if n > 6 else 1) for n in range(1, 11)]
+    sections = [_section(f"s{n:03d}", f"b{n:04d}", required=True) for n in range(1, 11)]
+
+    promoted = promote_tiers(cells, [], sections)
+
+    tiers = [cell.tier for cell in promoted]
+    # 10 cells, floor = ceil(10 * 0.10) = 1, so exactly one of the four tier-3
+    # cells survives and the rest are raised.
+    assert tiers.count(3) == 1
+    assert tiers.count(1) == 6
+    assert tiers.count(2) == 3
+
+
+def test_prerequisite_promotion_is_never_rationed() -> None:
+    """The floor rations only the required-section arm, never graph-backed promotion."""
+
+    cells = [_cell(f"ch00-c{n:03d}", tier=3) for n in range(1, 8)]
+    # c001 is a prerequisite of four other cells: tier 1 on structure alone.
+    edges = [_prereq("ch00-c001", f"ch00-c{n:03d}") for n in range(2, 6)]
+    # Nothing is in a required section, so the required-section arm never runs.
+    sections = [_section(f"s{n:03d}", f"b{n:04d}") for n in range(1, 8)]
+
+    promoted = promote_tiers(cells, edges, sections)
+
+    by_key = {cell.cell_key: cell for cell in promoted}
+    assert by_key["ch00-c001"].tier == 1
+    assert by_key["ch00-c001"].tier_promoted is True
+    assert [cell.tier for cell in promoted].count(3) == 6
+
+
+def test_rationing_is_deterministic_across_rebuilds() -> None:
+    """The same map must promote the same cells, or caches and reruns disagree."""
+
+    cells = [_cell(f"ch00-c{n:03d}", tier=3) for n in range(1, 11)]
+    sections = [_section(f"s{n:03d}", f"b{n:04d}", required=True) for n in range(1, 11)]
+
+    first = {cell.cell_key: cell.tier for cell in promote_tiers(cells, [], sections)}
+    second = {cell.cell_key: cell.tier for cell in promote_tiers(cells, [], sections)}
+    assert first == second
+    assert sorted(first.values()).count(3) == 1
+
+
+def test_small_chapters_still_promote_freely() -> None:
+    """Below the distribution gate's own cell floor, rationing must not apply.
+
+    `_tier_distribution_failure` ignores chapters under `_TIER_DISTRIBUTION_MIN_CELLS`,
+    so promotion must ignore them too -- otherwise the gate and the promotion would
+    disagree about the same chapter.
+    """
+
+    cells = [_cell(f"ch00-c{n:03d}", tier=3) for n in range(1, 4)]
+    sections = [_section(f"s{n:03d}", f"b{n:04d}", required=True) for n in range(1, 4)]
+
+    promoted = promote_tiers(cells, [], sections)
+
+    assert [cell.tier for cell in promoted] == [2, 2, 2]
