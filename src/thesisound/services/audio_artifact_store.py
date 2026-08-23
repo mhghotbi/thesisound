@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
+import time
+from collections.abc import Iterator
+from contextlib import contextmanager, suppress
 from pathlib import Path
+from threading import Lock
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -315,7 +320,8 @@ class AudioArtifactStore:
         # Unique name so concurrent encodes (overlapping runs/retries) cannot
         # steal or delete each other's partial output — that used to surface as
         # the empty-stderr "FFmpeg did not create streamable MP3" failure.
-        temporary = mp3_path.with_name(f"{mp3_path.name}.{uuid4().hex}.partial")
+        _discard_stale_temporaries(mp3_path, "partial")
+        temporary = _temporary_path(mp3_path, "partial")
         with tracing.span(
             "audio.transcode_mp3.ffmpeg", component="audio", kind="subprocess",
             project_id=project_id,
@@ -360,7 +366,12 @@ class AudioArtifactStore:
                 )
                 span.set(stderr_tail=detail[:700])
                 raise RuntimeError(detail)
-            temporary.replace(mp3_path)
+            try:
+                _replace_atomically(temporary, mp3_path)
+            except BaseException:
+                with suppress(OSError):
+                    temporary.unlink(missing_ok=True)
+                raise
             span.measure(output_bytes=mp3_path.stat().st_size)
             return mp3_path
 
@@ -449,13 +460,111 @@ class AudioArtifactStore:
 
 def _atomic_write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(content, encoding="utf-8")
-    temporary.replace(path)
+    _discard_stale_temporaries(path, "tmp")
+    temporary = _temporary_path(path, "tmp")
+    try:
+        temporary.write_text(content, encoding="utf-8")
+        _replace_atomically(temporary, path)
+    except BaseException:
+        with suppress(OSError):
+            temporary.unlink(missing_ok=True)
+        raise
 
 
 def _atomic_write_bytes(path: Path, content: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_bytes(content)
-    temporary.replace(path)
+    _discard_stale_temporaries(path, "tmp")
+    temporary = _temporary_path(path, "tmp")
+    try:
+        temporary.write_bytes(content)
+        _replace_atomically(temporary, path)
+    except BaseException:
+        with suppress(OSError):
+            temporary.unlink(missing_ok=True)
+        raise
+
+
+# A crash between writing a temporary and renaming it strands the temporary.
+# A shared name self-healed — the next write reused it — but a shared name is
+# exactly what let concurrent writers tear each other's output, so sweep
+# instead, at an age no live writer could still be inside.
+_STALE_TEMPORARY_AGE_SECONDS = 3600.0
+
+
+def _temporary_path(destination: Path, suffix: str) -> Path:
+    """A sibling name that no concurrent writer of `destination` can pick too."""
+
+    return destination.with_name(f"{destination.name}.{uuid4().hex}.{suffix}")
+
+
+def _discard_stale_temporaries(destination: Path, suffix: str) -> None:
+    """Best-effort sweep of this destination's crash-orphaned temporaries."""
+
+    prefix, tail = f"{destination.name}.", f".{suffix}"
+    cutoff = time.time() - _STALE_TEMPORARY_AGE_SECONDS
+    try:
+        candidates = list(destination.parent.iterdir())
+    except OSError:
+        return
+    for candidate in candidates:
+        if not (candidate.name.startswith(prefix) and candidate.name.endswith(tail)):
+            continue
+        try:
+            if candidate.stat().st_mtime < cutoff:
+                candidate.unlink()
+        except OSError:
+            # Held open, already gone, or another writer's — not ours to chase.
+            continue
+
+
+# Waits between replace attempts, ~1.9s in total. Long enough to outlast a
+# racing rename or a short download, short enough that a caller blocked behind
+# a genuinely stuck reader still gets its error back.
+_REPLACE_RETRY_DELAYS = (0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 0.64)
+
+_REPLACE_REGISTRY_LOCK = Lock()
+# Destination path -> [lock, number of callers holding or awaiting it].
+_REPLACE_LOCKS: dict[str, list[Any]] = {}
+
+
+@contextmanager
+def _destination_lock(destination: Path) -> Iterator[None]:
+    """Serialise replaces onto one path, without leaking a lock per path."""
+
+    key = os.path.normcase(str(destination))
+    with _REPLACE_REGISTRY_LOCK:
+        entry = _REPLACE_LOCKS.setdefault(key, [Lock(), 0])
+        entry[1] += 1
+        lock = entry[0]
+    try:
+        with lock:
+            yield
+    finally:
+        with _REPLACE_REGISTRY_LOCK:
+            entry[1] -= 1
+            # Only the last caller drops the entry, so nobody is left waiting
+            # on a lock that a later arrival has already replaced.
+            if entry[1] == 0:
+                _REPLACE_LOCKS.pop(key, None)
+
+
+def _replace_atomically(source: Path, destination: Path) -> None:
+    """Rename `source` onto `destination` under Windows' stricter rules.
+
+    POSIX `rename(2)` replaces a destination that others hold open. Windows'
+    `MoveFileExW` raises PermissionError instead, and two holders matter here:
+    another thread renaming onto the same path (the lock removes that one
+    outright), and a reader we do not control -- `FileResponse` streaming the
+    previous file to a browser, or a second worker process encoding the same
+    project -- which the retries wait out.
+    """
+
+    with _destination_lock(destination):
+        for delay in _REPLACE_RETRY_DELAYS:
+            try:
+                source.replace(destination)
+                return
+            except PermissionError:
+                time.sleep(delay)
+        # Out of patience: let the caller see the real error.
+        source.replace(destination)
