@@ -315,6 +315,12 @@ class SourceAnalysisManifest(BaseModel):
     evidence_token_coverage: float | None = Field(default=None, ge=0, le=1)
     evidence_count: int = Field(default=0, ge=0)
     skipped_block_count: int = Field(default=0, ge=0)
+    # Blocks the extractor itself said it had more to give, and that no second
+    # pass reached. Only tier<=2 blocks get one (`dense_second_pass_block_ids`),
+    # deliberately, so this is normal rather than a fault -- but without it a
+    # claim count reads as "what the source contains" when it is a floor. In the
+    # 2026-08-23 run it stood at 7 of 10 blocks and nothing recorded it.
+    unexhausted_block_count: int = Field(default=0, ge=0)
     claim_count: int = Field(default=0, ge=0)
     model_run_ids: list[UUID] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

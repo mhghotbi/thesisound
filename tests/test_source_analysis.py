@@ -77,8 +77,13 @@ from thesisound.source_analysis import (
 
 
 class FakeRunner:
-    def __init__(self, reject_block_ids: set[str] | frozenset[str] = frozenset()) -> None:
+    def __init__(
+        self,
+        reject_block_ids: set[str] | frozenset[str] = frozenset(),
+        more_claims_block_ids: set[str] | frozenset[str] = frozenset(),
+    ) -> None:
         self.reject_block_ids = set(reject_block_ids)
+        self.more_claims_block_ids = set(more_claims_block_ids)
         self.calls: list[str] = []
 
     def run(
@@ -147,6 +152,7 @@ class FakeRunner:
                             must_not_be_lost=True,
                         )
                     ],
+                    more_claims_available=block_id in self.more_claims_block_ids,
                 )
         elif output_type is ClaimReconciliationDraft:
             evidence = variables["evidence_items"]
@@ -1429,6 +1435,7 @@ def _prepare_equal_blocks_source(
     tokens_per_block: int,
     reject_block_ids: set[str] | frozenset[str] = frozenset(),
     provider_error_block_ids: set[str] | frozenset[str] = frozenset(),
+    more_claims_block_ids: set[str] | frozenset[str] = frozenset(),
     max_workers: int = 4,
 ) -> tuple[SourceAnalysisService, UUID, UUID, list[SourceDocumentBlock]]:
     workspace = WorkspaceStore(tmp_path / "workspaces")
@@ -1479,7 +1486,10 @@ def _prepare_equal_blocks_source(
     evidence_runner = (
         ProviderSkippingRunner(set(provider_error_block_ids))
         if provider_error_block_ids
-        else FakeRunner(reject_block_ids=reject_block_ids)
+        else FakeRunner(
+            reject_block_ids=reject_block_ids,
+            more_claims_block_ids=more_claims_block_ids,
+        )
     )
     service = SourceAnalysisService(
         workspace_store=workspace,
@@ -1916,3 +1926,45 @@ def test_concurrent_extraction_propagates_a_model_failure() -> None:
             document_map=document_map,
             model="fake",
         )
+
+
+@pytest.mark.parametrize("max_workers", [1, 4])
+def test_manifest_records_blocks_the_extractor_left_unexhausted(
+    tmp_path: Path,
+    max_workers: int,
+) -> None:
+    """A claim count is a floor when the extractor said it had more to give.
+
+    In the 2026-08-23 two-compression run this stood at 7 of 10 blocks in one run
+    and 2 of 9 in the other, and nothing recorded it -- so the two claim counts got
+    compared as if each measured the source's content. Only tier<=2 blocks earn a
+    second pass, deliberately, so the shortfall is normal; going unrecorded is not.
+    """
+
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=18,
+        tokens_per_block=100,
+        more_claims_block_ids={"block-03", "block-04"},
+        max_workers=max_workers,
+    )
+
+    manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
+
+    assert manifest.unexhausted_block_count == 2
+    assert any("claim count is a floor" in warning for warning in warnings)
+
+
+def test_a_fully_exhausted_source_reports_no_shortfall(tmp_path: Path) -> None:
+    service, project_id, source_id, _blocks = _prepare_equal_blocks_source(
+        tmp_path,
+        duration=10,
+        block_count=18,
+        tokens_per_block=100,
+    )
+
+    manifest, warnings = service.extract_evidence(project_id, source_id, model="fake")
+
+    assert manifest.unexhausted_block_count == 0
+    assert not any("claim count is a floor" in warning for warning in warnings)

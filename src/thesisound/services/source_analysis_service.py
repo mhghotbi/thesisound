@@ -498,6 +498,11 @@ class SourceAnalysisService:
         )
         rejected = [record for record in scoped_records if record.status == "rejected"]
         skipped = [record for record in scoped_records if record.status == "skipped"]
+        unexhausted = [
+            record
+            for record in scoped_records
+            if record.status == "extracted" and record.more_claims_available
+        ]
         warnings = [
             f"Rejected evidence for {record.block_id}: {record.rejection_reason}"
             for record in rejected
@@ -520,6 +525,12 @@ class SourceAnalysisService:
             f"{len(skipped)} skipped after provider errors, {len(rejected)} rejected. "
             f"Kept {retention:.0%} of planned tokens."
         )
+        if unexhausted:
+            # Says out loud that the claim count is a floor, not the source's total.
+            warnings.append(
+                f"{len(unexhausted)} block(s) reported more claims available than were "
+                "extracted; the claim count is a floor, not the source's full content."
+            )
         # Claim yield per surviving block is how a shrinking plan shows up downstream:
         # the coverage audit judges the ledger, not the plan, so this has to be trackable
         # across runs rather than reconstructed from artifacts after a gate blocks.
@@ -543,6 +554,7 @@ class SourceAnalysisService:
         manifest.evidence_token_coverage = min(1.0, kept_coverage)
         manifest.evidence_count = claim_count
         manifest.skipped_block_count = len(skipped)
+        manifest.unexhausted_block_count = len(unexhausted)
         manifest.model_run_ids.extend(run.run_id for run in runs)
         manifest.updated_at = datetime.now(UTC)
         self.artifact_store.save_manifest(manifest)
