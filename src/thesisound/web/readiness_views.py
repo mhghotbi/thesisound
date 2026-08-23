@@ -29,8 +29,8 @@ _LABELS: dict[str, str] = {
     "brief-confirmed": "تأیید موضوع و هدف",
     "source-selection-confirmed": "تأیید مجموعه منابع",
     "parse-quality": "کیفیت استخراج متن",
-    "evidence-validation": "وارسی شواهد و نقل‌قول‌ها",
-    "evidence-retention": "نگه‌داشت شواهد",
+    "evidence-validation": "وارسی شاهدها و نقل‌قول‌ها",
+    "evidence-retention": "نگه‌داشت شاهدها",
     "coverage-duration": "پوشش و مدت پشتیبانی‌شده",
     "episode-plan-approval": "تأیید طرح قسمت",
     "script-checks": "بررسی‌های قطعی متن",
@@ -63,9 +63,9 @@ _DETAILS: dict[tuple[str, str], str] = {
     ("source-selection-confirmed", "blocked"): "مجموعهٔ منابع هنوز تأیید نشده است.",
     ("parse-quality", "blocked"): "دست‌کم یک منبع برای استخراج مدعا امن نیست.",
     ("evidence-validation", "blocked"): "دست‌کم یک نقل‌قول با متن منبع نمی‌خواند.",
-    ("evidence-retention", "blocked"): "بخش زیادی از شواهد برنامه‌ریزی‌شده در استخراج از دست رفت.",
-    ("coverage-duration", "blocked"): "شواهد موجود مدت درخواستی را پشتیبانی نمی‌کنند.",
-    ("episode-plan-approval", "pass"): "طرح قسمت تأیید شده و از آن زمان تغییر نکرده است.",
+    ("evidence-retention", "blocked"): "بخش زیادی از شاهدهای برنامه‌ریزی‌شده در استخراج از دست رفت.",
+    ("coverage-duration", "blocked"): "شاهدهای موجود مدت درخواستی را پشتیبانی نمی‌کنند.",
+    ("episode-plan-approval", "pass"): "طرح قسمت تأییدشده است و از آن زمان تغییر نکرده است.",
     ("episode-plan-approval", "blocked"): "طرح قسمت بعد از تأیید تغییر کرده است.",
     ("script-checks", "blocked"): "متن موجود به طرح قسمت دیگری بسته است.",
     ("independent-verification", "blocked"): "متن موجود به طرح قسمت دیگری بسته است.",
@@ -91,18 +91,18 @@ def _detail_for(code: str, status: str, raw: str) -> str:
             match = _COUNT_RE.search(raw or "")
             if match:
                 count = _fa(match.group(1))
-                verb = "کیفیت استخراج" if code == "parse-quality" else "شواهد"
+                verb = "کیفیت استخراج" if code == "parse-quality" else "وارسی شاهدها"
                 return f"{verb} برای {count} منبع دوباره سنجیده شد."
         if code == "coverage-duration":
             match = _COVERAGE_RE.search(raw or "")
             if match:
                 asked, supported = _fa(match.group(1)), _fa(match.group(2))
-                return f"درخواست شما {asked} دقیقه است و شواهد {supported} دقیقه را پشتیبانی می‌کنند."
+                return f"درخواست شما {asked} دقیقه است و شاهدها {supported} دقیقه را پشتیبانی می‌کنند."
         if code == "evidence-retention":
             match = _RETENTION_RE.search(raw or "")
             if match:
                 kept, floor = _fa(match.group(1)), _fa(match.group(2))
-                return f"{kept}٪ حجم شواهد برنامه‌ریزی‌شده نگه داشته شد؛ کف لازم {floor}٪ است."
+                return f"{kept}٪ حجم شاهدهای برنامه‌ریزی‌شده نگه داشته شد؛ کف لازم {floor}٪ است."
     known = _DETAILS.get((code, status))
     if known:
         return known
@@ -118,7 +118,7 @@ def _detail_for(code: str, status: str, raw: str) -> str:
 _GROUPS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     (
         "evidence",
-        "شواهد، پوشش و مدت",
+        "شاهدها، پوشش و مدت",
         (
             "brief-confirmed",
             "source-selection-confirmed",
@@ -284,13 +284,13 @@ def build_readiness_view(
     if coverage is not None:
         match = _COVERAGE_RE.search(coverage.raw_detail)
         if match:
-            facts.append(("مدتی که شواهد پشتیبانی می‌کنند", f"{_fa(match.group(2))} دقیقه"))
+            facts.append(("مدتی که شاهدها پشتیبانی می‌کنند", f"{_fa(match.group(2))} دقیقه"))
     retention = by_code.get("evidence-retention")
     if retention is not None:
         match = _RETENTION_RE.search(retention.raw_detail)
         if match:
             facts.append(
-                ("نگه‌داشت شواهد", f"{_fa(match.group(1))}٪ — کف لازم {_fa(match.group(2))}٪")
+                ("نگه‌داشت شاهدها", f"{_fa(match.group(1))}٪ — کف لازم {_fa(match.group(2))}٪")
             )
     passed = sum(1 for row in ordered if row.status == "pass")
     facts.append(("بررسی‌های گذشته", f"{_fa(passed)} از {_fa(len(ordered))}"))

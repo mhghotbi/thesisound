@@ -27,7 +27,7 @@ def _fa(value: object) -> str:
 
 
 _LABELS: dict[str, str] = {
-    "workspace": "مسیر فضای کاری پروژه‌ها",
+    "workspace": "مسیر فضای کاری گفتارها",
     "ingestion-artifacts": "مسیر خروجی‌های دریافت منبع",
     "google-genai": "کتابخانهٔ مدل Gemini",
     "gemini-google-search": "جست‌وجوی وب با Gemini",

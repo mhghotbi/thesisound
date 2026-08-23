@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 
 from thesisound.config import Settings
@@ -483,7 +484,14 @@ def test_resolve_uploaded_source_path_rejects_escape(tmp_path: Path) -> None:
     uploads = workspace.project_dir(project.project_id) / "uploads" / str(source_id)
     uploads.mkdir(parents=True, exist_ok=True)
     link = uploads / "escape.txt"
-    link.symlink_to(outside)
+    try:
+        link.symlink_to(outside)
+    except OSError as exc:  # pragma: no cover - platform-dependent
+        # Windows refuses symlink creation (WinError 1314) unless the process holds
+        # SeCreateSymbolicLinkPrivilege -- Developer Mode off, not elevated. The
+        # escape this guards against is still real there, so skip rather than
+        # weaken the assertion or pretend the check ran.
+        pytest.skip(f"cannot create a symlink on this platform: {exc}")
     manifest = UiSourceManifest(
         source_id=source_id,
         filename="escape.txt",
