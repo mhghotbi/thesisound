@@ -123,15 +123,24 @@ class GeminiKeyPool:
                         self._current_index = (index + 1) % len(self._states)
                     continue
                 if is_gemini_quota_error(exc):
-                    daily = is_daily_quota_error(exc)
+                    granularity = quota_granularity(exc)
+                    daily = granularity == "day" if granularity else is_daily_quota_error(exc)
                     event["status"] = "quota_failed"
-                    event["failure_scope"] = "daily_quota" if daily else "rate_limit"
+                    event["failure_scope"] = _FAILURE_SCOPE_BY_GRANULARITY.get(
+                        granularity, "daily_quota" if daily else "rate_limit"
+                    )
                     _emit(on_attempt, event)
                     last_quota_error = exc
                     with self._lock:
-                        duration = (
-                            self._daily_cooldown_seconds if daily else self._cooldown_seconds
-                        )
+                        if daily:
+                            # A day-scoped quotaId can still carry a short
+                            # RetryInfo.retryDelay (measured live: ~30s) -- that
+                            # hint describes when Google will next re-check the
+                            # bucket, not when it actually refills, so it must
+                            # not shorten the cooldown for a real daily block.
+                            duration = self._daily_cooldown_seconds
+                        else:
+                            duration = quota_retry_delay_seconds(exc) or self._cooldown_seconds
                         state.blocked_until = self._clock() + duration
                         self._current_index = (index + 1) % len(self._states)
                     continue
@@ -343,7 +352,81 @@ def is_transient_network_error(exc: Exception) -> bool:
     )
 
 
+_FAILURE_SCOPE_BY_GRANULARITY = {
+    "day": "daily_quota",
+    "hour": "hourly_quota",
+    "minute": "per_minute_quota",
+}
+
+
+def _quota_violations(exc: Exception) -> list[dict[str, Any]]:
+    """The Gemini SDK's own error, not text parsing: exc.details['error']['details']
+    carries a structured `QuotaFailure` with `violations[].quotaId`, e.g.
+    "GenerateRequestsPerDayPerProjectPerModel-FreeTier" -- that identifier is
+    the only reliable way to tell a daily cap from a per-minute one; prose like
+    "please retry in 30s" is present on BOTH (measured live 2026-08-25) and
+    tells you nothing about which bucket actually tripped.
+    """
+
+    details = getattr(exc, "details", None)
+    if not isinstance(details, dict):
+        return []
+    error = details.get("error", details)
+    if not isinstance(error, dict):
+        return []
+    violations: list[dict[str, Any]] = []
+    for entry in error.get("details") or []:
+        if not isinstance(entry, dict):
+            continue
+        if not str(entry.get("@type", "")).endswith("QuotaFailure"):
+            continue
+        violations.extend(v for v in entry.get("violations") or [] if isinstance(v, dict))
+    return violations
+
+
+def quota_granularity(exc: Exception) -> str | None:
+    """"day" / "hour" / "minute" from the structured quotaId, or None if unknown."""
+
+    for violation in _quota_violations(exc):
+        quota_id = str(violation.get("quotaId") or "").casefold()
+        if "day" in quota_id:
+            return "day"
+        if "hour" in quota_id:
+            return "hour"
+        if "minute" in quota_id:
+            return "minute"
+    return None
+
+
+def quota_retry_delay_seconds(exc: Exception) -> float | None:
+    """Google's own suggested wait (RetryInfo.retryDelay, e.g. "30s"), if present."""
+
+    details = getattr(exc, "details", None)
+    if not isinstance(details, dict):
+        return None
+    error = details.get("error", details)
+    if not isinstance(error, dict):
+        return None
+    for entry in error.get("details") or []:
+        if not isinstance(entry, dict):
+            continue
+        if not str(entry.get("@type", "")).endswith("RetryInfo"):
+            continue
+        raw = str(entry.get("retryDelay") or "").strip()
+        if raw.endswith("s"):
+            try:
+                return float(raw[:-1])
+            except ValueError:
+                return None
+    return None
+
+
 def is_daily_quota_error(exc: Exception) -> bool:
+    granularity = quota_granularity(exc)
+    if granularity is not None:
+        return granularity == "day"
+    # Structured detail unavailable (e.g. a test fake, or a non-Gemini-SDK
+    # exception shape) -- fall back to the old prose heuristic.
     message = str(exc).casefold()
     return any(
         token in message

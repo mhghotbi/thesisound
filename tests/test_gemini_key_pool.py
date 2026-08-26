@@ -195,6 +195,80 @@ def test_pool_reports_when_all_keys_are_temporarily_blocked() -> None:
     assert raised.value.retry_after_seconds == pytest.approx(30.0, abs=1.0)
 
 
+@dataclass
+class QuotaAPIError(RuntimeError):
+    """Shaped like google.genai.errors.APIError: a structured `.details` dict,
+    not just prose -- that structure is what real quotaId/retryDelay live in.
+    """
+
+    details: dict
+    status_code: int = 429
+
+
+def _quota_error(quota_id: str, retry_delay: str) -> QuotaAPIError:
+    return QuotaAPIError(
+        details={
+            "error": {
+                "code": 429,
+                "message": f"Please retry in {retry_delay}.",
+                "details": [
+                    {
+                        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+                        "violations": [{"quotaId": quota_id, "quotaValue": "20"}],
+                    },
+                    {
+                        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+                        "retryDelay": retry_delay,
+                    },
+                ],
+            }
+        }
+    )
+
+
+def test_daily_quota_id_gets_the_full_day_cooldown_not_the_misleading_retry_hint() -> None:
+    """Live 2026-08-25: a day-scoped quotaId (GenerateRequestsPerDay...) still
+    carries a short RetryInfo.retryDelay like "30s" -- that hint describes when
+    Google will next re-check the bucket, not when it refills. Before this fix,
+    is_daily_quota_error() only matched spaced prose like "per day" and missed
+    the real camelCase quotaId entirely, so every daily block was cooled down
+    for 60s and immediately re-hit the same exhausted key.
+    """
+
+    now = [1000.0]
+    pool = GeminiKeyPool(
+        ["key-a"],
+        client_factory=lambda key: FakeClient(key_name=key),
+        cooldown_seconds=60,
+        daily_cooldown_seconds=24 * 60 * 60,
+        clock=lambda: now[0],
+    )
+    exc = _quota_error("GenerateRequestsPerDayPerProjectPerModel-FreeTier", "30s")
+
+    with pytest.raises(QuotaAPIError):
+        pool.call(lambda _: (_ for _ in ()).throw(exc))
+    with pytest.raises(GeminiKeyPoolExhausted) as raised:
+        pool.call(lambda _: "not reached")
+    assert raised.value.retry_after_seconds == pytest.approx(24 * 60 * 60, rel=0.01)
+
+
+def test_per_minute_quota_id_uses_the_providers_own_retry_delay() -> None:
+    now = [1000.0]
+    pool = GeminiKeyPool(
+        ["key-a"],
+        client_factory=lambda key: FakeClient(key_name=key),
+        cooldown_seconds=60,
+        clock=lambda: now[0],
+    )
+    exc = _quota_error("GenerateRequestsPerMinutePerProjectPerModel-FreeTier", "5s")
+
+    with pytest.raises(QuotaAPIError):
+        pool.call(lambda _: (_ for _ in ()).throw(exc))
+    with pytest.raises(GeminiKeyPoolExhausted) as raised:
+        pool.call(lambda _: "not reached")
+    assert raised.value.retry_after_seconds == pytest.approx(5.0, abs=0.5)
+
+
 def test_settings_accept_json_or_comma_separated_key_pool() -> None:
     json_settings = Settings(
         GEMINI_API_KEYS='["key-a", "key-b", "key-a"]',

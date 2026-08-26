@@ -238,6 +238,63 @@ def test_gemini_adapter_maps_rate_limit_errors(tmp_path) -> None:
         )
 
 
+class DailyQuotaException(RuntimeError):
+    """Shaped like google.genai.errors.ClientError for a day-scoped 429.
+
+    Measured live 2026-08-25: the message text says "please retry in 30s" on
+    BOTH a daily block and a per-minute one -- only the structured
+    `details['error']['details']` QuotaFailure.violations[].quotaId
+    ("...PerDay..." vs "...PerMinute...") tells them apart.
+    """
+
+    status_code = 429
+    details = {
+        "error": {
+            "code": 429,
+            "message": "Please retry in 30s.",
+            "details": [
+                {
+                    "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+                    "violations": [
+                        {
+                            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+                            "quotaValue": "20",
+                        }
+                    ],
+                },
+                {
+                    "@type": "type.googleapis.com/google.rpc.RetryInfo",
+                    "retryDelay": "30s",
+                },
+            ],
+        }
+    }
+
+
+def test_gemini_adapter_tags_daily_quota_errors_for_the_user_facing_layer(tmp_path) -> None:
+    """error_messages.py only sees the ModelError's string message (no
+    structured access survives that far) -- this is what lets it tell a
+    daily block apart from a per-minute one instead of giving both the same
+    "try again in a few minutes" advice.
+    """
+
+    adapter = GeminiStructuredModel(
+        client=FakeClient(FakeModels(error=DailyQuotaException("please retry in 30s"))),
+        settings=_settings_without_okian(tmp_path),
+    )
+
+    with pytest.raises(ModelRateLimitError) as exc_info:
+        adapter.generate_structured(
+            system_prompt="system",
+            user_prompt="user",
+            output_type=ExampleOutput,
+            model="gemini-test",
+            metadata=_metadata(),
+        )
+
+    assert "daily quota" in str(exc_info.value)
+
+
 def test_gemini_adapter_treats_406_not_acceptable_as_retryable(tmp_path) -> None:
     adapter = GeminiStructuredModel(
         client=FakeClient(FakeModels(error=NotAcceptableException("Not Acceptable"))),

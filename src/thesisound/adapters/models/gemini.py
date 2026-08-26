@@ -606,7 +606,10 @@ def _map_provider_error(exc: Exception) -> ModelError:
 
     if status == 429 or "resourceexhausted" in name or "ratelimit" in name:
         retry_after = getattr(exc, "retry_after_seconds", None)
-        return ModelRateLimitError(message, retry_after_seconds=retry_after)
+        return ModelRateLimitError(
+            _scoped_rate_limit_message(message, exc, retry_after),
+            retry_after_seconds=retry_after,
+        )
     if "timeout" in name or "deadline" in name:
         return ModelTimeoutError(message)
     if "safety" in name or "blocked" in name:
@@ -621,6 +624,35 @@ def _map_provider_error(exc: Exception) -> ModelError:
     # chance to recover instead of failing the whole run on one blip.
     retryable = status is None or status >= 500 or status == 406
     return ModelProviderError(message, retryable=retryable)
+
+
+def _scoped_rate_limit_message(
+    message: str, exc: Exception, retry_after: float | None
+) -> str:
+    """Tag a 429's message with its real quota scope (daily vs. short-lived).
+
+    ModelError only carries a plain string past this point (see modeling.py) --
+    no structured field survives to error_messages.py, which classifies purely
+    on `str(error)`. Baking the scope into the text here is what lets that
+    later, text-only classification tell a daily block (retry tomorrow) apart
+    from a per-minute one (retry shortly) instead of giving both the same
+    generic "چند دقیقه بعد دوباره تلاش کنید" copy -- wrong advice for a daily
+    block, measured live 2026-08-25 (GeminiKeyPoolExhausted's own retryDelay
+    is a misleading ~30s even when the underlying quotaId is day-scoped).
+    """
+
+    from thesisound.gemini_key_pool import quota_granularity
+
+    granularity = quota_granularity(exc)
+    if granularity is None and retry_after is not None and retry_after >= 3600:
+        # GeminiKeyPoolExhausted has no quotaId of its own -- it aggregates
+        # over the pool -- but by the time it's raised, gemini_key_pool.py has
+        # already classified each key's block; a wait this long is itself the
+        # daily signal (the pool's cooldown is either ~60s or a full day).
+        granularity = "day"
+    if granularity == "day" and "daily quota" not in message.casefold():
+        return f"{message} (daily quota)"
+    return message
 
 
 def _is_retryable_provider_exception(exc: Exception) -> bool:
