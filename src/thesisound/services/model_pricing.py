@@ -92,7 +92,18 @@ class CostCalculator:
             return None
         row = max(candidates, key=lambda item: item.effective_from)
         micros = row.per_call_micros or 0
-        micros += _scale(input_tokens, row.input_per_million_micros)
+        # Cached tokens are a SUBSET of the input count, not an extra bucket.
+        # Gemini reports `cached_content_token_count` inside `prompt_token_count`
+        # (the adapter maps the latter to ``input_tokens``), so billing the full
+        # input at the standard rate and then adding the cached tokens again at
+        # the cached rate charges the cached portion twice. Split it instead:
+        # the uncached remainder at the standard rate, the cached part at the
+        # cached rate. This was invisible while nothing cached; document_map
+        # already reports a cache hit on 54% of its attempts.
+        billable_input = input_tokens
+        if input_tokens and cached_tokens:
+            billable_input = max(input_tokens - cached_tokens, 0)
+        micros += _scale(billable_input, row.input_per_million_micros)
         micros += _scale(output_tokens, row.output_per_million_micros)
         micros += _scale(cached_tokens, row.cached_per_million_micros)
         return CostResult(cost_micros=micros, pricing_version=self.version)

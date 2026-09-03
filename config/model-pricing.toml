@@ -4,15 +4,15 @@
 # onto every priced call as `pricing_version`, so a later export or CLI query
 # can tell "priced under the January table" apart from "priced after the price
 # change in August". Bump it whenever you edit the rows below.
-version = "2026-08-11-google-list-price"
+version = "2026-09-04-google-list-price"
 
 # A model/operation with no matching row here still prices as "unknown"
 # everywhere in the CLI, never as a silent, misleading zero -- that guarantee
-# is why this table shipped empty for so long. The three rows below are
-# Google's public Standard-tier list price for the Gemini models this project
-# actually resolves by default (config.py model_fast / model_strong /
-# model_tts; config/model-routing.toml), fetched from
-# https://ai.google.dev/gemini-api/docs/pricing on 2026-08-11. List price is
+# is why this table shipped empty for so long. The rows below are Google's
+# public Standard-tier list price for the Gemini models this project actually
+# resolves by default (config.py model_fast / model_strong /
+# model_tts; config/model-routing.toml), re-fetched from
+# https://ai.google.dev/gemini-api/docs/pricing on 2026-09-04. List price is
 # not necessarily this account's negotiated or committed-use rate -- replace
 # these rows if your actual billing differs, and re-run
 # `thesisound observability-reprice` afterward. OpenRouter (openrouter.ai)
@@ -30,9 +30,16 @@ version = "2026-08-11-google-list-price"
 #     reusing the structured_text rate for ASR's audio input would likely
 #     understate cost rather than approximate it.
 #
+# Batch-API calls bill at half these rates on every model here. There is no
+# batch row because nothing in the pipeline submits batch jobs yet; add a
+# parallel set of rows (and a way to tag the call) at the same time as that.
+#
 # Token rates are micros of currency per one million tokens (1_000_000 micros
 # = one unit of currency), matching the Google Cloud Billing convention, so
-# cost stays exact integer math with no floating-point drift. `operation`
+# cost stays exact integer math with no floating-point drift. Cached tokens are
+# a subset of the input count, not an extra bucket: `CostCalculator` bills
+# `input - cached` at the input rate and `cached` at the cached rate.
+# `operation`
 # must be one of: structured_text, google_search, url_context, tts, asr.
 # `effective_from` is a plain TOML date; the newest row with
 # `effective_from <= call.started_at` wins, so a price change only affects
@@ -48,13 +55,29 @@ input_per_million_micros = 300_000     # $0.30 / 1M input tokens
 output_per_million_micros = 2_500_000  # $2.50 / 1M output tokens
 cached_per_million_micros = 30_000     # $0.03 / 1M cached-context tokens
 
+# gemini-3.6-flash carries dated promotional pricing: the page states each rate
+# as "$X through December 31, 2026. $Y starting January 1, 2027." Both rows are
+# listed here so a run priced today is not billed at next year's rate and a run
+# in January is not billed at this year's. The 2026 row corrects a real error:
+# this table previously carried only the $1.50 / $7.50 figures with
+# effective_from 2026-01-01, which overstated every 3.6-flash call made in 2026
+# by 2x. Re-run `thesisound observability-reprice` to restate past runs.
 [[prices]]
 provider = "gemini"
 model = "gemini-3.6-flash"
 operation = "structured_text"
 effective_from = 2026-01-01
-input_per_million_micros = 1_500_000   # $1.50 / 1M input tokens
-output_per_million_micros = 7_500_000  # $7.50 / 1M output tokens (thinking tokens bill at this rate too)
+input_per_million_micros = 750_000     # $0.75 / 1M input tokens (promotional, through 2026-12-31)
+output_per_million_micros = 3_750_000  # $3.75 / 1M output tokens (thinking tokens bill at this rate too)
+cached_per_million_micros = 75_000     # $0.075 / 1M cached-context tokens
+
+[[prices]]
+provider = "gemini"
+model = "gemini-3.6-flash"
+operation = "structured_text"
+effective_from = 2027-01-01
+input_per_million_micros = 1_500_000   # $1.50 / 1M input tokens (standard rate resumes)
+output_per_million_micros = 7_500_000  # $7.50 / 1M output tokens
 cached_per_million_micros = 150_000    # $0.15 / 1M cached-context tokens
 
 [[prices]]
@@ -63,4 +86,17 @@ model = "gemini-3.1-flash-tts-preview"
 operation = "tts"
 effective_from = 2026-01-01
 input_per_million_micros = 1_000_000    # $1.00 / 1M input (text) tokens
-output_per_million_micros = 20_000_000  # $20.00 / 1M output (audio) tokens -- 25 audio tokens/second
+output_per_million_micros = 20_000_000  # $20.00 / 1M output (audio) tokens
+
+# Not the configured default, priced here so a switch is measurable the moment
+# it happens: gemini-2.5-flash-tts is exactly half the 3.1 preview rate on both
+# legs. TTS is the single largest line in a finished audio lesson, so this is
+# the cheapest available halving of it -- evaluate output quality on Persian
+# before switching THESISOUND_MODEL_TTS.
+[[prices]]
+provider = "gemini"
+model = "gemini-2.5-flash-tts"
+operation = "tts"
+effective_from = 2026-01-01
+input_per_million_micros = 500_000      # $0.50 / 1M input (text) tokens
+output_per_million_micros = 10_000_000  # $10.00 / 1M output (audio) tokens

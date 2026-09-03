@@ -120,7 +120,25 @@ class Settings(BaseSettings):
     claim_reconciliation_workers: int = Field(default=4, ge=1, le=16)
     # Blocks per evidence_extraction call. 1 preserves the audited one-block,
     # one-call behaviour; larger values use the separate batch prompt.
-    evidence_extraction_batch_size: int = Field(default=1, ge=1, le=8)
+    #
+    # Default raised 1 -> 4 on 2026-09-04. evidence_extraction is the largest
+    # cost centre in the pipeline (3.17M input tokens across the 20 workspaces,
+    # 57% of all text spend) and every call re-sends the same constant prefix:
+    # the system prompt, SOURCE_ID, WORKING_THESIS and ANALYSIS_PROFILE_JSON.
+    # The median source needs 27 block calls, so that prefix was billed 27
+    # times per source. At 4 it is billed 7 times. It also lifts the request
+    # past Gemini's implicit-cache floor: measured across every stored run,
+    # evidence_extraction attempts reported cached_tokens on 0 of 618 attempts
+    # (average request 4,806 tokens) while document_map hit 54% and
+    # concept_cells 59% on much larger requests.
+    #
+    # 4 rather than the permitted 8: output tokens grow with the unit, and a
+    # unit that overruns the completion budget returns finish_reason=length for
+    # every block in it. Both unit builders cap a unit at 12,000 source tokens
+    # regardless, and any block the batch returns empty (or that the batch call
+    # fails on) still falls back to its own single-block call with the same
+    # verbatim-excerpt validation, so quality gates are unchanged.
+    evidence_extraction_batch_size: int = Field(default=4, ge=1, le=8)
     keep_rendered_prompts: bool = False
     gemini_google_search_enabled: bool = True
     gemini_url_context_enabled: bool = True

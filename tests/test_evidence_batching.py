@@ -329,9 +329,16 @@ def test_all_fallback_batch_retains_the_successful_batch_run() -> None:
 
 
 def test_batch_size_setting_and_constructor_are_bounded() -> None:
-    assert Settings(environment="test").evidence_extraction_batch_size == 1
+    # 4 is the shipped default: it amortises the constant evidence_extraction
+    # prefix over four blocks instead of re-sending it per block, while staying
+    # short enough that one unit's combined output does not risk
+    # finish_reason=length for every block in it.
+    assert Settings(environment="test").evidence_extraction_batch_size == 4
+    assert Settings(environment="test", evidence_extraction_batch_size=8) is not None
     with pytest.raises(ValueError):
         Settings(environment="test", evidence_extraction_batch_size=0)
+    with pytest.raises(ValueError):
+        Settings(environment="test", evidence_extraction_batch_size=9)
     with pytest.raises(ValueError, match="batch_size"):
         EvidenceExtractorService(BatchRunner(), batch_size=0)
 

@@ -832,7 +832,20 @@ dependent claims with it.
 
 ---
 
-### 2.9 `persian_script_segment` 1.3.0
+### 2.9 `persian_script_segment` 1.4.0
+
+> **1.4.0 (2026-09-04)** reorders the `user.md` blocks only: `GLOSSARY_JSON`,
+> `DISAGREEMENT_GRAPH_JSON` and `KNOWN_CONCEPTS` move up next to
+> `RESEARCH_BRIEF_JSON`, ahead of the per-segment `SEGMENT_JSON`,
+> `CLAIMS_JSON` and `EVIDENCE_PACK_JSON`. Same variables, same system
+> prompt, same closing instruction. The four shared blocks are identical for
+> every segment of a project, so behind the per-segment ones they added
+> nothing to the prefix two calls have in common: Gemini reported
+> `cached_tokens` on 14 of 167 attempts despite 91% of runs re-sending an
+> identical input. Every anchor below was written against 1.3.0 and still
+> applies unchanged; the reorder is a caching change, not a content change.
+> One thing it does move is recency -- the claims and excerpts now sit
+> closest to the instruction -- which `PS-1` should account for when it runs.
 
 ---
 

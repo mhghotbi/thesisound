@@ -21,7 +21,7 @@ def test_active_writer_system_prompt_contains_grounding_sentences() -> None:
             "part_count": 1,
         },
     )
-    assert bundle.contract.version == "1.3.0"
+    assert bundle.contract.version == "1.4.0"
     system = bundle.system_prompt
     for sentence in (
         "Never add outside knowledge",

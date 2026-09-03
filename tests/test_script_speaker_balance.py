@@ -246,10 +246,10 @@ def _script_prompt_variables() -> dict:
     }
 
 
-def test_latest_script_prompt_is_1_3_0_and_renders_position() -> None:
+def test_latest_script_prompt_is_1_4_0_and_renders_position() -> None:
     loader = PromptLoader()
     bundle = loader.load_bundle("persian_script_segment", _script_prompt_variables())
-    assert bundle.contract.version == "1.3.0"
+    assert bundle.contract.version == "1.4.0"
     assert "2 of 4" in bundle.user_prompt
     assert "in part 1 of 1" in bundle.user_prompt
     assert "{{" not in bundle.system_prompt + bundle.user_prompt
@@ -269,7 +269,7 @@ def test_lesson_prose_prompt_1_0_0_renders_position() -> None:
     assert "heading_level" in bundle.system_prompt
 
 
-@pytest.mark.parametrize("version", ["1.0.0", "1.1.0", "1.2.0"])
+@pytest.mark.parametrize("version", ["1.0.0", "1.1.0", "1.2.0", "1.3.0"])
 def test_older_script_prompts_ignore_extra_render_variables(version: str) -> None:
     bundle = PromptLoader().load_bundle(
         "persian_script_segment",

@@ -21,6 +21,10 @@ from thesisound.observability import (
 )
 from thesisound.services.observability_reporting import ObservabilityReporter
 from thesisound.services.observability_rollup import ObservabilityRollup
+from thesisound.services.prompt_prefix_report import (
+    IMPLICIT_CACHE_MIN_TOKENS,
+    report_from_run_dirs,
+)
 
 
 def _format_cost(micros: int | None) -> str:
@@ -472,6 +476,60 @@ def register_observability_commands(app: typer.Typer) -> None:
         parsed_since = _parse_since(since) if since is not None else None
         updated = ledger.reprice(ledger.cost_pricer, since=parsed_since)
         console.print(f"Repriced {updated} call(s).")
+
+    @app.command("prompt-prefix")
+    def prompt_prefix(project_id: UUID) -> None:
+        """Show how much of each stage's prompt is a prefix every call shares.
+
+        This is the ceiling on what prefix caching can save, and it is not
+        visible from token counts: a stage can re-send the same text on every
+        call and cache nothing, because the repeated part sits behind material
+        that changes. Requires a run recorded with
+        THESISOUND_KEEP_RENDERED_PROMPTS=true -- the prompts are not stored
+        otherwise, and this reports nothing to measure."""
+
+        settings = Settings()
+        runs_root = settings.workspace_root / str(project_id) / "model-runs"
+        console = Console()
+        if not runs_root.is_dir():
+            console.print(f"[yellow]No model runs for project {project_id}.[/yellow]")
+            return
+
+        reports = report_from_run_dirs(sorted(p for p in runs_root.iterdir() if p.is_dir()))
+        if not reports:
+            console.print(
+                "[yellow]No rendered prompts stored for this project. Re-run it with "
+                "THESISOUND_KEEP_RENDERED_PROMPTS=true to measure the prefix.[/yellow]"
+            )
+            return
+
+        table = Table(title=f"Shared prompt prefix by stage - {project_id}")
+        table.add_column("Stage")
+        table.add_column("Calls", justify="right")
+        table.add_column("Shared prefix", justify="right")
+        table.add_column("Mean prompt", justify="right")
+        table.add_column("Share", justify="right")
+        table.add_column("Cacheable")
+        for report in reports:
+            cacheable = (
+                "[yellow]below floor[/yellow]"
+                if report.below_floor
+                else "[green]yes[/green]"
+            )
+            table.add_row(
+                report.stage,
+                str(report.call_count),
+                f"~{report.approx_prefix_tokens:,} tok",
+                f"~{int(report.mean_prompt_chars / 3.5):,} tok",
+                f"{report.shared_share:.0%}",
+                cacheable if report.call_count > 1 else "[dim]single call[/dim]",
+            )
+        console.print(table)
+        console.print(
+            f"[dim]'below floor' means the shared prefix is under Gemini's "
+            f"{IMPLICIT_CACHE_MIN_TOKENS:,}-token minimum and cannot cache at any "
+            f"repeat rate. Token counts are approximate (characters / 3.5).[/dim]"
+        )
 
 
 def _tier_payload(summary: EvidenceTierSummary) -> dict[str, object]:
