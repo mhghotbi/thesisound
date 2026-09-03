@@ -232,7 +232,7 @@ override: Literal["pinned", "dropped"] | None = None
 | رویداد | کِی | payload |
 |---|---|---|
 | `plan.reviewed` | صفحهٔ طرح در `EPISODE_PLANNED` دیده شد | `has_omitted: bool`، `has_unused_must_not_be_lost: bool` |
-| `plan.omitted_list_opened` | فهرست «آنچه نیامده» باز شد | `origin: "omitted" \| "must_not_be_lost"` |
+| `plan.omitted_list_opened` | فهرست «آنچه نیامده» دیده شد (فهرست پیش‌فرض باز است؛ رویداد با اولین دیده‌شدن یا بازکردن دوباره ثبت می‌شود) | `origin: "omitted" \| "must_not_be_lost"` |
 | `plan.duration_changed` | مدت تغییر کرد | `direction: "up" \| "down"`، `from_blocked: bool`، `reextraction_required: bool` |
 
 `plan.duration_changed` در همان [`episode_planning_run.py:219`](../../src/thesisound/services/episode_planning_run.py) emit می‌شود، کنار `gate.resolved` موجود — یعنی یک choke point، نه route (D4 در r11).
@@ -243,7 +243,7 @@ override: Literal["pinned", "dropped"] | None = None
 
 | کلید | پرسش | فرمول |
 |---|---|---|
-| E9 `plan_review_depth_rate` | آیا کسی اصلاً فهرست «آنچه نیامده» را باز می‌کند؟ | `plan.omitted_list_opened` / `plan.reviewed`، به تفکیک origin |
+| E9 `plan_review_depth_rate` | آیا کسی اصلاً به فهرست «آنچه نیامده» می‌رسد؟ | `plan.omitted_list_opened` / `plan.reviewed`، به تفکیک origin |
 | E10 `plan_duration_adjust_rate` | چند درصد پروژه‌ها بعد از دیدن طرح مدت را عوض می‌کنند؟ | پروژه‌های دارای ≥۱ `plan.duration_changed` / پروژه‌های رسیده به `EPISODE_PLANNED` |
 | E11 `plan_duration_increase_share` | تغییر مدت بیشتر برای کوتاه‌کردن است یا بلندکردن؟ | `direction="up"` / کل `plan.duration_changed` |
 | E12 `plan_gate_abandon_rate` | چند پروژه در گیت طرح می‌میرند؟ | پروژه‌هایی که max stage = ۵ و ۱۴ روز بی‌فعالیت‌اند / رسیده‌ها به stage ۵ |

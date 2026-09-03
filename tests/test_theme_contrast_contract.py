@@ -48,6 +48,9 @@ REQUIRED: tuple[tuple[str, str, float, str], ...] = (
     # Non-text: the field fill is within 1.1:1 of the sheet behind it, so this
     # border is the only thing identifying the control.
     ("border-strong", "paper", NON_TEXT, "the sole visual boundary of every field and chip"),
+    # A disabled button is drawn as --paper-strong on --paper-raised, which is within
+    # 1.1:1 of its surroundings, so this border is the whole control again.
+    ("border-strong", "paper-raised", NON_TEXT, "the boundary of a disabled control on a card"),
     # --disabled marks genuinely inactive components, which SC 1.4.3 exempts, so
     # it carries the non-text floor rather than 4.5. It must never be used for
     # live content; see the transcript speaker label, which uses --muted.

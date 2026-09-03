@@ -31,15 +31,15 @@ from thesisound.product_metrics.events import (
     GateSourceToggled,
     WorkflowRewound,
 )
-from thesisound.services.corpus_building import CorpusBuildingService, CorpusBuildRun
+from thesisound.services.corpus_building import CorpusBuildingService
 from thesisound.services.episode_planning_run import (
-    EpisodePlanningRun,
     EpisodePlanningRunService,
 )
 from thesisound.services.runtime_preflight import RuntimePreflight
 from thesisound.services.workflow_revision import WorkflowRevisionService
 from thesisound.web.corpus_runtime import corpus_source_inputs
 from thesisound.web.error_messages import user_facing_error
+from thesisound.web.processing_views import build_processing_stages
 from thesisound.web.read_models import state_label_for
 from thesisound.web.source_discovery import (
     WebSourceCandidate,
@@ -889,7 +889,7 @@ def register_source_routes(
         planning_run = episode_planner.run_store.load_optional(project_id)
         return {
             "project": project,
-            "stages": _project_stages(project.state, corpus_run, planning_run),
+            "stages": build_processing_stages(project.state, corpus_run, planning_run),
             "corpus_run": corpus_run,
             "corpus_active": bool(corpus_run and corpus_run.status in {"queued", "running"}),
             "corpus_attempt": len(corpus_builder.run_store.load_history(project_id)),
@@ -1045,49 +1045,6 @@ def _source_for_url(
     url: str,
 ) -> UiSourceManifest | None:
     return next((source for source in sources if source.canonical_url == url), None)
-
-
-def _project_stages(
-    state: ProjectState,
-    corpus_run: CorpusBuildRun | None,
-    planning_run: EpisodePlanningRun | None,
-) -> list[tuple[str, bool]]:
-    after_sources = corpus_run is not None or state not in {
-        ProjectState.DRAFT,
-        ProjectState.BRIEF_READY,
-        ProjectState.SOURCES_COLLECTING,
-        ProjectState.SOURCE_SELECTION_REQUIRED,
-    }
-    corpus_ready = bool(corpus_run and corpus_run.status == "succeeded") or state in {
-        ProjectState.CORPUS_READY,
-        ProjectState.EPISODE_PLANNING,
-        ProjectState.EPISODE_PLANNED,
-        ProjectState.SCRIPT_DRAFTING,
-        ProjectState.SCRIPT_READY,
-        ProjectState.SCRIPT_VERIFYING,
-        ProjectState.SCRIPT_VERIFIED,
-        ProjectState.AUDIO_GENERATING,
-        ProjectState.AUDIO_READY,
-        ProjectState.AUDIO_VERIFYING,
-        ProjectState.COMPLETE,
-    }
-    plan_ready = bool(planning_run and planning_run.status == "succeeded") or state in {
-        ProjectState.EPISODE_PLANNED,
-        ProjectState.SCRIPT_DRAFTING,
-        ProjectState.SCRIPT_READY,
-        ProjectState.SCRIPT_VERIFYING,
-        ProjectState.SCRIPT_VERIFIED,
-        ProjectState.AUDIO_GENERATING,
-        ProjectState.AUDIO_READY,
-        ProjectState.AUDIO_VERIFYING,
-        ProjectState.COMPLETE,
-    }
-    return [
-        ("موضوع و هدف", True),
-        ("منابع", after_sources),
-        ("تحلیل منابع و استخراج شاهدها", corpus_ready),
-        ("سنجش کفایت منابع و طرح گفتار", plan_ready),
-    ]
 
 
 def _safe_filename(value: str) -> str:

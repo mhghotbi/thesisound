@@ -66,7 +66,9 @@
   </div>
 </details>
 {% endif %}
-{% elif planning_run and planning_run.status in ['blocked', 'succeeded', 'failed'] %}
+{# A blocked run states its own verdict and carries its own action inside the live
+   region above; a second primary button here would be the same offer twice. #}
+{% elif planning_run and planning_run.status in ['succeeded', 'failed'] %}
 <div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/episode">مشاهدهٔ کفایت منابع و طرح گفتار</a></div>
 {% elif project.state.value == 'corpus_ready' %}
 <div class="notice notice--info">تحلیل منابع آماده است. سنجش کفایت و ساخت طرح گفتار به‌صورت خودکار در صف است.</div>

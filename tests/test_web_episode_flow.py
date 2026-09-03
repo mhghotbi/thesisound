@@ -4,7 +4,14 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 
 from thesisound.config import Settings
-from thesisound.domain import Project, ProjectState, ResearchBrief, TopicType
+from thesisound.domain import (
+    EpisodePlan,
+    EpisodeSegment,
+    Project,
+    ProjectState,
+    ResearchBrief,
+    TopicType,
+)
 from thesisound.pipeline import WorkspaceStore
 from thesisound.services.episode_planning_run import (
     EpisodePlanningRun,
@@ -349,3 +356,123 @@ def test_duration_is_locked_once_the_script_has_started(tmp_path: Path) -> None:
     assert response.status_code != 303
     saved = workspace.load_project(project.project_id)
     assert saved.brief.target_duration_minutes == 20
+
+
+def _blocked_run(project_id, *, supported: int = 10, target: int = 20) -> EpisodePlanningRun:
+    return EpisodePlanningRun(
+        run_id=uuid4(),
+        project_id=project_id,
+        status="blocked",
+        stage="blocked",
+        target_duration_minutes=target,
+        max_supported_minutes=supported,
+        material_gaps=["زمینه تاریخی کافی نیست"],
+        last_error="منابع برای مدت درخواستی کافی نیستند.",
+    )
+
+
+def test_a_refusal_leads_the_processing_page_instead_of_trailing_it(tmp_path: Path) -> None:
+    """The ruling used to be 13px --danger text at the foot of the page, with no heading.
+
+    DESIGN.md gives a blocking state the same typographic care as a passing one, and
+    `episode.html` already did. `/processing` says it in the same words now, at the
+    same size, with the action beside it.
+    """
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.EPISODE_PLANNING, duration=20)
+    workspace.save_project(project)
+    EpisodePlanningRunStore(settings.workspace_root).save(_blocked_run(project.project_id))
+    app = create_app(settings, corpus_executor=lambda _: None, episode_executor=lambda _: None)
+
+    with _client(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/processing")
+
+    assert page.status_code == 200
+    assert 'id="processing-blocked-title"' in page.text
+    assert "حکم کفایت منابع" in page.text
+    assert "دیدن راه‌های اصلاح" in page.text
+    # The ruling is a verdict heading now, not a caption under a source row.
+    assert 'class="source-row__summary">منابع برای مدت درخواستی' not in page.text
+    # And the generic second offer of the same destination is gone.
+    assert page.text.count("مشاهدهٔ کفایت منابع و طرح گفتار") == 0
+
+
+def test_a_blocked_stage_does_not_pulse_as_if_it_were_running(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.EPISODE_PLANNING, duration=20)
+    workspace.save_project(project)
+    EpisodePlanningRunStore(settings.workspace_root).save(_blocked_run(project.project_id))
+    app = create_app(settings, corpus_executor=lambda _: None, episode_executor=lambda _: None)
+
+    with _client(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/processing")
+
+    assert "stage-row is-blocked is-current" in page.text
+    assert "is-running" not in page.text
+    assert "منتظر تصمیم شما" in page.text
+
+
+def test_the_readiness_verdict_is_the_largest_thing_on_its_page(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.BRIEF_READY)
+    workspace.save_project(project)
+    app = create_app(settings, corpus_executor=lambda _: None, episode_executor=lambda _: None)
+
+    with _client(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/readiness")
+
+    assert page.status_code == 200
+    # `.coverage-verdict h2` is clamp(20px, 2.4vw, 26px); the old box put this at 16px.
+    assert 'class="coverage-verdict" aria-labelledby="readiness-verdict-title"' in page.text
+    assert "readiness-verdict " not in page.text
+    assert "حکم آمادگی" in page.text
+
+
+def test_both_explicit_gates_use_the_same_confirmation(tmp_path: Path) -> None:
+    """Approving the plan is the heavier of the two gates and had the lighter design.
+
+    Confirming sources has always used `.sticky-confirmation`: it follows the reader
+    down the page and names what it commits. Approving the plan — which starts the
+    writing and binds to this exact version — was a notice and a bare primary button
+    at the foot of a long page.
+    """
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    project = _project(ProjectState.EPISODE_PLANNED)
+    project.episode_plan = EpisodePlan(
+        title="سه پرسش دربارهٔ کنش",
+        listener_outcome="تمایز کار و کنش روشن می‌شود",
+        estimated_duration_minutes=20,
+        segments=[
+            EpisodeSegment(
+                segment_id=f"seg-{index}",
+                title=f"بخش {index}",
+                purpose="توضیح",
+                estimated_minutes=10,
+                claim_ids=[f"claim-{index}"],
+                key_question="چرا؟",
+                speaker_dynamic="explanation",
+            )
+            for index in (1, 2)
+        ],
+    )
+    workspace.save_project(project)
+    app = create_app(settings, corpus_executor=lambda _: None, episode_executor=lambda _: None)
+
+    with _client(app) as client:
+        _login(client)
+        page = client.get(f"/projects/{project.project_id}/episode")
+
+    assert page.status_code == 200
+    assert 'class="sticky-confirmation" aria-labelledby="plan-confirm-title"' in page.text
+    # It names what it commits — the plan and how many parts — not just "confirm".
+    assert "سه پرسش دربارهٔ کنش" in page.text
+    assert "۲ بخش" in page.text
+    assert 'aria-describedby="plan-confirm-hint"' in page.text
+    assert f"/projects/{project.project_id}/script/approve" in page.text

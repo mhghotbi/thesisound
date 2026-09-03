@@ -2,7 +2,7 @@
 {% from "components.html" import status_label %}
 {% block title %}آمادگی گفتار | مقال{% endblock %}
 {% block content %}
-{% set tone_class = {'attention': 'notice--warning', 'success': 'notice--success', 'danger': 'notice--danger'}.get(readiness.tone, '') %}
+{% set verdict_word = {'attention': 'مانع دارد', 'success': 'آماده است', 'danger': 'نامعلوم'}.get(readiness.tone, 'در جریان') %}
 <header class="page-heading page-heading--compact">
   <div>
     <h1>آمادگی گفتار</h1>
@@ -11,11 +11,23 @@
   </div>
 </header>
 
-<section class="notice readiness-verdict {{ tone_class }}" aria-labelledby="readiness-verdict-title">
+{#
+  The verdict is the reason to be on this page, so it gets the page's largest type —
+  the same `.coverage-verdict` treatment `episode.html` gives its coverage ruling. It
+  used to be a 16px line inside a tinted box, under a 35px heading that only said the
+  page's generic name. DESIGN.md: a blocking state earns the typographic care of a
+  passing one. The tone keeps its own mark and colour in the label beside the subtitle,
+  so nothing here depends on the tint of a box.
+#}
+<section class="coverage-verdict" aria-labelledby="readiness-verdict-title">
   <h2 id="readiness-verdict-title">{{ readiness.headline }}</h2>
+  <p class="coverage-verdict__label">
+    <span class="subtitle">حکم آمادگی</span>
+    {{ status_label(verdict_word, '', readiness.tone, pill=true) }}
+  </p>
   <p>{{ readiness.explanation }}</p>
   {% if readiness.action_url %}
-  <div class="form-actions readiness-verdict__actions">
+  <div class="form-actions">
     <a class="button button--primary" href="{{ readiness.action_url }}">{{ readiness.action_label }}</a>
   </div>
   {% endif %}

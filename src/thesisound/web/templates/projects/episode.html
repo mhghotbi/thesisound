@@ -157,12 +157,21 @@
   </div>
 </section>
 
+{#
+  Open by default, with a marker that says it can be closed. These two lists were
+  collapsed `<details>` whose only affordance was `cursor: pointer` — a hover state, and
+  PRODUCT.md says nothing may depend on hover. The summary was a plain `.section-heading`,
+  indistinguishable from every static heading on the page, so the product's own
+  non-negotiable — a claim with no place in the plan is reported, never hidden — was
+  being met by markup that hid it.
+#}
 {% if omitted_claim_views %}
 <section class="section-block" aria-labelledby="omitted-claims-title">
-  <details class="plan-list-details" data-plan-list-open="omitted" data-project-id="{{ project.project_id }}">
+  <details class="plan-list-details" open data-plan-list-open="omitted" data-project-id="{{ project.project_id }}">
     <summary class="section-heading">
       <h2 id="omitted-claims-title">آنچه آگاهانه در این گفتار نیامده است</h2>
       <span>{{ omitted_claim_views | length | fa_num }} مورد</span>
+      <span class="plan-list-details__marker" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 2l4 4-4 4"/></svg></span>
     </summary>
     <div class="data-panel omitted-claims">
       {% for item in omitted_claim_views %}
@@ -179,10 +188,11 @@
 
 {% if must_not_be_lost_review_views %}
 <section class="section-block" aria-labelledby="must-not-be-lost-title">
-  <details class="plan-list-details" data-plan-list-open="must_not_be_lost" data-project-id="{{ project.project_id }}">
+  <details class="plan-list-details" open data-plan-list-open="must_not_be_lost" data-project-id="{{ project.project_id }}">
     <summary class="section-heading">
       <h2 id="must-not-be-lost-title">نکته‌هایی که نباید گم شوند</h2>
       <span>{{ must_not_be_lost_unused_count | fa_num }} در طرح نیامده</span>
+      <span class="plan-list-details__marker" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 2l4 4-4 4"/></svg></span>
     </summary>
     <div class="data-panel omitted-claims">
       {% for item in must_not_be_lost_review_views %}
@@ -206,9 +216,25 @@
   <p>هدف: <code><bdi dir="ltr">{{ project.brief.target_duration_minutes }}</bdi></code> دقیقه · طرح: <code><bdi dir="ltr">{{ episode_plan.estimated_duration_minutes | round(2) }}</bdi></code> min{% if coverage %} · coverage max: <code><bdi dir="ltr">{{ coverage.max_supported_minutes }}</bdi></code>{% endif %}{% if budget %} · effective: <code><bdi dir="ltr">{{ budget.effective_supported_minutes | round(2) }}</bdi></code>{% endif %}</p>
 {% endcall %}
 
+{#
+  The two explicit gates in this app now look alike. Confirming sources has always used
+  `.sticky-confirmation`: it follows the reader down the page, names what it commits,
+  and keeps the button beside that sentence. Approving the plan — the heavier of the
+  two, since it starts the writing and binds to this exact version — was a notice and a
+  bare primary button at the foot of a long page, which the reader had to scroll past
+  every segment to find.
+#}
 {% if project.state.value == 'episode_planned' %}
-<div class="notice notice--info"><strong>تأیید شما به همین نسخه از طرح گفتار متصل می‌شود.</strong><p class="simple-only">پس از تأیید، نگارش و راستی‌آزمایی متن گفتار شروع می‌شود.</p><p class="operator-only">Approval به hash طرح متصل است و با تغییر plan باطل می‌شود.</p></div>
-<form method="post" action="/projects/{{ project.project_id }}/script/approve" class="form-actions"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button--primary" type="submit">تأیید طرح و نوشتن متن گفتار</button></form>
+<section class="sticky-confirmation" aria-labelledby="plan-confirm-title">
+  <div>
+    <h2 id="plan-confirm-title">متن گفتار روی طرح «{{ episode_plan.title }}» در {{ episode_plan.segments | length | fa_num }} بخش نوشته می‌شود</h2>
+    <p id="plan-confirm-hint">تأیید شما به همین نسخه از طرح متصل می‌شود و با هر تغییری در طرح باطل می‌شود.<span class="simple-only"> پس از تأیید، نگارش و راستی‌آزمایی متن گفتار شروع می‌شود.</span><span class="operator-only"> Approval به hash طرح متصل است و با تغییر plan باطل می‌شود.</span></p>
+  </div>
+  <form method="post" action="/projects/{{ project.project_id }}/script/approve">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="button button--primary" type="submit" aria-describedby="plan-confirm-hint">تأیید طرح و نوشتن متن گفتار</button>
+  </form>
+</section>
 {% else %}
 <div class="form-actions"><a class="button button--primary" href="/projects/{{ project.project_id }}/script">مشاهدهٔ متن گفتار</a></div>
 {% endif %}

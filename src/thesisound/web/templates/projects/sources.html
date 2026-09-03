@@ -128,7 +128,7 @@
       {% if usable and not selection_locked %}
       <form class="source-row__select" method="post" action="/projects/{{ project.project_id }}/sources/{{ source.source_id }}/toggle">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <input type="checkbox" id="source-{{ source.source_id }}" data-toggle-source {% if source.selected %}checked{% endif %}>
+        <input type="checkbox" id="source-{{ source.source_id }}" data-toggle-source data-source-title="{{ source.title }}" {% if source.selected %}checked{% endif %}>
         <noscript><button class="button button--secondary button--small" type="submit">{% if source.selected %}کنار گذاشتن{% else %}افزودن{% endif %}</button></noscript>
       </form>
       {% elif source.status == 'blocked' or source.status == 'review' %}
@@ -202,9 +202,21 @@
   {% endif %}
 </section>
 
+{#
+  A confirmation that commits a number is not a confirmation. The bar names the files
+  it is about to lock, in the same shape `app.js` rebuilds on every tick — the two
+  formats have to agree, so keep them in step.
+#}
+{% set committed = sources | selectattr('selected') | list %}
 <section class="sticky-confirmation" aria-labelledby="corpus-confirm-title">
   <div>
     <h2 id="corpus-confirm-title" data-corpus-confirm-title>این گفتار بر اساس {{ selected_count | fa_num }} منبع منتخب ساخته می‌شود</h2>
+    <p class="sticky-confirmation__names" data-corpus-confirm-names>
+      {%- for source in committed[:3] -%}
+        {%- if not loop.first %}، {% endif -%}«<bdi dir="auto">{{ source.title }}</bdi>»
+      {%- endfor -%}
+      {%- if committed | length > 3 %} و {{ (committed | length - 3) | fa_num }} منبع دیگر{% endif -%}
+    </p>
     <p id="corpus-confirm-hint" data-corpus-confirm-hint data-empty-hint=" برای ادامه حداقل یک منبع آماده را انتخاب کنید.">فقط منابع منتخب و آماده وارد شاهدها و متن گفتار می‌شوند.{% if selected_count == 0 %} برای ادامه حداقل یک منبع آماده را انتخاب کنید.{% endif %}</p>
   </div>
   {% if selection_locked %}

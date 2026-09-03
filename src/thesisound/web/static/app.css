@@ -640,7 +640,19 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
 }
 .button:hover { transform: translateY(-1px); }
 .button:active { transform: translateY(0); }
-.button:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+/* An inactive control gets its own colours, not a faded copy of the active ones.
+   `opacity: .55` over --brand took the label of the source-confirm button to roughly
+   2.4:1 — and that is the one label a reader has to be able to read, because the hint
+   beside it is what explains why the button is off. --muted on --paper-strong is held
+   at 4.5:1 across all four themes by tests/test_theme_contrast_contract.py. */
+.button:disabled {
+  border-color: var(--border-strong);
+  background: var(--paper-strong);
+  color: var(--muted);
+  cursor: not-allowed;
+  transform: none;
+}
+.button:disabled:hover { border-color: var(--border-strong); background: var(--paper-strong); color: var(--muted); }
 .button--primary { background: var(--brand); color: var(--paper); }
 .button--primary:hover { background: var(--brand-strong); color: var(--paper); }
 .button--secondary { border-color: var(--border-strong); background: var(--paper-raised); color: var(--ink-soft); }
@@ -947,10 +959,15 @@ span.status-label__mark {
 
 /* Readiness: the verdict leads, three groups summarise, the full list waits
    one click below. The leading rail marks the blocking group only. */
-.readiness-verdict { padding: 18px 19px; }
-.readiness-verdict h2 { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.5; }
-.readiness-verdict p { margin: 7px 0 0; color: var(--ink-soft); font-size: 14px; }
-.readiness-verdict__actions { margin-block-start: 13px; }
+/* The readiness verdict now uses `.coverage-verdict`; this pairs its tone label with
+   the subtitle on one line so the ruling keeps a mark without needing a tinted box. */
+.coverage-verdict__label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.coverage-verdict__label .subtitle { margin: 0; }
 .readiness-groups { display: grid; }
 .readiness-group {
   padding: 13px 0;
@@ -1153,6 +1170,7 @@ span.status-label__mark {
 }
 .sticky-confirmation h2 { margin: 0; font-size: 15px; }
 .sticky-confirmation p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.sticky-confirmation p.sticky-confirmation__names { color: var(--ink-soft); font-size: 12px; }
 
 .stage-list {
   margin: 0;
@@ -1183,18 +1201,33 @@ span.status-label__mark {
 }
 .stage-row__mark svg { width: 9px; height: 9px; }
 .stage-row.is-complete .stage-row__mark { width: 16px; height: 16px; margin-inline-start: 0; border: 0; background: var(--brand); }
+/* `is-current` says which stage the run is standing on. It never says how that stage
+   is doing — that is what the status class carries, and only `is-running` earns the
+   reserved accent. A blocked stage pulsing in accent was the interface claiming work
+   was happening on the one row that had stopped to ask a question. */
 .stage-row.is-current {
   padding-block: 14px;
-  border-inline-start: 3px solid var(--brand);
+  border-inline-start: 3px solid var(--border-strong);
   background: var(--paper-strong);
 }
-.stage-row.is-current .stage-row__mark { border: 0; background: var(--accent); animation: status-pulse 1.8s ease-in-out infinite; }
+.stage-row.is-running { border-inline-start-color: var(--brand); }
+.stage-row.is-blocked { border-inline-start-color: var(--warning); }
+.stage-row.is-stopped { border-inline-start-color: var(--danger); }
+.stage-row.is-current .stage-row__mark { border: 0; }
+.stage-row.is-running .stage-row__mark { background: var(--accent); animation: status-pulse 1.8s ease-in-out infinite; }
+.stage-row.is-blocked .stage-row__mark { background: var(--warning); }
+.stage-row.is-stopped .stage-row__mark { background: var(--danger); }
+/* Nothing is happening here yet, so the mark stays an outline rather than a fill. */
+.stage-row.is-waiting .stage-row__mark { border: 1.5px solid var(--border-strong); }
 .stage-row__copy { display: grid; gap: 3px; }
 .stage-row__copy strong { color: var(--ink-soft); font-size: 14px; font-weight: 500; }
 .stage-row__copy small { color: var(--muted); font-size: 13px; }
 .stage-row__state { color: var(--muted-light); font-size: 12px; white-space: nowrap; }
 .stage-row.is-current .stage-row__copy strong { color: var(--ink); font-weight: 700; }
-.stage-row.is-current .stage-row__state { color: var(--brand); font-weight: 600; }
+.stage-row.is-current .stage-row__state { color: var(--muted); font-weight: 600; }
+.stage-row.is-running .stage-row__state { color: var(--brand); }
+.stage-row.is-blocked .stage-row__state { color: var(--warning); }
+.stage-row.is-stopped .stage-row__state { color: var(--danger); }
 .stage-row.is-pending .stage-row__copy strong,
 .stage-row.is-pending .stage-row__state { color: var(--muted-light); font-weight: 400; }
 
@@ -1547,13 +1580,34 @@ div.evidence-card ul { margin: 0; padding-inline-start: 18px; }
 }
 .omitted-claim__reason { margin: 0 0 6px; color: var(--ink-soft); font-size: 14px; text-wrap: pretty; }
 .omitted-claim__head .omitted-claim__reason { margin: 0; flex: 1 1 18ch; }
+/* The native marker stays suppressed, but only because this draws its own: a chevron
+   that turns when the list opens. Suppressing both left `cursor: pointer` as the sole
+   sign these headings were interactive, which no keyboard or touch reader ever sees. */
 .plan-list-details > summary {
+  min-height: 44px;
   cursor: pointer;
   list-style: none;
 }
 .plan-list-details > summary::-webkit-details-marker { display: none; }
-.plan-list-details > summary.section-heading { margin-block-end: 12px; }
+.plan-list-details > summary.section-heading { align-items: center; margin-block-end: 12px; }
 .plan-list-details[open] > summary.section-heading { margin-block-end: 12px; }
+/* Two classes plus the type, because `.section-heading > span` would otherwise win
+   and paint this the muted 11px of a count. */
+.plan-list-details > summary .plan-list-details__marker {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--ink-soft);
+  transform: rotate(90deg);
+}
+.plan-list-details > summary .plan-list-details__marker svg { width: 11px; height: 11px; }
+.plan-list-details[open] > summary .plan-list-details__marker { transform: rotate(-90deg); }
+.plan-list-details > summary:hover .plan-list-details__marker,
+.plan-list-details > summary:focus-visible .plan-list-details__marker { border-color: var(--ink); color: var(--ink); }
 
 .quality-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .quality-row h3 { margin: 0; font-size: 14px; }
@@ -1820,7 +1874,7 @@ code {
      signals intact. */
   .status-label--running span.status-label__mark,
   .timeline__mark--running,
-  .stage-row.is-current .stage-row__mark { animation: none !important; opacity: 1; }
+  .stage-row.is-running .stage-row__mark { animation: none !important; opacity: 1; }
 }
 
 .table-wrap { max-width: 100%; overflow-x: auto; }

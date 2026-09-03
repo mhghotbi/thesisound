@@ -725,7 +725,10 @@ E8 = MetricDefinition(
 
 E9 = MetricDefinition(
     key="plan_review_depth_rate",
-    question="Does anyone open the omitted / must-not-be-lost list?",
+    # The lists render open as of the refusal-moment work, so the client fires this on
+    # first sight rather than on a click. Same event, same denominator; "reach" instead
+    # of "open". Series before and after that change are not directly comparable.
+    question="Does anyone reach the omitted / must-not-be-lost list?",
     grain="day",
     owner="product",
     sql=f"""

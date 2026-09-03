@@ -7,21 +7,23 @@
 {% set claim_total = corpus_run.sources | sum(attribute='claim_count') if corpus_run else 0 %}
 <section class="section-block" aria-labelledby="pipeline-title">
   <div class="section-heading"><h2 id="pipeline-title">مسیر تحلیل</h2><span>مرحله‌های واقعی گفتار</span></div>
+  {#
+    A stage's mark comes from its own status, never from "it is the first unfinished
+    one". Only `is-running` may pulse in --accent; a stopped or waiting stage is still
+    the current stage and says so, in its own vocabulary.
+  #}
   <ol class="stage-list">
-    {% set ns = namespace(current_marked=false) %}
-    {% for label, complete in stages %}
-      {% if complete %}{% set row_class = 'is-complete' %}
-      {% elif not ns.current_marked %}{% set row_class = 'is-current' %}{% set ns.current_marked = true %}
-      {% else %}{% set row_class = 'is-pending' %}{% endif %}
-      <li class="stage-row {{ row_class }}" {% if row_class == 'is-current' %}aria-current="step"{% endif %}>
+    {% for stage in stages %}
+      <li class="stage-row is-{{ stage.status }}{% if stage.is_current %} is-current{% endif %}"
+          {% if stage.is_current %}aria-current="step"{% endif %}>
         <span class="stage-row__mark" aria-hidden="true">
-          {%- if complete %}<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg>{% endif -%}
+          {%- if stage.complete %}<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2.5 7.5l3 3 6-7"/></svg>{% endif -%}
         </span>
         <span class="stage-row__copy">
-          <strong>{{ label }}</strong>
-          {% if row_class == 'is-current' and claim_total %}<small>تا اینجا {{ claim_total | fa_num }} مدعای مستند ثبت شده است</small>{% endif %}
+          <strong>{{ stage.label }}</strong>
+          {% if stage.status == 'running' and claim_total %}<small>تا اینجا {{ claim_total | fa_num }} مدعای مستند ثبت شده است</small>{% endif %}
         </span>
-        <span class="stage-row__state">{% if complete %}انجام شد{% elif row_class == 'is-current' %}در جریان{% else %}در نوبت{% endif %}</span>
+        <span class="stage-row__state">{{ stage.state_word }}</span>
       </li>
     {% endfor %}
   </ol>
@@ -91,7 +93,30 @@
     </div>
     {{ status_label('در حال انجام' if planning_run.status in ['queued', 'running'] else ('منتظر تصمیم شما' if planning_run.status == 'blocked' else ('انجام شد' if planning_run.status == 'succeeded' else 'متوقف شد')), '', 'running' if planning_run.status in ['queued', 'running'] else ('attention' if planning_run.status == 'blocked' else ('success' if planning_run.status == 'succeeded' else 'danger')), planning_run.status) }}
   </div>
-  {% if planning_run.last_error %}
+  {#
+    A refusal is a verdict, and DESIGN.md gives a blocking state the same typographic
+    care as a passing one. This sentence used to render as `.source-row__summary` —
+    13px, --danger, no heading, at the very bottom of the page — while two paragraphs
+    at the top explained that the app never shows fake progress.
+    The wording matches `episode.html` so both pages state the same fact the same way.
+  #}
+  {% if planning_run.status == 'blocked' %}
+  <section class="coverage-verdict" aria-labelledby="processing-blocked-title">
+    <h2 id="processing-blocked-title">
+      {% if planning_run.supported_duration_minutes is not none %}
+        منابع برای حدود {{ planning_run.supported_duration_minutes | round(1) | fa_num }} دقیقه از هدف {{ planning_run.target_duration_minutes | fa_num }} دقیقه، شاهد کافی دارند
+      {% else %}
+        منابع برای ساخت گفتار در مدت هدف کافی نیستند
+      {% endif %}
+    </h2>
+    <p class="subtitle">حکم کفایت منابع</p>
+    <p>{{ planning_run.last_error | user_error('planning') if planning_run.last_error else 'برای حفظ دقت، ادامه با مجموعه منابع ناکافی مجاز نیست.' }}</p>
+    <div class="form-actions">
+      <a class="button button--primary" href="/projects/{{ project.project_id }}/episode">دیدن راه‌های اصلاح</a>
+    </div>
+    {% call technical_details('جزئیات اجرای طرح گفتار') %}<p><bdi dir="ltr">{{ planning_run.last_error }}</bdi></p>{% endcall %}
+  </section>
+  {% elif planning_run.last_error %}
     <p class="source-row__summary">{{ planning_run.last_error | user_error('planning') }}</p>
     {% call technical_details('جزئیات اجرای طرح گفتار') %}<p><bdi dir="ltr">{{ planning_run.last_error }}</bdi></p>{% endcall %}
   {% endif %}

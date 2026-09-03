@@ -256,6 +256,17 @@
     if (title) {
       title.textContent = `این گفتار بر اساس ${faDigits(selected)} منبع منتخب ساخته می‌شود`;
     }
+    // Name the files, not just how many. Same shape sources.html renders on the
+    // server: up to three in guillemets, then "و N منبع دیگر".
+    const names = document.querySelector("[data-corpus-confirm-names]");
+    if (names) {
+      const titles = [...document.querySelectorAll("[data-toggle-source]:checked")].map(
+        (box) => box.dataset.sourceTitle || "",
+      );
+      const shown = titles.slice(0, 3).map((name) => `«${name}»`).join("، ");
+      const rest = titles.length - 3;
+      names.textContent = rest > 0 ? `${shown} و ${faDigits(rest)} منبع دیگر` : shown;
+    }
     const hint = document.querySelector("[data-corpus-confirm-hint]");
     if (hint) {
       const emptyHint = hint.dataset.emptyHint || "";
@@ -412,9 +423,14 @@
     });
   });
 
+  // These lists now render open, so a toggle is no longer how a reader first meets
+  // them — it is how they collapse one. The event fires once per list, on whichever
+  // comes first: the list scrolling into view, or being expanded again after a
+  // collapse. Both mean the same thing the metric was always asking, which is whether
+  // anyone actually reaches what the plan left out.
   document.querySelectorAll("[data-plan-list-open]").forEach((details) => {
-    details.addEventListener("toggle", () => {
-      if (!details.open || details.dataset.traced === "1") return;
+    const report = () => {
+      if (details.dataset.traced === "1") return;
       details.dataset.traced = "1";
       const projectId = details.dataset.projectId;
       const origin = details.dataset.planListOpen;
@@ -429,7 +445,25 @@
       }).catch(() => {
         // Metrics must never block reading the list.
       });
+    };
+
+    details.addEventListener("toggle", () => {
+      if (details.open) report();
     });
+
+    if (typeof IntersectionObserver !== "function") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          observer.disconnect();
+          report();
+        }
+      },
+      // Half of it on screen, so a list clipped at the fold does not count as read.
+      { threshold: 0.5 },
+    );
+    observer.observe(details);
   });
 
   document.querySelectorAll("[data-duration-cost]").forEach((form) => {
