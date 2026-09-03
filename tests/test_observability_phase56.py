@@ -743,6 +743,15 @@ def test_observability_requires_real_operator_role_and_remains_read_only(
         assert "every 2s" in page.text
         assert "آبشار مرحله‌ها" in page.text
 
+        # This surface used to keep a private copy of the design system: its own
+        # table, its own metric tile, its own breakpoint. Nobody could see the
+        # drift, because the operator role gates the page and the browser check
+        # never reached it. Assert the shared vocabulary on the wire instead.
+        assert "obs-table" not in page.text
+        assert page.text.count('<div class="table-wrap">') == page.text.count("<table")
+        assert '<table class="data-table">' in page.text
+        assert '<div class="card obs-metric">' in page.text
+
         live = client.get(f"/projects/{project.project_id}/observability/live")
         assert live.status_code == 200
         assert "corpus.extract_evidence" in live.text

@@ -58,6 +58,12 @@ REQUIRED: tuple[tuple[str, str, float, str], ...] = (
 )
 
 
+def _palette_block(css: str) -> str:
+    match = re.search(r"^:root \{(.*?)\n\}", css, re.S | re.M)
+    assert match, "no palette block at the top of the stylesheet"
+    return match.group(1)
+
+
 def _theme_block(css: str, theme: str) -> str:
     if theme == "cobalt":
         pattern = r'html\[data-theme="cobalt"\],\s*:root \{(.*?)\n\}'
@@ -69,7 +75,20 @@ def _theme_block(css: str, theme: str) -> str:
 
 
 def _tokens(theme: str) -> dict[str, str]:
-    return dict(re.findall(r"--([a-z-]+):\s*(#[0-9a-fA-F]{6});", _theme_block(CSS.read_text(encoding="utf-8"), theme)))
+    """Resolved hexes for one theme, following the palette indirection.
+
+    A token may name a shared palette constant instead of a literal (--brand does,
+    so the theme menu's four swatches and the theme itself cannot drift apart).
+    What matters to a contrast floor is the colour that renders, so resolve first.
+    """
+    css = CSS.read_text(encoding="utf-8")
+    palette = dict(re.findall(r"--([a-z-]+):\s*(#[0-9a-fA-F]{6});", _palette_block(css)))
+    block = _theme_block(css, theme)
+    tokens = dict(re.findall(r"--([a-z-]+):\s*(#[0-9a-fA-F]{6});", block))
+    for name, ref in re.findall(r"--([a-z-]+):\s*var\(--([a-z-]+)\);", block):
+        assert ref in palette, f"--{name} points at --{ref}, which no palette defines"
+        tokens[name] = palette[ref]
+    return tokens
 
 
 def _luminance(value: str) -> float:
@@ -90,7 +109,9 @@ def contrast(a: str, b: str) -> float:
 
 @pytest.mark.parametrize("theme", THEMES)
 @pytest.mark.parametrize(("fg", "bg", "floor", "usage"), REQUIRED)
-def test_token_pair_clears_its_floor(theme: str, fg: str, bg: str, floor: float, usage: str) -> None:
+def test_token_pair_clears_its_floor(
+    theme: str, fg: str, bg: str, floor: float, usage: str
+) -> None:
     tokens = _tokens(theme)
     assert fg in tokens, f"--{fg} missing from {theme}"
     assert bg in tokens, f"--{bg} missing from {theme}"
@@ -110,7 +131,9 @@ def test_recession_ladder_stays_ordered(theme: str) -> None:
     """
     tokens = _tokens(theme)
     paper = tokens["paper"]
-    muted, light, disabled = (contrast(tokens[t], paper) for t in ("muted", "muted-light", "disabled"))
+    muted, light, disabled = (
+        contrast(tokens[t], paper) for t in ("muted", "muted-light", "disabled")
+    )
     assert muted > light > disabled, (
         f"{theme}: recession ladder out of order — "
         f"muted={muted:.2f}, muted-light={light:.2f}, disabled={disabled:.2f}"

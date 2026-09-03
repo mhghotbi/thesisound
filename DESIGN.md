@@ -220,7 +220,7 @@ The ladder is 35 → 26 → 17 → 16 → 15 → 14 → 13 → 12 → 11, and ev
 
 - **Display** (800, `clamp(24px, 3vw, 35px)`, 1.35, tracking `-0.045em`): the page title, capped at `34ch` and balanced. One per view.
 - **Headline** (800, `clamp(20px, 2.4vw, 26px)`, 1.3): the title of one piece of content inside a page — the script's own title, the audio piece, the coverage verdict. Distinct from Display, which names the page itself.
-- **Input Large** (400, 17px, 1.9): the composition field where the reader writes the Research Brief. The one place typing gets more room than reading.
+- **Input Large** (400, 17px, 1.9): the composition field where the reader writes the Research Brief. The one place typing gets more room than reading. The one-time-code field is the same step in the Data font at 700, tracked wide — a six-digit code is read as characters, not as a word.
 - **Title** (700, 16px, 1.5): section headings inside a page.
 - **Body** (400, 15px, 1.75): running Persian text.
 - **Dense** (400, 14px, 1.6): table cells and stage-row names — the reading size for scanned rather than read content.
@@ -234,6 +234,8 @@ The ladder is 35 → 26 → 17 → 16 → 15 → 14 → 13 → 12 → 11, and ev
 **The Bidi Isolation Rule.** Identifiers, filenames, timestamps, costs, model names, phone numbers, OTP values, hashes, and URLs are Latin content inside Persian sentences. They carry `dir="ltr"` and bidi isolation, or they will visually reorder the sentence around them.
 
 **The Persian Floor Rule.** Persian script needs more vertical room than Latin at the same nominal size. 11px is the floor of the whole system and it is reserved for genuinely peripheral metadata; anything the reader acts on or is corrected by sits at Control (13px) or above, and running text stays at 15px.
+
+**The Weight Ladder Rule.** The system has four weights: 400 for reading, 700 for labels and controls, 800 for the two display steps, and 600 for Caption and only Caption. The face ships 500 as well, which is why 26 selectors quietly drifted onto it and nothing looked broken — the ladder had simply stopped being one. A weight below 700 outside the 11px floor is not an emphasis choice; it is a fifth step nobody declared.
 
 **The One Display Rule.** A view has one Display, and it names the page. Everything else that wants to be large is a Headline, and Headline has exactly one value. Four separate display-scale clamps once coexisted here, plus a fixed mobile override that fought the clamp; they are now one Display and one Headline.
 
@@ -315,7 +317,7 @@ A status is always shape plus colour plus words: a 9px ringed dot, a semantic co
 Header ground, Paper wordmark, Brand Soft quiet text, Brand Line hairlines — identical in every mode, in all four themes. It is sticky, 66px tall (56px in operator density), and carries the brand, navigation, the mode control, the theme picker, and sign-out.
 
 ### Stage rail (signature component)
-The vertical list of pipeline stages is the component that most defines this product. Each row carries a mark, a name, and a state word. The complete row fills its mark with Brand; the pending row recedes to Disabled at weight 400; the current row takes a Paper Strong ground, a bolder darker label, a Brand state word, a pulsing Accent mark, and a 3px Brand rail on its leading edge.
+The vertical list of pipeline stages is the component that most defines this product. Each row carries a mark, a name, and a state word. The complete row fills its mark with Brand; the pending row recedes to Disabled at weight 400; the current row takes a Paper Strong ground, a bolder darker label, and a 3px rail on its leading edge. Being the current row and being *at work* are two different facts: the rail and the state word take their colour from the row's own status, and only a running row earns the pulsing Accent mark. A row that has stopped to ask a question is still the current row, and it says so in Warning.
 
 ### Named Rules
 

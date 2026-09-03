@@ -56,28 +56,30 @@
 {% if report.parts %}
 <section class="transcript-section">
   <h2>گفتارهای این منبع</h2>
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>گفتار</th>
-        <th>عنوان</th>
-        <th>دقیقه (واقعی / هدف)</th>
-        <th>پشتوانهٔ گراف</th>
-        <th>پرچم‌ها</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for part in report.parts %}
-      <tr>
-        <td>{{ part.part_index | fa_num }}</td>
-        <td>{{ part.title_fa }}</td>
-        <td>{{ part.estimated_minutes | round(1) | fa_num }} / {{ part.target_minutes | round(1) | fa_num }}</td>
-        <td>{{ 'بله' if part.graph_backed else 'خیر' }}</td>
-        <td>{{ part.flags | join('، ') if part.flags else '—' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>گفتار</th>
+          <th>عنوان</th>
+          <th>دقیقه (واقعی / هدف)</th>
+          <th>پشتوانهٔ گراف</th>
+          <th>پرچم‌ها</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for part in report.parts %}
+        <tr>
+          <td>{{ part.part_index | fa_num }}</td>
+          <td>{{ part.title_fa }}</td>
+          <td>{{ part.estimated_minutes | round(1) | fa_num }} / {{ part.target_minutes | round(1) | fa_num }}</td>
+          <td>{{ 'بله' if part.graph_backed else 'خیر' }}</td>
+          <td>{{ part.flags | join('، ') if part.flags else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </section>
 {% else %}
 <section class="coverage-verdict">
@@ -89,56 +91,60 @@
   <h2>پوشش مفاهیم در دامنه</h2>
   <p>{{ report.cells_covered | length | fa_num }} مفهوم در دامنهٔ این درس.</p>
   {% call technical_details(summary='فهرست کامل مفاهیم و وضعیت هرکدام') %}
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>مفهوم</th>
-        <th>سطح</th>
-        <th>وضعیت پوشش</th>
-        <th>دلیل حضور در دامنه</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for cell in report.cells_covered %}
-      <tr>
-        <td>{{ cell.label_fa }}</td>
-        <td>{{ cell.tier | fa_num }}</td>
-        <td>
-          {% if cell.coverage_level == 'spoken' %}گفته‌شده
-          {% elif cell.coverage_level == 'planned' %}در طرح
-          {% elif cell.coverage_level == 'extracted' %}فقط شاهد استخراج‌شده
-          {% else %}پوشش نگرفته{% endif %}
-        </td>
-        <td>{{ cell.in_scope_reason }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>مفهوم</th>
+          <th>سطح</th>
+          <th>وضعیت پوشش</th>
+          <th>دلیل حضور در دامنه</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cell in report.cells_covered %}
+        <tr>
+          <td>{{ cell.label_fa }}</td>
+          <td>{{ cell.tier | fa_num }}</td>
+          <td>
+            {% if cell.coverage_level == 'spoken' %}گفته‌شده
+            {% elif cell.coverage_level == 'planned' %}در طرح
+            {% elif cell.coverage_level == 'extracted' %}فقط شاهد استخراج‌شده
+            {% else %}پوشش نگرفته{% endif %}
+          </td>
+          <td>{{ cell.in_scope_reason }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% endcall %}
 </section>
 
 {% if report.not_covered %}
 <section class="transcript-section">
   <h2>در دامنه، بدون پوشش</h2>
-  <table class="data-table">
-    <thead>
-      <tr><th>مفهوم</th><th>سطح</th><th>دلیل</th></tr>
-    </thead>
-    <tbody>
-      {% for cell in report.not_covered %}
-      <tr>
-        <td>{{ cell.label_fa }}</td>
-        <td>{{ cell.tier | fa_num }}</td>
-        <td>
-          {% if cell.reason == 'extraction_failed' %}استخراج این بخش با خطای سرویس ناتمام ماند (اجرای دوباره می‌تواند جبرانش کند)
-          {% elif cell.reason == 'no_claim' %}هیچ مدعایی از این مفهوم استخراج نشد
-          {% elif cell.reason == 'thin_extraction' %}استخراج از این بخش ناقص بود
-          {% else %}در طرح نیامد یا حذف شد{% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>مفهوم</th><th>سطح</th><th>دلیل</th></tr>
+      </thead>
+      <tbody>
+        {% for cell in report.not_covered %}
+        <tr>
+          <td>{{ cell.label_fa }}</td>
+          <td>{{ cell.tier | fa_num }}</td>
+          <td>
+            {% if cell.reason == 'extraction_failed' %}استخراج این بخش با خطای سرویس ناتمام ماند (اجرای دوباره می‌تواند جبرانش کند)
+            {% elif cell.reason == 'no_claim' %}هیچ مدعایی از این مفهوم استخراج نشد
+            {% elif cell.reason == 'thin_extraction' %}استخراج از این بخش ناقص بود
+            {% else %}در طرح نیامد یا حذف شد{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </section>
 {% endif %}
 
@@ -167,21 +173,23 @@
 
 <section class="transcript-section">
   <h2>هزینه: تخمینی در برابر واقعی</h2>
-  <table class="data-table">
-    <thead>
-      <tr><th>گام</th><th>توکن ورودی تخمینی</th><th>هزینهٔ تخمینی</th><th>هزینهٔ واقعی</th></tr>
-    </thead>
-    <tbody>
-      {% for item in report.cost_by_stage %}
-      <tr>
-        <td>{{ item.stage }}</td>
-        <td>{{ item.estimated_input_tokens | fa_num }}</td>
-        <td>{{ (item.estimated_cost_micros / 1000000) | round(4) | fa_num if item.estimated_cost_micros is not none else 'نامشخص' }}</td>
-        <td>{{ (item.actual_cost_micros / 1000000) | round(4) | fa_num if item.actual_cost_micros is not none else '—' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>گام</th><th>توکن ورودی تخمینی</th><th>هزینهٔ تخمینی</th><th>هزینهٔ واقعی</th></tr>
+      </thead>
+      <tbody>
+        {% for item in report.cost_by_stage %}
+        <tr>
+          <td>{{ item.stage }}</td>
+          <td>{{ item.estimated_input_tokens | fa_num }}</td>
+          <td>{{ (item.estimated_cost_micros / 1000000) | round(4) | fa_num if item.estimated_cost_micros is not none else 'نامشخص' }}</td>
+          <td>{{ (item.actual_cost_micros / 1000000) | round(4) | fa_num if item.actual_cost_micros is not none else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% if report.price_status and report.price_status != 'priced' %}
   <p><small>{{ report.price_status }}</small></p>
   {% endif %}
