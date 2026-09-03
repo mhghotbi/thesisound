@@ -141,10 +141,74 @@ def test_adopt_orphan_projects_is_idempotent(
 
     assert first.exit_code == 0, first.output
     assert "Adopted 1" in first.output
+    assert str(project.project_id) in first.output
     assert second.exit_code == 0, second.output
-    assert "Adopted 0" in second.output
+    assert "No orphan projects found" in second.output
 
     store = AccountStore(database)
     account = store.get_user_by_username("operator")
     assert account is not None
     assert store.is_project_member(project.project_id, account.user_id)
+
+
+def _seed_project(workspace_root: Path, raw_input: str = "legacy project") -> Project:
+    project = Project(raw_input=raw_input)
+    directory = workspace_root / str(project.project_id)
+    directory.mkdir(parents=True)
+    (directory / "project.json").write_text(
+        project.model_dump_json(indent=2),
+        encoding="utf-8",
+    )
+    return project
+
+
+def test_adopt_orphan_projects_resolves_a_phone_account(
+    cli_app: typer.Typer,
+    configured_paths: tuple[Path, Path],
+) -> None:
+    """OTP accounts have no username, so username-only lookup could never reach them."""
+    workspace_root, database = configured_paths
+    store = AccountStore(database)
+    account = store.get_or_create_phone_user("09120000000")
+    project = _seed_project(workspace_root)
+
+    # Written in Persian digits and with an international prefix: the CLI must
+    # normalise exactly the way the login path does.
+    result = runner.invoke(cli_app, ["adopt-orphan-projects", "+۹۸۹۱۲۰۰۰۰۰۰۰"])
+
+    assert result.exit_code == 0, result.output
+    assert "Adopted 1" in result.output
+    assert store.is_project_member(project.project_id, account.user_id)
+
+
+def test_adopt_orphan_projects_dry_run_writes_nothing(
+    cli_app: typer.Typer,
+    configured_paths: tuple[Path, Path],
+) -> None:
+    workspace_root, database = configured_paths
+    created = runner.invoke(cli_app, ["create-user", "operator"], input="secret\nsecret\n")
+    assert created.exit_code == 0, created.output
+    project = _seed_project(workspace_root)
+
+    result = runner.invoke(cli_app, ["adopt-orphan-projects", "operator", "--dry-run"])
+
+    assert result.exit_code == 0, result.output
+    assert "Would adopt 1" in result.output
+    store = AccountStore(database)
+    assert not store.has_any_member(project.project_id)
+
+
+def test_adopt_orphan_projects_never_creates_a_missing_account(
+    cli_app: typer.Typer,
+    configured_paths: tuple[Path, Path],
+) -> None:
+    """A mistyped number must fail, not mint an account and hand it every project."""
+    workspace_root, database = configured_paths
+    project = _seed_project(workspace_root)
+
+    result = runner.invoke(cli_app, ["adopt-orphan-projects", "09129999999"])
+
+    assert result.exit_code == 1
+    store = AccountStore(database)
+    assert store.get_user_by_phone("09129999999") is None
+    assert not store.has_any_member(project.project_id)

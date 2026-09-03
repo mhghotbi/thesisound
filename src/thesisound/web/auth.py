@@ -7,7 +7,7 @@ import typing
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
-_PERSIAN_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+from thesisound.accounts import normalize_phone_digits, to_ascii_digits
 
 
 class OtpError(ValueError):
@@ -36,17 +36,13 @@ class OtpChallenge:
 
 
 def normalize_phone(value: str) -> str:
-    normalized = value.translate(_PERSIAN_DIGITS)
-    digits = "".join(character for character in normalized if character.isdigit())
+    """OTP-facing wrapper: same rules as the account store, but it raises.
 
-    if digits.startswith("0098"):
-        digits = "0" + digits[4:]
-    elif digits.startswith("98") and len(digits) >= 12:
-        digits = "0" + digits[2:]
-    elif digits.startswith("9") and len(digits) == 10:
-        digits = "0" + digits
-
-    if len(digits) != 11 or not digits.startswith("09"):
+    The normalisation itself lives in :mod:`thesisound.accounts` so the admin
+    CLI and the login path can never drift apart on what a valid number is.
+    """
+    digits = normalize_phone_digits(value)
+    if digits is None:
         raise OtpError("شماره موبایل معتبر نیست.")
     return digits
 
@@ -116,7 +112,7 @@ class OtpService:
 
     def verify(self, raw_phone: str, raw_code: str, *, now: datetime | None = None) -> bool:
         phone = normalize_phone(raw_phone)
-        code = raw_code.translate(_PERSIAN_DIGITS).strip()
+        code = to_ascii_digits(raw_code).strip()
         if len(code) != 6 or not code.isdigit():
             raise OtpError("کد باید شش رقم باشد.")
 

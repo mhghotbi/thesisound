@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 _PBKDF2_ITERATIONS = 600_000
 _PASSWORD_ALGORITHM = "pbkdf2_sha256"
+_PERSIAN_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
 _GENERIC_LOGIN_ERROR = "نام کاربری یا رمز عبور درست نیست."
 _LOCKED_LOGIN_ERROR = "تعداد تلاش‌ها بیش از حد مجاز است. بعداً دوباره تلاش کنید."
 _DUMMY_PASSWORD_HASH = (
@@ -282,6 +283,23 @@ class AccountStore:
             ).fetchone()
         return _record_from_row(row) if row else None
 
+    def get_user_by_phone(self, phone: str) -> AccountRecord | None:
+        """Look up a phone account without creating one.
+
+        Deliberately distinct from :meth:`get_or_create_phone_user`: an admin
+        command that mistypes a number must fail, not silently mint an account
+        and hand it projects.
+        """
+        normalized = normalize_phone_digits(phone)
+        if normalized is None:
+            return None
+        with self._lock, closing(self._connect()) as connection, connection:
+            row = connection.execute(
+                "SELECT user_id, role, phone, username FROM users WHERE phone = ?",
+                (normalized,),
+            ).fetchone()
+        return _record_from_row(row) if row else None
+
     def set_password(self, username: str, password: str) -> None:
         normalized = _normalize_username(username)
         password_hash = hash_password(password)
@@ -445,6 +463,36 @@ def _normalize_username(username: str) -> str:
     if not normalized:
         raise AccountError("نام کاربری نمی‌تواند خالی باشد.")
     return normalized
+
+
+def to_ascii_digits(value: str) -> str:
+    """Fold Persian and Arabic-Indic digits to ASCII, leaving everything else."""
+    return value.translate(_PERSIAN_DIGITS)
+
+
+def normalize_phone_digits(value: str) -> str | None:
+    """Canonical ``09xxxxxxxxx`` form, or ``None`` when the input is not a phone.
+
+    Pure and non-raising, so a caller that is merely *looking up* an account can
+    tell "not a phone" from "no such account" without catching an exception.
+    The web OTP path wraps this and raises its own user-facing error instead.
+    """
+    digits = "".join(
+        character
+        for character in to_ascii_digits(value)
+        if character.isdigit()
+    )
+
+    if digits.startswith("0098"):
+        digits = "0" + digits[4:]
+    elif digits.startswith("98") and len(digits) >= 12:
+        digits = "0" + digits[2:]
+    elif digits.startswith("9") and len(digits) == 10:
+        digits = "0" + digits
+
+    if len(digits) != 11 or not digits.startswith("09"):
+        return None
+    return digits
 
 
 def _record_from_row(row: sqlite3.Row | tuple[object, ...]) -> AccountRecord:
