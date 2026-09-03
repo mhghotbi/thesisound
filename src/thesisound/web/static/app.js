@@ -96,11 +96,22 @@
     });
   };
 
+  // The browser chrome is the one surface the stylesheet cannot reach, so the
+  // meta tag has to be moved by hand or it stays on whichever theme was baked
+  // into the template -- cobalt blue framing a warm brown page.
+  const syncThemeColor = () => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return;
+    const brand = getComputedStyle(root).getPropertyValue("--brand").trim();
+    if (brand) meta.setAttribute("content", brand);
+  };
+
   document.querySelectorAll("[data-theme-value]").forEach((button) => {
     button.addEventListener("click", () => {
       const theme = button.dataset.themeValue;
       if (!validThemes.has(theme)) return;
       root.dataset.theme = theme;
+      syncThemeColor();
       localStorage.setItem("maqaal-theme", theme);
       localStorage.removeItem("thesisound-theme");
       syncPressedStates();
@@ -122,6 +133,7 @@
   });
 
   syncPressedStates();
+  syncThemeColor();
 
   const digitMap = {
     "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4",
@@ -561,6 +573,17 @@
   document.addEventListener("click", (event) => {
     document.querySelectorAll(".theme-switcher[open]").forEach((details) => {
       if (!details.contains(event.target)) details.removeAttribute("open");
+    });
+  });
+
+  // A mouse user dismisses the theme menu by clicking away; a keyboard user had
+  // no way out but Shift+Tab back to the summary. Escape closes it and returns
+  // focus to the control that opened it.
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    document.querySelectorAll(".theme-switcher[open]").forEach((details) => {
+      details.removeAttribute("open");
+      details.querySelector("summary")?.focus();
     });
   });
 })();

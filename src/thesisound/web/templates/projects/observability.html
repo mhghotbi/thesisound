@@ -11,9 +11,9 @@
 </header>
 
 <div id="observability-live" data-live-region aria-live="polite"
-     hx-get="/projects/{{ project.project_id }}/observability/live"
+     {% if trace_active %}hx-get="/projects/{{ project.project_id }}/observability/live"
      hx-trigger="every 2s"
-     hx-swap="innerHTML">
+     hx-swap="innerHTML"{% endif %}>
   {% include "projects/_observability_live.html" %}
 </div>
 

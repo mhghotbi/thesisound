@@ -141,6 +141,11 @@ html[data-theme="slate"] {
 
 * { box-sizing: border-box; }
 
+/* Every heading rule below is more specific than this, so this only reaches
+   headings no rule claims -- which previously rendered at the UA default 2em
+   (30px), a size on no rung of the type ladder. Margins are left to the UA. */
+h1, h2, h3, h4, h5, h6 { font-size: 16px; font-weight: 700; line-height: 1.5; }
+
 html {
   min-width: 320px;
   background: var(--canvas);
@@ -182,8 +187,12 @@ svg { display: block; max-width: 100%; }
 
 [hidden] { display: none !important; }
 
-.operator-only { display: none !important; }
-html[data-mode="operator"] .operator-only { display: revert !important; }
+/* Mode visibility only ever HIDES; it never re-shows. `display: revert` used to
+   do the showing, but revert drops to the user-agent value and discarded the
+   author's own display: every `.button` here is an `<a>`, so inline-flex became
+   inline and min-height: 44px stopped applying — five operator buttons rendered
+   19-22px tall. Hiding with :not() leaves each element's own display intact. */
+html:not([data-mode="operator"]) .operator-only { display: none !important; }
 html[data-mode="operator"] .simple-only { display: none !important; }
 
 .skip-link {
@@ -337,8 +346,23 @@ html[data-mode="operator"] .simple-only { display: none !important; }
   text-align: start;
   font-size: 12px;
 }
-.theme-option:hover,
-.theme-option[aria-pressed="true"] { background: var(--paper-muted); color: var(--ink); }
+.theme-option:hover { background: var(--paper-muted); color: var(--ink); }
+/* Selection carries three signals -- ground, weight and a tick -- so it is never
+   mistaken for the hover state it used to share a background with. */
+.theme-option[aria-pressed="true"] {
+  background: var(--brand-wash);
+  color: var(--brand-strong);
+  font-weight: 700;
+}
+.theme-option[aria-pressed="true"]::after {
+  content: "";
+  width: 12px;
+  height: 7px;
+  margin-inline-start: auto;
+  border-inline-start: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  transform: rotate(-45deg) translate(1px, -2px);
+}
 .theme-option__swatch {
   width: 12px;
   height: 12px;
@@ -428,7 +452,9 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--paper);
-  box-shadow: var(--shadow);
+  /* Sheet, not Floater: the page frame scrolls with the document and nothing
+     passes underneath it. --shadow is reserved for dismissible overlays. */
+  box-shadow: var(--shadow-soft);
 }
 
 .page-content { padding: 30px 34px 42px; }
@@ -626,7 +652,7 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
 .field { display: grid; gap: 7px; }
 .field > span,
 .field > label { color: var(--ink-soft); font-size: 12px; font-weight: 700; }
-.field small { color: var(--muted); font-weight: 400; }
+.field small { color: var(--muted); font-size: 12px; font-weight: 400; }
 .field input,
 .field select,
 .field textarea {

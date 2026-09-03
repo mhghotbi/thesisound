@@ -751,3 +751,70 @@ def test_observability_requires_real_operator_role_and_remains_read_only(
         assert (
             client.get(f"/projects/{project.project_id}/observability?depth=13").status_code == 422
         )
+
+
+def test_observability_stops_polling_when_no_span_is_open(tmp_path: Path) -> None:
+    """An idle observability tab used to poll every 2s forever — 1800 req/hour.
+
+    The four other live regions gate their own ``hx-*`` attributes on an active
+    run and end the poll with ``HX-Refresh``. This one did neither.
+    """
+    settings = _settings(tmp_path)
+    app = create_app(
+        settings,
+        corpus_executor=lambda _: None,
+        episode_executor=lambda _: None,
+        script_executor=lambda _: None,
+        audio_executor=lambda _: None,
+    )
+    workspace = WorkspaceStore(settings.ensure_workspace_root())
+    project = Project(raw_input="اخلاق کانت")
+    workspace.save_project(project)
+    app.state.accounts.create_password_user("operator-user", "operator-pass", role="operator")
+
+    ledger = ledger_from_settings(settings)
+    trace_id, span_id = uuid4(), uuid4()
+    finished = SpanRecord(
+        context=SpanContext(
+            trace_id=trace_id,
+            span_id=span_id,
+            project_id=project.project_id,
+            workflow_run_id=uuid4(),
+        ),
+        parent_span_id=None,
+        name="corpus.extract_evidence",
+        component="corpus",
+        kind="stage",
+        subject_type="source",
+        subject_id="source-1",
+        started_at=datetime.now(UTC) - timedelta(seconds=5),
+        process="test",
+        pid=1,
+        attributes={"pipeline_code_version": "web-test"},
+    )
+    ledger.start_span(finished)
+    finished.status = "succeeded"
+    finished.ended_at = datetime.now(UTC)
+    finished.duration_ms = 5000
+    ledger.end_span(finished)
+
+    with TestClient(app) as client:
+        _login_password(client, "operator-user", "operator-pass")
+        preferences = client.get("/projects")
+        assert (
+            client.post(
+                "/ui/preferences",
+                data={"csrf_token": _csrf(preferences.text), "mode": "operator"},
+            ).status_code
+            == 204
+        )
+
+        page = client.get(f"/projects/{project.project_id}/observability")
+        assert page.status_code == 200
+        # The region still renders its current state; it just does not re-poll.
+        assert 'id="observability-live"' in page.text
+        assert "every 2s" not in page.text
+
+        live = client.get(f"/projects/{project.project_id}/observability/live")
+        assert live.status_code == 200
+        assert live.headers.get("HX-Refresh") == "true"

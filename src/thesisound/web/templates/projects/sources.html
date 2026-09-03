@@ -39,7 +39,7 @@
   <svg class="drop-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 16V4"/><path d="M7.5 8.5L12 4l4.5 4.5"/><path d="M4 16v3.5h16V16"/></svg>
   <div class="drop-zone__copy">
     <p class="drop-zone__title">فایل‌ها را اینجا رها کنید</p>
-    <p class="drop-zone__hint"><bdi dir="ltr">PDF، EPUB، DOCX، TXT</bdi> یا <bdi dir="ltr">Markdown</bdi> — تا <bdi dir="ltr">{{ upload_limit_mb | fa_num }}&nbsp;مگابایت</bdi></p>
+    <p class="drop-zone__hint"><bdi dir="ltr">PDF, EPUB, DOCX, TXT</bdi> یا <bdi dir="ltr">Markdown</bdi> — تا <bdi dir="ltr">{{ upload_limit_mb | fa_num }}</bdi>&nbsp;مگابایت</p>
   </div>
   <label class="button button--secondary drop-zone__picker">
     انتخاب از دستگاه
@@ -159,7 +159,7 @@
         <p class="source-row__meta">
           {% if source.block_count %}<span>{{ source.block_count | fa_num }} پاره‌متن خوانده شد</span>{% endif %}
           <span>{% if source.origin == 'gemini_web_search' %}منبع وب بازیابی‌شده{% elif source.origin == 'url_fetch' %}منبع از نشانی وب{% else %}فایل شما{% endif %}</span>
-          <span><bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) | fa_num }}&nbsp;مگابایت</bdi></span>
+          <span><bdi dir="ltr">{{ (source.size_bytes / 1024 / 1024) | round(2) | fa_num }}</bdi>&nbsp;مگابایت</span>
           {% if source.canonical_url %}<a href="{{ source.canonical_url }}" rel="noreferrer" target="_blank">نشانی اصلی</a>{% endif %}
         </p>
 

@@ -210,16 +210,36 @@ def _trim_evidence(evidence: str | None, workspace_root: str | None) -> str | No
 
 
 def _summary(rows: list[ReadinessRow]) -> tuple[str, str, bool]:
+    """Label, tone, and whether this group blocks — counting every row.
+
+    A group summary names all three buckets. Reporting only the dominant one
+    (the blocked count, when anything was blocked) silently dropped the rest,
+    so the three group summaries added up to 11 against a 13-row table — on the
+    one page whose entire claim is that its numbers are computed, not authored.
+    """
     blocked = [row for row in rows if row.status == "blocked"]
     passed = [row for row in rows if row.status == "pass"]
     waiting = [row for row in rows if row.status in {"not_reached", "unknown"}]
+
+    buckets = [
+        (len(passed), "گذشت"),
+        (len(blocked), "متوقف"),
+        (len(waiting), "هنوز نرسیده"),
+    ]
+    present = [(count, word) for count, word in buckets if count]
+    if not present:
+        return "بررسی‌ای در این گروه نیست", "neutral", False
+
+    head_count, head_word = present[0]
+    label = "، ".join(
+        [
+            f"{_fa(head_count)} بررسی {head_word}",
+            *(f"{_fa(count)} {word}" for count, word in present[1:]),
+        ]
+    )
     if blocked:
-        return f"{_fa(len(blocked))} بررسی متوقف", "attention", True
-    if waiting and not passed:
-        return f"{_fa(len(waiting))} بررسی هنوز نرسیده", "neutral", False
-    if waiting:
-        return f"{_fa(len(passed))} بررسی گذشت، {_fa(len(waiting))} هنوز نرسیده", "neutral", False
-    return f"{_fa(len(passed))} بررسی گذشت", "success", False
+        return label, "attention", True
+    return label, "neutral" if waiting else "success", False
 
 
 def build_readiness_view(

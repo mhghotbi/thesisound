@@ -101,6 +101,10 @@ def register_observability_routes(
                 "project": project,
                 "selected_call": selected_call,
                 "include_synthetic": show_synthetic,
+                # Gates the live region's hx-* attributes, matching the four other
+                # live surfaces. Without it this page polled every 2s forever --
+                # 1800 requests an hour on an idle tab with no work in flight.
+                "trace_active": reporter.current_open_span(project_id) is not None,
                 **overview,
             },
         )
@@ -115,11 +119,17 @@ def register_observability_routes(
             workspace.load_project(project_id)
         except FileNotFoundError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
-        return render(
+        status = reporter.live_status(project_id)
+        response = render(
             request,
             "projects/_observability_live.html",
             {
                 "project_id": project_id,
-                **reporter.live_status(project_id),
+                **status,
             },
         )
+        # End the poll the way every other live route does: once no span is open
+        # there is nothing left to stream, so hand the client one final refresh.
+        if status.get("current_span") is None:
+            response.headers["HX-Refresh"] = "true"
+        return response
