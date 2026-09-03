@@ -18,16 +18,18 @@
   <h2 id="login-title">شماره موبایل خود را وارد کنید:</h2>
   <p class="subtitle">ورود امن با کد یک‌بارمصرف</p>
 
-  {% if error %}
-    <div class="notice notice--danger" role="alert">{{ error }}</div>
-  {% endif %}
-
   <form method="post" action="/login/request-code" class="form-sheet" data-phone-form novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="next_path" value="{{ next_path }}">
     <label class="field">
       <span>شمارهٔ موبایل</span>
-      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="09[0-9]{9}" placeholder="09120000000" value="{{ phone or '' }}" required autofocus>
+      <input name="phone" type="tel" dir="ltr" inputmode="numeric" autocomplete="tel" maxlength="11" pattern="09[0-9]{9}" placeholder="09120000000" value="{{ phone or '' }}" required autofocus{% if error %} aria-invalid="true" aria-describedby="phone-error"{% endif %}>
+      {% if error %}
+      <p class="field-error" id="phone-error" role="alert">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+        {{ error }}
+      </p>
+      {% endif %}
     </label>
     <button class="button button--primary button--full" type="submit">ارسال کد ورود</button>
   </form>

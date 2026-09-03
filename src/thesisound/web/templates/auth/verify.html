@@ -23,13 +23,17 @@
   <p class="subtitle">تأیید ورود</p>
   <p class="lede">کد برای <bdi dir="ltr">{{ phone }}</bdi> درخواست شده است.</p>
 
-  {% if error %}<div class="notice notice--danger" role="alert">{{ error }}</div>{% endif %}
-
   <form method="post" action="/login/verify" class="form-sheet" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label class="field">
       <span>کد یک‌بارمصرف</span>
-      <input name="code" class="otp-input" type="text" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9۰-۹]{6}" placeholder="••••••" required autofocus aria-describedby="otp-hint">
+      <input name="code" class="otp-input" type="text" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9۰-۹]{6}" placeholder="••••••" required autofocus{% if error %} aria-invalid="true" aria-describedby="code-error otp-hint"{% else %} aria-describedby="otp-hint"{% endif %}>
+      {% if error %}
+      <p class="field-error" id="code-error" role="alert">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+        {{ error }}
+      </p>
+      {% endif %}
       <small class="field-hint" id="otp-hint">شش رقم را پیوسته وارد کنید.</small>
     </label>
     <button class="button button--primary button--full" type="submit">ورود به گفتارهای من</button>

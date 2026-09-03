@@ -142,12 +142,13 @@
     data-turn-id="{{ turn_id }}"
   >
     <div class="evidence-judgement__actions">
-      <button type="button" class="evidence-judgement__btn" data-verdict="correct">درست است</button>
-      <button type="button" class="evidence-judgement__btn" data-verdict="incorrect">نادرست است</button>
+      <button type="button" class="evidence-judgement__btn" data-verdict="correct" aria-pressed="false">درست است</button>
+      <button type="button" class="evidence-judgement__btn" data-verdict="incorrect" aria-pressed="false" aria-expanded="false">نادرست است</button>
       <button type="button" class="evidence-judgement__btn evidence-judgement__btn--clear" data-verdict="cleared" hidden>پس گرفتن</button>
     </div>
-    <div class="evidence-judgement__reason" hidden>
-      <p class="evidence-judgement__reason-label">چرا نادرست است؟</p>
+    <p class="visually-hidden" data-judgement-status role="status" aria-live="polite"></p>
+    <fieldset class="evidence-judgement__reason" hidden>
+      <legend class="evidence-judgement__reason-label">چرا نادرست است؟</legend>
       <label class="evidence-judgement__option"><input type="radio" name="reason-{{ reference.evidence_id }}-{{ turn_id }}" value="excerpt_does_not_support"> عبارت شاهد این مدعا را پشتیبانی نمی‌کند</label>
       <label class="evidence-judgement__option"><input type="radio" name="reason-{{ reference.evidence_id }}-{{ turn_id }}" value="wrong_locator"> نشانی در منبع درست نیست</label>
       <label class="evidence-judgement__option"><input type="radio" name="reason-{{ reference.evidence_id }}-{{ turn_id }}" value="claim_mismatch"> این مدعا با گفته نمی‌خواند</label>
@@ -156,7 +157,7 @@
         <textarea maxlength="500" rows="2" placeholder="حداکثر ۵۰۰ نویسه"></textarea>
       </label>
       <button type="button" class="evidence-judgement__btn evidence-judgement__btn--submit" data-submit-incorrect>ثبت</button>
-    </div>
+    </fieldset>
   </div>
   {% endif %}
   {% if drawer %}

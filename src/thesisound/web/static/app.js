@@ -465,12 +465,24 @@
   const applyJudgementState = (root, verdict) => {
     root.dataset.verdict = verdict || "";
     root.querySelectorAll("[data-verdict='correct'], [data-verdict='incorrect']").forEach((button) => {
-      button.classList.toggle("is-selected", Boolean(verdict) && button.dataset.verdict === verdict);
+      const selected = Boolean(verdict) && button.dataset.verdict === verdict;
+      button.classList.toggle("is-selected", selected);
+      // A CSS class is invisible to assistive tech, so a screen-reader user got
+      // no confirmation that their verdict was recorded at all.
+      button.setAttribute("aria-pressed", String(selected));
     });
     const clearBtn = root.querySelector("[data-verdict='cleared']");
     if (clearBtn) clearBtn.hidden = !verdict || verdict === "cleared";
     const reasonPanel = root.querySelector(".evidence-judgement__reason");
     if (reasonPanel) reasonPanel.hidden = true;
+    const incorrect = root.querySelector("[data-verdict='incorrect']");
+    if (incorrect) incorrect.setAttribute("aria-expanded", "false");
+    const status = root.querySelector("[data-judgement-status]");
+    if (status) {
+      status.textContent = verdict === "correct" ? "ثبت شد: این شاهد درست است."
+        : verdict === "incorrect" ? "ثبت شد: این شاهد نادرست است."
+        : "";
+    }
   };
 
   const postJudgement = (root, verdict, reason = "", note = "") => {
@@ -521,6 +533,8 @@
       if (verdict === "incorrect") {
         const reasonPanel = root.querySelector(".evidence-judgement__reason");
         if (reasonPanel) reasonPanel.hidden = false;
+        button.setAttribute("aria-expanded", "true");
+        reasonPanel?.querySelector("input[type='radio']")?.focus();
         return;
       }
       if (verdict === "correct" || verdict === "cleared") {
