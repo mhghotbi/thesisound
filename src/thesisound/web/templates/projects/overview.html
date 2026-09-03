@@ -29,7 +29,7 @@
   model.state_label,
   model.attention_label,
   model.overview_summary,
-  model.tone,
+  model.status_tone,
   model.primary_action_url,
   model.primary_action_label,
   '/projects/' ~ project.project_id ~ '/sources' if model.current_step >= 2 else '',
@@ -56,7 +56,7 @@
     </li>
     {% endif %}
     <li>
-      <span class="timeline__mark{% if model.tone == 'running' %} timeline__mark--running{% endif %}" aria-hidden="true"></span>
+      <span class="timeline__mark{% if model.ownership == 'system' %} timeline__mark--running{% endif %}" aria-hidden="true"></span>
       <span class="timeline__current">{{ model.overview_summary }}</span>
       <time datetime="{{ project.updated_at.isoformat() }}">{{ project.updated_at | jalali_date }}</time>
     </li>

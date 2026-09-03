@@ -142,11 +142,17 @@ _GROUPS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
 )
 
 #: Where the reader goes to clear a blocked human gate.
+#
+# `script-review-decision` sends the reader to the audio screen, not the script
+# screen: the accept / send-back form lives in `audio.html`, and the gate's own
+# English detail says so ("must accept (on the audio screen)"). Pointing it at
+# `script` made this page name a different destination from the one the project
+# row named for the same project, which is the disagreement F-18 is about.
 _ACTIONS: dict[str, tuple[str, str]] = {
     "brief-confirmed": ("ثبت موضوع و هدف", "brief"),
     "source-selection-confirmed": ("بازبینی و تأیید منابع", "sources"),
     "episode-plan-approval": ("بازبینی و تأیید طرح قسمت", "episode"),
-    "script-review-decision": ("بازبینی متن گفتار", "script"),
+    "script-review-decision": ("بازبینی متن گفتار", "audio"),
     "audio-start": ("شروع ساخت صدا", "audio"),
 }
 
@@ -195,6 +201,9 @@ class ReadinessView:
     facts: list[tuple[str, str]] = field(default_factory=list)
     groups: list[ReadinessGroup] = field(default_factory=list)
     rows: list[ReadinessRow] = field(default_factory=list)
+    #: The gate that stops the run, or None when nothing is blocked. The project
+    #: read model reads this to notice when a stored state has outrun its evidence.
+    blocking_code: str | None = None
 
 
 def _trim_evidence(evidence: str | None, workspace_root: str | None) -> str | None:
@@ -327,6 +336,7 @@ def build_readiness_view(
                 facts=facts,
                 groups=groups,
                 rows=ordered,
+                blocking_code=None,
             )
         return ReadinessView(
             headline="همه‌چیز آماده است.",
@@ -337,6 +347,7 @@ def build_readiness_view(
             facts=facts,
             groups=groups,
             rows=ordered,
+            blocking_code=None,
         )
 
     act_on = blocking.code
@@ -367,4 +378,5 @@ def build_readiness_view(
         facts=facts,
         groups=groups,
         rows=ordered,
+        blocking_code=blocking.code,
     )

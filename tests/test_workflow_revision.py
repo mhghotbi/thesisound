@@ -201,3 +201,63 @@ def test_rewind_rejects_an_active_run(tmp_path: Path) -> None:
 
     assert workspace.load_project(project.project_id).state == ProjectState.FAILED_RETRYABLE
     assert (project_dir / "sources" / "artifact.json").exists()
+
+
+def test_the_preview_promises_exactly_what_the_rewind_performs(tmp_path: Path) -> None:
+    """The confirmation screen and the action must not be able to drift apart.
+
+    A screen that lists what will be archived is only worth showing if the same rule
+    decides what actually moves, so this compares the promise against the receipt.
+    """
+    workspace, project = _seed_workspace(tmp_path)
+    service = WorkflowRevisionService(workspace)
+
+    preview = service.preview(project.project_id, target="sources")
+    receipt = service.rewind(project.project_id, target="sources", actor="09120000000")
+
+    assert preview.blocked_reason is None
+    assert sorted(preview.archived_paths) == sorted(receipt.archived_paths)
+    assert preview.new_state == receipt.new_state
+    assert preview.previous_state == receipt.previous_state
+    assert "sources" in preview.kept_paths
+
+
+def test_the_preview_promises_the_brief_rewind_too(tmp_path: Path) -> None:
+    workspace, project = _seed_workspace(tmp_path)
+    project_dir = workspace.project_dir(project.project_id)
+    (project_dir / "web-search-candidates.json").write_text("[]", encoding="utf-8")
+    service = WorkflowRevisionService(workspace)
+
+    preview = service.preview(project.project_id, target="brief")
+    receipt = service.rewind(project.project_id, target="brief", actor="09120000000")
+
+    assert sorted(preview.archived_paths) == sorted(receipt.archived_paths)
+    assert "web-search-candidates.json" in preview.archived_paths
+    assert preview.resets_source_selection is True
+    assert preview.new_state == receipt.new_state == ProjectState.BRIEF_READY
+
+
+def test_the_preview_writes_nothing(tmp_path: Path) -> None:
+    workspace, project = _seed_workspace(tmp_path)
+    project_dir = workspace.project_dir(project.project_id)
+    before = sorted(str(path.relative_to(project_dir)) for path in project_dir.rglob("*"))
+
+    WorkflowRevisionService(workspace).preview(project.project_id, target="brief")
+
+    assert sorted(str(path.relative_to(project_dir)) for path in project_dir.rglob("*")) == before
+    assert workspace.load_project(project.project_id).state == ProjectState.FAILED_RETRYABLE
+
+
+def test_the_preview_says_why_an_active_run_blocks_it(tmp_path: Path) -> None:
+    """The screen refuses before the reader commits, with the same rule the action uses."""
+    workspace, project = _seed_workspace(tmp_path)
+    project_dir = workspace.project_dir(project.project_id)
+    (project_dir / "script-build-run.json").write_text(
+        json.dumps({"status": "running"}),
+        encoding="utf-8",
+    )
+
+    preview = WorkflowRevisionService(workspace).preview(project.project_id, target="sources")
+
+    assert preview.active_runs == ["script-build-run"]
+    assert preview.blocked_reason is not None

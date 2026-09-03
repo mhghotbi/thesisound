@@ -426,6 +426,12 @@ def _render_script_page(
             "used_revision": bool(
                 artifacts_current and script_store.has_revised_script(project_id)
             ),
+            # False means the stored script was written against a different Episode
+            # Plan than the one on the project now. Everything downstream is loaded
+            # as None in that case, so the page has to say so rather than render blank.
+            # Named for the reader, not the store: `script.html` is scanned line by
+            # line for operator vocabulary, comments and variable names included.
+            "script_matches_plan": artifacts_current,
             "segment_views": _segment_views(project, script, source_store),
             "can_approve": project.state == ProjectState.EPISODE_PLANNED,
             "can_retry": bool(

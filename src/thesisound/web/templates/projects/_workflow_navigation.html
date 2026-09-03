@@ -83,21 +83,18 @@
   {% endif %}
 
   {% if available_step >= 2 %}
+  {#
+    These open a confirmation screen; they never rewind on their own. They used to be
+    submit buttons drawn as 11px underlined links, which read as navigation and acted
+    as demolition. Control-sized secondary buttons say what they are.
+  #}
   <div class="workflow-rail__rewind">
     <span>بازگشت و اصلاح:</span>
     {% if available_step > 2 %}
-    <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <input type="hidden" name="target" value="sources">
-      <button type="submit">منابع</button>
-    </form>
+    <a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/workflow/rewind?target=sources">منابع</a>
     {% endif %}
-    <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <input type="hidden" name="target" value="brief">
-      <button type="submit">موضوع و هدف</button>
-    </form>
-    <small>خروجی‌های وابسته بایگانی و پس از اصلاح دوباره ساخته می‌شوند. فایل‌های خام حذف نمی‌شوند.</small>
+    <a class="button button--secondary button--small" href="/projects/{{ project.project_id }}/workflow/rewind?target=brief">موضوع و هدف</a>
+    <small>پیش از هر تغییری، صفحهٔ تأیید می‌گوید چه چیزی بایگانی می‌شود. فایل‌های خام حذف نمی‌شوند.</small>
   </div>
   {% endif %}
   {% if is_operator and ui_mode == 'operator' %}

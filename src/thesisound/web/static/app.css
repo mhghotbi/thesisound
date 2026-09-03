@@ -302,6 +302,9 @@ html[data-mode="operator"] .simple-only { display: none !important; }
 }
 .segmented-control button {
   min-height: 44px;
+  /* The width floor matters here and only shows under 760px, where the padding
+     drops to 9px and "ساده" fell to 40.5px. Phase 2 swept this at desktop only. */
+  min-width: 44px;
   padding: 0 11px;
   border: 0;
   border-inline-start: 1px solid var(--brand-line);
@@ -564,25 +567,24 @@ html[data-mode="operator"] .app-header__inner { min-height: 56px; }
   color: var(--muted);
   font-size: 11px;
 }
-.workflow-rail__rewind form { margin: 0; }
-.workflow-rail__rewind button {
+/* The rewind controls are buttons now, not underlined text. Baseline alignment was
+   for a row of words; a row of controls centres. */
+.workflow-rail__rewind { align-items: center; }
+.workflow-rail__rewind small {
+  flex: 1 1 100%;
+  color: var(--muted-light);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.workflow-rail__rewind > a:not(.button) {
   min-height: 44px;
-  min-width: 44px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  background: none;
   color: var(--ink-soft);
-  cursor: pointer;
-  font-size: 11px;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.workflow-rail__rewind button:hover { color: var(--ink); }
-.workflow-rail__rewind small { color: var(--muted-light); font-size: 11px; }
 
 .page-heading {
   display: flex;
@@ -1304,6 +1306,9 @@ span.status-label__mark {
   border-block-start: 1px solid var(--border);
 }
 .impact-summary__actions form { margin: 0; }
+/* The reason sits above the two buttons, not beside them: a field inside the
+   action row stretches it and leaves the cancel button floating at its middle. */
+.impact-summary__reason { padding-block-start: 16px; max-width: 46ch; }
 .impact-summary__alternative { margin: 0; margin-inline-start: auto; color: var(--muted); font-size: 13px; }
 
 .coverage-verdict { display: grid; gap: 10px; }
@@ -1714,7 +1719,23 @@ code {
   .mobile-nav { display: grid; }
   body:has(.mobile-nav) { padding-block-end: 62px; }
   .workflow-rail { padding: 10px 16px; gap: 6px; }
-  .workflow-rail__steps { display: none; }
+  /* The rail is the only in-project navigation under 760px — the header nav is
+     hidden here too — so hiding it left a phone with no read-only way back to
+     /sources or /brief. It scrolls sideways instead, connectors dropped. */
+  .workflow-rail__steps {
+    flex-wrap: nowrap;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+  .workflow-rail__steps::-webkit-scrollbar { display: none; }
+  .workflow-step { flex: 0 0 auto; }
+  .workflow-step + .workflow-step::before { width: 10px; }
+  /* Padding tightens to fit more of the row on screen; the 44px floor does not
+     move — the row scrolls, so there is nothing to gain by shrinking a target. */
+  .workflow-step a { padding-inline: 6px; }
   .workflow-rail__compact {
     margin: 0;
     display: flex;

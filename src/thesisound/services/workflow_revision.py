@@ -52,11 +52,78 @@ class WorkflowRevisionReceipt(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
+class RevisionPreview(BaseModel):
+    """What a rewind would do, computed without doing any of it.
+
+    The confirmation screen and the rewind itself read the same two rules — the
+    downstream path list and the state the project lands in — so the screen cannot
+    promise one thing and the action perform another.
+    """
+
+    target: RevisionTarget
+    previous_state: ProjectState
+    new_state: ProjectState
+    archived_paths: list[str] = Field(default_factory=list)
+    kept_paths: list[str] = Field(default_factory=list)
+    resets_source_selection: bool = False
+    #: Non-empty means the rewind is refused; a run is still writing these artifacts.
+    active_runs: list[str] = Field(default_factory=list)
+    blocked_reason: str | None = None
+
+
 class WorkflowRevisionService:
     """Rewind editable inputs without allowing stale downstream reuse."""
 
     def __init__(self, workspace: WorkspaceStore) -> None:
         self.workspace = workspace
+
+    def preview(self, project_id: UUID, *, target: RevisionTarget) -> RevisionPreview:
+        """Answer "what would this cost me?" without touching a single file."""
+        project = self.workspace.load_project(project_id)
+        project_dir = self.workspace.project_dir(project_id)
+        active = _active_run_labels(project_dir)
+
+        blocked_reason: str | None = None
+        if active:
+            blocked_reason = (
+                "تا وقتی اجرای فعال متوقف یا تمام نشده نمی‌توان مرحله را عقب برد."
+            )
+        elif target == "sources" and project.state == ProjectState.BRIEF_READY:
+            blocked_reason = "ابتدا برداشت پژوهش را تأیید کنید، سپس وارد منابع شوید."
+
+        archived = [
+            relative
+            for relative in _DOWNSTREAM_PATHS
+            if relative not in _REUSABLE_ANALYSIS_PATHS and (project_dir / relative).exists()
+        ]
+        if target == "brief" and (project_dir / "web-search-candidates.json").exists():
+            archived.append("web-search-candidates.json")
+
+        kept = [
+            relative
+            for relative in _REUSABLE_ANALYSIS_PATHS
+            if (project_dir / relative).exists()
+        ]
+
+        if target == "brief":
+            new_state = ProjectState.BRIEF_READY
+        else:
+            new_state = (
+                ProjectState.SOURCE_SELECTION_REQUIRED
+                if _has_ready_source(project_dir)
+                else ProjectState.SOURCES_COLLECTING
+            )
+
+        return RevisionPreview(
+            target=target,
+            previous_state=project.state,
+            new_state=new_state,
+            archived_paths=archived,
+            kept_paths=kept,
+            resets_source_selection=target == "brief",
+            active_runs=active,
+            blocked_reason=blocked_reason,
+        )
 
     def rewind(
         self,

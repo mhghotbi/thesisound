@@ -7,7 +7,11 @@
   <div>
     <h1>متن گفتار</h1>
     <p class="page-heading__project">{{ project_title(project) }}</p>
+    {% if script and checks and verification %}
     <p>در حالت ساده، متن برای خواندن آرام و پیوسته نمایش داده می‌شود. ردیابی هر گفته تا شاهد و منبع در همان‌جا در دسترس است.</p>
+    {% else %}
+    <p>وقتی متن نوشته و راستی‌آزمایی شد، همین‌جا برای خواندن پیوسته نمایش داده می‌شود و ردیابی هر گفته تا شاهدش در دسترس خواهد بود.</p>
+    {% endif %}
   </div>
   {% if script_active %}
     {{ status_label('در حال نگارش و راستی‌آزمایی', 'اقدامی از شما لازم نیست', 'running', script_run.stage if script_run else '') }}
@@ -17,6 +21,8 @@
     {{ status_label('متن گفتار نیازمند بازبینی است', 'تصمیم شما لازم است', 'attention', project.state.value) }}
   {% elif script and project.state.value == 'script_verified' %}
     {{ status_label('متن گفتار تأیید شد', 'آمادهٔ ساخت نسخهٔ شنیداری', 'success', project.state.value) }}
+  {% elif not script_matches_plan and project.state.value in ['script_verified', 'script_review_required'] %}
+    {{ status_label('طرح گفتار پس از نوشتن متن تغییر کرده', 'تصمیم شما لازم است', 'attention', project.state.value) }}
   {% else %}
     {{ status_label('منتظر تأیید طرح گفتار', 'تصمیم شما لازم است', 'attention', project.state.value) }}
   {% endif %}
@@ -214,6 +220,34 @@
   <a class="button button--primary" href="/projects/{{ project.project_id }}/audio">ساخت نسخهٔ شنیداری</a>
   <a class="button button--secondary operator-only" href="/system-check?scope=audio">بررسی پیش‌نیازهای صوت</a>
 </div>
+{#
+  Nothing to show, and none of the branches above claimed the page. This used to
+  render as a header over blank paper — under a sentence promising a text to read.
+  The two ways to get here are worth telling apart: the plan moved out from under a
+  finished script, or the script was never written.
+#}
+{% elif not script_active and not can_approve and not (script_run and script_run.status == 'failed') %}
+{% if not script_matches_plan and project.state.value in ['script_verified', 'script_review_required'] %}
+<section class="empty-state">
+  <h2>این متن به طرح دیگری بسته است</h2>
+  <p class="subtitle">متن گفتار</p>
+  <p>متنی برای این گفتار نوشته و راستی‌آزمایی شده بود، اما طرح گفتار پس از آن تغییر کرده است. متن قدیمی به بخش‌های طرح قبلی وصل است، پس نمایش‌دادنش به‌عنوان متن فعلی گمراه‌کننده می‌شد. با تأیید دوبارهٔ طرح، نگارش روی طرح تازه از سر گرفته می‌شود.</p>
+  <div class="form-actions">
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/episode">بازبینی و تأیید طرح گفتار</a>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/readiness">بررسی آمادگی گفتار</a>
+  </div>
+</section>
+{% else %}
+<section class="empty-state">
+  <h2>متن گفتار هنوز نوشته نشده است</h2>
+  <p class="subtitle">متن گفتار</p>
+  <p>نگارش پس از تأیید طرح گفتار شروع می‌شود. تا آن موقع چیزی برای خواندن اینجا نیست.</p>
+  <div class="form-actions">
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/episode">دیدن طرح گفتار</a>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/readiness">بررسی آمادگی گفتار</a>
+  </div>
+</section>
+{% endif %}
 {% endif %}
 
 <div class="form-actions section-block">

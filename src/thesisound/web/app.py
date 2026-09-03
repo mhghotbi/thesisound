@@ -57,7 +57,7 @@ from thesisound.services.episode_artifact_store import EpisodeArtifactStore
 from thesisound.services.lesson_report import LessonReportBuilder
 from thesisound.services.observability_reporting import ObservabilityReporter
 from thesisound.services.product_metrics_rollup import ProductMetricsRollup
-from thesisound.services.readiness import project_readiness
+from thesisound.services.readiness_cache import cached_project_readiness
 from thesisound.services.runtime_preflight import PreflightScope, RuntimePreflight
 from thesisound.services.source_artifact_store import SourceArtifactStore
 from thesisound.web.audio_routes import register_audio_routes
@@ -71,11 +71,12 @@ from thesisound.web.lesson_routes import register_lesson_routes
 from thesisound.web.observability_routes import register_observability_routes
 from thesisound.web.read_models import build_project_read_model
 from thesisound.web.readiness_routes import register_readiness_routes
-from thesisound.web.system_check_views import build_system_check_rows
+from thesisound.web.readiness_views import ReadinessView, build_readiness_view
 from thesisound.web.report_routes import register_report_routes
 from thesisound.web.script_routes import register_script_routes
 from thesisound.web.script_runtime import create_script_builder
 from thesisound.web.source_routes import register_source_routes
+from thesisound.web.system_check_views import build_system_check_rows
 
 _WEB_ROOT = Path(__file__).parent
 _TEMPLATES_ROOT = _WEB_ROOT / "templates"
@@ -540,6 +541,26 @@ def create_app(
             status_code=status_code,
         )
 
+    def _readiness_view(project: Project) -> ReadinessView | None:
+        """The gate verdict for one project, or None when the gates cannot run.
+
+        A workspace can hold a project whose artifacts were moved or half-written;
+        that is a reason to fall back to the stored state, not to fail the page.
+        """
+        try:
+            gate_results = cached_project_readiness(
+                project_id=project.project_id,
+                workspace_root=workspace.root,
+                updated_at=project.updated_at,
+            )
+        except (FileNotFoundError, OSError, ValueError):
+            return None
+        return build_readiness_view(
+            gate_results,
+            project_id=project.project_id,
+            workspace_root=workspace.root,
+        )
+
     def failure_action_url(project: Project) -> str | None:
         if project.state not in {
             ProjectState.FAILED_RETRYABLE,
@@ -848,6 +869,7 @@ def create_app(
             build_project_read_model(
                 project,
                 failure_action_url=failure_action_url(project),
+                readiness=_readiness_view(project),
             )
             for project in projects
         ]
@@ -991,17 +1013,21 @@ def create_app(
         if redirect := _project_redirect(request, project_id):
             return redirect
         project = workspace.load_project(project_id)
+        gate_results = cached_project_readiness(
+            project_id=project_id,
+            workspace_root=workspace.root,
+            updated_at=project.updated_at,
+        )
         model = build_project_read_model(
             project,
             failure_action_url=failure_action_url(project),
-        )
-        schema_drift = any(
-            result.reason == "schema"
-            for result in project_readiness(
+            readiness=build_readiness_view(
+                gate_results,
                 project_id=project_id,
                 workspace_root=workspace.root,
-            )
+            ),
         )
+        schema_drift = any(result.reason == "schema" for result in gate_results)
         lesson_report = None
         if project.lesson_intent == LessonIntent.SOURCE_COVERAGE:
             try:

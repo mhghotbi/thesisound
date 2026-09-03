@@ -40,6 +40,7 @@ from thesisound.services.runtime_preflight import RuntimePreflight
 from thesisound.services.workflow_revision import WorkflowRevisionService
 from thesisound.web.corpus_runtime import corpus_source_inputs
 from thesisound.web.error_messages import user_facing_error
+from thesisound.web.read_models import state_label_for
 from thesisound.web.source_discovery import (
     WebSourceCandidate,
     WebSourceCandidateStore,
@@ -691,12 +692,44 @@ def register_source_routes(
         )
         return _source_redirect(project_id)
 
+    @app.get("/projects/{project_id}/workflow/rewind", response_class=HTMLResponse)
+    def rewind_confirmation(request: Request, project_id: UUID, target: str = "") -> Response:
+        """What this rewind costs, before it costs it.
+
+        The rail used to fire the rewind straight from a click: two submit buttons
+        styled as 11px underlined links, sitting where a reader on a phone reasonably
+        reads them as navigation to the sources and brief screens. One of them
+        archives the episode plan, the script and the audio. Every other destructive
+        action in this app already stops here first — deleting a source has shown the
+        same "what goes / what stays" summary all along.
+        """
+        if redirect := login_redirect(request):
+            return redirect
+        if redirect := project_redirect(request, project_id):
+            return redirect
+        if target not in {"brief", "sources"}:
+            return _source_redirect(project_id, error="rewind-target")
+        project = workspace.load_project(project_id)
+        preview = revision.preview(project_id, target=target)
+        return render(
+            request,
+            "projects/workflow_rewind.html",
+            {
+                "project": project,
+                "target": target,
+                "preview": preview,
+                "archived_labels": _rewind_labels(preview.archived_paths),
+                "new_state_label": state_label_for(preview.new_state),
+            },
+        )
+
     @app.post("/projects/{project_id}/workflow/rewind")
     def rewind_workflow(
         request: Request,
         project_id: UUID,
         csrf_token: Annotated[str, Form()],
         target: Annotated[str, Form()],
+        confirm: Annotated[str, Form()],
         reason: Annotated[str, Form()] = "",
     ) -> RedirectResponse:
         if redirect := login_redirect(request):
@@ -708,6 +741,10 @@ def register_source_routes(
         try:
             if target not in {"brief", "sources"}:
                 raise ValueError("مرحله مقصد معتبر نیست.")
+            # The confirmation screen names the target it is about; a POST that does
+            # not echo it back never came from a reader who was shown the cost.
+            if confirm != target:
+                raise ValueError("این اقدام باید از صفحهٔ تأیید انجام شود.")
             actor = request.state.account.label
             project = workspace.load_project(project_id)
             from_stage = stage_for_state(project.state)
@@ -1058,6 +1095,37 @@ def _safe_filename(value: str) -> str:
     if not name or name in {".", ".."}:
         raise ValueError("نام فایل معتبر نیست.")
     return name[:180]
+
+
+#: What each archived path means to a reader. The rewind moves whole trees; naming
+#: them "episode/" and "script/" on a confirmation screen would be no confirmation.
+_REWIND_PATH_LABELS: dict[str, str] = {
+    "episode": "طرح گفتار و گزارش کفایت منابع",
+    "script": "متن گفتار، بررسی‌های قطعی و راستی‌آزمایی مستقل",
+    "audio": "فایل‌های صوتی و وارسی شنیداری",
+    "runs": "سابقهٔ اجراهای این گفتار",
+    "web-search-candidates.json": "فهرست منابع پیشنهادی جست‌وجوی وب",
+}
+#: The four run pointers are one idea to a reader, so they collapse into one line.
+_REWIND_RUN_POINTERS = frozenset(
+    {
+        "corpus-build-run.json",
+        "episode-planning-run.json",
+        "script-build-run.json",
+        "audio-build-run.json",
+    }
+)
+
+
+def _rewind_labels(archived_paths: list[str]) -> list[str]:
+    labels = [
+        _REWIND_PATH_LABELS[path]
+        for path in archived_paths
+        if path in _REWIND_PATH_LABELS
+    ]
+    if any(path in _REWIND_RUN_POINTERS for path in archived_paths):
+        labels.append("نشانگر آخرین اجرای هر مرحله")
+    return labels
 
 
 def _source_redirect(

@@ -10,15 +10,46 @@
   </div>
 </header>
 
+{#
+  Three ways to arrive here with nothing to read, and each one used to render a
+  single sentence on a blank sheet with no way forward. A page that says "not ready"
+  and stops is a dead end; it has to say why, and where the reader goes instead.
+#}
 {% if error %}
 {{ error_notice(error) }}
+<div class="form-actions">
+  <a class="button button--secondary" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
+  <a class="button button--quiet" href="/projects/{{ project.project_id }}/readiness">بررسی آمادگی گفتار</a>
+</div>
 {% elif report is none %}
-<section class="coverage-verdict">
-  <p>گزارش هنوز آماده نیست.</p>
+<section class="empty-state">
+  <h2>هنوز چیزی برای گزارش‌دادن نیست</h2>
+  <p class="subtitle">گزارش پایانی</p>
+  <p>این گزارش از طرح گفتار و مدعاهای استخراج‌شده ساخته می‌شود، و هر دو هنوز کامل نشده‌اند. به‌محض اینکه طرح ساخته و تأیید شود، همین صفحه پر می‌شود.</p>
+  <div class="form-actions">
+    <a class="button button--primary" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/readiness">ببینید چه چیزی مانده است</a>
+  </div>
+</section>
+{% elif project.lesson_intent.value != 'source_coverage' %}
+<section class="empty-state">
+  <h2>این گفتار گزارش پوشش ندارد</h2>
+  <p class="subtitle">گزارش پایانی</p>
+  <p>گزارش پوشش می‌سنجد چه بخش‌هایی از یک منبع گفته شد و چه بخش‌هایی نه — پرسشی که فقط برای گفتارهای «یادگیری کامل یک منبع» معنی دارد. این گفتار حول یک پرسش مشخص ساخته‌شده، پس مسیر ردیابی هر گفته تا شاهدش جای این گزارش را می‌گیرد.</p>
+  <div class="form-actions">
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/script">متن گفتار و ردیابی شاهدها</a>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}">خانهٔ گفتار</a>
+  </div>
 </section>
 {% elif not report.cells_covered and not report.omitted_by_compression %}
-<section class="coverage-verdict">
-  <p>این گزارش فقط برای گفتارهای «پوشش کامل منبع» ساخته می‌شود.</p>
+<section class="empty-state">
+  <h2>دامنهٔ این گفتار هنوز مفهومی ندارد</h2>
+  <p class="subtitle">گزارش پایانی</p>
+  <p>تحلیل منابع مفهومی در دامنهٔ این درس ثبت نکرده است، پس چیزی برای مقایسهٔ «گفته‌شده» و «کنارگذاشته‌شده» وجود ندارد. اگر منابع تازه‌ای افزوده‌اید، تحلیل منابع باید دوباره اجرا شود.</p>
+  <div class="form-actions">
+    <a class="button button--primary" href="/projects/{{ project.project_id }}/processing">تحلیل منابع</a>
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/readiness">بررسی آمادگی گفتار</a>
+  </div>
 </section>
 {% else %}
 

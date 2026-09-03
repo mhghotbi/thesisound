@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}بازگشت و اصلاح | مقال{% endblock %}
+{# A destructive confirmation keeps one question on screen, so the step rail steps aside. #}
+{% block workflow_nav %}{% endblock %}
+{% block content %}
+{% set target_labels = {'brief': 'موضوع و هدف', 'sources': 'منابع'} %}
+<section class="impact-summary" aria-labelledby="rewind-title">
+  <div class="impact-summary__head">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5M10 13.6v.1"/></svg>
+    <div>
+      <h1 id="rewind-title">بازگشت به مرحلهٔ «{{ target_labels.get(target, target) }}»؟</h1>
+      <p>این کار مرحله را دوباره باز می‌کند تا بتوانید ویرایش کنید. خروجی‌هایی که روی ورودی قبلی ساخته‌شده‌اند بایگانی می‌شوند تا نسخهٔ کهنه دوباره به کار نرود.</p>
+    </div>
+  </div>
+
+  {% if preview.blocked_reason %}
+  <div class="notice notice--danger" role="alert">
+    <strong>الان نمی‌شود.</strong>
+    <p>{{ preview.blocked_reason }}</p>
+    {% if preview.active_runs %}<p>اجرای فعال: {{ preview.active_runs | join('، ') }}</p>{% endif %}
+  </div>
+  {% else %}
+  <div class="impact-summary__grid">
+    <div class="impact-summary__column impact-summary__column--loss">
+      <h2>بایگانی می‌شود</h2>
+      {% if archived_labels %}
+      <ul>
+        {% for label in archived_labels %}<li>{{ label }}</li>{% endfor %}
+        {% if preview.resets_source_selection %}<li>تیک همهٔ منابع منتخب برداشته می‌شود</li>{% endif %}
+      </ul>
+      {% else %}
+      <ul><li>هنوز خروجی وابسته‌ای ساخته نشده است؛ چیزی کنار گذاشته نمی‌شود.</li></ul>
+      {% endif %}
+    </div>
+    <div class="impact-summary__column impact-summary__column--keep">
+      <h2>باقی می‌ماند</h2>
+      <ul>
+        <li>فایل‌های خام بارگذاری‌شده — هیچ فایلی حذف نمی‌شود</li>
+        {% if preview.kept_paths %}<li>تحلیل هر منبع: متن استخراج‌شده، مدعاها و شاهدها</li>{% endif %}
+        {% if target != 'brief' %}<li>موضوع و هدف تأییدشدهٔ این گفتار</li>{% endif %}
+        <li>سابقهٔ کامل فراخوانی مدل‌ها و مسیر ردیابی هر مدعا</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="impact-summary__rebuild">
+    <p><strong>پس از اصلاح، این‌ها دوباره ساخته می‌شوند</strong></p>
+    <p>گفتار به وضعیت «{{ new_state_label }}» برمی‌گردد و مرحله‌های بعدی از همان‌جا دوباره اجرا می‌شوند. تحلیل منابعی که دست‌نخورده می‌مانند، پیش از استفادهٔ دوباره با ورودی تازه سنجیده می‌شود.</p>
+  </div>
+  {% endif %}
+
+  {% if preview.blocked_reason %}
+  <div class="impact-summary__actions">
+    <a class="button button--secondary" href="/projects/{{ project.project_id }}/{{ target }}">انصراف</a>
+  </div>
+  {% else %}
+  <form method="post" action="/projects/{{ project.project_id }}/workflow/rewind">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="target" value="{{ target }}">
+    <input type="hidden" name="confirm" value="{{ target }}">
+    <div class="impact-summary__reason">
+      <label class="field">
+        <span>چرا برمی‌گردید؟</span>
+        <input type="text" name="reason" maxlength="200" autocomplete="off">
+        <small>اختیاری — در سابقهٔ همین گفتار ثبت می‌شود تا بعداً معلوم باشد چرا این کار شد.</small>
+      </label>
+    </div>
+    <div class="impact-summary__actions">
+      <button class="button button--danger-solid" type="submit">بله، این مرحله را باز کن</button>
+      <a class="button button--secondary" href="/projects/{{ project.project_id }}/{{ target }}">انصراف</a>
+    </div>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

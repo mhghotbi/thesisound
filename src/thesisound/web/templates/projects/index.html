@@ -31,7 +31,7 @@
             <div class="project-row__main">
               <h3><a href="/projects/{{ item.project.project_id }}">{{ project_title(item.project) }}</a></h3>
               <p class="project-meta">
-                {{ status_label(item.state_label, '', item.tone, item.operator_state_label) }}
+                {{ status_label(item.state_label, '', item.status_tone, item.operator_state_label) }}
                 <span aria-hidden="true" class="project-meta__dot">·</span>
                 <span class="project-meta__attention">{{ item.attention_label }}</span>
                 <span aria-hidden="true" class="project-meta__dot">·</span>

@@ -337,12 +337,17 @@ def test_rewind_to_brief_reblocks_with_the_confirmation_copy(tmp_path: Path) -> 
         assert "این تأیید واقعی است" not in brief_page.text
         assert "هر زمان لازم بود می‌توانید ویرایشش کنید" in brief_page.text
 
-        sources_page = client.get(f"/projects/{project_id}/sources")
+        confirmation = client.get(
+            f"/projects/{project_id}/workflow/rewind",
+            params={"target": "brief"},
+        )
+        assert confirmation.status_code == 200
         response = client.post(
             f"/projects/{project_id}/workflow/rewind",
             data={
-                "csrf_token": _csrf(sources_page.text),
+                "csrf_token": _csrf(confirmation.text),
                 "target": "brief",
+                "confirm": "brief",
                 "reason": "بازگشت برای تأیید دوباره",
             },
             follow_redirects=False,
@@ -437,3 +442,96 @@ def test_web_confirmation_rolls_back_when_queue_persistence_fails(
     assert project.state == ProjectState.SOURCE_SELECTION_REQUIRED
     assert project.sources == []
     assert CorpusBuildRunStore(settings.workspace_root).load_optional(project_id) is None
+
+
+def test_a_rewind_never_fires_from_the_rail_itself(tmp_path: Path) -> None:
+    """The rail offers a link to a confirmation screen, never a live submit button.
+
+    The two controls used to be forms whose submit buttons were drawn as 11px
+    underlined links labelled "منابع" and "موضوع و هدف" — the same words as the step
+    links beside them. One click archived the episode plan, the script and the audio.
+    """
+    settings = _settings(tmp_path)
+    workspace = WorkspaceStore(settings.workspace_root)
+    with TestClient(_app(settings)) as client:
+        _login(client)
+        project_id = _create_project(client)
+
+        page = client.get(f"/projects/{project_id}/sources")
+        assert f"/projects/{project_id}/workflow/rewind?target=brief" in page.text
+        assert 'name="target" value="brief"' not in page.text
+
+        # A post that never came through the confirmation screen changes nothing:
+        # the field is required outright, and a value that does not echo the target
+        # is refused with the reason rather than performed.
+        missing = client.post(
+            f"/projects/{project_id}/workflow/rewind",
+            data={"csrf_token": _csrf(page.text), "target": "brief"},
+            follow_redirects=False,
+        )
+        assert missing.status_code == 422
+
+        mismatched = client.post(
+            f"/projects/{project_id}/workflow/rewind",
+            data={
+                "csrf_token": _csrf(page.text),
+                "target": "brief",
+                "confirm": "sources",
+            },
+            follow_redirects=False,
+        )
+        assert mismatched.status_code == 303
+        assert "workflow_error" in mismatched.headers["location"]
+        assert workspace.load_project(project_id).state == ProjectState.SOURCES_COLLECTING
+
+
+def test_the_rewind_confirmation_names_what_survives(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    with TestClient(_app(settings)) as client:
+        _login(client)
+        project_id = _create_project(client)
+
+        page = client.get(
+            f"/projects/{project_id}/workflow/rewind",
+            params={"target": "brief"},
+        )
+
+        assert page.status_code == 200
+        assert "بایگانی می‌شود" in page.text
+        assert "باقی می‌ماند" in page.text
+        assert "هیچ فایلی حذف نمی‌شود" in page.text
+        assert "انصراف" in page.text
+        # The confirmation is the whole question on screen; the step rail steps aside.
+        assert 'class="workflow-rail"' not in page.text
+
+
+def test_a_script_page_with_no_script_says_why_and_where_to_go(tmp_path: Path) -> None:
+    """The page used to render its header over blank paper, under a sentence
+    promising "متن برای خواندن آرام و پیوسته" that was not there."""
+    settings = _settings(tmp_path)
+    with TestClient(_app(settings)) as client:
+        _login(client)
+        project_id = _create_project(client)
+
+        page = client.get(f"/projects/{project_id}/script")
+
+        assert page.status_code == 200
+        assert "متن گفتار هنوز نوشته نشده است" in page.text
+        assert "در حالت ساده، متن برای خواندن آرام و پیوسته" not in page.text
+        assert f"/projects/{project_id}/episode" in page.text
+
+
+def test_a_report_page_with_no_coverage_report_offers_a_way_forward(tmp_path: Path) -> None:
+    settings = _settings(tmp_path)
+    with TestClient(_app(settings)) as client:
+        _login(client)
+        project_id = _create_project(client)
+
+        page = client.get(f"/projects/{project_id}/report")
+
+        # A project built around one question has no source-coverage report to give.
+        # It used to say so in a single sentence on a blank sheet, with no way out.
+        assert page.status_code == 200
+        assert "گزارش هنوز آماده نیست" not in page.text
+        assert "این گفتار گزارش پوشش ندارد" in page.text
+        assert f"/projects/{project_id}/script" in page.text

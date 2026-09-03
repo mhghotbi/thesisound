@@ -15,6 +15,8 @@
   {{ error_notice(error) }}
 {% elif request.query_params.get('error') == 'file-too-large' %}
   {{ error_notice('حجم فایل از حد مجاز بارگذاری بیشتر است؛ فایل پذیرفته نشد.') }}
+{% elif request.query_params.get('error') == 'rewind-target' %}
+  {{ error_notice('مرحله‌ای که برای بازگشت خواسته شد شناخته نشد. از دکمه‌های «بازگشت و اصلاح» در نوار مراحل استفاده کنید.') }}
 {% elif request.query_params.get('error') == 'selection-locked' %}
   {{ error_notice('این مجموعه وارد تحلیل منابع شده و قفل است. برای تغییر منابع، از «بازگشت و اصلاح» در نوار مراحل استفاده کنید.') }}
 {% elif request.query_params.get('notice') == 'duplicate-source' %}

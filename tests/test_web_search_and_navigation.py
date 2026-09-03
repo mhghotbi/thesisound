@@ -277,14 +277,25 @@ def test_failed_project_can_rewind_to_sources_and_edit_again(
         )
 
         page = client.get(f"/projects/{project_id}/sources")
-        # The rewind control lives inside the step rail itself, not in a separate box.
+        # The rewind control lives inside the step rail itself, not in a separate box,
+        # and it opens the confirmation screen rather than rewinding on the click.
         assert 'class="workflow-rail__rewind"' in page.text
-        assert 'name="target" value="sources"' in page.text
+        assert f"/projects/{project_id}/workflow/rewind?target=sources" in page.text
+
+        confirmation = client.get(
+            f"/projects/{project_id}/workflow/rewind",
+            params={"target": "sources"},
+        )
+        assert confirmation.status_code == 200
+        assert "بایگانی می‌شود" in confirmation.text
+        assert "فایل‌های خام بارگذاری‌شده" in confirmation.text
+
         response = client.post(
             f"/projects/{project_id}/workflow/rewind",
             data={
-                "csrf_token": _csrf(page.text),
+                "csrf_token": _csrf(confirmation.text),
                 "target": "sources",
+                "confirm": "sources",
                 "reason": "اصلاح پس از خطا",
             },
             follow_redirects=False,
