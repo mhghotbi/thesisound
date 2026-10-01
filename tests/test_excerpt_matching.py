@@ -29,6 +29,12 @@ def test_excerpt_matching_repairs_typographic_variants() -> None:
             "این یک یای فارسی است در متن بلند.",
             "این یک يای فارسی است در متن بلند.",
         ),
+        (
+            # Kashida (U+0640) only stretches a justified line; a source stored
+            # before ingestion dropped it must still match the plain quote.
+            "این است کــه مـا معنای وجود را.",
+            "این است که ما معنای وجود را.",
+        ),
     ]
     for source, model_excerpt in cases:
         located = locate_excerpt(model_excerpt, source)

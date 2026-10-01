@@ -41,6 +41,7 @@ _DROP_CHARS = frozenset(
         "\u200e",  # LRM
         "\u200f",  # RLM
         "\ufeff",  # BOM
+        "\u0640",  # kashida (tatweel): justification stretch, no meaning
     }
 )
 _LETTER_MAP = {

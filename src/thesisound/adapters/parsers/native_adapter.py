@@ -104,6 +104,8 @@ def _parse_pdf(path: Path) -> tuple[list[ParsedBlock], list[str]]:
     for page_index, page in enumerate(reader.pages, start=1):
         try:
             text = page.extract_text() or ""
+            if _is_rtl_dominant(text):
+                text = _logical_text_from_layout(page.extract_text(extraction_mode="layout") or "")
         except Exception as exc:
             warnings.append(f"Page {page_index} extraction failed: {type(exc).__name__}")
             continue
@@ -121,7 +123,7 @@ def _parse_pdf(path: Path) -> tuple[list[ParsedBlock], list[str]]:
 
 
 def _normalize_pdf_text(text: str) -> str:
-    """Fold Arabic/Persian presentation-form glyphs back to logical letters.
+    """Fold Arabic/Persian presentation forms, drop kashida, fold Persian YEH/KAF.
 
     Some embedded PDF fonts (seen on a Persian-typeset source) map glyph IDs
     straight to Unicode Arabic Presentation Forms (U+FB50-FDFF, U+FE70-FEFF)
@@ -130,9 +132,79 @@ def _normalize_pdf_text(text: str) -> str:
     a model's reconstructed logical text, so every verbatim-quote comparison
     downstream fails. NFKC decomposes presentation forms to their canonical
     letters and is a no-op on text that is already canonical.
+
+    Kashida (tatweel) only stretches a line for justification and carries no
+    meaning. The same fonts often encode Persian YEH and KEHEH as their Arabic
+    counterparts, which render identically but display with the wrong dots in
+    a Persian UI; the fold applies only when Persian-only letters show the text
+    is Persian, so Arabic sources keep their own letters.
     """
 
-    return unicodedata.normalize("NFKC", text)
+    text = unicodedata.normalize("NFKC", text).replace(_KASHIDA, "")
+    if _PERSIAN_ONLY_LETTERS.search(text):
+        text = text.translate(_PERSIAN_LETTER_FOLD)
+    return text
+
+
+# Arabic-script letters, including the presentation-form blocks some fonts emit.
+_ARABIC_SCRIPT = re.compile(r"[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]")
+_LATIN_LETTER = re.compile(r"[A-Za-zÀ-ɏ]")
+# A left-to-right run inside an RTL line: Latin letters and digits (Western,
+# Arabic-Indic, Persian), joined by the neutrals that sit between them in a
+# citation such as "Berkowitz & Keenan, 2010: 188". Brackets stay outside the
+# run on purpose: they are mirrored with the RTL text around them.
+_LTR_CHAR = r"A-Za-z0-9À-ɏ٠-٩۰-۹"
+_LTR_RUN = re.compile(rf"[{_LTR_CHAR}](?:[{_LTR_CHAR} .,:;&'/%+\-_]*[{_LTR_CHAR}])?")
+_DIGIT = r"0-9٠-٩۰-۹"
+# One number: digits joined by single separators ("1398/11/06", "307-334").
+# Separate numbers in an RTL line keep RTL order between them, so a run made of
+# numbers alone is restored number by number, never as one LTR phrase.
+_NUMBER = re.compile(rf"[{_DIGIT}]+(?:[.,:/\-][{_DIGIT}]+)*")
+# Layout mode can print large, faux-bold title text twice, back to back.
+_DOUBLED_PHRASE = re.compile(r"(.{10,}?) ?\1")
+_MIRRORED = str.maketrans("()[]{}<>«»", ")(][}{><»«")
+_KASHIDA = "ـ"
+# Letters only Persian uses; their presence marks the text as Persian, where the
+# Arabic YEH/KAF that some typesetting fonts emit are read as Persian YEH/KEHEH.
+_PERSIAN_ONLY_LETTERS = re.compile(r"[پچژگکی]")
+_PERSIAN_LETTER_FOLD = str.maketrans({"ي": "ی", "ك": "ک"})
+
+
+def _is_rtl_dominant(text: str) -> bool:
+    arabic = len(_ARABIC_SCRIPT.findall(text))
+    return arabic > 0 and arabic >= len(_LATIN_LETTER.findall(text))
+
+
+def _logical_text_from_layout(layout_text: str) -> str:
+    """Rebuild reading order for an RTL page from pypdf's layout extraction.
+
+    pypdf's default extraction joins text runs in content-stream order. Some
+    Persian typesetting writes a line as several runs, and even splits words
+    at their zero-width joins, laid out right-to-left but stored in whatever
+    order the producer chose, so the extracted line comes out scrambled.
+    Layout mode places every glyph by its position instead, which yields each
+    line in visual (left-to-right) order. For an RTL line that is the logical
+    text reversed: reverse it, put embedded Latin/number runs back in their own
+    order, and mirror the paired punctuation that RTL display flips.
+    """
+
+    return "\n".join(_visual_line_to_logical(line) for line in layout_text.splitlines())
+
+
+def _visual_line_to_logical(line: str) -> str:
+    collapsed = re.sub(r" {2,}", " ", line.strip())
+    if not _is_rtl_dominant(collapsed):
+        return collapsed
+    reversed_line = collapsed[::-1]
+    restored = _LTR_RUN.sub(_restore_ltr_run, reversed_line)
+    return _DOUBLED_PHRASE.sub(r"\1", restored.translate(_MIRRORED))
+
+
+def _restore_ltr_run(match: re.Match[str]) -> str:
+    run = match.group(0)
+    if _LATIN_LETTER.search(run):
+        return run[::-1]
+    return _NUMBER.sub(lambda number: number.group(0)[::-1], run)
 
 
 def _parse_docx(path: Path) -> tuple[list[ParsedBlock], list[str]]:
