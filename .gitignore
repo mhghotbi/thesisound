@@ -36,7 +36,7 @@ benchmarks/persian_ocr/runtime/
 benchmarks/eval/runtime/
 
 # Design tooling (impeccable / taste redesign skill)
-.claude/skills/impeccable/node_modules/
+.agents/skills/impeccable/node_modules/
 .impeccable/
 
 # Model quality trials (Sepidour / Okian / Gemini bake-off) -- local only
