@@ -1848,6 +1848,7 @@ code {
   .segment-row > :last-child { grid-column: 2; }
   .transcript-turn { grid-template-columns: 1fr; gap: 4px; }
   .transcript-turn__aside,
+  .transcript-turn__grounding,
   .evidence-drawer { grid-column: 1; }
   .auth-story { min-height: 240px; padding: 28px 24px; gap: 22px; }
   .auth-story__lead { gap: 12px; }
